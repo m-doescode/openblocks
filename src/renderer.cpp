@@ -3,26 +3,19 @@
 #include <GL/gl.h>
 #include "shader.h"
 #include "mesh.h"
+#include "defaultmeshes.h"
 
 #include "renderer.h"
 
-float verts[] {
-    // position         // normals          // tex coords
-    0.5f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-};
-
 Shader *shader = NULL;
-Mesh *triangleMesh = NULL;
 
 void renderInit(GLFWwindow* window) {
     glViewport(0, 0, 500, 500);
 
+    initMeshes();
+
     // Compile shader
     shader = new Shader("assets/shaders/orange.vs", "assets/shaders/orange.fs");
-
-    triangleMesh = new Mesh(3, verts);
 }
 
 void render(GLFWwindow* window) {
@@ -32,6 +25,6 @@ void render(GLFWwindow* window) {
     // Use shader
     shader->use();
 
-    triangleMesh->bind();
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    CUBE_MESH->bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
