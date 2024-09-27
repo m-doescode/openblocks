@@ -31,6 +31,12 @@ void Camera::processMovement(Direction direction, float deltaTime) {
         case DIRECTION_RIGHT:
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
             break;
+        case DIRECTION_UP:
+            cameraPos += cameraUp * speed;
+            break;
+        case DIRECTION_DOWN:
+            cameraPos -= cameraUp * speed;
+            break;
     }
 }
 

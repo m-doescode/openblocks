@@ -76,6 +76,10 @@ void processInput(GLFWwindow* window) {
         camera.processMovement(DIRECTION_LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processMovement(DIRECTION_RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.processMovement(DIRECTION_UP, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        camera.processMovement(DIRECTION_DOWN, deltaTime);
 
     if (mode == 2) {
         float shiftFactor = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? -0.5 : 0.5;

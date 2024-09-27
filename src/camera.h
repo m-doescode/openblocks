@@ -6,6 +6,8 @@ enum Direction {
     DIRECTION_BACKWARDS,
     DIRECTION_RIGHT,
     DIRECTION_LEFT,
+    DIRECTION_UP,
+    DIRECTION_DOWN,
 };
 
 class Camera {
