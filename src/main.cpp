@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
+#include "renderer.h"
+
 void errorCatcher(int id, const char* str);
 
 int main() {
@@ -12,7 +14,13 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(1200, 900, "GLTest", NULL, NULL);
 
     glfwMakeContextCurrent(window);
+    glewInit();
+
+    renderInit(window);
+
     do {
+        render(window);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     } while(!glfwWindowShouldClose(window));
