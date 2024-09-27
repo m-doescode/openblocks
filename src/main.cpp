@@ -14,6 +14,8 @@ void errorCatcher(int id, const char* str);
 Camera camera(glm::vec3(0.0, 0.0, 3.0));
 std::vector<Part> parts;
 
+int mode = 0;
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -74,6 +76,20 @@ void processInput(GLFWwindow* window) {
         camera.processMovement(DIRECTION_LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processMovement(DIRECTION_RIGHT, deltaTime);
+
+    if (mode == 2) {
+        float shiftFactor = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? -0.5 : 0.5;
+        shiftFactor *= deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+            parts.back().rotation.x += shiftFactor;
+        }
+        if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
+            parts.back().rotation.y += shiftFactor;
+        }
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+            parts.back().rotation.z += shiftFactor;
+        }
+    }
 }
 
 bool mouseCapturing = false;
@@ -117,4 +133,31 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             }
         });
     }
+
+    float shiftFactor = (mods & GLFW_MOD_SHIFT) ? -0.2 : 0.2;
+    if (mode == 0) {
+        if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+            parts.back().position.x += shiftFactor;
+        }
+        if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
+            parts.back().position.y += shiftFactor;
+        }
+        if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+            parts.back().position.z += shiftFactor;
+        }
+    } else if (mode == 1) {
+        if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+            parts.back().scale.x += shiftFactor;
+        }
+        if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
+            parts.back().scale.y += shiftFactor;
+        }
+        if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+            parts.back().scale.z += shiftFactor;
+        }
+    }
+    
+    if (key == GLFW_KEY_M && action == GLFW_PRESS) mode = 0;
+    if (key == GLFW_KEY_E && action == GLFW_PRESS) mode = 1; // Enlarge
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) mode = 2;
 }
