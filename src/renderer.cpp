@@ -19,6 +19,8 @@ void renderInit(GLFWwindow* window) {
 
     initMeshes();
 
+    glEnable(GL_DEPTH_TEST);
+
     // Compile shader
     shader = new Shader("assets/shaders/phong.vs", "assets/shaders/phong.fs");
 }
