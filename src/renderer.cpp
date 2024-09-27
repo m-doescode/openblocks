@@ -12,10 +12,10 @@
 #include "renderer.h"
 
 Shader *shader = NULL;
-Camera camera(glm::vec3(0.0, 0.0, 3.0));
+extern Camera camera;
 
 void renderInit(GLFWwindow* window) {
-    glViewport(0, 0, 500, 500);
+    glViewport(0, 0, 1200, 900);
 
     initMeshes();
 
