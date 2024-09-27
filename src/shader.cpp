@@ -1,6 +1,7 @@
 #include <fstream>
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "shader.h"
 
@@ -59,4 +60,48 @@ Shader::~Shader() {
 
 void Shader::use() {
     glUseProgram(id);
+}
+
+void Shader::set(std::string key, int value) {
+    glUniform1i(glGetUniformLocation(id, key.c_str()), value);
+}
+
+void Shader::set(std::string key, float value) {
+    glUniform1f(glGetUniformLocation(id, key.c_str()), value);
+}
+
+void Shader::set(std::string key, Material value) {
+    set((key + ".diffuse").c_str(), value.diffuse);
+    set((key + ".specular").c_str(), value.specular);
+    set((key + ".shininess").c_str(), value.shininess);
+}
+
+void Shader::set(std::string key, DirLight value) {
+    set((key + ".direction").c_str(), value.direction);
+    set((key + ".ambient").c_str(), value.ambient);
+    set((key + ".diffuse").c_str(), value.diffuse);
+    set((key + ".specular").c_str(), value.specular);
+}
+
+void Shader::set(std::string key, PointLight value) {
+    set((key + ".position").c_str(), value.position);
+    set((key + ".ambient").c_str(), value.ambient);
+    set((key + ".diffuse").c_str(), value.diffuse);
+    set((key + ".specular").c_str(), value.specular);
+
+    set((key + ".constant").c_str(), value.constant);
+    set((key + ".linear").c_str(), value.linear);
+    set((key + ".quadratic").c_str(), value.quadratic);
+}
+
+void Shader::set(std::string key, glm::vec3 value) {
+    glUniform3f(glGetUniformLocation(id, key.c_str()), value.x, value.y, value.z);
+}
+
+void Shader::set(std::string key, glm::mat3 value) {
+    glUniformMatrix3fv(glGetUniformLocation(id, key.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Shader::set(std::string key, glm::mat4 value) {
+    glUniformMatrix4fv(glGetUniformLocation(id, key.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
