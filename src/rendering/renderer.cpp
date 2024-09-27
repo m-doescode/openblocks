@@ -2,17 +2,21 @@
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
 #include <glm/ext.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
 #include "../camera.h"
+#include "part.h"
 
 #include "renderer.h"
 
 Shader *shader = NULL;
 extern Camera camera;
+extern std::vector<Part> parts;
 
 void renderInit(GLFWwindow* window) {
     glViewport(0, 0, 1200, 900);
@@ -67,14 +71,16 @@ void render(GLFWwindow* window) {
     // Pass in the camera position
     shader->set("viewPos", camera.cameraPos);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3( 0.0f, 0.0f, 0.0f));
-    // float angle = 20.0f * i;
-    // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-    shader->set("model", model);
-    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-    shader->set("normalMatrix", normalMatrix);
+    for (Part part : parts) {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, part.position);
+        // model = glm::rotate(model, part.position);
+        model = glm::scale(model, part.scale);
+        shader->set("model", model);
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        shader->set("normalMatrix", normalMatrix);
 
-    CUBE_MESH->bind();
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        CUBE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 }

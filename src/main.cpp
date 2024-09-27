@@ -1,16 +1,20 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
+#include <glm/ext/vector_float3.hpp>
 #include <stdio.h>
+#include <vector>
 
+#include "rendering/part.h"
 #include "rendering/renderer.h"
 #include "camera.h"
 
 void errorCatcher(int id, const char* str);
 
 Camera camera(glm::vec3(0.0, 0.0, 3.0));
+std::vector<Part> parts;
 
-// void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 // void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -21,11 +25,23 @@ int main() {
 
     glfwInit();
     GLFWwindow *window = glfwCreateWindow(1200, 900, "GLTest", NULL, NULL);
+    glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
 
     glfwMakeContextCurrent(window);
     glewInit();
+
+    parts.push_back(Part {
+        .position = glm::vec3(0),
+        .rotation = glm::vec3(0),
+        .scale = glm::vec3(1, 1, 1),
+        .material = Material {
+            .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 32.0f,
+        }
+    });
 
     renderInit(window);
 
@@ -85,5 +101,20 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     } else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         mouseFirst = true;
+    }
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        parts.push_back(Part {
+            .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
+            .rotation = glm::vec3(0),
+            .scale = glm::vec3(1, 1, 1),
+            .material = Material {
+                .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
+                .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+                .shininess = 32.0f,
+            }
+        });
     }
 }
