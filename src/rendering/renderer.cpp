@@ -7,7 +7,7 @@
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
-#include "camera.h"
+#include "../camera.h"
 
 #include "renderer.h"
 

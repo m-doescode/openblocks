@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
-#include "renderer.h"
+#include "rendering/renderer.h"
 #include "camera.h"
 
 void errorCatcher(int id, const char* str);
