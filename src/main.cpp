@@ -9,7 +9,7 @@ int main() {
     glfwSetErrorCallback(errorCatcher);
 
     glfwInit();
-    GLFWwindow *window = glfwCreateWindow(800, 600, "GLTest", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1200, 900, "GLTest", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     do {
