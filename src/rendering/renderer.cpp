@@ -11,7 +11,7 @@
 #include "mesh.h"
 #include "defaultmeshes.h"
 #include "../camera.h"
-#include "part.h"
+#include "../part.h"
 
 #include "renderer.h"
 

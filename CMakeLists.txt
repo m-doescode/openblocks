@@ -25,9 +25,11 @@ find_package(glm CONFIG REQUIRED)
 
 find_package(assimp REQUIRED)
 
+find_package(ReactPhysics3D REQUIRED)
+
 file(MAKE_DIRECTORY bin)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 add_executable(${PROJECT_NAME} ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gltest")
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU glfw glm::glm assimp)
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU glfw glm::glm assimp ReactPhysics3D::ReactPhysics3D)

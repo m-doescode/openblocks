@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include <vector>
 
-#include "rendering/part.h"
+#include "part.h"
 #include "rendering/renderer.h"
+#include "physics/simulation.h"
 #include "camera.h"
 
 void errorCatcher(int id, const char* str);
@@ -45,10 +46,16 @@ int main() {
         }
     });
 
+    simulationInit();
     renderInit(window);
 
+    float lastTime = glfwGetTime();
     do {
+        float deltaTime = glfwGetTime() - lastTime;
+        lastTime = glfwGetTime();
+        
         processInput(window);
+        physicsStep(deltaTime);
         render(window);
 
         glfwSwapBuffers(window);

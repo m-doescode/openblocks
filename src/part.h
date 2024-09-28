@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "material.h"
+#include "rendering/material.h"
 
 struct Part {
     glm::vec3 position;
