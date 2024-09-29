@@ -38,6 +38,20 @@ int main() {
     simulationInit();
     renderInit(window);
 
+    // Baseplate
+    parts.push_back(Part {
+        .position = glm::vec3(0, -5, 0),
+        .rotation = glm::vec3(0),
+        .scale = glm::vec3(5, 1, 5),
+        .material = Material {
+            .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 32.0f,
+        },
+        .anchored = true,
+    });
+    syncPartPhysics(parts.back());
+
     parts.push_back(Part {
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
