@@ -108,12 +108,15 @@ void processInput(GLFWwindow* window) {
         shiftFactor *= deltaTime;
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
             parts.back().rotation.x += shiftFactor;
+            syncPartPhysics(parts.back());
         }
         if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
             parts.back().rotation.y += shiftFactor;
+            syncPartPhysics(parts.back());
         }
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
             parts.back().rotation.z += shiftFactor;
+            syncPartPhysics(parts.back());
         }
     }
 }
@@ -165,22 +168,28 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (mode == 0) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
             parts.back().position.x += shiftFactor;
+            syncPartPhysics(parts.back());
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
             parts.back().position.y += shiftFactor;
+            syncPartPhysics(parts.back());
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
             parts.back().position.z += shiftFactor;
+            syncPartPhysics(parts.back());
         }
     } else if (mode == 1) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
             parts.back().scale.x += shiftFactor;
+            syncPartPhysics(parts.back());
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
             parts.back().scale.y += shiftFactor;
+            syncPartPhysics(parts.back());
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
             parts.back().scale.z += shiftFactor;
+            syncPartPhysics(parts.back());
         }
     }
     
