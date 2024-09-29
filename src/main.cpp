@@ -35,6 +35,9 @@ int main() {
     glfwMakeContextCurrent(window);
     glewInit();
 
+    simulationInit();
+    renderInit(window);
+
     parts.push_back(Part {
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
@@ -45,9 +48,7 @@ int main() {
             .shininess = 32.0f,
         }
     });
-
-    simulationInit();
-    renderInit(window);
+    syncPartPhysics(parts.back());
 
     float lastTime = glfwGetTime();
     do {
@@ -143,6 +144,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 .shininess = 32.0f,
             }
         });
+        syncPartPhysics(parts.back());
     }
 
     float shiftFactor = (mods & GLFW_MOD_SHIFT) ? -0.2 : 0.2;
