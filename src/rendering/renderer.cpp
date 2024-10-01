@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
+#include <cstdio>
 #include <glm/ext.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
@@ -75,9 +76,7 @@ void render(GLFWwindow* window) {
     for (Part part : parts) {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, part.position);
-        model = glm::rotate(model, part.rotation.x, glm::vec3(1., 0., 0.));
-        model = glm::rotate(model, part.rotation.y, glm::vec3(0., 1., 0.));
-        model = glm::rotate(model, part.rotation.z, glm::vec3(0., 0., 1.));
+        model = model * glm::mat4_cast(part.rotation);
         model = glm::scale(model, part.scale);
         shader->set("model", model);
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));

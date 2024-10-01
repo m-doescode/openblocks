@@ -1,7 +1,10 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <stdio.h>
 #include <vector>
 
@@ -107,15 +110,15 @@ void processInput(GLFWwindow* window) {
         float shiftFactor = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? -0.5 : 0.5;
         shiftFactor *= deltaTime;
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-            parts.back().rotation.x += shiftFactor;
+            parts.back().rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
             syncPartPhysics(parts.back());
         }
         if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
-            parts.back().rotation.y += shiftFactor;
+            parts.back().rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
             syncPartPhysics(parts.back());
         }
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-            parts.back().rotation.z += shiftFactor;
+            parts.back().rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
             syncPartPhysics(parts.back());
         }
     }

@@ -34,12 +34,8 @@ void simulationInit() {
 
 void syncPartPhysics(Part& part) {
     glm::mat4 rotMat = glm::mat4(1.0f);
-    rotMat = glm::rotate(rotMat, part.rotation.x, glm::vec3(1., 0., 0.));
-    rotMat = glm::rotate(rotMat, part.rotation.y, glm::vec3(0., 1., 0.));
-    rotMat = glm::rotate(rotMat, part.rotation.z, glm::vec3(0., 0., 1.));
-    glm::quat quat(rotMat);
 
-    rp::Transform transform(glmToRp(part.position), glmToRp(quat));
+    rp::Transform transform(glmToRp(part.position), glmToRp(part.rotation));
     if (!part.rigidBody) {
         part.rigidBody = world->createRigidBody(transform);
     } else {
@@ -63,6 +59,7 @@ void physicsStep(float deltaTime) {
     for (Part& part : parts) {
         const rp::Transform& transform = part.rigidBody->getTransform();
         part.position = rpToGlm(transform.getPosition());
-        part.rotation = glm::eulerAngles(rpToGlm(transform.getOrientation()));
+        // part.rotation = glm::eulerAngles(rpToGlm(transform.getOrientation()));
+        part.rotation = rpToGlm(transform.getOrientation());
     }
 }
