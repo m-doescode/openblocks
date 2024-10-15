@@ -3,6 +3,7 @@
 #include <GL/gl.h>
 #include <cstdio>
 #include <glm/ext.hpp>
+#include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
@@ -13,6 +14,7 @@
 #include "defaultmeshes.h"
 #include "../camera.h"
 #include "../part.h"
+#include "skybox.h"
 #include "texture.h"
 
 #include "renderer.h"
@@ -21,7 +23,7 @@ Shader *shader = NULL;
 Shader *skyboxShader = NULL;
 extern Camera camera;
 extern std::vector<Part> parts;
-Texture* skyboxTexture = NULL;
+Skybox* skyboxTexture = NULL;
 
 void renderInit(GLFWwindow* window) {
     glViewport(0, 0, 1200, 900);
@@ -30,7 +32,14 @@ void renderInit(GLFWwindow* window) {
 
     glEnable(GL_DEPTH_TEST);
 
-    skyboxTexture = new Texture("assets/textures/skybox/null_plainsky512_ft.jpg", GL_RGB);
+    skyboxTexture = new Skybox({
+        "assets/textures/skybox/null_plainsky512_rt.jpg",
+        "assets/textures/skybox/null_plainsky512_lf.jpg",
+        "assets/textures/skybox/null_plainsky512_up.jpg",
+        "assets/textures/skybox/null_plainsky512_dn.jpg",
+        "assets/textures/skybox/null_plainsky512_ft.jpg",
+        "assets/textures/skybox/null_plainsky512_bk.jpg",
+        }, GL_RGB);
 
     // Compile shader
     shader = new Shader("assets/shaders/phong.vs", "assets/shaders/phong.fs");
@@ -95,7 +104,9 @@ void renderSkyBox() {
     skyboxShader->use();
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)1200 / (float)900, 0.1f, 100.0f);
-    glm::mat4 view = camera.getLookAt();
+    // Remove translation component of view, making us always at (0, 0, 0)
+    glm::mat4 view = glm::mat4(glm::mat3(camera.getLookAt()));
+    
     skyboxShader->set("projection", projection);
     skyboxShader->set("view", view);
 

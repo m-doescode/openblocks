@@ -4,7 +4,7 @@
 
 #include "skybox.h"
 
-Skybox::Skybox(std::vector<std::string> faces, unsigned int format) {
+Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
     glGenTextures(1, &this->ID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, this->ID);
 
