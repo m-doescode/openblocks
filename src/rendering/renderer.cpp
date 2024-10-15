@@ -33,8 +33,8 @@ void renderInit(GLFWwindow* window) {
     glEnable(GL_DEPTH_TEST);
 
     skyboxTexture = new Skybox({
-        "assets/textures/skybox/null_plainsky512_rt.jpg",
         "assets/textures/skybox/null_plainsky512_lf.jpg",
+        "assets/textures/skybox/null_plainsky512_rt.jpg",
         "assets/textures/skybox/null_plainsky512_up.jpg",
         "assets/textures/skybox/null_plainsky512_dn.jpg",
         "assets/textures/skybox/null_plainsky512_ft.jpg",
@@ -47,6 +47,7 @@ void renderInit(GLFWwindow* window) {
 }
 
 void renderParts() {
+    glDepthMask(GL_TRUE);
 
     // Use shader
     shader->use();
@@ -101,12 +102,14 @@ void renderParts() {
 }
 
 void renderSkyBox() {
+    glDepthMask(GL_FALSE);
+
     skyboxShader->use();
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)1200 / (float)900, 0.1f, 100.0f);
     // Remove translation component of view, making us always at (0, 0, 0)
     glm::mat4 view = glm::mat4(glm::mat3(camera.getLookAt()));
-    
+
     skyboxShader->set("projection", projection);
     skyboxShader->set("view", view);
 
@@ -121,5 +124,5 @@ void render(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderSkyBox();
-    // renderParts();
+    renderParts();
 }
