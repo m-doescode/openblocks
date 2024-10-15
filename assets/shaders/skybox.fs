@@ -11,5 +11,5 @@ out vec4 fColor;
 // Main
 
 void main() {
-    fColor = vec4(vTexCoords, 1.0, 1.0);
+    fColor = texture(uTexture, vTexCoords);
 }

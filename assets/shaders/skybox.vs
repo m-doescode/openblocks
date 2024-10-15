@@ -12,7 +12,7 @@ uniform mat4 projection;
 
 void main()
 {
-    gl_Position = projection * vec4(vec3(view * vec4(aPos, 0.0)), 1.0);
+    gl_Position = projection * view * vec4(aPos, 1.0);
     vPos = vec3(vec4(aPos, 1.0));
     vNormal = aNormal;
     vTexCoords = aTexCoords;
