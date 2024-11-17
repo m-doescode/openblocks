@@ -30,6 +30,7 @@ void simulationInit() {
     rp::Quaternion orientation = rp::Quaternion::identity();
     rp::Transform transform(position, orientation);
     rp::RigidBody* body = world->createRigidBody(transform);
+    world->setGravity(rp::Vector3(0, -196.2, 0));
 }
 
 void syncPartPhysics(Part& part) {
@@ -48,6 +49,7 @@ void syncPartPhysics(Part& part) {
         part.rigidBody->removeCollider(part.rigidBody->getCollider(0));
     }
 
+    if (part.rigidBody->getNbColliders() == 0)
     part.rigidBody->addCollider(shape, rp::Transform());
     part.rigidBody->setType(part.anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
 }

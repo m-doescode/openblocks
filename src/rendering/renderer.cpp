@@ -51,20 +51,20 @@ void renderParts() {
 
     // Use shader
     shader->use();
-    shader->set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-    shader->set("lightColor",  glm::vec3(1.0f, 1.0f, 1.0f));
+    // shader->set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    // shader->set("lightColor",  glm::vec3(1.0f, 1.0f, 1.0f));
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)1200 / (float)900, 0.1f, 100.0f);
     glm::mat4 view = camera.getLookAt();
     shader->set("projection", projection);
     shader->set("view", view);
-    shader->set("material", Material {
-        // .ambient = glm::vec3(1.0f, 0.5f, 0.31f),
-        .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
-        .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-        .shininess = 32.0f,
-    });
+    // shader->set("material", Material {
+    //     // .ambient = glm::vec3(1.0f, 0.5f, 0.31f),
+    //     .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
+    //     .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+    //     .shininess = 16.0f,
+    // });
     shader->set("sunLight", DirLight {
         .direction = glm::vec3(-0.2f, -1.0f, -0.3f),
         .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
@@ -93,6 +93,7 @@ void renderParts() {
         model = model * glm::mat4_cast(part.rotation);
         model = glm::scale(model, part.scale);
         shader->set("model", model);
+        shader->set("material", part.material);
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         shader->set("normalMatrix", normalMatrix);
 
