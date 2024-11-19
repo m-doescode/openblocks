@@ -15,6 +15,7 @@
 #include "../camera.h"
 #include "../part.h"
 #include "skybox.h"
+#include "surface.h"
 #include "texture3d.h"
 
 #include "renderer.h"
@@ -46,7 +47,7 @@ void renderInit(GLFWwindow* window) {
         "assets/textures/skybox/null_plainsky512_bk.jpg",
         }, GL_RGB);
 
-    studsTexture = new Texture3D("assets/textures/studs.png", 64, 64, 6, GL_RGBA);
+    studsTexture = new Texture3D("assets/textures/studs.png", 128, 128, 6, GL_RGBA);
 
     // Compile shader
     shader = new Shader("assets/shaders/phong.vs", "assets/shaders/phong.fs");
@@ -90,8 +91,9 @@ void renderParts() {
     // });
     studsTexture->activate(0);
     shader->set("studs", 0);
-    shader->set("surfaces[1]", 3);
-    shader->set("surfaces[4]", 4);
+    // shader->set("surfaces[1]", SurfaceStuds);
+    shader->set("surfaces[1]", SurfaceStuds);
+    shader->set("surfaces[4]", SurfaceInlets);
 
     // Pre-calculate the normal matrix for the shader
 
