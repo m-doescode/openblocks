@@ -4,7 +4,7 @@
 #include <GL/gl.h>
 #include <stb/stb_image.h>
 
-Texture::Texture(const char* texturePath, unsigned int format) {
+Texture::Texture(const char* texturePath, unsigned int format, bool noMipMaps) {
     glGenTextures(1, &this->ID);
     glBindTexture(GL_TEXTURE_2D, this->ID);
 
@@ -28,7 +28,7 @@ Texture::Texture(const char* texturePath, unsigned int format) {
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
                  GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    if (!noMipMaps) glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
 }

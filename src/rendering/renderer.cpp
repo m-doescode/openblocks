@@ -15,7 +15,7 @@
 #include "../camera.h"
 #include "../part.h"
 #include "skybox.h"
-#include "texture.h"
+#include "texture3d.h"
 
 #include "renderer.h"
 
@@ -24,6 +24,7 @@ Shader *skyboxShader = NULL;
 extern Camera camera;
 extern std::vector<Part> parts;
 Skybox* skyboxTexture = NULL;
+Texture3D* studsTexture = NULL;
 
 void renderInit(GLFWwindow* window) {
     glViewport(0, 0, 1200, 900);
@@ -31,6 +32,10 @@ void renderInit(GLFWwindow* window) {
     initMeshes();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
     skyboxTexture = new Skybox({
         "assets/textures/skybox/null_plainsky512_lf.jpg",
@@ -40,6 +45,8 @@ void renderInit(GLFWwindow* window) {
         "assets/textures/skybox/null_plainsky512_ft.jpg",
         "assets/textures/skybox/null_plainsky512_bk.jpg",
         }, GL_RGB);
+
+    studsTexture = new Texture3D("assets/textures/studs.png", 64, 64, 6, GL_RGBA);
 
     // Compile shader
     shader = new Shader("assets/shaders/phong.vs", "assets/shaders/phong.fs");
@@ -81,6 +88,10 @@ void renderParts() {
     //     .linear = 0.9,
     //     .quadratic = 0.32,
     // });
+    studsTexture->activate(0);
+    shader->set("studs", 0);
+    shader->set("surfaces[1]", 3);
+    shader->set("surfaces[4]", 4);
 
     // Pre-calculate the normal matrix for the shader
 
@@ -96,6 +107,7 @@ void renderParts() {
         shader->set("material", part.material);
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         shader->set("normalMatrix", normalMatrix);
+        shader->set("texScale", part.scale);
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);

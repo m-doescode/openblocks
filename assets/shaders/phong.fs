@@ -29,11 +29,19 @@ struct PointLight {
     float quadratic;
 };
 
+const int FaceRight = 0;
+const int FaceTop = 1;
+const int FaceBack = 2;	
+const int FaceLeft = 3;	
+const int FaceBottom = 4;
+const int FaceFront	= 5;
+
 // I/O
 
 in vec3 vPos;
 in vec3 vNormal;
 in vec2 vTexCoords;
+flat in int vSurfaceZ;
 
 out vec4 FragColor;
 
@@ -44,6 +52,7 @@ uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform int numPointLights;
 uniform DirLight sunLight;
 uniform Material material;
+uniform sampler2DArray studs;
 
 // Functions
 
@@ -61,8 +70,9 @@ void main() {
     for (int i = 0; i < numPointLights; i++) {
         result += calculatePointLight(pointLights[i]);
     }
-
-    FragColor = vec4(result, 1.0);
+    
+    vec4 studPx = texture(studs, vec3(vTexCoords, vSurfaceZ));
+    FragColor = vec4(mix(result, vec3(studPx), studPx.w), 1);
 }
 
 vec3 calculateDirectionalLight(DirLight light) {

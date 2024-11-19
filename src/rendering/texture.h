@@ -6,7 +6,7 @@ class Texture {
 private:
     unsigned int ID;
 public:
-    Texture(const char* texturePath, unsigned format = GL_RGB);
+    Texture(const char* texturePath, unsigned format = GL_RGB, bool noMipMaps = false);
     ~Texture();
 
     void activate(unsigned int textureIdx);
