@@ -56,7 +56,7 @@ void syncPartPhysics(Part& part) {
 
 void physicsStep(float deltaTime) {
     // Step the simulation a few steps
-    world->update(deltaTime);
+    world->update(deltaTime / 2);
 
     for (Part& part : parts) {
         const rp::Transform& transform = part.rigidBody->getTransform();
