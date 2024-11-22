@@ -3,8 +3,12 @@
 #include <variant>
 #include "datatypes/primitives.h"
 
-typedef std::variant<StringData, IntData, FloatData> DataValue;
+typedef std::variant<VoidData, BoolData, StringData, IntData, FloatData> DataValue;
 
-const uint DAT_STRING = 0;
-const uint DAT_INT = 1;
-const uint DAT_FLOAT = 2;
+enum class DataType {
+    VOID = 0,
+    BOOL = 1,
+    STRING = 2,
+    INT = 3,
+    FLOAT = 4
+};

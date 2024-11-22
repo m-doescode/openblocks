@@ -1,11 +1,11 @@
 #include "primitives.h"
 
-StringData::StringData(std::string str) : wrapped(str) {}
-StringData::operator std::string() { return wrapped; }
+#define IMPL_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) CLASS_NAME::CLASS_NAME(WRAPPED_TYPE in) : wrapped(in) {}\
+CLASS_NAME::operator WRAPPED_TYPE() { return wrapped; }
 
-IntData::IntData(int in) : wrapped(in) {}
-IntData::operator int() { return wrapped; }
+VoidData::VoidData() {};
 
-FloatData::FloatData(float in) : wrapped(in) {}
-FloatData::operator float() { return wrapped; }
-
+IMPL_WRAPPER_CLASS(BoolData, bool)
+IMPL_WRAPPER_CLASS(IntData, int)
+IMPL_WRAPPER_CLASS(FloatData, float)
+IMPL_WRAPPER_CLASS(StringData, std::string)
