@@ -1,5 +1,12 @@
 bin/
+lib/
 CMakeFiles/
 cmake_install.cmake
 CMakeCache.txt
 Makefile
+
+# Qt
+.lupdate/
+*.pro.user*
+CMakeLists.txt.user*
+*_autogen/

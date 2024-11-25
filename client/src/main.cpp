@@ -29,7 +29,7 @@ int main() {
     glfwSetErrorCallback(errorCatcher);
 
     glfwInit();
-    GLFWwindow *window = glfwCreateWindow(1200, 900, "GLTest", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1200, 900, "OpenBlocks Client ALPHA", NULL, NULL);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
