@@ -13,10 +13,9 @@
 #include "physics/simulation.h"
 #include "camera.h"
 
-void errorCatcher(int id, const char* str);
+#include "common.h"
 
-Camera camera(glm::vec3(0.0, 0.0, 3.0));
-std::vector<Part> parts;
+void errorCatcher(int id, const char* str);
 
 int mode = 0;
 
