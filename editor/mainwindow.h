@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qbasictimer.h"
+#include "qcoreevent.h"
 #include <QMainWindow>
 #include <QLineEdit>
 
@@ -17,8 +19,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void updateMainWidget();
 
 private:
     Ui::MainWindow *ui;
+    QBasicTimer timer;
+
+    void timerEvent(QTimerEvent*) override;
 };
 #endif // MAINWINDOW_H

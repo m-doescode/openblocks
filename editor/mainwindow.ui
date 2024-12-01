@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="MainGLWidget" name="openGLWidget"/>
+     <widget class="MainGLWidget" name="mainWidget"/>
     </item>
    </layout>
   </widget>

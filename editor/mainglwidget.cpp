@@ -1,6 +1,11 @@
-#include "GL/glew.h"
+#include <GL/glew.h>
+#include <chrono>
+
+#include <QMouseEvent>
 
 #include "part.h"
+#include "qevent.h"
+#include "qnamespace.h"
 #include "rendering/renderer.h"
 #include "physics/simulation.h"
 #include "camera.h"
@@ -55,12 +60,27 @@ void MainGLWidget::resizeGL(int w, int h) {
     // ...
 }
 
-float lastTime = glfwGetTime();    
 void MainGLWidget::paintGL() {
-    float deltaTime = glfwGetTime() - lastTime;
-    lastTime = glfwGetTime();
-
-    // processInput(NULL);
-    physicsStep(deltaTime);
     ::render(NULL);
+}
+
+bool isMouseDragging = false;
+QPoint lastMousePos;
+void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
+    // if (!(evt->buttons() & Qt::RightButton)) return;
+    if (!isMouseDragging) return;
+    
+    camera.processRotation(evt->pos().x() - lastMousePos.x(), evt->pos().y() - lastMousePos.y());
+    lastMousePos = evt->pos();
+}
+
+void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
+    if (evt->button() != Qt::RightButton) return;
+
+    lastMousePos = evt->pos();
+    isMouseDragging = true;
+}
+
+void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
+    isMouseDragging = false;
 }
