@@ -12,6 +12,8 @@
 #include "common.h"
 #include "physics/simulation.h"
 
+#include "wayland-pointer-constraints-unstable-v1-client-protocol.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)

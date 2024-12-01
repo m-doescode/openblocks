@@ -3,7 +3,9 @@
 
 #include <QMouseEvent>
 
+#include "GLFW/glfw3.h"
 #include "part.h"
+#include "qcursor.h"
 #include "qevent.h"
 #include "qnamespace.h"
 #include "rendering/renderer.h"
@@ -72,6 +74,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     
     camera.processRotation(evt->pos().x() - lastMousePos.x(), evt->pos().y() - lastMousePos.y());
     lastMousePos = evt->pos();
+    // QCursor::setPos(lastMousePos);
 }
 
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
