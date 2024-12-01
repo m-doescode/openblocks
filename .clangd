@@ -1,3 +1,8 @@
 CompileFlags: # Tweak the parse settings, example directory given to show format
   Add:
     - "--include-directory=../../src"
+    - "--include-directory=../src"
+    - "--include-directory=/usr/include/qt6/QtWidgets"
+    - "--include-directory=/usr/include/qt6/QtOpenGLWidgets"
+    - "--include-directory=/usr/include/qt6"
+    - "--include-directory=/usr/include/qt6/QtGui"

@@ -9,8 +9,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+
+include_directories("../src")
 
 set(TS_FILES editor_en_US.ts)
 
@@ -19,6 +23,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        mainglwidget.h
+        mainglwidget.cpp
         ${TS_FILES}
 )
 
@@ -26,6 +32,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(editor
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        $<TARGET_OBJECTS:openblocks>
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET editor APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -43,13 +50,15 @@ else()
     else()
         add_executable(editor
             ${PROJECT_SOURCES}
+            mainglwidget.h mainglwidget.cpp
+            $<TARGET_OBJECTS:openblocks>
         )
     endif()
 
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(editor PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(editor PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU glfw glm::glm assimp ReactPhysics3D::ReactPhysics3D)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QThread>
+#include "mainglwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
