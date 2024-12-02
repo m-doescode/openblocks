@@ -21,9 +21,37 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
+
+    simulationInit();
+
+    // Baseplate
+    parts.push_back(Part {
+        .position = glm::vec3(0, -5, 0),
+        .rotation = glm::vec3(0),
+        .scale = glm::vec3(512, 1.2, 512),
+        .material = Material {
+            .diffuse = glm::vec3(0.388235, 0.372549, 0.384314),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 32.0f,
+        },
+        .anchored = true,
+    });
+    syncPartPhysics(parts.back());
+
+    parts.push_back(Part {
+        .position = glm::vec3(0),
+        .rotation = glm::vec3(0),
+        .scale = glm::vec3(4, 1.2, 2),
+        .material = Material {
+            .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 32.0f,
+        }
+    });
+    syncPartPhysics(parts.back());
 }
 
-std::chrono::time_point lastTime = std::chrono::steady_clock::now();
+static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
 void MainWindow::timerEvent(QTimerEvent* evt) {
     if (evt->timerId() != timer.timerId()) {
         QWidget::timerEvent(evt);
@@ -35,10 +63,7 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
 
     physicsStep(deltaTime);
     ui->mainWidget->update();
-}
-
-void MainWindow::updateMainWidget() {
-    ui->mainWidget->update();
+    ui->mainWidget->updateCycle();
 }
 
 MainWindow::~MainWindow()

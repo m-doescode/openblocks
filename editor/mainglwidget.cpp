@@ -16,43 +16,13 @@
 
 #include "mainglwidget.h"
 
-MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {}
+MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
+    setFocusPolicy(Qt::FocusPolicy::ClickFocus);
+}
 
 void MainGLWidget::initializeGL() {
-    // Set up the rendering context, load shaders and other resources, etc.:
-    // QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    // f->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
     glewInit();
-    simulationInit();
     renderInit(NULL);
-
-    // Baseplate
-    parts.push_back(Part {
-        .position = glm::vec3(0, -5, 0),
-        .rotation = glm::vec3(0),
-        .scale = glm::vec3(512, 1.2, 512),
-        .material = Material {
-            .diffuse = glm::vec3(0.388235, 0.372549, 0.384314),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 32.0f,
-        },
-        .anchored = true,
-    });
-    syncPartPhysics(parts.back());
-
-    parts.push_back(Part {
-        .position = glm::vec3(0),
-        .rotation = glm::vec3(0),
-        .scale = glm::vec3(4, 1.2, 2),
-        .material = Material {
-            .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 32.0f,
-        }
-    });
-    syncPartPhysics(parts.back());
-
 }
 
 void MainGLWidget::resizeGL(int w, int h) {
@@ -86,4 +56,46 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
 
 void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     isMouseDragging = false;
+}
+
+static int moveZ = 0;
+static int moveX = 0;
+
+static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
+void MainGLWidget::updateCycle() {
+    float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
+    lastTime = std::chrono::steady_clock::now();
+
+    if (moveZ)
+        camera.processMovement(moveZ == 1 ? DIRECTION_FORWARD : DIRECTION_BACKWARDS, deltaTime);
+    if (moveX)
+        camera.processMovement(moveX == 1 ? DIRECTION_LEFT : DIRECTION_RIGHT, deltaTime);
+
+}
+
+void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
+    if (evt->key() == Qt::Key_W) moveZ = 1;
+    else if (evt->key() == Qt::Key_S) moveZ = -1;
+    
+    if (evt->key() == Qt::Key_A) moveX = 1;
+    else if (evt->key() == Qt::Key_D) moveX = -1;
+
+    if (evt->key() == Qt::Key_F) {
+        parts.push_back(Part {
+            .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
+            .rotation = glm::vec3(0),
+            .scale = glm::vec3(1, 1, 1),
+            .material = Material {
+                .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
+                .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+                .shininess = 32.0f,
+            }
+        });
+        syncPartPhysics(parts.back());
+    }
+}
+
+void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {
+    if (evt->key() == Qt::Key_W || evt->key() == Qt::Key_S) moveZ = 0;
+    else if (evt->key() == Qt::Key_A || evt->key() == Qt::Key_D) moveX = 0;
 }

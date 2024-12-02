@@ -19,8 +19,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void updateMainWidget();
-
+    
 private:
     Ui::MainWindow *ui;
     QBasicTimer timer;
