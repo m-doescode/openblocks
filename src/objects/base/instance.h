@@ -16,11 +16,15 @@ class Instance : std::enable_shared_from_this<Instance> {
 private:
     std::optional<std::weak_ptr<Instance>> parent;
     std::vector<std::shared_ptr<Instance>> children;
+protected:
+    Instance(InstanceType*);
+    virtual ~Instance();
 public:
     static InstanceType* TYPE;
     std::string name;
 
-    InstanceType* GetClass();
+    // Instance is abstract, so it should not implement GetClass directly
+    virtual InstanceType* GetClass() = 0;
     void SetParent(std::optional<std::shared_ptr<Instance>> newParent);
     std::optional<std::shared_ptr<Instance>> GetParent();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }

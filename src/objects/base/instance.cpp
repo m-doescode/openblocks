@@ -12,8 +12,16 @@ static InstanceType TYPE_ {
 
 InstanceType* Instance::TYPE = &TYPE_;
 
-InstanceType* GetClass() {
-    return &TYPE_;
+// Instance is abstract, so it should not implement GetClass directly
+// InstanceType* Instance::GetClass() {
+//     return &TYPE_;
+// }
+
+Instance::Instance(InstanceType* type) {
+    this->name = type->className;
+}
+
+Instance::~Instance () {
 }
 
 void Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
