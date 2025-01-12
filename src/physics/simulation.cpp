@@ -26,10 +26,6 @@ rp::PhysicsWorld* world;
 void simulationInit() {
     world = physicsCommon.createPhysicsWorld();
 
-    rp::Vector3 position(0, 20, 0);
-    rp::Quaternion orientation = rp::Quaternion::identity();
-    rp::Transform transform(position, orientation);
-    rp::RigidBody* body = world->createRigidBody(transform);
     world->setGravity(rp::Vector3(0, -196.2, 0));
 }
 
