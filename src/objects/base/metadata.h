@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <variant>
@@ -9,7 +10,7 @@
 #include "../../datatype.h"
 
 class Instance;
-typedef Instance(*InstanceConstructor)();
+typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 
 const uint INST_NOT_CREATABLE = 1;
 // const uint INST_SINGLETON = 2;
