@@ -7,13 +7,15 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
+#include <memory>
 #include <vector>
 
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
 #include "../camera.h"
-#include "../part.h"
+#include "../common.h"
+#include "../objects/part.h"
 #include "skybox.h"
 #include "surface.h"
 #include "texture3d.h"
@@ -23,7 +25,6 @@
 Shader *shader = NULL;
 Shader *skyboxShader = NULL;
 extern Camera camera;
-extern std::vector<Part> parts;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
 
@@ -100,16 +101,20 @@ void renderParts() {
     // Pass in the camera position
     shader->set("viewPos", camera.cameraPos);
 
-    for (Part part : parts) {
+    // TODO: Same as todo in src/physics/simulation.cpp
+    for (InstanceRef inst : workspace->GetChildren()) {
+        if (inst->GetClass()->className != "Part") continue;
+        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, part.position);
-        model = model * glm::mat4_cast(part.rotation);
-        model = glm::scale(model, part.scale);
+        model = glm::translate(model, part->position);
+        model = model * glm::mat4_cast(part->rotation);
+        model = glm::scale(model, part->scale);
         shader->set("model", model);
-        shader->set("material", part.material);
+        shader->set("material", part->material);
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         shader->set("normalMatrix", normalMatrix);
-        shader->set("texScale", part.scale);
+        shader->set("texScale", part->scale);
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);

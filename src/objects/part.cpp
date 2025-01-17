@@ -1,4 +1,5 @@
 #include "part.h"
+#include "base/instance.h"
 
 static InstanceType TYPE_ {
     .super = Instance::TYPE,
@@ -13,4 +14,8 @@ InstanceType* Part::GetClass() {
 }
 
 Part::Part(): Instance(&TYPE_) {
+}
+
+Part::Part(PartConstructParams params): Instance(&TYPE_), position(params.position), rotation(params.rotation),
+                                        scale(params.scale), material(params.material), anchored(params.anchored) {
 }

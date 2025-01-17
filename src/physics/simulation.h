@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../part.h"
+#include "../objects/part.h"
+#include <memory>
 
 void simulationInit();
-void syncPartPhysics(Part& part);
+void syncPartPhysics(std::shared_ptr<Part> part);
 void physicsStep(float deltaTime);

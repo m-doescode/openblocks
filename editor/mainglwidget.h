@@ -1,14 +1,17 @@
 #ifndef MAINGLWIDGET_H
 #define MAINGLWIDGET_H
 
+#include "objects/part.h"
 #include "qevent.h"
 #include <QOpenGLWidget>
 #include <QWidget>
+#include <memory>
 
 class MainGLWidget : public QOpenGLWidget {
 public:
     MainGLWidget(QWidget *parent = nullptr);
     void updateCycle();
+    std::shared_ptr<Part> lastPart;
 
 protected:
     void initializeGL() override;

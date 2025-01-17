@@ -4,7 +4,6 @@
 #include <QMouseEvent>
 
 #include "GLFW/glfw3.h"
-#include "part.h"
 #include "qcursor.h"
 #include "qevent.h"
 #include "qnamespace.h"
@@ -81,7 +80,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     else if (evt->key() == Qt::Key_D) moveX = -1;
 
     if (evt->key() == Qt::Key_F) {
-        parts.push_back(Part {
+        workspace->AddChild(lastPart = Part::New({
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
             .scale = glm::vec3(1, 1, 1),
@@ -90,8 +89,8 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
                 .specular = glm::vec3(0.5f, 0.5f, 0.5f),
                 .shininess = 32.0f,
             }
-        });
-        syncPartPhysics(parts.back());
+        }));
+        syncPartPhysics(lastPart);
     }
 }
 

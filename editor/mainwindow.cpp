@@ -11,6 +11,7 @@
 
 #include "common.h"
 #include "physics/simulation.h"
+#include "objects/part.h"
 
 #include "wayland-pointer-constraints-unstable-v1-client-protocol.h"
 
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     simulationInit();
 
     // Baseplate
-    parts.push_back(Part {
+    workspace->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(512, 1.2, 512),
@@ -35,10 +36,10 @@ MainWindow::MainWindow(QWidget *parent)
             .shininess = 32.0f,
         },
         .anchored = true,
-    });
-    syncPartPhysics(parts.back());
+    }));
+    syncPartPhysics(ui->mainWidget->lastPart);
 
-    parts.push_back(Part {
+    workspace->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(4, 1.2, 2),
@@ -47,8 +48,8 @@ MainWindow::MainWindow(QWidget *parent)
             .specular = glm::vec3(0.5f, 0.5f, 0.5f),
             .shininess = 32.0f,
         }
-    });
-    syncPartPhysics(parts.back());
+    }));
+    syncPartPhysics(ui->mainWidget->lastPart);
 }
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();

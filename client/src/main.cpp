@@ -5,10 +5,10 @@
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <memory>
 #include <stdio.h>
-#include <vector>
 
-#include "part.h"
+#include "objects/part.h"
 #include "rendering/renderer.h"
 #include "physics/simulation.h"
 #include "camera.h"
@@ -24,6 +24,8 @@ void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 // void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+std::shared_ptr<Part> lastPart;
 
 int main() {
     glfwSetErrorCallback(errorCatcher);
@@ -41,7 +43,7 @@ int main() {
     renderInit(window);
 
     // Baseplate
-    parts.push_back(Part {
+    workspace->AddChild(Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(512, 1.2, 512),
@@ -51,10 +53,9 @@ int main() {
             .shininess = 32.0f,
         },
         .anchored = true,
-    });
-    syncPartPhysics(parts.back());
+    }));
 
-    parts.push_back(Part {
+    workspace->AddChild(lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(4, 1.2, 2),
@@ -63,8 +64,13 @@ int main() {
             .specular = glm::vec3(0.5f, 0.5f, 0.5f),
             .shininess = 32.0f,
         }
-    });
-    syncPartPhysics(parts.back());
+    }));
+
+    for (InstanceRef inst : workspace->GetChildren()) {
+        if (inst->GetClass()->className != "Part") continue;
+        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        syncPartPhysics(part);
+    }
 
     float lastTime = glfwGetTime();
     do {
@@ -109,16 +115,16 @@ void processInput(GLFWwindow* window) {
         float shiftFactor = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? -0.5 : 0.5;
         shiftFactor *= deltaTime;
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-            parts.back().rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
-            syncPartPhysics(parts.back());
+            lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
+            syncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
-            parts.back().rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
-            syncPartPhysics(parts.back());
+            lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
+            syncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-            parts.back().rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
-            syncPartPhysics(parts.back());
+            lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
+            syncPartPhysics(lastPart);
         }
     }
 }
@@ -153,7 +159,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-        parts.push_back(Part {
+        workspace->AddChild(lastPart = Part::New({
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
             .scale = glm::vec3(1, 1, 1),
@@ -162,36 +168,36 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 .specular = glm::vec3(0.5f, 0.5f, 0.5f),
                 .shininess = 32.0f,
             }
-        });
-        syncPartPhysics(parts.back());
+        }));
+        syncPartPhysics(lastPart);
     }
 
     float shiftFactor = (mods & GLFW_MOD_SHIFT) ? -0.2 : 0.2;
     if (mode == 0) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-            parts.back().position.x += shiftFactor;
-            syncPartPhysics(parts.back());
+            lastPart->position.x += shiftFactor;
+            syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-            parts.back().position.y += shiftFactor;
-            syncPartPhysics(parts.back());
+            lastPart->position.y += shiftFactor;
+            syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-            parts.back().position.z += shiftFactor;
-            syncPartPhysics(parts.back());
+            lastPart->position.z += shiftFactor;
+            syncPartPhysics(lastPart);
         }
     } else if (mode == 1) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-            parts.back().scale.x += shiftFactor;
-            syncPartPhysics(parts.back());
+            lastPart->scale.x += shiftFactor;
+            syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-            parts.back().scale.y += shiftFactor;
-            syncPartPhysics(parts.back());
+            lastPart->scale.y += shiftFactor;
+            syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-            parts.back().scale.z += shiftFactor;
-            syncPartPhysics(parts.back());
+            lastPart->scale.z += shiftFactor;
+            syncPartPhysics(lastPart);
         }
     }
     

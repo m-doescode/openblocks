@@ -28,6 +28,9 @@ public:
     void SetParent(std::optional<std::shared_ptr<Instance>> newParent);
     std::optional<std::shared_ptr<Instance>> GetParent();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
+
+    // Utility functions
+    inline void AddChild(std::shared_ptr<Instance> object) { children.push_back(object); }
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;
