@@ -25,6 +25,8 @@ set(PROJECT_SOURCES
         mainwindow.ui
         mainglwidget.h
         mainglwidget.cpp
+        explorermodel.h
+        explorermodel.cpp
         ${TS_FILES}
 )
 

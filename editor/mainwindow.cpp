@@ -8,10 +8,12 @@
 #include <QTimerEvent>
 #include <QMouseEvent>
 #include <QWidget>
+#include <memory>
 
 #include "common.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
+#include "explorermodel.h"
 
 #include "wayland-pointer-constraints-unstable-v1-client-protocol.h"
 
@@ -22,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
+
+    ui->explorerView->setModel(new ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace)));
 
     simulationInit();
 
