@@ -12,7 +12,10 @@ struct InstanceType {
 };
 
 // Base class for all instances in the data model
-class Instance : std::enable_shared_from_this<Instance> {
+                 // Note: enable_shared_from_this HAS to be public or else its field will not be populated
+                 // Maybe this could be replaced with a friendship? But that seems unnecessary.
+                 // https://stackoverflow.com/q/56415222/16255372
+class Instance : public std::enable_shared_from_this<Instance> {
 private:
     std::optional<std::weak_ptr<Instance>> parent;
     std::vector<std::shared_ptr<Instance>> children;
@@ -30,7 +33,7 @@ public:
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
 
     // Utility functions
-    inline void AddChild(std::shared_ptr<Instance> object) { children.push_back(object); }
+    inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;
