@@ -5,6 +5,7 @@ static InstanceType TYPE_ {
     .super = Instance::TYPE,
     .className = "Part",
     .constructor = &Part::CreateGeneric,
+    .explorerIcon = "part",
 };
 
 InstanceType* Part::TYPE = &TYPE_;

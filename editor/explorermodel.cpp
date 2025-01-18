@@ -1,13 +1,19 @@
 #include "explorermodel.h"
 #include "objects/base/instance.h"
 #include "qcontainerfwd.h"
+#include "qicon.h"
+#include "qimage.h"
+#include "qnamespace.h"
 #include "qobject.h"
 #include "qwidget.h"
 #include "common.h"
 #include <algorithm>
 #include <optional>
+#include "objects/base/instance.h"
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
+
+std::map<std::string, QImage> instanceIconCache;
 
 ExplorerModel::ExplorerModel(InstanceRef dataRoot, QWidget *parent)
     : QAbstractItemModel(parent)
@@ -96,11 +102,18 @@ int ExplorerModel::columnCount(const QModelIndex &parent) const {
 }
 
 QVariant ExplorerModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
 
-    const Instance *item = static_cast<const Instance*>(index.internalPointer());
-    return QString::fromStdString(item->name);
+    Instance *item = static_cast<Instance*>(index.internalPointer());
+
+    switch (role) {
+        case Qt::DisplayRole:
+            return QString::fromStdString(item->name);
+        case Qt::DecorationRole:
+            return iconOf(item->GetClass());
+    }
+    return {};
 }
 
 QVariant ExplorerModel::headerData(int section, Qt::Orientation orientation,
@@ -113,4 +126,15 @@ Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
 {
     return index.isValid()
         ? QAbstractItemModel::flags(index) : Qt::ItemFlags(Qt::NoItemFlags);
+}
+
+QImage ExplorerModel::iconOf(InstanceType* type) const {
+    if (instanceIconCache.count(type->className)) return instanceIconCache[type->className];
+
+    InstanceType* currentClass = type;
+    while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
+
+    QImage icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
+    instanceIconCache[type->className] = icon;
+    return icon;
 }

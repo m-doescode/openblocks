@@ -30,6 +30,7 @@ public:
 private:
     InstanceRef rootItem;
     QModelIndex toIndex(InstanceRef item);
+    QImage iconOf(InstanceType* type) const;
 };
 
 #endif // EXPLORERMODEL_H

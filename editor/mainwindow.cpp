@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     setMouseTracking(true);
 
     ui->explorerView->setModel(new ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace)));
+    ui->explorerView->setRootIsDecorated(false);
 
     simulationInit();
 

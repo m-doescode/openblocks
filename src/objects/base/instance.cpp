@@ -9,6 +9,7 @@ static InstanceType TYPE_ {
     .super = NULL,
     .className = "Instance",
     .constructor = NULL, // Instance is abstract and therefore not creatable
+    .explorerIcon = "instance",
 };
 
 InstanceType* Instance::TYPE = &TYPE_;

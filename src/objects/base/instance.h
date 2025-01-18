@@ -9,6 +9,7 @@ struct InstanceType {
     InstanceType* super; // May be null
     std::string className;
     InstanceConstructor constructor;
+    std::string explorerIcon = "";
 };
 
 // Base class for all instances in the data model
