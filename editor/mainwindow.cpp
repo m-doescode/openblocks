@@ -8,6 +8,8 @@
 #include <QTimerEvent>
 #include <QMouseEvent>
 #include <QWidget>
+#include <QTreeView>
+#include <QAbstractItemView>
 #include <memory>
 
 #include "common.h"

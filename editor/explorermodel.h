@@ -29,6 +29,7 @@ public:
 
 private:
     InstanceRef rootItem;
+    QModelIndex toIndex(InstanceRef item);
 };
 
 #endif // EXPLORERMODEL_H

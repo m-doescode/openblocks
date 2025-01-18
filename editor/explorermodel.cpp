@@ -3,12 +3,35 @@
 #include "qcontainerfwd.h"
 #include "qobject.h"
 #include "qwidget.h"
+#include "common.h"
+#include <algorithm>
+#include <optional>
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
 
 ExplorerModel::ExplorerModel(InstanceRef dataRoot, QWidget *parent)
     : QAbstractItemModel(parent)
     , rootItem(dataRoot) {
+    // TODO: Don't use lambdas and handlers like that
+    hierarchyPreUpdateHandler = [&](InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent) {
+        if (oldParent.has_value()) {
+            auto children = oldParent.value()->GetChildren();
+            size_t idx = std::find(children.begin(), children.end(), object) - children.end();
+            beginRemoveRows(toIndex(oldParent.value()), idx, idx);
+        }
+
+        if (newParent.has_value()) {
+            size_t size = newParent.value()->GetChildren().size();
+            beginInsertRows(toIndex(newParent.value()), size, size);
+        } else {
+            // TODO:
+        }
+    };
+
+    hierarchyPostUpdateHandler = [&](InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent) {
+        if (newParent.has_value()) endInsertRows();
+        if (oldParent.has_value()) endRemoveRows();
+    };
 }
 
 ExplorerModel::~ExplorerModel() = default;
@@ -24,6 +47,18 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
     if (parentItem->GetChildren().size() >= row)
         return createIndex(row, column, parentItem->GetChildren()[row].get());
     return {};
+}
+
+QModelIndex ExplorerModel::toIndex(InstanceRef item) {
+    if (item == rootItem)
+        return {};
+
+    InstanceRef parentItem = item->GetParent().value();
+    // Check above ensures this item is not root, so value() must be valid
+    for (int i = 0; i < parentItem->GetChildren().size(); i++)
+        if (parentItem->GetChildren()[i] == item)
+            return createIndex(i, 0, item.get());
+    return QModelIndex{};
 }
 
 QModelIndex ExplorerModel::parent(const QModelIndex &index) const {
