@@ -61,6 +61,21 @@
     </layout>
    </widget>
   </widget>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset>
+     <normaloff>assets/icons/editor/delete.png</normaloff>assets/icons/editor/delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Deletes a selected object&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

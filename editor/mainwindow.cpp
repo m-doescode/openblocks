@@ -22,6 +22,7 @@
 #include "qevent.h"
 #include "qnamespace.h"
 #include "qobject.h"
+#include "qtreeview.h"
 
 class ExplorerEventFilter : public QObject {
 
@@ -68,6 +69,21 @@ MainWindow::MainWindow(QWidget *parent)
     ui->explorerView->setAcceptDrops(true);
     ui->explorerView->setDropIndicatorShown(true);
     ui->explorerView->installEventFilter(new ExplorerEventFilter(ui->explorerView, &explorerModel));
+    ui->explorerView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    explorerMenu.addAction(ui->actionDelete);
+
+    connect(ui->explorerView, &QTreeView::customContextMenuRequested, this, [&](const QPoint& point) {
+        QModelIndex index = ui->explorerView->indexAt(point);
+        explorerMenu.exec(ui->explorerView->viewport()->mapToGlobal(point));
+    });
+
+    connect(ui->actionDelete, &QAction::triggered, this, [&]() {
+        QModelIndexList selectedIndexes = ui->explorerView->selectionModel()->selectedIndexes();
+        for (QModelIndex index : selectedIndexes) {
+            explorerModel.fromIndex(index)->SetParent(std::nullopt);
+        }
+    });
 
     simulationInit();
 

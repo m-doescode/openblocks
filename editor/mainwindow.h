@@ -4,6 +4,7 @@
 #include "explorermodel.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
+#include "qmenu.h"
 #include <QMainWindow>
 #include <QLineEdit>
 
@@ -23,6 +24,7 @@ public:
     
 private:
     ExplorerModel explorerModel;
+    QMenu explorerMenu;
     Ui::MainWindow *ui;
     QBasicTimer timer;
 
