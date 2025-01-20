@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "explorermodel.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
 #include <QMainWindow>
@@ -21,6 +22,7 @@ public:
     ~MainWindow();
     
 private:
+    ExplorerModel explorerModel;
     Ui::MainWindow *ui;
     QBasicTimer timer;
 

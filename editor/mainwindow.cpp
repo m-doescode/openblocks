@@ -11,24 +11,63 @@
 #include <QTreeView>
 #include <QAbstractItemView>
 #include <memory>
+#include <optional>
 
 #include "common.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
 #include "explorermodel.h"
 
-#include "wayland-pointer-constraints-unstable-v1-client-protocol.h"
+#include "qabstractitemview.h"
+#include "qevent.h"
+#include "qnamespace.h"
+#include "qobject.h"
+
+class ExplorerEventFilter : public QObject {
+
+private:
+    QTreeView* explorerView;
+    ExplorerModel* model;
+
+    bool keyPress(QObject* object, QKeyEvent *event) {
+        switch (event->key()) {
+        case Qt::Key_Delete:
+            QModelIndexList selectedIndexes = explorerView->selectionModel()->selectedIndexes();
+            for (QModelIndex index : selectedIndexes) {
+                model->fromIndex(index)->SetParent(std::nullopt);
+            }
+            break;
+        }
+
+        return QObject::eventFilter(object, event);
+    }
+
+    bool eventFilter(QObject *object, QEvent *event) {
+        if (event->type() == QEvent::KeyPress)
+            return keyPress(object, dynamic_cast<QKeyEvent*>(event));
+        return QObject::eventFilter(object, event);
+    }
+public:
+    ExplorerEventFilter(QTreeView* explorerView, ExplorerModel* model): explorerView(explorerView), model(model) {}
+};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , explorerModel(ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace)))
 {
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
 
-    ui->explorerView->setModel(new ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace)));
+    ui->explorerView->setModel(&explorerModel);
     ui->explorerView->setRootIsDecorated(false);
+    ui->explorerView->setDragDropMode(QAbstractItemView::InternalMove);
+    ui->explorerView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->explorerView->setDragEnabled(true);
+    ui->explorerView->setAcceptDrops(true);
+    ui->explorerView->setDropIndicatorShown(true);
+    ui->explorerView->installEventFilter(new ExplorerEventFilter(ui->explorerView, &explorerModel));
 
     simulationInit();
 
@@ -44,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
         },
         .anchored = true,
     }));
+    ui->mainWidget->lastPart->name = "Baseplate";
     syncPartPhysics(ui->mainWidget->lastPart);
 
     workspace->AddChild(ui->mainWidget->lastPart = Part::New({

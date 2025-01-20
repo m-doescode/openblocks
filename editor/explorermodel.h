@@ -5,6 +5,7 @@
 #include "objects/part.h"
 #include "qabstractitemmodel.h"
 #include "qevent.h"
+#include "qnamespace.h"
 #include <QOpenGLWidget>
 #include <QWidget>
 #include <memory>
@@ -18,6 +19,7 @@ public:
     ~ExplorerModel() override;
 
     QVariant data(const QModelIndex &index, int role) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
@@ -26,7 +28,12 @@ public:
     QModelIndex parent(const QModelIndex &index) const override;
     int rowCount(const QModelIndex &parent = {}) const override;
     int columnCount(const QModelIndex &parent = {}) const override;
-
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+    bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex()) override;
+    bool insertRows(int row, int count, const QModelIndex & parent = QModelIndex()) override;
+    Qt::DropActions supportedDragActions() const override;
+    Qt::DropActions supportedDropActions() const override;
+    InstanceRef fromIndex(const QModelIndex index);
 private:
     InstanceRef rootItem;
     QModelIndex toIndex(InstanceRef item);

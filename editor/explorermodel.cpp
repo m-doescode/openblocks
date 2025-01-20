@@ -1,5 +1,6 @@
 #include "explorermodel.h"
 #include "objects/base/instance.h"
+#include "qabstractitemmodel.h"
 #include "qcontainerfwd.h"
 #include "qicon.h"
 #include "qimage.h"
@@ -8,6 +9,8 @@
 #include "qwidget.h"
 #include "common.h"
 #include <algorithm>
+#include <cstdio>
+#include <memory>
 #include <optional>
 #include "objects/base/instance.h"
 
@@ -116,6 +119,14 @@ QVariant ExplorerModel::data(const QModelIndex &index, int role) const {
     return {};
 }
 
+bool ExplorerModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+    if (!index.isValid() || role != Qt::EditRole) return false;
+
+    Instance* inst = static_cast<Instance*>(index.internalPointer());
+    inst->name = value.toString().toStdString();
+    return true;
+}
+
 QVariant ExplorerModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
@@ -124,8 +135,11 @@ QVariant ExplorerModel::headerData(int section, Qt::Orientation orientation,
 
 Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
 {
+    //return index.isValid()
+    //    ? QAbstractItemModel::flags(index) : Qt::ItemFlags(Qt::NoItemFlags);
     return index.isValid()
-        ? QAbstractItemModel::flags(index) : Qt::ItemFlags(Qt::NoItemFlags);
+        ? QAbstractItemModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled
+        : Qt::NoItemFlags | Qt::ItemIsDropEnabled;
 }
 
 QImage ExplorerModel::iconOf(InstanceType* type) const {
@@ -137,4 +151,55 @@ QImage ExplorerModel::iconOf(InstanceType* type) const {
     QImage icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
     instanceIconCache[type->className] = icon;
     return icon;
+}
+
+bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, int count, const QModelIndex &destinationParentIdx, int destinationChild) {
+    Instance* sourceParent = sourceParentIdx.isValid() ? static_cast<Instance*>(sourceParentIdx.internalPointer()) : workspace.get();
+    Instance* destinationParent = destinationParentIdx.isValid() ? static_cast<Instance*>(destinationParentIdx.internalPointer()) : workspace.get();
+
+    printf("Moved %d from %s\n", count, sourceParent->name.c_str());
+
+    if ((sourceRow + count) >= sourceParent->GetChildren().size()) {
+        fprintf(stderr, "Attempt to move rows %d-%d from %s (%s) while it only has %d children.\n", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
+        return false;
+    }
+
+    for (int i = sourceRow; i < (sourceRow + count); i++) {
+        sourceParent->GetChildren()[i]->SetParent(destinationParent->shared_from_this());
+    }
+
+    return true;
+}
+
+bool ExplorerModel::removeRows(int row, int count, const QModelIndex& parentIdx) {
+    Instance* parent = parentIdx.isValid() ? static_cast<Instance*>(parentIdx.internalPointer()) : workspace.get();
+    
+    for (int i = row; i < (row + count); i++) {
+        //parent->GetChildren()[i]->SetParent(nullptr);
+    }
+
+    return true;
+}
+
+bool ExplorerModel::insertRows(int row, int count, const QModelIndex & parentIdx) {
+    //Instance* parent = parentIdx.isValid() ? static_cast<Instance*>(parentIdx.internalPointer()) : workspace.get();
+    //beginInsertRows(parentIdx, parent->GetChildren().size(), parent->GetChildren().size() + count);
+    //for ()
+    //endInsertRows();
+    //return true;
+    return false;
+}
+
+Qt::DropActions ExplorerModel::supportedDragActions() const {
+    return Qt::DropAction::MoveAction;
+}
+
+Qt::DropActions ExplorerModel::supportedDropActions() const {
+    return Qt::DropAction::MoveAction;
+}
+
+
+InstanceRef ExplorerModel::fromIndex(const QModelIndex index) {
+    if (!index.isValid()) return workspace;
+    return static_cast<Instance*>(index.internalPointer())->shared_from_this();
 }
