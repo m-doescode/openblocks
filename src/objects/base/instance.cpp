@@ -42,10 +42,17 @@ void Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
     // TODO: Add code for sending signals for parent updates
     // TODO: Yeahhh maybe this isn't the best way of doing this?
     if (hierarchyPostUpdateHandler.has_value()) hierarchyPostUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
+
+    this->OnParentUpdated(lastParent, newParent);
 }
 
 std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
     if (!parent.has_value()) return std::nullopt;
     if (parent.value().expired()) return std::nullopt;
     return parent.value().lock();
+}
+
+
+void Instance::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
+    // Empty stub
 }

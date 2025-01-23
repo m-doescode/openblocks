@@ -5,6 +5,7 @@
 #include <reactphysics3d/collision/shapes/BoxShape.h>
 #include <reactphysics3d/collision/shapes/CollisionShape.h>
 #include <reactphysics3d/components/RigidBodyComponents.h>
+#include <reactphysics3d/engine/EventListener.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
@@ -19,8 +20,15 @@
 
 namespace rp = reactphysics3d;
 
+class PhysicsListener : public rp::EventListener {
+    void onContact(const CollisionCallback::CallbackData& /*callbackData*/) override {
+        // printf("Collision occurred!\n");
+    }
+};
+
 rp::PhysicsCommon physicsCommon;
 rp::PhysicsWorld* world;
+PhysicsListener eventListener;
 
 void simulationInit() {
     world = physicsCommon.createPhysicsWorld();
@@ -47,6 +55,8 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
     if (part->rigidBody->getNbColliders() == 0)
     part->rigidBody->addCollider(shape, rp::Transform());
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
+
+    world->setEventListener(&eventListener);
 }
 
 void physicsStep(float deltaTime) {

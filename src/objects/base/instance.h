@@ -2,6 +2,7 @@
 
 #include "metadata.h"
 #include <memory>
+#include <optional>
 #include <string>
 
 // Struct describing information about an instance
@@ -23,6 +24,8 @@ private:
 protected:
     Instance(InstanceType*);
     virtual ~Instance();
+
+    virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
 public:
     static InstanceType* TYPE;
     std::string name;

@@ -20,6 +20,8 @@ struct PartConstructParams {
 };
 
 class Part : public Instance {
+protected:
+    void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) override;
 public:
     static InstanceType* TYPE;
 
@@ -34,6 +36,7 @@ public:
     
     Part();
     Part(PartConstructParams params);
+    ~Part() override;
 
     static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
     static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
