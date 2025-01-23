@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "explorermodel.h"
+#include "panes/explorerview.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
 #include "qmenu.h"
@@ -22,10 +22,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     
-private:
-    ExplorerModel explorerModel;
-    QMenu explorerMenu;
     Ui::MainWindow *ui;
+private:
     QBasicTimer timer;
 
     void timerEvent(QTimerEvent*) override;

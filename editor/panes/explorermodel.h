@@ -1,14 +1,18 @@
-#ifndef EXPLORERMODEL_H
-#define EXPLORERMODEL_H
+#pragma once
 
 #include "objects/base/instance.h"
 #include "objects/part.h"
 #include "qabstractitemmodel.h"
 #include "qevent.h"
+#include "qmenu.h"
 #include "qnamespace.h"
+#include "qtreeview.h"
 #include <QOpenGLWidget>
 #include <QWidget>
 #include <memory>
+
+// #ifndef EXPLORERMODEL_H
+// #define EXPLORERMODEL_H
 
 class ExplorerModel : public QAbstractItemModel {
     Q_OBJECT
@@ -40,4 +44,4 @@ private:
     QImage iconOf(InstanceType* type) const;
 };
 
-#endif // EXPLORERMODEL_H
+// #endif

@@ -2,7 +2,6 @@
 #include "objects/base/instance.h"
 #include "qabstractitemmodel.h"
 #include "qcontainerfwd.h"
-#include "qicon.h"
 #include "qimage.h"
 #include "qnamespace.h"
 #include "qobject.h"
@@ -10,7 +9,6 @@
 #include "common.h"
 #include <algorithm>
 #include <cstdio>
-#include <memory>
 #include <optional>
 #include "objects/base/instance.h"
 
@@ -160,7 +158,7 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
     printf("Moved %d from %s\n", count, sourceParent->name.c_str());
 
     if ((sourceRow + count) >= sourceParent->GetChildren().size()) {
-        fprintf(stderr, "Attempt to move rows %d-%d from %s (%s) while it only has %d children.\n", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
+        fprintf(stderr, "Attempt to move rows %d-%d from %s (%s) while it only has %zu children.\n", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
         return false;
     }
 

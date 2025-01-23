@@ -10,80 +10,21 @@
 #include <QWidget>
 #include <QTreeView>
 #include <QAbstractItemView>
-#include <memory>
-#include <optional>
 
 #include "common.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
-#include "explorermodel.h"
-
-#include "qabstractitemview.h"
-#include "qevent.h"
-#include "qnamespace.h"
 #include "qobject.h"
-#include "qtreeview.h"
-
-class ExplorerEventFilter : public QObject {
-
-private:
-    QTreeView* explorerView;
-    ExplorerModel* model;
-
-    bool keyPress(QObject* object, QKeyEvent *event) {
-        switch (event->key()) {
-        case Qt::Key_Delete:
-            QModelIndexList selectedIndexes = explorerView->selectionModel()->selectedIndexes();
-            for (QModelIndex index : selectedIndexes) {
-                model->fromIndex(index)->SetParent(std::nullopt);
-            }
-            break;
-        }
-
-        return QObject::eventFilter(object, event);
-    }
-
-    bool eventFilter(QObject *object, QEvent *event) {
-        if (event->type() == QEvent::KeyPress)
-            return keyPress(object, dynamic_cast<QKeyEvent*>(event));
-        return QObject::eventFilter(object, event);
-    }
-public:
-    ExplorerEventFilter(QTreeView* explorerView, ExplorerModel* model): explorerView(explorerView), model(model) {}
-};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , explorerModel(ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace)))
 {
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
 
-    ui->explorerView->setModel(&explorerModel);
-    ui->explorerView->setRootIsDecorated(false);
-    ui->explorerView->setDragDropMode(QAbstractItemView::InternalMove);
-    ui->explorerView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    ui->explorerView->setDragEnabled(true);
-    ui->explorerView->setAcceptDrops(true);
-    ui->explorerView->setDropIndicatorShown(true);
-    ui->explorerView->installEventFilter(new ExplorerEventFilter(ui->explorerView, &explorerModel));
-    ui->explorerView->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    explorerMenu.addAction(ui->actionDelete);
-
-    connect(ui->explorerView, &QTreeView::customContextMenuRequested, this, [&](const QPoint& point) {
-        QModelIndex index = ui->explorerView->indexAt(point);
-        explorerMenu.exec(ui->explorerView->viewport()->mapToGlobal(point));
-    });
-
-    connect(ui->actionDelete, &QAction::triggered, this, [&]() {
-        QModelIndexList selectedIndexes = ui->explorerView->selectionModel()->selectedIndexes();
-        for (QModelIndex index : selectedIndexes) {
-            explorerModel.fromIndex(index)->SetParent(std::nullopt);
-        }
-    });
+    // ui->explorerView->Init(ui);
 
     simulationInit();
 
