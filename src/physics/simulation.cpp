@@ -6,6 +6,7 @@
 #include <reactphysics3d/collision/shapes/CollisionShape.h>
 #include <reactphysics3d/components/RigidBodyComponents.h>
 #include <reactphysics3d/engine/EventListener.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
@@ -26,12 +27,13 @@ class PhysicsListener : public rp::EventListener {
     }
 };
 
-rp::PhysicsCommon physicsCommon;
+rp::PhysicsCommon* physicsCommon;
 rp::PhysicsWorld* world;
 PhysicsListener eventListener;
 
 void simulationInit() {
-    world = physicsCommon.createPhysicsWorld();
+    physicsCommon = new rp::PhysicsCommon; // I allocate this on the heap to ensure it exists while Parts are getting destructed. This is probably not great
+    world = physicsCommon->createPhysicsWorld();
 
     world->setGravity(rp::Vector3(0, -196.2, 0));
 }
@@ -46,7 +48,7 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
         part->rigidBody->setTransform(transform);
     }
 
-    rp::BoxShape* shape = physicsCommon.createBoxShape(glmToRp(part->scale * glm::vec3(0.5f)));
+    rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->scale * glm::vec3(0.5f)));
 
     if (part->rigidBody->getNbColliders() > 0) {
         part->rigidBody->removeCollider(part->rigidBody->getCollider(0));

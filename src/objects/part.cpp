@@ -24,6 +24,7 @@ Part::Part(PartConstructParams params): Instance(&TYPE_), position(params.positi
 // This feels wrong. Get access to PhysicsWorld somehow else? Part will need access to this often though, most likely...
 extern rp::PhysicsWorld* world;
 Part::~Part() {
+    // This relies on physicsCommon still existing. Be very careful.
     if (this->rigidBody)
         world->destroyRigidBody(rigidBody);
 }
