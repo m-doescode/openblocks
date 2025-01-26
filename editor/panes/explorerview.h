@@ -17,7 +17,9 @@ class ExplorerView : public QTreeView {
 public:
     ExplorerView(QWidget* parent = nullptr);
     ~ExplorerView() override;
-    void keyPressEvent(QKeyEvent* evt) override;
+
+    void keyPressEvent(QKeyEvent*) override;
+    // void dropEvent(QDropEvent*) override;
 private:
     ExplorerModel model;
     QMenu contextMenu;

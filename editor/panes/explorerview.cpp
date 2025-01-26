@@ -1,6 +1,7 @@
 #include "explorerview.h"
 #include "explorermodel.h"
 #include "common.h"
+#include "qabstractitemmodel.h"
 #include "qaction.h"
 #include "qnamespace.h"
 
@@ -9,7 +10,11 @@ ExplorerView::ExplorerView(QWidget* parent):
     model(ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace))) {
 
     this->setModel(&model);
-    this->setRootIsDecorated(false);
+    // Disabling the root decoration will cause the expand/collapse chevrons to be hidden too, we don't want that
+    // https://stackoverflow.com/a/4687016/16255372
+    // this->setRootIsDecorated(false);
+    // The branches can be customized like this if you want:
+    // this->setStyleSheet(QString("QTreeView::branch { border: none; }"));
     this->setDragDropMode(QAbstractItemView::InternalMove);
     this->setSelectionMode(QAbstractItemView::ExtendedSelection);
     this->setDragEnabled(true);

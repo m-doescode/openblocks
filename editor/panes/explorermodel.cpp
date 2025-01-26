@@ -5,11 +5,14 @@
 #include "qimage.h"
 #include "qnamespace.h"
 #include "qobject.h"
+#include "qstringview.h"
 #include "qwidget.h"
+#include "qmimedata.h"
 #include "common.h"
 #include <algorithm>
 #include <cstdio>
 #include <optional>
+#include <vector>
 #include "objects/base/instance.h"
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
@@ -23,7 +26,7 @@ ExplorerModel::ExplorerModel(InstanceRef dataRoot, QWidget *parent)
     hierarchyPreUpdateHandler = [&](InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent) {
         if (oldParent.has_value()) {
             auto children = oldParent.value()->GetChildren();
-            size_t idx = std::find(children.begin(), children.end(), object) - children.end();
+            size_t idx = std::find(children.begin(), children.end(), object) - children.begin();
             beginRemoveRows(toIndex(oldParent.value()), idx, idx);
         }
 
@@ -197,7 +200,50 @@ Qt::DropActions ExplorerModel::supportedDropActions() const {
 }
 
 
-InstanceRef ExplorerModel::fromIndex(const QModelIndex index) {
+InstanceRef ExplorerModel::fromIndex(const QModelIndex index) const {
     if (!index.isValid()) return workspace;
     return static_cast<Instance*>(index.internalPointer())->shared_from_this();
+}
+
+struct DragDropSlot {
+    std::vector<InstanceRef> instances;
+};
+
+bool ExplorerModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) {
+//    if (action != Qt::InternalMove) return;
+    QByteArray byteData = data->data("application/x-openblocks-instance-pointers");
+    uintptr_t slotPtr = byteData.toULongLong();
+    DragDropSlot* slot = (DragDropSlot*)slotPtr;
+    
+    if (!parent.isValid()) {
+        delete slot;
+        return true;
+    }
+
+    InstanceRef parentInst = fromIndex(parent);
+    for (InstanceRef instance : slot->instances) {
+        instance->SetParent(parentInst);
+    }
+
+    delete slot;
+    return true;
+}
+
+QMimeData* ExplorerModel::mimeData(const QModelIndexList& indexes) const {
+    // application/x-openblocks-instance-pointers
+    DragDropSlot* slot = new DragDropSlot();
+
+    for (const QModelIndex& index : indexes) {
+        slot->instances.push_back(fromIndex(index));
+    }
+
+    // uintptr_t ptr = (uintptr_t)&slot;
+
+    QMimeData* mimeData = new QMimeData();
+    mimeData->setData("application/x-openblocks-instance-pointers", QByteArray::number((qulonglong)slot));
+    return mimeData;
+}
+
+QStringList ExplorerModel::mimeTypes() const {
+    return QStringList("application/x-openblocks-instance-pointers");
 }
