@@ -1,9 +1,21 @@
 #pragma once
 
-#include "metadata.h"
+#include <vector>
 #include <memory>
 #include <optional>
 #include <string>
+#include <memory>
+#include <optional>
+#include <string>
+#include <variant>
+#include <map>
+#include <vector>
+#include <../include/expected.hpp>
+
+#include "objects/base/member.h"
+
+class Instance;
+typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 
 // Struct describing information about an instance
 struct InstanceType {
@@ -21,7 +33,11 @@ class Instance : public std::enable_shared_from_this<Instance> {
 private:
     std::optional<std::weak_ptr<Instance>> parent;
     std::vector<std::shared_ptr<Instance>> children;
+
+    std::optional<std::vector<std::string>> cachedMemberList;
 protected:
+    MemberMap memberMap;
+
     Instance(InstanceType*);
     virtual ~Instance();
 
@@ -38,6 +54,14 @@ public:
 
     // Utility functions
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
+
+    // Properties
+    // Do I like using expected?
+    tl::expected<std::string, MemberNotFound> GetPropertyValue(std::string name);
+    tl::expected<void, MemberNotFound> SetPropertyValue(std::string name, std::string value);
+    tl::expected<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
+    // Returning a list of property names feels kinda janky. Is this really the way to go?
+    std::vector<std::string> GetProperties();
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;

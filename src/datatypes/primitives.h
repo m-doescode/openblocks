@@ -9,14 +9,17 @@ public:\
     operator WRAPPED_TYPE(); \
 };
 
-class VoidData {
-public:
-    VoidData();
+namespace Data {
+    class Void {
+    public:
+        Void();
+    };
+
+    DEF_WRAPPER_CLASS(Bool, bool)
+    DEF_WRAPPER_CLASS(Int, int)
+    DEF_WRAPPER_CLASS(Float, float)
+    DEF_WRAPPER_CLASS(String, std::string)
 };
 
-DEF_WRAPPER_CLASS(BoolData, bool)
-DEF_WRAPPER_CLASS(IntData, int)
-DEF_WRAPPER_CLASS(FloatData, float)
-DEF_WRAPPER_CLASS(StringData, std::string)
 
 #undef DEF_WRAPPER_CLASS
