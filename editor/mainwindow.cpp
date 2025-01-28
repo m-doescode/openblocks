@@ -10,10 +10,12 @@
 #include <QWidget>
 #include <QTreeView>
 #include <QAbstractItemView>
+#include <optional>
 
 #include "common.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
+#include "qitemselectionmodel.h"
 #include "qobject.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,6 +25,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
+
+    connect(ui->explorerView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+        if (selected.count() == 0) return;
+
+        std::optional<InstanceRef> inst = selected.count() == 0 ? std::nullopt
+            : std::make_optional(((Instance*)selected.indexes()[0].internalPointer())->shared_from_this());
+
+        ui->propertiesView->setSelected(inst);
+    });
 
     // ui->explorerView->Init(ui);
 

@@ -30,6 +30,8 @@ find_package(ReactPhysics3D REQUIRED)
 
 file(MAKE_DIRECTORY bin)
 
+include_directories("include")
+
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 add_library(openblocks ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")

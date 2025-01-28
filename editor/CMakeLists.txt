@@ -29,6 +29,10 @@ set(PROJECT_SOURCES
         panes/explorerview.cpp
         panes/explorermodel.h
         panes/explorermodel.cpp
+        panes/propertiesview.h
+        panes/propertiesview.cpp
+        panes/propertiesmodel.h
+        panes/propertiesmodel.cpp
         ${TS_FILES}
 )
 

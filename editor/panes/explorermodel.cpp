@@ -112,6 +112,7 @@ QVariant ExplorerModel::data(const QModelIndex &index, int role) const {
     Instance *item = static_cast<Instance*>(index.internalPointer());
 
     switch (role) {
+        case Qt::EditRole:
         case Qt::DisplayRole:
             return QString::fromStdString(item->name);
         case Qt::DecorationRole:

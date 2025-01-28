@@ -12,7 +12,7 @@
 #include <vector>
 #include <../include/expected.hpp>
 
-#include "objects/base/member.h"
+#include "member.h"
 
 class Instance;
 typedef std::shared_ptr<Instance>(*InstanceConstructor)();
