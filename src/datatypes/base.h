@@ -18,6 +18,7 @@ public: \
 namespace Data {
     struct TypeInfo {
         std::string name;
+        TypeInfo(const TypeInfo&) = delete;
     };
 
     class String;

@@ -23,11 +23,11 @@ Part::Part(): Part(PartConstructParams {}) {
 
 Part::Part(PartConstructParams params): Instance(&TYPE_), position(params.position), rotation(params.rotation),
                                         scale(params.scale), material(params.material), anchored(params.anchored) {
-
+                                            
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
-            { "Anchored", { .backingField = &anchored, .codec = fieldCodecOf<Data::Bool, bool>() } }
+            { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>() } }
         }
     });
 }

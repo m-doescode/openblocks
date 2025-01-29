@@ -30,7 +30,7 @@ Instance::Instance(InstanceType* type) {
     this->memberMap = std::make_unique<MemberMap>( MemberMap {
         .super = std::nullopt,
         .members = {
-            { "Name", { .backingField = &name, .codec = fieldCodecOf<Data::String, std::string>() } }
+            { "Name", { .backingField = &name, .type = &Data::String::TYPE, .codec = fieldCodecOf<Data::String, std::string>() } }
         }
     });
 }

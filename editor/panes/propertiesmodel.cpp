@@ -1,4 +1,5 @@
 #include "propertiesmodel.h"
+#include "datatypes/base.h"
 #include "qnamespace.h"
 
 PropertiesModel::PropertiesModel(InstanceRef selectedItem, QWidget *parent)
@@ -21,8 +22,9 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole:
             if (index.column() == 0)
                 return QString::fromStdString(propertyName);
-            else if (index.column() == 1)
+            else if (index.column() == 1) {
                 return QString::fromStdString(selectedItem->GetPropertyValue(propertyName).value().ToString());
+            }
         // case Qt::DecorationRole:
         //     return iconOf(item->GetClass());
     }
@@ -33,8 +35,12 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const {
 bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (index.column() != 1 && role != Qt::EditRole) return false;
 
-    selectedItem->SetPropertyValue(propertiesList[index.row()], value.toString().toStdString());
-    return true;
+    if (selectedItem->GetPropertyMeta(propertiesList[index.row()])->type == &Data::String::TYPE) {
+        selectedItem->SetPropertyValue(propertiesList[index.row()], value.toString().toStdString());
+        return true;
+    }
+
+    return false;
 }
 
 Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const {

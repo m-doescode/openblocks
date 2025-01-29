@@ -34,7 +34,7 @@ constexpr FieldCodec fieldCodecOf() {
 
 struct PropertyMeta {
     void* backingField;
-    Data::TypeInfo type;
+    const Data::TypeInfo* type;
     FieldCodec codec;
 };
 
