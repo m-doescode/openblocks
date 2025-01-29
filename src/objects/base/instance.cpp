@@ -1,5 +1,8 @@
 #include "instance.h"
 #include "../../common.h"
+#include "../../datatypes/meta.h"
+#include "datatypes/base.h"
+#include "objects/base/member.h"
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
@@ -24,12 +27,12 @@ InstanceType* Instance::TYPE = &TYPE_;
 Instance::Instance(InstanceType* type) {
     this->name = type->className;
 
-    this->memberMap = {
+    this->memberMap = std::make_unique<MemberMap>( MemberMap {
         .super = std::nullopt,
         .members = {
-            { "Name", { .backingField = &name } }
+            { "Name", { .backingField = &name, .codec = fieldCodecOf<Data::String, std::string>() } }
         }
-    };
+    });
 }
 
 Instance::~Instance () {
@@ -68,24 +71,24 @@ void Instance::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParen
 
 // Properties
 
-tl::expected<std::string, MemberNotFound> Instance::GetPropertyValue(std::string name) {
+tl::expected<Data::Variant, MemberNotFound> Instance::GetPropertyValue(std::string name) {
 auto meta = GetPropertyMeta(name);
     if (!meta) return tl::make_unexpected(MemberNotFound());
 
-    return *(std::string*)meta->backingField;
+    return meta->codec.read(meta->backingField);
 }
 
-tl::expected<void, MemberNotFound> Instance::SetPropertyValue(std::string name, std::string value) {
+tl::expected<void, MemberNotFound> Instance::SetPropertyValue(std::string name, Data::Variant value) {
     auto meta = GetPropertyMeta(name);
     if (!meta) return tl::make_unexpected(MemberNotFound());
 
-    *(std::string*)meta->backingField = value;
+    meta->codec.write(value, meta->backingField);
 
     return {};
 }
 
 tl::expected<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name) {
-    MemberMap* current = &memberMap;
+    MemberMap* current = &*memberMap;
     while (true) {
         // We look for the property in current member map
         auto it = current->members.find(name);
@@ -108,14 +111,17 @@ std::vector<std::string> Instance::GetProperties() {
 
     std::vector<std::string> memberList;
 
-    MemberMap* current = &memberMap;
+    MemberMap* current = &*memberMap;
     do {
         for (auto const& [key, _] : current->members) {
             // Don't add it if it's already in the list
             if (std::find(memberList.begin(), memberList.end(), key) == memberList.end())
                 memberList.push_back(key);
         }
-    } while (current->super.has_value());
+        if (!current->super.has_value())
+            break;
+        current = &*current->super.value();
+    } while (true);
 
     cachedMemberList = memberList;
     return memberList;

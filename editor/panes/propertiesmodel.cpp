@@ -22,7 +22,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const {
             if (index.column() == 0)
                 return QString::fromStdString(propertyName);
             else if (index.column() == 1)
-                return QString::fromStdString(selectedItem->GetPropertyValue(propertyName).value());
+                return QString::fromStdString(selectedItem->GetPropertyValue(propertyName).value().ToString());
         // case Qt::DecorationRole:
         //     return iconOf(item->GetClass());
     }

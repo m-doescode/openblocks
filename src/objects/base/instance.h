@@ -36,7 +36,7 @@ private:
 
     std::optional<std::vector<std::string>> cachedMemberList;
 protected:
-    MemberMap memberMap;
+    std::unique_ptr<MemberMap> memberMap;
 
     Instance(InstanceType*);
     virtual ~Instance();
@@ -57,8 +57,8 @@ public:
 
     // Properties
     // Do I like using expected?
-    tl::expected<std::string, MemberNotFound> GetPropertyValue(std::string name);
-    tl::expected<void, MemberNotFound> SetPropertyValue(std::string name, std::string value);
+    tl::expected<Data::Variant, MemberNotFound> GetPropertyValue(std::string name);
+    tl::expected<void, MemberNotFound> SetPropertyValue(std::string name, Data::Variant value);
     tl::expected<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
     // Returning a list of property names feels kinda janky. Is this really the way to go?
     std::vector<std::string> GetProperties();

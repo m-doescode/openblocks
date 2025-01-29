@@ -1,5 +1,9 @@
 #include "part.h"
 #include "base/instance.h"
+#include "datatypes/base.h"
+#include "objects/base/member.h"
+#include <memory>
+#include <optional>
 
 static InstanceType TYPE_ {
     .super = Instance::TYPE,
@@ -14,11 +18,18 @@ InstanceType* Part::GetClass() {
     return &TYPE_;
 }
 
-Part::Part(): Instance(&TYPE_) {
+Part::Part(): Part(PartConstructParams {}) {
 }
 
 Part::Part(PartConstructParams params): Instance(&TYPE_), position(params.position), rotation(params.rotation),
                                         scale(params.scale), material(params.material), anchored(params.anchored) {
+
+    this->memberMap = std::make_unique<MemberMap>(MemberMap {
+        .super = std::move(this->memberMap),
+        .members = {
+            { "Anchored", { .backingField = &anchored, .codec = fieldCodecOf<Data::Bool, bool>() } }
+        }
+    });
 }
 
 // This feels wrong. Get access to PhysicsWorld somehow else? Part will need access to this often though, most likely...
