@@ -55,7 +55,7 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
     }
 
     if (part->rigidBody->getNbColliders() == 0)
-    part->rigidBody->addCollider(shape, rp::Transform());
+        part->rigidBody->addCollider(shape, rp::Transform());
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
 
     world->setEventListener(&eventListener);

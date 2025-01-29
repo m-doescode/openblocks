@@ -1,5 +1,6 @@
 #include "propertiesmodel.h"
 #include "datatypes/base.h"
+#include "objects/base/member.h"
 #include "qnamespace.h"
 
 PropertiesModel::PropertiesModel(InstanceRef selectedItem, QWidget *parent)
@@ -16,15 +17,22 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const {
         return {};
 
     std::string propertyName = propertiesList[index.row()];
+    PropertyMeta meta = selectedItem->GetPropertyMeta(propertyName).value();
 
     switch (role) {
         case Qt::EditRole:
         case Qt::DisplayRole:
             if (index.column() == 0)
                 return QString::fromStdString(propertyName);
-            else if (index.column() == 1) {
+            else if (index.column() == 1 && meta.type != &Data::Bool::TYPE) {
                 return QString::fromStdString(selectedItem->GetPropertyValue(propertyName).value().ToString());
             }
+            return {};
+        case Qt::CheckStateRole:
+            if (index.column() == 0) return {};
+            else if (index.column() == 1 && meta.type == &Data::Bool::TYPE)
+                return selectedItem->GetPropertyValue(propertyName)->get<Data::Bool>().value ? Qt::Checked : Qt::Unchecked;
+            return {};
         // case Qt::DecorationRole:
         //     return iconOf(item->GetClass());
     }
@@ -33,10 +41,23 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const {
 }
 
 bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (index.column() != 1 && role != Qt::EditRole) return false;
+    if (index.column() != 1) return false;
 
-    if (selectedItem->GetPropertyMeta(propertiesList[index.row()])->type == &Data::String::TYPE) {
-        selectedItem->SetPropertyValue(propertiesList[index.row()], value.toString().toStdString());
+    std::string propertyName = propertiesList[index.row()];
+    PropertyMeta meta = selectedItem->GetPropertyMeta(propertyName).value();
+
+    switch (role) {
+    case Qt::EditRole:
+        if (meta.type != &Data::String::TYPE)
+            return false;
+
+        selectedItem->SetPropertyValue(propertyName, value.toString().toStdString());
+        return true;
+    case Qt::CheckStateRole:
+        if (meta.type != &Data::Bool::TYPE)
+            return false;
+
+        selectedItem->SetPropertyValue(propertyName, Data::Bool(value.toBool()));
         return true;
     }
 
@@ -50,8 +71,15 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const {
     if (index.column() == 0)
         return Qt::ItemIsEnabled;
 
-    if (index.column() == 1)
-        return Qt::ItemIsEnabled | Qt::ItemIsEditable;
+    std::string propertyName = propertiesList[index.row()];
+    PropertyMeta meta = selectedItem->GetPropertyMeta(propertyName).value();
+
+    if (index.column() == 1) {
+        if (meta.type == &Data::Bool::TYPE)
+            return Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+        else
+            return Qt::ItemIsEnabled | Qt::ItemIsEditable;
+    }
 
     return Qt::NoItemFlags;
 };
