@@ -28,8 +28,11 @@ extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
 
-void renderInit(GLFWwindow* window) {
-    glViewport(0, 0, 1200, 900);
+static int viewportWidth, viewportHeight;
+
+void renderInit(GLFWwindow* window, int width, int height) {
+    viewportWidth = width, viewportHeight = height;
+    glViewport(0, 0, width, height);
 
     initMeshes();
 
@@ -64,7 +67,7 @@ void renderParts() {
     // shader->set("lightColor",  glm::vec3(1.0f, 1.0f, 1.0f));
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)1200 / (float)900, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.getLookAt();
     shader->set("projection", projection);
     shader->set("view", view);
@@ -126,7 +129,7 @@ void renderSkyBox() {
 
     skyboxShader->use();
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)1200 / (float)900, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 100.0f);
     // Remove translation component of view, making us always at (0, 0, 0)
     glm::mat4 view = glm::mat4(glm::mat3(camera.getLookAt()));
 
@@ -145,4 +148,8 @@ void render(GLFWwindow* window) {
 
     renderSkyBox();
     renderParts();
+}
+
+void setViewport(int width, int height) {
+    viewportWidth = width, viewportHeight = height;
 }

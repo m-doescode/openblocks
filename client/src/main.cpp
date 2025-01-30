@@ -24,6 +24,7 @@ void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 // void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+void resizeCallback(GLFWwindow* window, int width, int height);
 
 std::shared_ptr<Part> lastPart;
 
@@ -35,12 +36,13 @@ int main() {
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetFramebufferSizeCallback(window, resizeCallback);
 
     glfwMakeContextCurrent(window);
     glewInit();
 
     simulationInit();
-    renderInit(window);
+    renderInit(window, 1200, 900);
 
     // Baseplate
     workspace->AddChild(Part::New({
@@ -204,4 +206,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_M && action == GLFW_PRESS) mode = 0;
     if (key == GLFW_KEY_E && action == GLFW_PRESS) mode = 1; // Enlarge
     if (key == GLFW_KEY_R && action == GLFW_PRESS) mode = 2;
+}
+
+void resizeCallback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+    setViewport(width, height);
 }

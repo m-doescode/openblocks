@@ -21,14 +21,18 @@ MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
 
 void MainGLWidget::initializeGL() {
     glewInit();
-    renderInit(NULL);
+    renderInit(NULL, width(), height());
 }
+
+extern int vpx, vpy;
 
 void MainGLWidget::resizeGL(int w, int h) {
     // Update projection matrix and other size related settings:
     // m_projection.setToIdentity();
     // m_projection.perspective(45.0f, w / float(h), 0.01f, 100.0f);
     // ...
+    // glViewport(0, 0, w, h);
+    setViewport(w, h);
 }
 
 void MainGLWidget::paintGL() {
