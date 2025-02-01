@@ -2,12 +2,14 @@
 #include <glm/ext/matrix_float3x3.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <memory>
+#include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/collision/shapes/BoxShape.h>
 #include <reactphysics3d/collision/shapes/CollisionShape.h>
 #include <reactphysics3d/components/RigidBodyComponents.h>
 #include <reactphysics3d/engine/EventListener.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
+#include <reactphysics3d/mathematics/Ray.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/memory/DefaultAllocator.h>
@@ -36,6 +38,8 @@ void simulationInit() {
     world = physicsCommon->createPhysicsWorld();
 
     world->setGravity(rp::Vector3(0, -196.2, 0));
+
+    world->setEventListener(&eventListener);
 }
 
 void syncPartPhysics(std::shared_ptr<Part> part) {
@@ -58,7 +62,7 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
         part->rigidBody->addCollider(shape, rp::Transform());
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
 
-    world->setEventListener(&eventListener);
+    part->rigidBody->setUserData(&*part);
 }
 
 void physicsStep(float deltaTime) {
@@ -75,4 +79,9 @@ void physicsStep(float deltaTime) {
         // part.rotation = glm::eulerAngles(rpToGlm(transform.getOrientation()));
         part->rotation = rpToGlm(transform.getOrientation());
     }
+}
+
+void castRay(glm::vec3 point, glm::vec3 rotation, float maxLength, rp::RaycastCallback* callback) {
+    rp::Ray ray(glmToRp(point), glmToRp(glm::normalize(rotation)) * maxLength);
+    world->raycast(ray, callback);
 }
