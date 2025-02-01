@@ -1,9 +1,12 @@
 #pragma once
 #include <glm/ext/vector_float3.hpp>
+#include <memory>
+#include <reactphysics3d/body/Body.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <glm/ext.hpp>
+#include "objects/part.h"
 
 namespace rp = reactphysics3d;
 
@@ -21,4 +24,10 @@ inline glm::vec3 rpToGlm(rp::Vector3 vec) {
 
 inline glm::quat rpToGlm(rp::Quaternion quat) {
     return glm::quat(quat.w, quat.x, quat.y, quat.z);
+}
+
+inline std::shared_ptr<Part> partFromBody(rp::Body* body) {
+    Part* raw = reinterpret_cast<Part*>(body->getUserData());
+    std::shared_ptr<Part> shared = std::dynamic_pointer_cast<Part>(raw->shared_from_this());    
+    return shared;
 }

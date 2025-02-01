@@ -31,6 +31,7 @@ public:
     glm::quat rotation = glm::identity<glm::quat>();
     glm::vec3 scale;
     Material material;
+    bool selected = false;
     
     bool anchored = false;
     rp::RigidBody* rigidBody = nullptr;

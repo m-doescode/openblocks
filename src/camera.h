@@ -24,7 +24,8 @@ public:
     Camera(glm::vec3 initialPosition);
 
     glm::mat4 getLookAt();
+    /** Converts a set of screen coords to a direction from the camera's pos */
+    glm::vec3 getScreenDirection(glm::vec2 screenPos, glm::vec2 screenSize);
     void processRotation(float deltaX, float deltaY);
     void processMovement(Direction direction, float deltaTime);
-
 };

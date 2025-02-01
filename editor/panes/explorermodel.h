@@ -41,6 +41,7 @@ public:
     Qt::DropActions supportedDragActions() const override;
     Qt::DropActions supportedDropActions() const override;
     InstanceRef fromIndex(const QModelIndex index) const;
+    QModelIndex ObjectToIndex(InstanceRef item);
 private:
     InstanceRef rootItem;
     QModelIndex toIndex(InstanceRef item);

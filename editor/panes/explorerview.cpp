@@ -1,6 +1,7 @@
 #include "explorerview.h"
 #include "explorermodel.h"
 #include "common.h"
+#include "objects/base/instance.h"
 #include "qabstractitemmodel.h"
 #include "qaction.h"
 #include "qnamespace.h"
@@ -25,6 +26,15 @@ ExplorerView::ExplorerView(QWidget* parent):
     connect(this, &QTreeView::customContextMenuRequested, this, [&](const QPoint& point) {
         QModelIndex index = this->indexAt(point);
         contextMenu.exec(this->viewport()->mapToGlobal(point));
+    });
+
+    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
+        this->clearSelection();
+        for (InstanceRefWeak inst : newSelection) {
+            if (inst.expired()) continue;
+            QModelIndex index = this->model.ObjectToIndex(inst.lock());
+            this->selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select);
+        }
     });
 
     buildContextMenu();

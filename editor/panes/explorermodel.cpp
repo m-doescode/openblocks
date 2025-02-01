@@ -71,6 +71,10 @@ QModelIndex ExplorerModel::toIndex(InstanceRef item) {
     return QModelIndex{};
 }
 
+QModelIndex ExplorerModel::ObjectToIndex(InstanceRef item) {
+    return toIndex(item);
+}
+
 QModelIndex ExplorerModel::parent(const QModelIndex &index) const {
     if (!index.isValid())
         return {};
