@@ -35,6 +35,8 @@ private:
     std::vector<std::shared_ptr<Instance>> children;
 
     std::optional<std::vector<std::string>> cachedMemberList;
+
+    bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
 protected:
     std::unique_ptr<MemberMap> memberMap;
 
@@ -48,7 +50,7 @@ public:
 
     // Instance is abstract, so it should not implement GetClass directly
     virtual InstanceType* GetClass() = 0;
-    void SetParent(std::optional<std::shared_ptr<Instance>> newParent);
+    bool SetParent(std::optional<std::shared_ptr<Instance>> newParent);
     std::optional<std::shared_ptr<Instance>> GetParent();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
 

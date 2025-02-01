@@ -38,7 +38,19 @@ Instance::Instance(InstanceType* type) {
 Instance::~Instance () {
 }
 
-void Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
+// TODO: Test this
+bool Instance::ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent) {
+    for (std::optional<std::shared_ptr<Instance>> currentParent = newParent; currentParent.has_value(); currentParent = currentParent.value()->GetParent()) {
+        if (currentParent.value() == this->shared_from_this())
+            return false;
+    }
+    return true;
+}
+
+bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
+    if (!ancestryContinuityCheck(newParent))
+        return false;
+
     auto lastParent = GetParent();
     if (hierarchyPreUpdateHandler.has_value()) hierarchyPreUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
     // If we currently have a parent, remove ourselves from it before adding ourselves to the new one
@@ -56,6 +68,7 @@ void Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
     if (hierarchyPostUpdateHandler.has_value()) hierarchyPostUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
 
     this->OnParentUpdated(lastParent, newParent);
+    return true;
 }
 
 std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
