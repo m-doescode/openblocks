@@ -4,6 +4,7 @@
 #include "objects/base/member.h"
 #include <memory>
 #include <optional>
+#include "physics/simulation.h"
 
 static InstanceType TYPE_ {
     .super = Instance::TYPE,
@@ -22,12 +23,11 @@ Part::Part(): Part(PartConstructParams {}) {
 }
 
 Part::Part(PartConstructParams params): Instance(&TYPE_), position(params.position), rotation(params.rotation),
-                                        scale(params.scale), material(params.material), anchored(params.anchored) {
-                                            
+                                        scale(params.scale), material(params.material), anchored(params.anchored) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
-            { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>() } }
+            { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
         }
     });
 }
@@ -46,4 +46,8 @@ void Part::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, s
         this->rigidBody->setIsActive(newParent.has_value());
 
     // TODO: Sleeping bodies that touch this one also need to be updated
+}
+
+void Part::onUpdated(std::string property) {
+    syncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
 }

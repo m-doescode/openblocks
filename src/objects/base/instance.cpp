@@ -96,6 +96,7 @@ tl::expected<void, MemberNotFound> Instance::SetPropertyValue(std::string name, 
     if (!meta) return tl::make_unexpected(MemberNotFound());
 
     meta->codec.write(value, meta->backingField);
+    if (meta->updateCallback) meta->updateCallback.value()(name);
 
     return {};
 }

@@ -2,6 +2,7 @@
 
 #include "../../datatypes/base.h"
 #include "datatypes/meta.h"
+#include <functional>
 #include <map>
 #include <memory>
 #include <optional>
@@ -32,10 +33,16 @@ constexpr FieldCodec fieldCodecOf() {
     };
 }
 
+template <typename T>
+std::function<void(std::string name)> memberFunctionOf(void(T::*func)(std::string), T* obj) {
+    return std::bind(func, obj, std::placeholders::_1);
+}
+
 struct PropertyMeta {
     void* backingField;
     const Data::TypeInfo* type;
     FieldCodec codec;
+    std::optional<std::function<void(std::string name)>> updateCallback;
 };
 
 typedef std::variant<PropertyMeta> MemberMeta;
