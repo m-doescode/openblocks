@@ -61,6 +61,7 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
     if (part->rigidBody->getNbColliders() == 0)
         part->rigidBody->addCollider(shape, rp::Transform());
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
+    part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
 
     part->rigidBody->setUserData(&*part);
 }
@@ -81,7 +82,56 @@ void physicsStep(float deltaTime) {
     }
 }
 
-void castRay(glm::vec3 point, glm::vec3 rotation, float maxLength, rp::RaycastCallback* callback) {
+RaycastResult::RaycastResult(const rp::RaycastInfo& raycastInfo)
+    : worldPoint(raycastInfo.worldPoint)
+    , worldNormal(raycastInfo.worldNormal)
+    , hitFraction(raycastInfo.hitFraction)
+    , triangleIndex(raycastInfo.triangleIndex)
+    , body(raycastInfo.body)
+    , collider(raycastInfo.collider) {}
+
+class NearestRayHit : public rp::RaycastCallback {
+    rp::Vector3 startPos;
+    std::optional<RaycastFilter> filter;
+
+    std::optional<RaycastResult> nearestHit;
+    float nearestHitDistance = -1;
+
+    // Order is not guaranteed, so we have to figure out the nearest object using a more sophisticated algorith,
+    rp::decimal notifyRaycastHit(const rp::RaycastInfo& raycastInfo) override {
+        // If the detected object is further away than the nearest object, continue.
+        int distance = (raycastInfo.worldPoint - startPos).length();
+        if (nearestHitDistance != -1 && distance >= nearestHitDistance)
+            return 1;
+
+        if (!filter) {
+            nearestHit = raycastInfo;
+            nearestHitDistance = distance;
+            return 1;
+        }
+
+        std::shared_ptr<Part> part = partFromBody(raycastInfo.body);
+        FilterResult result = filter.value()(part);
+        if (result == FilterResult::BLOCK) {
+            nearestHit = std::nullopt;
+            nearestHitDistance = distance;
+            return 1;
+        } else if (result == FilterResult::TARGET) {
+            nearestHit = raycastInfo;
+            nearestHitDistance = distance;
+            return 1;
+        }
+        return 1;
+    };
+
+public:
+    NearestRayHit(rp::Vector3 startPos, std::optional<RaycastFilter> filter = std::nullopt) : startPos(startPos), filter(filter) {}
+    std::optional<const RaycastResult> getNearestHit() { return nearestHit; };
+};
+
+std::optional<const RaycastResult> castRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits) {
     rp::Ray ray(glmToRp(point), glmToRp(glm::normalize(rotation)) * maxLength);
-    world->raycast(ray, callback);
+    NearestRayHit rayHit(glmToRp(point), filter);
+    world->raycast(ray, &rayHit, categoryMaskBits);
+    return rayHit.getNearestHit();
 }

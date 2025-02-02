@@ -6,6 +6,8 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
 #include <glm/matrix.hpp>
+#include <memory>
+#include <optional>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
 
@@ -25,6 +27,7 @@
 
 MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
+    setMouseTracking(true);
 }
 
 void MainGLWidget::initializeGL() {
@@ -47,50 +50,72 @@ void MainGLWidget::paintGL() {
     ::render(NULL);
 }
 
-bool isMouseDragging = false;
+bool isMouseRightDragging = false;
 QPoint lastMousePos;
-void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
-    // if (!(evt->buttons() & Qt::RightButton)) return;
-    if (!isMouseDragging) return;
+void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
+    if (!isMouseRightDragging) return;
     
     camera.processRotation(evt->pos().x() - lastMousePos.x(), evt->pos().y() - lastMousePos.y());
     lastMousePos = evt->pos();
+
     // QCursor::setPos(lastMousePos);
 }
 
-class FirstRayHit : public rp::RaycastCallback {
-    rp::Body** target;
+bool isMouseDragging = false;
+std::optional<std::weak_ptr<Part>> draggingObject;
+void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
+    if (!isMouseDragging) return;
 
-    virtual rp::decimal notifyRaycastHit(const rp::RaycastInfo& raycastInfo) override {
-        if (reinterpret_cast<Part*>(raycastInfo.body->getUserData())->name == "Baseplate") return 1;
+    QPoint position = evt->pos();
 
-        *target = raycastInfo.body;
-        return 0;
-    }
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000, [](std::shared_ptr<Part> part) {
+        return (part == draggingObject->lock()) ? FilterResult::PASS : FilterResult::TARGET;
+    });
+    
+    if (!rayHit) return;
+    draggingObject->lock()->position = rpToGlm(rayHit->worldPoint);
+    draggingObject->lock()->position += rpToGlm(rayHit->worldNormal) * draggingObject->lock()->scale / 2.f;
+    syncPartPhysics(draggingObject->lock());
+}
 
-public:
-    FirstRayHit(rp::Body** target) : target(target) {}
-};
+void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
+    QPoint position = evt->pos();
+
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000);
+    setCursor((rayHit && partFromBody(rayHit->body)->name != "Baseplate") ? Qt::OpenHandCursor : Qt::ArrowCursor);
+}
+
+void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
+    handleCameraRotate(evt);
+    handleObjectDrag(evt);
+    handleCursorChange(evt);
+}
 
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     switch(evt->button()) {
     // Camera drag
     case Qt::RightButton: {
         lastMousePos = evt->pos();
-        isMouseDragging = true;
+        isMouseRightDragging = true;
         return;
     // Clicking on objects
     } case Qt::LeftButton: {
         QPoint position = evt->pos();
-        rp::Body* rayHitTarget = NULL;
 
         glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
-        castRay(camera.cameraPos, pointDir, 50000, new FirstRayHit(&rayHitTarget));
-        if (!rayHitTarget) return;
-        std::shared_ptr<Part> part = partFromBody(rayHitTarget);
+        std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000);
+        if (!rayHit || !partFromBody(rayHit->body)) return;
+        std::shared_ptr<Part> part = partFromBody(rayHit->body);
+        if (part->name == "Baseplate") return;
         
         //part.selected = true;
+        isMouseDragging = true;
+        draggingObject = part;
         setSelection(std::vector<InstanceRefWeak> { part });
+        // Disable bit so that we can ignore the part while raycasting
+        // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
 
         return;
     } default:
@@ -99,7 +124,10 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
 }
 
 void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
+    // if (isMouseDragging) draggingObject->lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
+    isMouseRightDragging = false;
     isMouseDragging = false;
+    draggingObject = std::nullopt;
 }
 
 static int moveZ = 0;

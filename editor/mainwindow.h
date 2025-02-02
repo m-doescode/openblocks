@@ -26,6 +26,7 @@ public:
 private:
     QBasicTimer timer;
 
+    void updateSelectedTool();
     void timerEvent(QTimerEvent*) override;
 };
 #endif // MAINWINDOW_H

@@ -13,10 +13,13 @@
 #include <optional>
 
 #include "common.h"
+#include "editorcommon.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
 #include "qitemselectionmodel.h"
 #include "qobject.h"
+
+SelectedTool selectedTool;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -35,6 +38,12 @@ MainWindow::MainWindow(QWidget *parent)
         ui->propertiesView->setSelected(inst);
     });
 
+    connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = SelectedTool::SELECT; updateSelectedTool(); });
+    connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::MOVE : SelectedTool::SELECT; updateSelectedTool(); });
+    connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::SCALE : SelectedTool::SELECT; updateSelectedTool(); });
+    connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::ROTATE : SelectedTool::SELECT; updateSelectedTool(); });
+    ui->actionToolSelect->setChecked(true);
+    
     // ui->explorerView->Init(ui);
 
     simulationInit();
@@ -80,6 +89,13 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
     physicsStep(deltaTime);
     ui->mainWidget->update();
     ui->mainWidget->updateCycle();
+}
+
+void MainWindow::updateSelectedTool() {
+    ui->actionToolSelect->setChecked(selectedTool == SelectedTool::SELECT);
+    ui->actionToolMove->setChecked(selectedTool == SelectedTool::MOVE);
+    ui->actionToolScale->setChecked(selectedTool == SelectedTool::SCALE);
+    ui->actionToolRotate->setChecked(selectedTool == SelectedTool::ROTATE);
 }
 
 MainWindow::~MainWindow()

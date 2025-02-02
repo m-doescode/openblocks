@@ -18,6 +18,10 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 
+    void handleCameraRotate(QMouseEvent* evt);
+    void handleObjectDrag(QMouseEvent* evt);
+    void handleCursorChange(QMouseEvent* evt);
+
     void mouseMoveEvent(QMouseEvent* evt) override;
     void mousePressEvent(QMouseEvent* evt) override;
     void mouseReleaseEvent(QMouseEvent* evt) override;

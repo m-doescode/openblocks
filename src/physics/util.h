@@ -26,6 +26,7 @@ inline glm::quat rpToGlm(rp::Quaternion quat) {
     return glm::quat(quat.w, quat.x, quat.y, quat.z);
 }
 
+// Make this std::optional
 inline std::shared_ptr<Part> partFromBody(rp::Body* body) {
     Part* raw = reinterpret_cast<Part*>(body->getUserData());
     std::shared_ptr<Part> shared = std::dynamic_pointer_cast<Part>(raw->shared_from_this());    
