@@ -38,7 +38,7 @@ private:
 
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
 protected:
-    bool parentLocked;
+    bool parentLocked = false;
     std::unique_ptr<MemberMap> memberMap;
 
     Instance(const InstanceType*);

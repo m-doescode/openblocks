@@ -6,7 +6,7 @@
 #include <optional>
 #include "physics/simulation.h"
 
-const InstanceType Part::TYPE =  {
+const InstanceType Part::TYPE = {
     .super = &Instance::TYPE,
     .className = "Part",
     .constructor = &Part::CreateGeneric,
