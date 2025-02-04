@@ -105,7 +105,7 @@ void renderParts() {
     shader->set("viewPos", camera.cameraPos);
 
     // TODO: Same as todo in src/physics/simulation.cpp
-    for (InstanceRef inst : workspace->GetChildren()) {
+    for (InstanceRef inst : workspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
 

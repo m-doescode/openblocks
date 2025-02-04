@@ -60,7 +60,7 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
 }
 
 QModelIndex ExplorerModel::toIndex(InstanceRef item) {
-    if (item == rootItem)
+    if (item == rootItem || !item->GetParent().has_value())
         return {};
 
     InstanceRef parentItem = item->GetParent().value();
@@ -160,8 +160,8 @@ QImage ExplorerModel::iconOf(const InstanceType* type) const {
 }
 
 bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, int count, const QModelIndex &destinationParentIdx, int destinationChild) {
-    Instance* sourceParent = sourceParentIdx.isValid() ? static_cast<Instance*>(sourceParentIdx.internalPointer()) : workspace.get();
-    Instance* destinationParent = destinationParentIdx.isValid() ? static_cast<Instance*>(destinationParentIdx.internalPointer()) : workspace.get();
+    Instance* sourceParent = sourceParentIdx.isValid() ? static_cast<Instance*>(sourceParentIdx.internalPointer()) : rootItem.get();
+    Instance* destinationParent = destinationParentIdx.isValid() ? static_cast<Instance*>(destinationParentIdx.internalPointer()) : rootItem.get();
 
     printf("Moved %d from %s\n", count, sourceParent->name.c_str());
 
@@ -178,7 +178,7 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
 }
 
 bool ExplorerModel::removeRows(int row, int count, const QModelIndex& parentIdx) {
-    Instance* parent = parentIdx.isValid() ? static_cast<Instance*>(parentIdx.internalPointer()) : workspace.get();
+    Instance* parent = parentIdx.isValid() ? static_cast<Instance*>(parentIdx.internalPointer()) : rootItem.get();
     
     for (int i = row; i < (row + count); i++) {
         //parent->GetChildren()[i]->SetParent(nullptr);
@@ -206,7 +206,7 @@ Qt::DropActions ExplorerModel::supportedDropActions() const {
 
 
 InstanceRef ExplorerModel::fromIndex(const QModelIndex index) const {
-    if (!index.isValid()) return workspace;
+    if (!index.isValid()) return rootItem;
     return static_cast<Instance*>(index.internalPointer())->shared_from_this();
 }
 

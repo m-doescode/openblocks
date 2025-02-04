@@ -15,7 +15,7 @@ typedef std::function<void(std::vector<InstanceRefWeak> oldSelection, std::vecto
 
 extern Camera camera;
 extern std::shared_ptr<DataModel> dataModel;
-extern std::shared_ptr<Workspace> workspace;
+inline std::shared_ptr<Workspace> workspace() { return dataModel->workspace; }
 extern std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 extern std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
 

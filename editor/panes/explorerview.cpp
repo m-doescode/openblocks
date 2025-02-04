@@ -2,13 +2,14 @@
 #include "explorermodel.h"
 #include "common.h"
 #include "objects/base/instance.h"
+#include "objects/workspace.h"
 #include "qabstractitemmodel.h"
 #include "qaction.h"
 #include "qnamespace.h"
 
 ExplorerView::ExplorerView(QWidget* parent):
     QTreeView(parent),
-    model(ExplorerModel(std::dynamic_pointer_cast<Instance>(workspace))) {
+    model(ExplorerModel(std::dynamic_pointer_cast<Instance>(dataModel))) {
 
     this->setModel(&model);
     // Disabling the root decoration will cause the expand/collapse chevrons to be hidden too, we don't want that
@@ -22,6 +23,9 @@ ExplorerView::ExplorerView(QWidget* parent):
     this->setAcceptDrops(true);
     this->setDropIndicatorShown(true);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    // Expand workspace
+    this->expand(model.ObjectToIndex(workspace()));
 
     connect(this, &QTreeView::customContextMenuRequested, this, [&](const QPoint& point) {
         QModelIndex index = this->indexAt(point);

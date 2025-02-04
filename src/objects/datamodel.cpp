@@ -18,4 +18,5 @@ DataModel::DataModel()
 
 void DataModel::Init() {
     this->workspace = std::make_shared<Workspace>(shared<DataModel>());
+    this->AddChild(this->workspace);
 }

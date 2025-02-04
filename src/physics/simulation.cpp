@@ -72,7 +72,7 @@ void physicsStep(float deltaTime) {
 
     // Naive implementation. Parts are only considered so if they are just under Workspace
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
-    for (InstanceRef obj : workspace->GetChildren()) {
+    for (InstanceRef obj : workspace()->GetChildren()) {
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         const rp::Transform& transform = part->rigidBody->getTransform();

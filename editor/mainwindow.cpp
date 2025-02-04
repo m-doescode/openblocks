@@ -27,7 +27,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     dataModel->Init();
-    workspace = dataModel->workspace;
 
     ui->setupUi(this);
     timer.start(33, this);
@@ -53,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     simulationInit();
 
     // Baseplate
-    workspace->AddChild(ui->mainWidget->lastPart = Part::New({
+    workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(512, 1.2, 512),
@@ -67,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainWidget->lastPart->name = "Baseplate";
     syncPartPhysics(ui->mainWidget->lastPart);
 
-    workspace->AddChild(ui->mainWidget->lastPart = Part::New({
+    workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(4, 1.2, 2),

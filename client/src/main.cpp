@@ -42,12 +42,11 @@ int main() {
     glewInit();
 
     dataModel->Init();
-    workspace = dataModel->workspace;
     simulationInit();
     renderInit(window, 1200, 900);
 
     // Baseplate
-    workspace->AddChild(Part::New({
+    workspace()->AddChild(Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(512, 1.2, 512),
@@ -59,7 +58,7 @@ int main() {
         .anchored = true,
     }));
 
-    workspace->AddChild(lastPart = Part::New({
+    workspace()->AddChild(lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(4, 1.2, 2),
@@ -70,7 +69,7 @@ int main() {
         }
     }));
 
-    for (InstanceRef inst : workspace->GetChildren()) {
+    for (InstanceRef inst : workspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         syncPartPhysics(part);
@@ -163,7 +162,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-        workspace->AddChild(lastPart = Part::New({
+        workspace()->AddChild(lastPart = Part::New({
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
             .scale = glm::vec3(1, 1, 1),
