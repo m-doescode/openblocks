@@ -14,6 +14,7 @@ typedef std::function<void(std::vector<InstanceRefWeak> oldSelection, std::vecto
 // TEMPORARY COMMON DATA FOR VARIOUS INTERNAL COMPONENTS
 
 extern Camera camera;
+extern std::shared_ptr<DataModel> dataModel;
 extern std::shared_ptr<Workspace> workspace;
 extern std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 extern std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;

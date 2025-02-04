@@ -18,6 +18,7 @@
 #include "objects/part.h"
 #include "qitemselectionmodel.h"
 #include "qobject.h"
+#include "qsysinfo.h"
 
 SelectedTool selectedTool;
 
@@ -25,6 +26,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    dataModel->Init();
+    workspace = dataModel->workspace;
+
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);

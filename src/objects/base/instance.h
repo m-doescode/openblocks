@@ -45,6 +45,8 @@ protected:
     virtual ~Instance();
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
+
+    template <typename T> inline std::shared_ptr<T> shared() { return std::dynamic_pointer_cast<T>(this->shared_from_this()); }
 public:
     const static InstanceType TYPE;
     std::string name;

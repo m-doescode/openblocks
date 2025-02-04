@@ -41,6 +41,8 @@ int main() {
     glfwMakeContextCurrent(window);
     glewInit();
 
+    dataModel->Init();
+    workspace = dataModel->workspace;
     simulationInit();
     renderInit(window, 1200, 900);
 
