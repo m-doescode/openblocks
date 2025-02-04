@@ -144,7 +144,7 @@ Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
     //return index.isValid()
     //    ? QAbstractItemModel::flags(index) : Qt::ItemFlags(Qt::NoItemFlags);
     return index.isValid()
-        ? QAbstractItemModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled
+        ? QAbstractItemModel::flags(index) | Qt::ItemIsEditable | (!fromIndex(index)->IsParentLocked() ? Qt::ItemIsDragEnabled : Qt::NoItemFlags) | Qt::ItemIsDropEnabled
         : Qt::NoItemFlags | Qt::ItemIsDropEnabled;
 }
 

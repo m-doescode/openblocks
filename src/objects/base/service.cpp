@@ -1,4 +1,9 @@
 #include "service.h"
 #include <memory>
 
-Service::Service(std::weak_ptr<DataModel> root) : dataModel(root) {}
+Service::Service(const InstanceType* type, std::weak_ptr<DataModel> root) : Instance(type), dataModel(root) {}
+
+void Service::InitService() {
+    SetParent(dataModel.lock());
+    parentLocked = true;
+}

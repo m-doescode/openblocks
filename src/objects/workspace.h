@@ -4,7 +4,7 @@
 #include "objects/base/service.h"
 #include <memory>
 
-class Workspace : public Instance, Service {
+class Workspace : public Service {
 //private:
 public:
     const static InstanceType TYPE;

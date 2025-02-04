@@ -11,5 +11,5 @@ const InstanceType* Workspace::GetClass() {
     return &TYPE;
 }
 
-Workspace::Workspace(std::weak_ptr<DataModel> dataModel): Instance(&TYPE), Service(dataModel) {
+Workspace::Workspace(std::weak_ptr<DataModel> dataModel): Service(&TYPE, dataModel) {
 }

@@ -75,6 +75,9 @@ std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
     return parent.value().lock();
 }
 
+bool Instance::IsParentLocked() {
+    return this->parentLocked;
+}
 
 void Instance::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
     // Empty stub

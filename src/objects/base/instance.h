@@ -55,6 +55,7 @@ public:
     virtual const InstanceType* GetClass() = 0;
     bool SetParent(std::optional<std::shared_ptr<Instance>> newParent);
     std::optional<std::shared_ptr<Instance>> GetParent();
+    bool IsParentLocked();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
 
     // Utility functions
