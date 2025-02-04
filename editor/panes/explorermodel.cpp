@@ -148,10 +148,10 @@ Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
         : Qt::NoItemFlags | Qt::ItemIsDropEnabled;
 }
 
-QImage ExplorerModel::iconOf(InstanceType* type) const {
+QImage ExplorerModel::iconOf(const InstanceType* type) const {
     if (instanceIconCache.count(type->className)) return instanceIconCache[type->className];
 
-    InstanceType* currentClass = type;
+    const InstanceType* currentClass = type;
     while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
 
     QImage icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));

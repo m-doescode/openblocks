@@ -6,23 +6,21 @@
 #include <optional>
 #include "physics/simulation.h"
 
-static InstanceType TYPE_ {
-    .super = Instance::TYPE,
+const InstanceType Part::TYPE =  {
+    .super = &Instance::TYPE,
     .className = "Part",
     .constructor = &Part::CreateGeneric,
     .explorerIcon = "part",
 };
 
-InstanceType* Part::TYPE = &TYPE_;
-
-InstanceType* Part::GetClass() {
-    return &TYPE_;
+const InstanceType* Part::GetClass() {
+    return &TYPE;
 }
 
 Part::Part(): Part(PartConstructParams {}) {
 }
 
-Part::Part(PartConstructParams params): Instance(&TYPE_), position(params.position), rotation(params.rotation),
+Part::Part(PartConstructParams params): Instance(&TYPE), position(params.position), rotation(params.rotation),
                                         scale(params.scale), material(params.material), anchored(params.anchored) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),

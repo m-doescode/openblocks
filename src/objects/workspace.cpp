@@ -1,16 +1,14 @@
 #include "workspace.h"
 
-static InstanceType TYPE_ {
-    .super = Instance::TYPE,
+const InstanceType Workspace::TYPE = {
+    .super = &Instance::TYPE,
     .className = "Workspace",
     .constructor = &Workspace::Create,
 };
 
-InstanceType* Workspace::TYPE = &TYPE_;
-
-InstanceType* Workspace::GetClass() {
-    return &TYPE_;
+const InstanceType* Workspace::GetClass() {
+    return &TYPE;
 }
 
-Workspace::Workspace(): Instance(&TYPE_) {
+Workspace::Workspace(): Instance(&TYPE) {
 }

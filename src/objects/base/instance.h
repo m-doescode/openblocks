@@ -19,7 +19,7 @@ typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 
 // Struct describing information about an instance
 struct InstanceType {
-    InstanceType* super; // May be null
+    const InstanceType* super; // May be null
     std::string className;
     InstanceConstructor constructor;
     std::string explorerIcon = "";
@@ -38,18 +38,19 @@ private:
 
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
 protected:
+    bool parentLocked;
     std::unique_ptr<MemberMap> memberMap;
 
-    Instance(InstanceType*);
+    Instance(const InstanceType*);
     virtual ~Instance();
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
 public:
-    static InstanceType* TYPE;
+    const static InstanceType TYPE;
     std::string name;
 
     // Instance is abstract, so it should not implement GetClass directly
-    virtual InstanceType* GetClass() = 0;
+    virtual const InstanceType* GetClass() = 0;
     bool SetParent(std::optional<std::shared_ptr<Instance>> newParent);
     std::optional<std::shared_ptr<Instance>> GetParent();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }

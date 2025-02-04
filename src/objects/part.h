@@ -24,7 +24,7 @@ protected:
     void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
 public:
-    static InstanceType* TYPE;
+    const static InstanceType TYPE;
 
     // TODO: Switch these over to our dedicated datatypes
     glm::vec3 position;
@@ -43,5 +43,5 @@ public:
     static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
     static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
     static inline InstanceRef CreateGeneric() { return std::make_shared<Part>(); };
-    virtual InstanceType* GetClass() override;
+    virtual const InstanceType* GetClass() override;
 };

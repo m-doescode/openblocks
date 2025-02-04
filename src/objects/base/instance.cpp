@@ -10,21 +10,19 @@
 #include <optional>
 
 // Static so that this variable name is "local" to this source file
-static InstanceType TYPE_ {
+const InstanceType Instance::TYPE = {
     .super = NULL,
     .className = "Instance",
     .constructor = NULL, // Instance is abstract and therefore not creatable
     .explorerIcon = "instance",
 };
 
-InstanceType* Instance::TYPE = &TYPE_;
-
 // Instance is abstract, so it should not implement GetClass directly
 // InstanceType* Instance::GetClass() {
 //     return &TYPE_;
 // }
 
-Instance::Instance(InstanceType* type) {
+Instance::Instance(const InstanceType* type) {
     this->name = type->className;
 
     this->memberMap = std::make_unique<MemberMap>( MemberMap {
@@ -48,7 +46,7 @@ bool Instance::ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> 
 }
 
 bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
-    if (!ancestryContinuityCheck(newParent))
+    if (this->parentLocked || !ancestryContinuityCheck(newParent))
         return false;
 
     auto lastParent = GetParent();

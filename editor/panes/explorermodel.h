@@ -45,7 +45,7 @@ public:
 private:
     InstanceRef rootItem;
     QModelIndex toIndex(InstanceRef item);
-    QImage iconOf(InstanceType* type) const;
+    QImage iconOf(const InstanceType* type) const;
 };
 
 // #endif
