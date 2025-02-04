@@ -17,7 +17,7 @@ struct FieldCodec {
 
 template <typename T, typename U>
 void _writeCodec(Data::Variant source, void* destination) {
-    *(U*)destination = source.get<T>().value;
+    *(U*)destination = (U)source.get<T>();
 }
 
 template <typename T, typename U>

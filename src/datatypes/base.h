@@ -4,8 +4,8 @@
 
 
 #define DEF_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) class CLASS_NAME : public Data::Base { \
-public: \
     const WRAPPED_TYPE value; \
+public: \
     CLASS_NAME(WRAPPED_TYPE); \
     ~CLASS_NAME(); \
     operator WRAPPED_TYPE(); \

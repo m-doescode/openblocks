@@ -1,6 +1,7 @@
 #include "part.h"
 #include "base/instance.h"
 #include "datatypes/base.h"
+#include "datatypes/vector.h"
 #include "objects/base/member.h"
 #include <memory>
 #include <optional>
@@ -25,7 +26,8 @@ Part::Part(PartConstructParams params): Instance(&TYPE), position(params.positio
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
-            { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
+            { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } },
+            { "Position", { .backingField = &position, .type = &Data::Vector3::TYPE, .codec = fieldCodecOf<Data::Vector3, glm::vec3>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
         }
     });
 }

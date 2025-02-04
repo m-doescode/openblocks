@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "vector.h"
 #include <variant>
 
 // #define __VARIANT_TYPE std::variant< \
@@ -17,7 +18,8 @@ namespace Data {
         Bool,
         Int,
         Float,
-        String
+        String,
+        Vector3
     > __VARIANT_TYPE;
 
     class Variant {

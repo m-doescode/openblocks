@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include "../rendering/material.h"
+#include "datatypes/vector.h"
 #include <reactphysics3d/reactphysics3d.h>
 
 namespace rp = reactphysics3d;

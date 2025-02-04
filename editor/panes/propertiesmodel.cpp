@@ -31,7 +31,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const {
         case Qt::CheckStateRole:
             if (index.column() == 0) return {};
             else if (index.column() == 1 && meta.type == &Data::Bool::TYPE)
-                return selectedItem->GetPropertyValue(propertyName)->get<Data::Bool>().value ? Qt::Checked : Qt::Unchecked;
+                return selectedItem->GetPropertyValue(propertyName)->get<Data::Bool>() ? Qt::Checked : Qt::Unchecked;
             return {};
         // case Qt::DecorationRole:
         //     return iconOf(item->GetClass());
