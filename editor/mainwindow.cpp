@@ -22,6 +22,8 @@
 
 SelectedTool selectedTool;
 
+bool simulationPlaying = false;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -46,6 +48,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::SCALE : SelectedTool::SELECT; updateSelectedTool(); });
     connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::ROTATE : SelectedTool::SELECT; updateSelectedTool(); });
     ui->actionToolSelect->setChecked(true);
+
+    connect(ui->actionToggleSimulation, &QAction::triggered, this, [&]() {
+        simulationPlaying = !simulationPlaying;
+        if (simulationPlaying) {
+            ui->actionToggleSimulation->setText("Pause simulation");
+            ui->actionToggleSimulation->setToolTip("Pause the simulation");
+            ui->actionToggleSimulation->setIcon(QIcon::fromTheme("media-playback-pause"));
+        } else {
+            ui->actionToggleSimulation->setText("Resume simulation");
+            ui->actionToggleSimulation->setToolTip("Resume the simulation");
+            ui->actionToggleSimulation->setIcon(QIcon::fromTheme("media-playback-start"));
+        }
+    });
     
     // ui->explorerView->Init(ui);
 
@@ -89,7 +104,8 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
     float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
     lastTime = std::chrono::steady_clock::now();
 
-    physicsStep(deltaTime);
+    if (simulationPlaying)
+        physicsStep(deltaTime);
     ui->mainWidget->update();
     ui->mainWidget->updateCycle();
 }

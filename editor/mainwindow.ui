@@ -114,6 +114,8 @@
    <addaction name="actionToolMove"/>
    <addaction name="actionToolScale"/>
    <addaction name="actionToolRotate"/>
+   <addaction name="separator"/>
+   <addaction name="actionToggleSimulation"/>
   </widget>
   <action name="actionAddPart">
    <property name="icon">
@@ -239,6 +241,20 @@
    </property>
    <property name="shortcut">
     <string>4</string>
+   </property>
+  </action>
+  <action name="actionToggleSimulation">
+   <property name="icon">
+    <iconset theme="media-playback-start"/>
+   </property>
+   <property name="text">
+    <string>Start Simulation</string>
+   </property>
+   <property name="toolTip">
+    <string>Start the simulation</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>
