@@ -8,6 +8,42 @@
 #include <optional>
 #include "physics/simulation.h"
 
+// template <typename T, typename U>
+// constexpr FieldCodec fieldCodecOf() {
+//     return FieldCodec {
+//         .write = [](Data::Variant source, void* destination) {
+//             *(U*)destination = (U)source.get<T>();
+//         },
+//         .read = [](void* source) -> Data::Variant {
+//             return T(*(U*)source);
+//         },
+//     };
+// }
+
+constexpr FieldCodec cframePositionCodec() {
+    return FieldCodec {
+        .write = [](Data::Variant source, void* destination) {
+            Data::CFrame* cframe = static_cast<Data::CFrame*>(destination);
+            *cframe = cframe->Rotation() + source.get<Data::Vector3>();
+        },
+        .read = [](void* source) -> Data::Variant {
+            return *static_cast<Data::CFrame*>(source);
+        },
+    };
+}
+
+constexpr FieldCodec cframeRotationCodec() {
+    return FieldCodec {
+        .write = [](Data::Variant source, void* destination) {
+            Data::CFrame* cframe = static_cast<Data::CFrame*>(destination);
+            *cframe = Data::CFrame::FromEulerAnglesXYZ(source.get<Data::Vector3>()) + cframe->Position();
+        },
+        .read = [](void* source) -> Data::Variant {
+            return static_cast<Data::CFrame*>(source)->ToEulerAnglesXYZ();
+        },
+    };
+}
+
 const InstanceType Part::TYPE = {
     .super = &Instance::TYPE,
     .className = "Part",
@@ -28,7 +64,8 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
         .super = std::move(this->memberMap),
         .members = {
             { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } },
-            // { "Position", { .backingField = &position, .type = &Data::Vector3::TYPE, .codec = fieldCodecOf<Data::Vector3, glm::vec3>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
+            { "Position", { .backingField = &cframe, .type = &Data::Vector3::TYPE, .codec = cframePositionCodec(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } },
+            { "Rotation", { .backingField = &cframe, .type = &Data::Vector3::TYPE, .codec = cframeRotationCodec(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
         }
     });
 }
