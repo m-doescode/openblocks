@@ -17,6 +17,7 @@
 #include <reactphysics3d/reactphysics3d.h>
 #include "../common.h"
 #include "../objects/part.h"
+#include "datatypes/cframe.h"
 #include "util.h"
 
 #include "simulation.h"
@@ -45,7 +46,7 @@ void simulationInit() {
 void syncPartPhysics(std::shared_ptr<Part> part) {
     glm::mat4 rotMat = glm::mat4(1.0f);
 
-    rp::Transform transform(glmToRp(part->position), glmToRp(part->rotation));
+    rp::Transform transform = part->cframe;
     if (!part->rigidBody) {
         part->rigidBody = world->createRigidBody(transform);
     } else {
@@ -76,9 +77,7 @@ void physicsStep(float deltaTime) {
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         const rp::Transform& transform = part->rigidBody->getTransform();
-        part->position = rpToGlm(transform.getPosition());
-        // part.rotation = glm::eulerAngles(rpToGlm(transform.getOrientation()));
-        part->rotation = rpToGlm(transform.getOrientation());
+        part->cframe = Data::CFrame(transform);
     }
 }
 

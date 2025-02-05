@@ -118,15 +118,15 @@ void processInput(GLFWwindow* window) {
         float shiftFactor = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? -0.5 : 0.5;
         shiftFactor *= deltaTime;
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-            lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
+            // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
             syncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
-            lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
+            // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
             syncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-            lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
+            // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
             syncPartPhysics(lastPart);
         }
     }
@@ -178,15 +178,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     float shiftFactor = (mods & GLFW_MOD_SHIFT) ? -0.2 : 0.2;
     if (mode == 0) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-            lastPart->position.x += shiftFactor;
+            // lastPart->position.x += shiftFactor;
             syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-            lastPart->position.y += shiftFactor;
+            // lastPart->position.y += shiftFactor;
             syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-            lastPart->position.z += shiftFactor;
+            // lastPart->position.z += shiftFactor;
             syncPartPhysics(lastPart);
         }
     } else if (mode == 1) {

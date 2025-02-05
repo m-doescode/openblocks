@@ -1,8 +1,9 @@
 #pragma once
 
+#include <variant>
 #include "base.h"
 #include "vector.h"
-#include <variant>
+#include "cframe.h"
 
 // #define __VARIANT_TYPE std::variant< \
 //         Null, \
@@ -19,7 +20,8 @@ namespace Data {
         Int,
         Float,
         String,
-        Vector3
+        Vector3,
+        CFrame
     > __VARIANT_TYPE;
 
     class Variant {

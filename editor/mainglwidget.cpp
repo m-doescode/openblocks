@@ -74,8 +74,9 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     });
     
     if (!rayHit) return;
-    draggingObject->lock()->position = rpToGlm(rayHit->worldPoint);
-    draggingObject->lock()->position += rpToGlm(rayHit->worldNormal) * draggingObject->lock()->scale / 2.f;
+    Data::Vector3 vec = rayHit->worldPoint;
+    vec = vec + Data::Vector3(rpToGlm(rayHit->worldNormal) * draggingObject->lock()->scale / 2.f);
+    draggingObject->lock()->cframe = draggingObject->lock()->cframe.Rotation() + vec;
     syncPartPhysics(draggingObject->lock());
 }
 

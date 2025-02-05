@@ -9,7 +9,7 @@ namespace rp = reactphysics3d;
 
 namespace Data {
     class Vector3 : Base {
-        const glm::vec3 vector;
+        glm::vec3 vector;
     
     public:
         Vector3(float x, float y, float z);
@@ -20,6 +20,9 @@ namespace Data {
         virtual const TypeInfo& GetType() const override;
         static const TypeInfo TYPE;
 
+        static Data::Vector3 ZERO;
+        static Data::Vector3 ONE;
+
         virtual const Data::String ToString() const override;
 
         operator glm::vec3() const;
@@ -29,5 +32,14 @@ namespace Data {
         inline float Y() const { return vector.y; }
         inline float Z() const { return vector.z; }
         inline float Magnitude() const { return glm::length(vector); }
+        inline Data::Vector3 Unit() const { return glm::normalize(vector); }
+
+        Data::Vector3 Cross(Data::Vector3) const;
+        float Dot(Data::Vector3) const;
+    
+        // Operators
+        Data::Vector3 operator +(Data::Vector3) const;
+        Data::Vector3 operator -(Data::Vector3) const;
+        Data::Vector3 operator -() const;
     };
 }

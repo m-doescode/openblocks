@@ -2,6 +2,7 @@
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <reactphysics3d/body/Body.h>
+#include <reactphysics3d/mathematics/Matrix3x3.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/mathematics/mathematics.h>
@@ -17,6 +18,10 @@ inline rp::Vector3 glmToRp(glm::vec3 vec) {
 inline rp::Quaternion glmToRp(glm::quat quat) {
     return rp::Quaternion(quat.w, rp::Vector3(quat.x, quat.y, quat.z));
 }
+
+// inline rp::Matrix3x3 glmToRp(glm::mat3 mat) {
+//     return (rp::Quaternion)glmToRp((glm::quat)mat);
+// }
 
 inline glm::vec3 rpToGlm(rp::Vector3 vec) {
     return glm::vec3(vec.x, vec.y, vec.z);

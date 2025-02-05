@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "physics/util.h"
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
@@ -109,9 +110,7 @@ void renderParts() {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, part->position);
-        model = model * glm::mat4_cast(part->rotation);
+        glm::mat4 model = part->cframe;
         model = glm::scale(model, part->scale);
         shader->set("model", model);
         shader->set("material", part->material);

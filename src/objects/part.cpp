@@ -1,6 +1,7 @@
 #include "part.h"
 #include "base/instance.h"
 #include "datatypes/base.h"
+#include "datatypes/cframe.h"
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
 #include <memory>
@@ -21,13 +22,13 @@ const InstanceType* Part::GetClass() {
 Part::Part(): Part(PartConstructParams {}) {
 }
 
-Part::Part(PartConstructParams params): Instance(&TYPE), position(params.position), rotation(params.rotation),
+Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(params.position, params.rotation)),
                                         scale(params.scale), material(params.material), anchored(params.anchored) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
             { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } },
-            { "Position", { .backingField = &position, .type = &Data::Vector3::TYPE, .codec = fieldCodecOf<Data::Vector3, glm::vec3>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
+            // { "Position", { .backingField = &position, .type = &Data::Vector3::TYPE, .codec = fieldCodecOf<Data::Vector3, glm::vec3>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
         }
     });
 }
