@@ -14,6 +14,8 @@
 
 #include "common.h"
 #include "editorcommon.h"
+#include "objects/base/instance.h"
+#include "objects/datamodel.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
 #include "qitemselectionmodel.h"
@@ -60,6 +62,14 @@ MainWindow::MainWindow(QWidget *parent)
             ui->actionToggleSimulation->setToolTip("Resume the simulation");
             ui->actionToggleSimulation->setIcon(QIcon::fromTheme("media-playback-start"));
         }
+    });
+
+    connect(ui->actionSave, &QAction::triggered, this, [&]() {
+        pugi::xml_document doc;
+        pugi::xml_node node = doc.append_child("openblocks");
+        workspace()->Serialize(&node);
+
+        doc.print(std::cout);
     });
     
     // ui->explorerView->Init(ui);

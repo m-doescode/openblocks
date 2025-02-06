@@ -141,3 +141,26 @@ std::vector<std::string> Instance::GetProperties() {
     cachedMemberList = memberList;
     return memberList;
 }
+
+// Serialization
+
+void Instance::Serialize(pugi::xml_node* parent) {
+    pugi::xml_node node = parent->append_child("Item");
+    node.append_attribute("class").set_value(this->GetClass()->className);
+
+    // Add properties
+    pugi::xml_node propertiesNode = node.append_child("Properties");
+    for (std::string name : GetProperties()) {
+        PropertyMeta meta = GetPropertyMeta(name).value();
+        if (meta.flags & PropertyFlags::PROP_NOSAVE) continue; // This property should not be serialized. Skip...
+
+        pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
+        propertyNode.append_attribute("name").set_value(name);
+        GetPropertyValue(name)->Serialize(&propertyNode);
+    }
+
+    // Add children
+    for (InstanceRef child : this->children) {
+        child->Serialize(&node);
+    }
+}

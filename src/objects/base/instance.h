@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include <../include/expected.hpp>
+#include <pugixml.hpp>
 
 #include "member.h"
 
@@ -68,6 +69,9 @@ public:
     tl::expected<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
     // Returning a list of property names feels kinda janky. Is this really the way to go?
     std::vector<std::string> GetProperties();
+
+    // Serialization
+    void Serialize(pugi::xml_node* parent);
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;

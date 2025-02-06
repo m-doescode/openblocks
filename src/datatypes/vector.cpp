@@ -42,3 +42,11 @@ Data::Vector3 Data::Vector3::Cross(Data::Vector3 other) const {
 float Data::Vector3::Dot(Data::Vector3 other) const {
     return glm::dot(this->vector, other.vector);
 }
+
+// Serialization
+
+void Data::Vector3::Serialize(pugi::xml_node* node) const {
+    node->append_child("X").text().set(std::to_string(this->X()));
+    node->append_child("Y").text().set(std::to_string(this->Y()));
+    node->append_child("Z").text().set(std::to_string(this->Z()));
+}

@@ -11,7 +11,6 @@
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
 
-#include "GLFW/glfw3.h"
 #include "physics/util.h"
 #include "qcursor.h"
 #include "qevent.h"

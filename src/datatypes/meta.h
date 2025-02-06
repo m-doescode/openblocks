@@ -30,5 +30,6 @@ namespace Data {
         template <typename T> Variant(T obj) : wrapped(obj) {}
         template <typename T> T get() { return std::get<T>(wrapped); }
         Data::String ToString() const;
+        void Serialize(pugi::xml_node* node) const;
     };
 }

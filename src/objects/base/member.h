@@ -16,20 +16,26 @@ struct FieldCodec {
 };
 
 template <typename T, typename U>
-void _writeCodec(Data::Variant source, void* destination) {
-    *(U*)destination = (U)source.get<T>();
-}
-
-template <typename T, typename U>
-Data::Variant _readCodec(void* source) {
-    return T(*(U*)source);
-}
-
-template <typename T, typename U>
 constexpr FieldCodec fieldCodecOf() {
     return FieldCodec {
-        .write = &_writeCodec<T, U>,
-        .read = &_readCodec<T, U>,
+        .write = [](Data::Variant source, void* destination) {
+            *(U*)destination = (U)source.get<T>();
+        },
+        .read = [](void* source) -> Data::Variant {
+            return T(*(U*)source);
+        },
+    };
+}
+
+template <typename T>
+constexpr FieldCodec fieldCodecOf() {
+    return FieldCodec {
+        .write = [](Data::Variant source, void* destination) {
+            *(T*)destination = source.get<T>();
+        },
+        .read = [](void* source) -> Data::Variant {
+            return *(T*)source;
+        },
     };
 }
 
@@ -38,11 +44,17 @@ std::function<void(std::string name)> memberFunctionOf(void(T::*func)(std::strin
     return std::bind(func, obj, std::placeholders::_1);
 }
 
+enum PropertyFlags {
+    PROP_HIDDEN = 1 << 0, // Hidden from the editor
+    PROP_NOSAVE = 1 << 1, // Do not serialize
+};
+
 struct PropertyMeta {
     void* backingField;
     const Data::TypeInfo* type;
     FieldCodec codec;
     std::optional<std::function<void(std::string name)>> updateCallback;
+    PropertyFlags flags;
 };
 
 typedef std::variant<PropertyMeta> MemberMeta;

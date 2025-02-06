@@ -2,9 +2,10 @@
 
 #define IMPL_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE, TYPE_NAME) Data::CLASS_NAME::CLASS_NAME(WRAPPED_TYPE in) : value(in) {} \
 Data::CLASS_NAME::~CLASS_NAME() = default; \
-Data::CLASS_NAME::operator WRAPPED_TYPE() { return value; } \
+Data::CLASS_NAME::operator const WRAPPED_TYPE() const { return value; } \
 const Data::TypeInfo Data::CLASS_NAME::TYPE = { .name = TYPE_NAME, }; \
-const Data::TypeInfo& Data::CLASS_NAME::GetType() const { return Data::CLASS_NAME::TYPE; };
+const Data::TypeInfo& Data::CLASS_NAME::GetType() const { return Data::CLASS_NAME::TYPE; }; \
+void Data::CLASS_NAME::Serialize(pugi::xml_node* node) const { node->text().set(std::string(this->ToString())); }
 
 Data::Base::~Base() {};
 
@@ -22,6 +23,10 @@ IMPL_WRAPPER_CLASS(String, std::string, "string")
 
 const Data::String Data::Null::ToString() const {
     return Data::String("null");
+}
+
+void Data::Null::Serialize(pugi::xml_node* node) const {
+    node->text().set("null");
 }
 
 const Data::String Data::Bool::ToString() const {

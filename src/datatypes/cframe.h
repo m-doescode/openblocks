@@ -31,6 +31,7 @@ namespace Data {
         static const TypeInfo TYPE;
 
         virtual const Data::String ToString() const override;
+        virtual void Serialize(pugi::xml_node* parent) const override;
 
         operator glm::mat4() const;
         operator rp::Transform() const;

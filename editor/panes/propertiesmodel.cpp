@@ -1,12 +1,20 @@
 #include "propertiesmodel.h"
 #include "datatypes/base.h"
+#include "datatypes/cframe.h"
 #include "objects/base/member.h"
 #include "qnamespace.h"
 
 PropertiesModel::PropertiesModel(InstanceRef selectedItem, QWidget *parent)
     : QAbstractItemModel(parent)
     , selectedItem(selectedItem) {
-    this->propertiesList = selectedItem->GetProperties();
+    this->propertiesList.reserve(selectedItem->GetProperties().size());
+    for (std::string name : selectedItem->GetProperties()) {
+        PropertyMeta meta = selectedItem->GetPropertyMeta(name).value();
+        // Don't show CFrames in properties
+        if (meta.type == &Data::CFrame::TYPE) continue;
+
+        this->propertiesList.push_back(name);
+    }
 }
 
 PropertiesModel::~PropertiesModel() = default;
@@ -102,7 +110,7 @@ QModelIndex PropertiesModel::parent(const QModelIndex &index) const {
 }
 
 int PropertiesModel::rowCount(const QModelIndex &parent) const {
-    return !parent.isValid() ? selectedItem->GetProperties().size() : 0;
+    return !parent.isValid() ? this->propertiesList.size() : 0;
 }
 
 int PropertiesModel::columnCount(const QModelIndex &parent) const {

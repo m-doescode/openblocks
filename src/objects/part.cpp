@@ -63,9 +63,29 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
-            { "Anchored", { .backingField = &anchored, .type = &Data::Bool::TYPE, .codec = fieldCodecOf<Data::Bool, bool>(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } },
-            { "Position", { .backingField = &cframe, .type = &Data::Vector3::TYPE, .codec = cframePositionCodec(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } },
-            { "Rotation", { .backingField = &cframe, .type = &Data::Vector3::TYPE, .codec = cframeRotationCodec(), .updateCallback = memberFunctionOf(&Part::onUpdated, this) } }
+            { "Anchored", {
+                .backingField = &anchored,
+                .type = &Data::Bool::TYPE,
+                .codec = fieldCodecOf<Data::Bool, bool>(),
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this)
+            } }, { "Position", {
+                .backingField = &cframe,
+                .type = &Data::Vector3::TYPE,
+                .codec = cframePositionCodec(),
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .flags = PropertyFlags::PROP_NOSAVE
+            } }, { "Rotation", {
+                .backingField = &cframe,
+                .type = &Data::Vector3::TYPE,
+                .codec = cframeRotationCodec(),
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .flags = PropertyFlags::PROP_NOSAVE
+            } }, { "CFrame", {
+                .backingField = &cframe,
+                .type = &Data::CFrame::TYPE,
+                .codec = fieldCodecOf<Data::CFrame>(),
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+            } }
         }
     });
 }

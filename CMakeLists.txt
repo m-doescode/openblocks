@@ -23,14 +23,15 @@ find_package(GLUT REQUIRED)
 include_directories(${GLUT_INCLUDE_DIRS})
 
 find_package(glfw3 REQUIRED)
-
 find_package(OpenGL)
-
 find_package(glm CONFIG REQUIRED)
-
 find_package(assimp REQUIRED)
-
 find_package(ReactPhysics3D REQUIRED)
+find_package(pugixml REQUIRED)
+
+# PkgConfig packages
+# find_package(PkgConfig REQUIRED)
+# pkg_check_modules(PUGIXML REQUIRED pugixml)
 
 file(MAKE_DIRECTORY bin)
 
@@ -39,7 +40,7 @@ include_directories("include")
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 add_library(openblocks ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
-target_link_libraries(openblocks ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU glfw glm::glm assimp ReactPhysics3D::ReactPhysics3D)
+target_link_libraries(openblocks ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${PUGIXML_LIBRARIES} OpenGL::GL OpenGL::GLU glfw glm::glm assimp ReactPhysics3D::ReactPhysics3D pugixml::pugixml)
 
 # add_executable(client "client/src/main.cpp" $<TARGET_OBJECTS:openblocks>)
 # include_directories("src")

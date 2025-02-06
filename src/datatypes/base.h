@@ -1,5 +1,6 @@
 #pragma once
 
+#include <pugixml.hpp>
 #include <string>
 
 
@@ -8,11 +9,12 @@
 public: \
     CLASS_NAME(WRAPPED_TYPE); \
     ~CLASS_NAME(); \
-    operator WRAPPED_TYPE(); \
+    operator const WRAPPED_TYPE() const; \
     virtual const TypeInfo& GetType() const override; \
     static const TypeInfo TYPE; \
     \
     virtual const Data::String ToString() const override; \
+    virtual void Serialize(pugi::xml_node* node) const override; \
 };
 
 namespace Data {
@@ -27,6 +29,7 @@ namespace Data {
         virtual ~Base();
         virtual const TypeInfo& GetType() const = 0;
         virtual const Data::String ToString() const = 0;
+        virtual void Serialize(pugi::xml_node* node) const = 0;
     };
 
     class Null : Base {
@@ -37,6 +40,7 @@ namespace Data {
         static const TypeInfo TYPE;
 
         virtual const Data::String ToString() const override;
+        virtual void Serialize(pugi::xml_node* node) const override;
     };
 
     DEF_WRAPPER_CLASS(Bool, bool)

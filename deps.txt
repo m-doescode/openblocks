@@ -1,0 +1,10 @@
+glm
+opengl
+assimp
+sdl2
+glfw
+glut
+glew
+qt6
+reactphysics3d
+pugixml
