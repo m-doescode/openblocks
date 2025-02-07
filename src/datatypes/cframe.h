@@ -22,6 +22,7 @@ namespace Data {
         // CFrame(float x, float y, float z);
         // CFrame(const glm::vec3&);
         // CFrame(const rp::Vector3&);
+        CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
         CFrame(const rp::Transform&);
         CFrame(Data::Vector3 position, glm::quat quat);
         CFrame(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up = Data::Vector3(0, 1, 0));
@@ -32,6 +33,7 @@ namespace Data {
 
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node* parent) const override;
+        static Data::Variant Deserialize(pugi::xml_node* node);
 
         operator glm::mat4() const;
         operator rp::Transform() const;

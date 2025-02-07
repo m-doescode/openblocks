@@ -110,6 +110,21 @@ void renderParts() {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
 
+        // if (inst->name == "Target") printf("(%f,%f,%f):(%f,%f,%f;%f,%f,%f;%f,%f,%f)\n", 
+        //     part->cframe.X(),
+        //     part->cframe.Y(),
+        //     part->cframe.Z(),
+        //     part->cframe.RightVector().X(),
+        //     part->cframe.UpVector().X(),
+        //     part->cframe.LookVector().X(),
+        //     part->cframe.RightVector().Y(),
+        //     part->cframe.UpVector().Y(),
+        //     part->cframe.LookVector().Y(),
+        //     part->cframe.RightVector().Z(),
+        //     part->cframe.UpVector().Z(),
+        //     part->cframe.LookVector().Z()
+        // );
+
         glm::mat4 model = part->cframe;
         model = glm::scale(model, part->scale);
         shader->set("model", model);

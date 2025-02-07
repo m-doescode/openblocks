@@ -1,8 +1,8 @@
 #pragma once
 
-#include <pugixml.hpp>
 #include <string>
-
+#include <functional>
+#include <pugixml.hpp>
 
 #define DEF_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) class CLASS_NAME : public Data::Base { \
     const WRAPPED_TYPE value; \
@@ -15,11 +15,16 @@ public: \
     \
     virtual const Data::String ToString() const override; \
     virtual void Serialize(pugi::xml_node* node) const override; \
+    static Data::Variant Deserialize(pugi::xml_node* node); \
 };
 
 namespace Data {
+    class Variant;
+    typedef std::function<Data::Variant(pugi::xml_node*)> Deserializer;
+
     struct TypeInfo {
         std::string name;
+        Deserializer deserializer;
         TypeInfo(const TypeInfo&) = delete;
     };
 
@@ -41,6 +46,7 @@ namespace Data {
 
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node* node) const override;
+        static Data::Variant Deserialize(pugi::xml_node* node);
     };
 
     DEF_WRAPPER_CLASS(Bool, bool)

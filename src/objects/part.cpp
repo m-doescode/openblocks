@@ -85,6 +85,11 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .type = &Data::CFrame::TYPE,
                 .codec = fieldCodecOf<Data::CFrame>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+            } }, { "scale", {
+                .backingField = &scale,
+                .type = &Data::Vector3::TYPE,
+                .codec = fieldCodecOf<Data::Vector3, glm::vec3>(),
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this)
             } }
         }
     });

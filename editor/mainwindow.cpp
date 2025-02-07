@@ -18,6 +18,7 @@
 #include "objects/datamodel.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
+#include "qfiledialog.h"
 #include "qitemselectionmodel.h"
 #include "qobject.h"
 #include "qsysinfo.h"
@@ -36,14 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     timer.start(33, this);
     setMouseTracking(true);
 
-    connect(ui->explorerView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-        if (selected.count() == 0) return;
-
-        std::optional<InstanceRef> inst = selected.count() == 0 ? std::nullopt
-            : std::make_optional(((Instance*)selected.indexes()[0].internalPointer())->shared_from_this());
-
-        ui->propertiesView->setSelected(inst);
-    });
+    ConnectSelectionChangeHandler();
 
     connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = SelectedTool::SELECT; updateSelectedTool(); });
     connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::MOVE : SelectedTool::SELECT; updateSelectedTool(); });
@@ -65,11 +59,23 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
-        pugi::xml_document doc;
-        pugi::xml_node node = doc.append_child("openblocks");
-        workspace()->Serialize(&node);
+        std::optional<std::string> path;
+        if (!dataModel->HasFile())
+            path = QFileDialog::getSaveFileName(this, QString::fromStdString("Save " + dataModel->name), "", "*.obl").toStdString();
+        if (path == "") return;
 
-        doc.print(std::cout);
+        dataModel->SaveToFile(path);
+    });
+
+    connect(ui->actionOpen, &QAction::triggered, this, [&]() {
+        std::string path = QFileDialog::getOpenFileName(this, "Load file", "", "*.obl").toStdString();
+        if (path == "") return;
+        std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path);
+        dataModel = newModel;
+        delete ui->explorerView->selectionModel();
+        ui->explorerView->reset();
+        ui->explorerView->setModel(new ExplorerModel(dataModel));
+        ConnectSelectionChangeHandler();
     });
     
     // ui->explorerView->Init(ui);
@@ -102,6 +108,17 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }));
     syncPartPhysics(ui->mainWidget->lastPart);
+}
+
+void MainWindow::ConnectSelectionChangeHandler() {
+    connect(ui->explorerView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+        if (selected.count() == 0) return;
+
+        std::optional<InstanceRef> inst = selected.count() == 0 ? std::nullopt
+            : std::make_optional(((Instance*)selected.indexes()[0].internalPointer())->shared_from_this());
+
+        ui->propertiesView->setSelected(inst);
+    });
 }
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();

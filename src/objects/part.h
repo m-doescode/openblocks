@@ -31,7 +31,11 @@ public:
     // TODO: Switch these over to our dedicated datatypes
     Data::CFrame cframe;
     glm::vec3 scale;
-    Material material;
+    Material material {
+        .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
+        .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+        .shininess = 32.0f,
+    };
     bool selected = false;
     
     bool anchored = false;

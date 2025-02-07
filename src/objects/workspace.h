@@ -12,6 +12,6 @@ public:
     Workspace(std::weak_ptr<DataModel> dataModel);
 
     // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
-    // static inline InstanceRef Create() { return std::make_shared<Workspace>(); };
+    static inline std::shared_ptr<Service> Create(std::weak_ptr<DataModel> parent) { return std::make_shared<Workspace>(parent); };
     virtual const InstanceType* GetClass() override;
 };

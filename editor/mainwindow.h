@@ -28,5 +28,6 @@ private:
 
     void updateSelectedTool();
     void timerEvent(QTimerEvent*) override;
+    void ConnectSelectionChangeHandler();
 };
 #endif // MAINWINDOW_H
