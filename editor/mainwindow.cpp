@@ -87,11 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(512, 1.2, 512),
-        .material = Material {
-            .diffuse = glm::vec3(0.388235, 0.372549, 0.384314),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 32.0f,
-        },
+        .color = glm::vec3(0.388235, 0.372549, 0.384314),
         .anchored = true,
     }));
     ui->mainWidget->lastPart->name = "Baseplate";
@@ -101,11 +97,7 @@ MainWindow::MainWindow(QWidget *parent)
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(4, 1.2, 2),
-        .material = Material {
-            .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 32.0f,
-        }
+        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     syncPartPhysics(ui->mainWidget->lastPart);
 }

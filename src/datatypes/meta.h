@@ -3,6 +3,7 @@
 #include <variant>
 #include <map>
 #include "base.h"
+#include "datatypes/color3.h"
 #include "vector.h"
 #include "cframe.h"
 
@@ -22,7 +23,8 @@ namespace Data {
         Float,
         String,
         Vector3,
-        CFrame
+        CFrame,
+        Color3
     > __VARIANT_TYPE;
 
     class Variant {

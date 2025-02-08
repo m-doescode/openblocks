@@ -128,7 +128,11 @@ void renderParts() {
         glm::mat4 model = part->cframe;
         model = glm::scale(model, part->scale);
         shader->set("model", model);
-        shader->set("material", part->material);
+        shader->set("material", Material {
+            .diffuse = part->color,
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 16.0f,
+        });
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         shader->set("normalMatrix", normalMatrix);
         shader->set("texScale", part->scale);

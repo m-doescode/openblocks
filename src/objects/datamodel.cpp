@@ -70,7 +70,6 @@ void DataModel::DeserializeService(pugi::xml_node* node) {
         abort();
     }
 
-    printf("Adding a workspace. %d:%d:%d\n", services.count(className), services.size(), GetChildren().size());
     if (services.count(className) != 0) {
         fprintf(stderr, "Service %s defined multiple times in file\n", className.c_str());
         return;

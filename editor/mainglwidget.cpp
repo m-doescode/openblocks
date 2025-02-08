@@ -157,11 +157,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
             .scale = glm::vec3(1, 1, 1),
-            .material = Material {
-                .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
-                .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-                .shininess = 32.0f,
-            }
+            .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
         syncPartPhysics(lastPart);
     }

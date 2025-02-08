@@ -50,11 +50,7 @@ int main() {
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(512, 1.2, 512),
-        .material = Material {
-            .diffuse = glm::vec3(0.388235, 0.372549, 0.384314),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 32.0f,
-        },
+        .color = glm::vec3(0.388235, 0.372549, 0.384314),
         .anchored = true,
     }));
 
@@ -62,11 +58,7 @@ int main() {
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
         .scale = glm::vec3(4, 1.2, 2),
-        .material = Material {
-            .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 32.0f,
-        }
+        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
 
     for (InstanceRef inst : workspace()->GetChildren()) {
@@ -166,11 +158,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
             .scale = glm::vec3(1, 1, 1),
-            .material = Material {
-                .diffuse = glm::vec3(1.0f, 0.5f, 0.31f),
-                .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-                .shininess = 32.0f,
-            }
+            .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
         syncPartPhysics(lastPart);
     }

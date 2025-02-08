@@ -6,6 +6,7 @@
 #include <glm/ext.hpp>
 #include "../rendering/material.h"
 #include "datatypes/cframe.h"
+#include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include <reactphysics3d/reactphysics3d.h>
 
@@ -16,7 +17,7 @@ struct PartConstructParams {
     glm::vec3 position;
     glm::quat rotation = glm::identity<glm::quat>();
     glm::vec3 scale;
-    Material material;
+    Data::Color3 color;
     
     bool anchored = false;
 };
@@ -28,14 +29,9 @@ protected:
 public:
     const static InstanceType TYPE;
 
-    // TODO: Switch these over to our dedicated datatypes
     Data::CFrame cframe;
     glm::vec3 scale;
-    Material material {
-        .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-        .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-        .shininess = 32.0f,
-    };
+    Data::Color3 color;
     bool selected = false;
     
     bool anchored = false;

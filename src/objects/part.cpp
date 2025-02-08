@@ -2,6 +2,7 @@
 #include "base/instance.h"
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
+#include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
 #include <memory>
@@ -55,11 +56,11 @@ const InstanceType* Part::GetClass() {
     return &TYPE;
 }
 
-Part::Part(): Part(PartConstructParams {}) {
+Part::Part(): Part(PartConstructParams { .color = Data::Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
 Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(params.position, params.rotation)),
-                                        scale(params.scale), material(params.material), anchored(params.anchored) {                      
+                                        scale(params.scale), color(params.color), anchored(params.anchored) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
@@ -85,11 +86,15 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .type = &Data::CFrame::TYPE,
                 .codec = fieldCodecOf<Data::CFrame>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
-            } }, { "scale", {
+            } }, { "Size", {
                 .backingField = &scale,
                 .type = &Data::Vector3::TYPE,
                 .codec = fieldCodecOf<Data::Vector3, glm::vec3>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this)
+            } }, { "Color", {
+                .backingField = &color,
+                .type = &Data::Color3::TYPE,
+                .codec = fieldCodecOf<Data::Color3>(),
             } }
         }
     });

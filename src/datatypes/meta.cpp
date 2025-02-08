@@ -33,4 +33,5 @@ std::map<std::string, const Data::TypeInfo*> Data::TYPE_MAP = {
     { "string", &Data::String::TYPE },
     { "Vector3", &Data::Vector3::TYPE },
     { "CoordinateFrame", &Data::CFrame::TYPE },
+    { "Color3", &Data::Color3::TYPE },
 };
