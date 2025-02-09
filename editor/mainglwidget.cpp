@@ -74,7 +74,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     
     if (!rayHit) return;
     Data::Vector3 vec = rayHit->worldPoint;
-    vec = vec + Data::Vector3(rpToGlm(rayHit->worldNormal) * draggingObject->lock()->scale / 2.f);
+    vec = vec + Data::Vector3(rpToGlm(rayHit->worldNormal) * draggingObject->lock()->size / 2.f);
     draggingObject->lock()->cframe = draggingObject->lock()->cframe.Rotation() + vec;
     syncPartPhysics(draggingObject->lock());
 }
@@ -156,7 +156,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         workspace()->AddChild(lastPart = Part::New({
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
-            .scale = glm::vec3(1, 1, 1),
+            .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
         syncPartPhysics(lastPart);

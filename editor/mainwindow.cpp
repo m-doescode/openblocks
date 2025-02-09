@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
     workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
-        .scale = glm::vec3(512, 1.2, 512),
+        .size = glm::vec3(512, 1.2, 512),
         .color = glm::vec3(0.388235, 0.372549, 0.384314),
         .anchored = true,
     }));
@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
     workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
-        .scale = glm::vec3(4, 1.2, 2),
+        .size = glm::vec3(4, 1.2, 2),
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     syncPartPhysics(ui->mainWidget->lastPart);

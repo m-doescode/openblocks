@@ -60,7 +60,7 @@ Part::Part(): Part(PartConstructParams { .color = Data::Color3(0.639216f, 0.6352
 }
 
 Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(params.position, params.rotation)),
-                                        scale(params.scale), color(params.color), anchored(params.anchored) {                      
+                                        size(params.size), color(params.color), anchored(params.anchored) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
         .members = {
@@ -87,7 +87,7 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .codec = fieldCodecOf<Data::CFrame>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
             } }, { "Size", {
-                .backingField = &scale,
+                .backingField = &size,
                 .type = &Data::Vector3::TYPE,
                 .codec = fieldCodecOf<Data::Vector3, glm::vec3>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this)

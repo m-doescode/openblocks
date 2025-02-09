@@ -49,7 +49,7 @@ int main() {
     workspace()->AddChild(Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
-        .scale = glm::vec3(512, 1.2, 512),
+        .size = glm::vec3(512, 1.2, 512),
         .color = glm::vec3(0.388235, 0.372549, 0.384314),
         .anchored = true,
     }));
@@ -57,7 +57,7 @@ int main() {
     workspace()->AddChild(lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0),
-        .scale = glm::vec3(4, 1.2, 2),
+        .size = glm::vec3(4, 1.2, 2),
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
 
@@ -157,7 +157,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         workspace()->AddChild(lastPart = Part::New({
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
-            .scale = glm::vec3(1, 1, 1),
+            .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
         syncPartPhysics(lastPart);
@@ -179,15 +179,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     } else if (mode == 1) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-            lastPart->scale.x += shiftFactor;
+            lastPart->size.x += shiftFactor;
             syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-            lastPart->scale.y += shiftFactor;
+            lastPart->size.y += shiftFactor;
             syncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-            lastPart->scale.z += shiftFactor;
+            lastPart->size.z += shiftFactor;
             syncPartPhysics(lastPart);
         }
     }

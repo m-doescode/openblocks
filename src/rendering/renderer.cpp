@@ -126,7 +126,7 @@ void renderParts() {
         // );
 
         glm::mat4 model = part->cframe;
-        model = glm::scale(model, part->scale);
+        model = glm::scale(model, part->size);
         shader->set("model", model);
         shader->set("material", Material {
             .diffuse = part->color,
@@ -135,7 +135,7 @@ void renderParts() {
         });
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         shader->set("normalMatrix", normalMatrix);
-        shader->set("texScale", part->scale);
+        shader->set("texScale", part->size);
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);

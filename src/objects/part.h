@@ -16,7 +16,7 @@ namespace rp = reactphysics3d;
 struct PartConstructParams {
     glm::vec3 position;
     glm::quat rotation = glm::identity<glm::quat>();
-    glm::vec3 scale;
+    glm::vec3 size;
     Data::Color3 color;
     
     bool anchored = false;
@@ -30,7 +30,7 @@ public:
     const static InstanceType TYPE;
 
     Data::CFrame cframe;
-    glm::vec3 scale;
+    glm::vec3 size;
     Data::Color3 color;
     bool selected = false;
     

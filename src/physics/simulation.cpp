@@ -53,7 +53,7 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
         part->rigidBody->setTransform(transform);
     }
 
-    rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->scale * glm::vec3(0.5f)));
+    rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
 
     if (part->rigidBody->getNbColliders() > 0) {
         part->rigidBody->removeCollider(part->rigidBody->getCollider(0));
