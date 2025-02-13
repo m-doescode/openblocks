@@ -10,3 +10,7 @@ Makefile
 *.pro.user*
 CMakeLists.txt.user*
 *_autogen/
+
+# Clangd
+/compile_commands.json
+/.cache
