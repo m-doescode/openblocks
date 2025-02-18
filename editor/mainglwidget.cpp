@@ -112,8 +112,10 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
 
     if (selectedTool == SelectedTool::MOVE)
         editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + draggingHandle->normal * changeBy;
-    else if (selectedTool == SelectedTool::SCALE)
+    else if (selectedTool == SelectedTool::SCALE) {
+        if (!(evt->modifiers() & Qt::ControlModifier)) editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + draggingHandle->normal * changeBy * 0.5f;
         editorToolHandles->adornee->lock()->size += glm::abs(draggingHandle->normal) * changeBy;
+    }
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
