@@ -10,6 +10,7 @@
 #include <QWidget>
 #include <QTreeView>
 #include <QAbstractItemView>
+#include <memory>
 #include <optional>
 
 #include "common.h"
@@ -78,6 +79,10 @@ MainWindow::MainWindow(QWidget *parent)
         ConnectSelectionChangeHandler();
     });
     
+    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
+        updateSelectedTool();
+    });
+
     // ui->explorerView->Init(ui);
 
     simulationInit();
@@ -134,6 +139,19 @@ void MainWindow::updateSelectedTool() {
     ui->actionToolMove->setChecked(selectedTool == SelectedTool::MOVE);
     ui->actionToolScale->setChecked(selectedTool == SelectedTool::SCALE);
     ui->actionToolRotate->setChecked(selectedTool == SelectedTool::ROTATE);
+
+    if (selectedTool == SelectedTool::MOVE) editorToolHandles->worldMode = true;
+    if (selectedTool == SelectedTool::SCALE) editorToolHandles->worldMode = false;
+
+    // This code sucks. A lot
+    if (selectedTool == SelectedTool::SELECT) return;
+    if (getSelection().size() == 0) { editorToolHandles->adornee = std::nullopt; return; };
+    InstanceRef inst = getSelection()[0].lock();
+    if (inst->GetClass() != &Part::TYPE) { editorToolHandles->adornee = std::nullopt; return; };
+
+    editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
+
+    // editorToolHandles->adornee = std::nullopt;
 }
 
 MainWindow::~MainWindow()

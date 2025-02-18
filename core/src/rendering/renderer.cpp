@@ -5,11 +5,13 @@
 #include <glm/ext.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
 #include <vector>
 
+#include "datatypes/cframe.h"
 #include "physics/util.h"
 #include "shader.h"
 #include "mesh.h"
@@ -23,8 +25,9 @@
 
 #include "renderer.h"
 
-Shader *shader = NULL;
-Shader *skyboxShader = NULL;
+Shader* shader = NULL;
+Shader* skyboxShader = NULL;
+Shader* handleShader;
 extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
@@ -54,9 +57,10 @@ void renderInit(GLFWwindow* window, int width, int height) {
 
     studsTexture = new Texture3D("assets/textures/studs.png", 128, 128, 6, GL_RGBA);
 
-    // Compile shader
+    // Compile shaders
     shader = new Shader("assets/shaders/phong.vs", "assets/shaders/phong.fs");
     skyboxShader = new Shader("assets/shaders/skybox.vs", "assets/shaders/skybox.fs");
+    handleShader = new Shader("assets/shaders/handle.vs", "assets/shaders/handle.fs");
 }
 
 void renderParts() {
@@ -109,22 +113,6 @@ void renderParts() {
     for (InstanceRef inst : workspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
-
-        // if (inst->name == "Target") printf("(%f,%f,%f):(%f,%f,%f;%f,%f,%f;%f,%f,%f)\n", 
-        //     part->cframe.X(),
-        //     part->cframe.Y(),
-        //     part->cframe.Z(),
-        //     part->cframe.RightVector().X(),
-        //     part->cframe.UpVector().X(),
-        //     part->cframe.LookVector().X(),
-        //     part->cframe.RightVector().Y(),
-        //     part->cframe.UpVector().Y(),
-        //     part->cframe.LookVector().Y(),
-        //     part->cframe.RightVector().Z(),
-        //     part->cframe.UpVector().Z(),
-        //     part->cframe.LookVector().Z()
-        // );
-
         glm::mat4 model = part->cframe;
         model = glm::scale(model, part->size);
         shader->set("model", model);
@@ -160,12 +148,56 @@ void renderSkyBox() {
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
+void renderHandles() {
+    // if (getSelection().size() == 0) return;
+    // if (getSelection()[0].lock()->GetClass() != &Part::TYPE) return;
+    if (!editorToolHandles->adornee.has_value()) return;
+
+    glDepthMask(GL_TRUE);
+    
+    // Use shader
+    handleShader->use();
+
+    // view/projection transformations
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 100.0f);
+    glm::mat4 view = camera.getLookAt();
+    handleShader->set("projection", projection);
+    handleShader->set("view", view);
+    handleShader->set("sunLight", DirLight {
+        .direction = glm::vec3(-0.2f, -1.0f, -0.3f),
+        .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
+        .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+        .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+    });
+    handleShader->set("numPointLights", 0);
+
+    // Pass in the camera position
+    handleShader->set("viewPos", camera.cameraPos);
+
+    for (auto face : HandleFace::Faces) {
+        glm::mat4 model = editorToolHandles->GetCFrameOfHandle(face);
+        model = glm::scale(model, glm::vec3(1,1,1));
+        handleShader->set("model", model);
+        handleShader->set("material", Material {
+            .diffuse = glm::abs(face.normal),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 16.0f,
+        });
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        handleShader->set("normalMatrix", normalMatrix);
+
+        CUBE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+}
+
 void render(GLFWwindow* window) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderSkyBox();
     renderParts();
+    renderHandles();
 }
 
 void setViewport(int width, int height) {

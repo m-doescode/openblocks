@@ -6,6 +6,7 @@
 #include <reactphysics3d/collision/shapes/BoxShape.h>
 #include <reactphysics3d/collision/shapes/CollisionShape.h>
 #include <reactphysics3d/components/RigidBodyComponents.h>
+#include <reactphysics3d/configuration.h>
 #include <reactphysics3d/engine/EventListener.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
@@ -39,6 +40,9 @@ void simulationInit() {
     world = physicsCommon->createPhysicsWorld();
 
     world->setGravity(rp::Vector3(0, -196.2, 0));
+    // world->setContactsPositionCorrectionTechnique(rp3d::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
+    world->setNbIterationsPositionSolver(2000);
+    world->setNbIterationsVelocitySolver(2000);
 
     world->setEventListener(&eventListener);
 }

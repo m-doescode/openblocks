@@ -8,6 +8,7 @@ Camera camera(glm::vec3(0.0, 0.0, 3.0));
 std::shared_ptr<DataModel> dataModel = DataModel::New();
 std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
+std::shared_ptr<Handles> editorToolHandles = Handles::New();
 
 
 std::vector<InstanceRefWeak> currentSelection;

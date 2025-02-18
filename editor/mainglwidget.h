@@ -7,6 +7,8 @@
 #include <QWidget>
 #include <memory>
 
+class HandleFace;
+
 class MainGLWidget : public QOpenGLWidget {
 public:
     MainGLWidget(QWidget *parent = nullptr);
@@ -20,7 +22,9 @@ protected:
 
     void handleCameraRotate(QMouseEvent* evt);
     void handleObjectDrag(QMouseEvent* evt);
+    void handleHandleDrag(QMouseEvent* evt);
     void handleCursorChange(QMouseEvent* evt);
+    std::optional<HandleFace> raycastHandle(glm::vec3 pointDir);
 
     void mouseMoveEvent(QMouseEvent* evt) override;
     void mousePressEvent(QMouseEvent* evt) override;

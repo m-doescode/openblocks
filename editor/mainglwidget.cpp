@@ -11,6 +11,7 @@
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
 
+#include "editorcommon.h"
 #include "physics/util.h"
 #include "qcursor.h"
 #include "qevent.h"
@@ -21,6 +22,7 @@
 #include "camera.h"
 
 #include "common.h"
+#include "rendering/shader.h"
 
 #include "mainglwidget.h"
 
@@ -29,9 +31,13 @@ MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
     setMouseTracking(true);
 }
 
+Shader* identityShader;
+
 void MainGLWidget::initializeGL() {
     glewInit();
     renderInit(NULL, width(), height());
+
+    identityShader = new Shader("assets/shaders/identity.vs", "assets/shaders/identity.fs");
 }
 
 extern int vpx, vpy;
@@ -45,6 +51,10 @@ void MainGLWidget::resizeGL(int w, int h) {
     setViewport(w, h);
 }
 
+glm::vec2 firstPoint;
+glm::vec2 secondPoint;
+
+extern std::optional<std::weak_ptr<Part>> draggingObject;
 void MainGLWidget::paintGL() {
     ::render(NULL);
 }
@@ -62,8 +72,9 @@ void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
 
 bool isMouseDragging = false;
 std::optional<std::weak_ptr<Part>> draggingObject;
+std::optional<HandleFace> draggingHandle;
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
-    if (!isMouseDragging) return;
+    if (!isMouseDragging || !draggingObject) return;
 
     QPoint position = evt->pos();
 
@@ -79,17 +90,62 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     syncPartPhysics(draggingObject->lock());
 }
 
+QPoint lastPoint;
+void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
+    QPoint cLastPoint = lastPoint;
+    lastPoint = evt->pos();
+
+    if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee) return;
+
+    // https://stackoverflow.com/a/57380616/16255372
+    QPoint position = evt->pos();
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 100.0f);
+    glm::mat4 view = camera.getLookAt();
+    glm::mat4 worldToScreen = projection * view;
+    glm::vec4 a = worldToScreen * glm::vec4((glm::vec3)editorToolHandles->adornee->lock()->position(), 1);
+    glm::vec4 b = worldToScreen * glm::vec4((glm::vec3)editorToolHandles->adornee->lock()->position() + draggingHandle->normal, 1);
+    glm::vec2 screenDir = b / b.w - a / a.w;
+
+    QPoint mouseDelta_ = evt->pos() - cLastPoint;
+    glm::vec2 mouseDelta(mouseDelta_.x(), mouseDelta_.y() * -1.f);
+    float changeBy = glm::dot(mouseDelta, screenDir);
+
+    if (selectedTool == SelectedTool::MOVE)
+        editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + draggingHandle->normal * changeBy;
+    else if (selectedTool == SelectedTool::SCALE)
+        editorToolHandles->adornee->lock()->size += glm::abs(draggingHandle->normal) * changeBy;
+
+    syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
+}
+
+std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
+    if (!editorToolHandles->adornee.has_value()) return std::nullopt;
+    return editorToolHandles->RaycastHandle(rp3d::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
+}
+
 void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
     QPoint position = evt->pos();
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+
+    if (raycastHandle(pointDir)) {
+        setCursor(Qt::OpenHandCursor);
+        return;
+    };
+
     std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000);
-    setCursor((rayHit && partFromBody(rayHit->body)->name != "Baseplate") ? Qt::OpenHandCursor : Qt::ArrowCursor);
+    if (rayHit && partFromBody(rayHit->body)->name != "Baseplate") {
+        setCursor(Qt::OpenHandCursor);
+        return;
+    }
+
+    setCursor(Qt::ArrowCursor);
 }
 
 void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     handleCameraRotate(evt);
     handleObjectDrag(evt);
+    handleHandleDrag(evt);
     handleCursorChange(evt);
 }
 
@@ -105,6 +161,15 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         QPoint position = evt->pos();
 
         glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+        // raycast handles
+        auto handle = raycastHandle(pointDir);
+        if (handle.has_value()) {
+            isMouseDragging = true;
+            draggingHandle = handle;
+            return;
+        }
+
+        // raycast part
         std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000);
         if (!rayHit || !partFromBody(rayHit->body)) return;
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
@@ -128,6 +193,7 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     isMouseRightDragging = false;
     isMouseDragging = false;
     draggingObject = std::nullopt;
+    draggingHandle = std::nullopt;
 }
 
 static int moveZ = 0;
