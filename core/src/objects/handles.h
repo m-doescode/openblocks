@@ -28,6 +28,7 @@ class Handles : public Instance {
 public:
     const static InstanceType TYPE;
 
+    bool active;
     std::optional<std::weak_ptr<Part>> adornee;
     // inline std::optional<std::weak_ptr<Part>> GetAdornee() { return adornee; }
     // inline void SetAdornee(std::optional<std::weak_ptr<Part>> newAdornee) { this->adornee = newAdornee; updateAdornee(); };

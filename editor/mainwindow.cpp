@@ -24,8 +24,6 @@
 #include "qobject.h"
 #include "qsysinfo.h"
 
-SelectedTool selectedTool;
-
 bool simulationPlaying = false;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -87,7 +85,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
     
     addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        updateToolbars();
+        editorToolHandles->adornee = std::nullopt;
+        if (newSelection.size() == 0) return;
+        InstanceRef inst = newSelection[0].lock();
+        if (inst->GetClass() != &Part::TYPE) return;
+
+        editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
     });
 
     // ui->explorerView->Init(ui);
@@ -153,16 +156,7 @@ void MainWindow::updateToolbars() {
 
     if (selectedTool == SelectedTool::MOVE) editorToolHandles->worldMode = true;
     if (selectedTool == SelectedTool::SCALE) editorToolHandles->worldMode = false;
-
-    // This code sucks. A lot
-    if (selectedTool == SelectedTool::SELECT) return;
-    if (getSelection().size() == 0) { editorToolHandles->adornee = std::nullopt; return; };
-    InstanceRef inst = getSelection()[0].lock();
-    if (inst->GetClass() != &Part::TYPE) { editorToolHandles->adornee = std::nullopt; return; };
-
-    editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
-
-    // editorToolHandles->adornee = std::nullopt;
+    editorToolHandles->active = selectedTool != SelectedTool::SELECT;
 }
 
 MainWindow::~MainWindow()

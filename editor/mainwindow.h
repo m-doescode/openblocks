@@ -8,6 +8,13 @@
 #include <QMainWindow>
 #include <QLineEdit>
 
+enum SelectedTool {
+    SELECT,
+    MOVE,
+    SCALE,
+    ROTATE,
+};
+
 enum GridSnappingMode {
     SNAP_1_STUD,
     SNAP_05_STUDS,
@@ -28,6 +35,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     
+    SelectedTool selectedTool;
     GridSnappingMode snappingMode;
 
     Ui::MainWindow *ui;

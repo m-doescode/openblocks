@@ -152,7 +152,7 @@ void renderSkyBox() {
 void renderHandles() {
     // if (getSelection().size() == 0) return;
     // if (getSelection()[0].lock()->GetClass() != &Part::TYPE) return;
-    if (!editorToolHandles->adornee.has_value()) return;
+    if (!editorToolHandles->adornee.has_value() || !editorToolHandles->active) return;
 
     glDepthMask(GL_TRUE);
     

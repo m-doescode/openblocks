@@ -146,7 +146,7 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
     QPoint cLastPoint = lastPoint;
     lastPoint = evt->pos();
 
-    if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee) return;
+    if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
 
     QPoint position = evt->pos();
 
@@ -169,7 +169,7 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
     glm::vec3 handlePoint, rb;
     get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
 
-    if (selectedTool == SelectedTool::MOVE) {
+    if (mainWindow()->selectedTool == SelectedTool::MOVE) {
         glm::vec3 newPos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
         glm::vec3 oldPos = editorToolHandles->adornee->lock()->cframe.Position();
         glm::vec3 diff = newPos - oldPos;
@@ -179,7 +179,7 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
         newPos = diff + oldPos;
 
         editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe.Rotation() + newPos;
-    } else if (selectedTool == SelectedTool::SCALE) {
+    } else if (mainWindow()->selectedTool == SelectedTool::SCALE) {
         glm::vec3 handlePos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
         
         // Find change in handles, and negate difference in sign between axes
@@ -199,7 +199,7 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
-    if (!editorToolHandles->adornee.has_value()) return std::nullopt;
+    if (!editorToolHandles->adornee.has_value() || !editorToolHandles->active) return std::nullopt;
     return editorToolHandles->RaycastHandle(rp3d::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
 }
 
