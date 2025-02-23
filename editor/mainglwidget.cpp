@@ -3,6 +3,7 @@
 
 #include <QMouseEvent>
 #include <glm/ext/matrix_projection.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
 #include <glm/matrix.hpp>
@@ -11,7 +12,9 @@
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
 
+#include "datatypes/cframe.h"
 #include "editorcommon.h"
+#include "objects/handles.h"
 #include "physics/util.h"
 #include "qcursor.h"
 #include "qevent.h"
@@ -25,6 +28,8 @@
 #include "rendering/shader.h"
 
 #include "mainglwidget.h"
+#include "../core/src/rendering/defaultmeshes.h"
+#include "math_helper.h"
 
 MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
@@ -55,8 +60,47 @@ glm::vec2 firstPoint;
 glm::vec2 secondPoint;
 
 extern std::optional<std::weak_ptr<Part>> draggingObject;
+extern std::optional<HandleFace> draggingHandle;
+extern Shader* shader;
 void MainGLWidget::paintGL() {
     ::render(NULL);
+
+    if (!editorToolHandles->adornee) return;
+
+    for (HandleFace face : HandleFace::Faces) {
+        // Ignore negatives (for now)
+        if (face.normal != glm::abs(face.normal)) continue;
+
+        glm::vec3 axisNormal = face.normal;
+        // // glm::vec3 planeNormal = camera.cameraFront;
+        glm::vec3 planeRight = glm::cross(axisNormal, glm::normalize(camera.cameraFront));
+        glm::vec3 planeNormal = glm::cross(glm::normalize(planeRight), axisNormal);
+
+        auto a = axisNormal;
+        auto b = planeRight;
+        auto c = planeNormal;
+
+        glm::mat3 matrix = {
+            axisNormal,
+            planeRight,
+            -planeNormal,
+        };
+
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), (glm::vec3)editorToolHandles->adornee->lock()->position()) * glm::mat4(matrix);
+        model = glm::scale(model, glm::vec3(5, 5, 0.2));
+
+        shader->set("model", model);
+        shader->set("material", Material {
+            .diffuse = glm::vec3(0.5, 1.f, 0.5),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 16.0f,
+        });
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        shader->set("normalMatrix", normalMatrix);
+
+        CUBE_MESH->bind();
+        // glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 }
 
 bool isMouseRightDragging = false;
@@ -90,6 +134,10 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     syncPartPhysics(draggingObject->lock());
 }
 
+inline glm::vec3 vec3fy(glm::vec4 vec) {
+    return vec / vec.w;
+}
+
 QPoint lastPoint;
 void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
     QPoint cLastPoint = lastPoint;
@@ -97,24 +145,39 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
 
     if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee) return;
 
-    // https://stackoverflow.com/a/57380616/16255372
     QPoint position = evt->pos();
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 100.0f);
-    glm::mat4 view = camera.getLookAt();
-    glm::mat4 worldToScreen = projection * view;
-    glm::vec4 a = worldToScreen * glm::vec4((glm::vec3)editorToolHandles->adornee->lock()->position(), 1);
-    glm::vec4 b = worldToScreen * glm::vec4((glm::vec3)editorToolHandles->adornee->lock()->position() + draggingHandle->normal, 1);
-    glm::vec2 screenDir = b / b.w - a / a.w;
 
-    QPoint mouseDelta_ = evt->pos() - cLastPoint;
-    glm::vec2 mouseDelta(mouseDelta_.x(), mouseDelta_.y() * -1.f);
-    float changeBy = glm::dot(mouseDelta, screenDir);
+    // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
+
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    pointDir = glm::normalize(pointDir);
+
+    Data::CFrame handleCFrame = editorToolHandles->GetCFrameOfHandle(draggingHandle.value());
+
+    // Segment from axis stretching -4096 to +4096 rel to handle's position 
+    glm::vec3 axisSegment0 = handleCFrame.Position() + glm::abs(draggingHandle->normal) * 4096.0f;
+    glm::vec3 axisSegment1 = handleCFrame.Position() + glm::abs(draggingHandle->normal) * -4096.0f;
+
+    // Segment from camera stretching 4096 forward
+    glm::vec3 mouseSegment0 = camera.cameraPos;
+    glm::vec3 mouseSegment1 = camera.cameraPos + pointDir * 4096.0f;
+
+    // Closest point on the axis segment between the two segments
+    glm::vec3 handlePoint, rb;
+    get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
 
     if (selectedTool == SelectedTool::MOVE)
-        editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + draggingHandle->normal * changeBy;
+        editorToolHandles->adornee->lock()->cframe = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint);
     else if (selectedTool == SelectedTool::SCALE) {
-        if (!(evt->modifiers() & Qt::ControlModifier)) editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + draggingHandle->normal * changeBy * 0.5f;
-        editorToolHandles->adornee->lock()->size += glm::abs(draggingHandle->normal) * changeBy;
+        glm::vec3 handlePos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
+        
+        // Find change in handles, and negate difference in sign between axes
+        glm::vec3 diff = handlePos - glm::vec3(editorToolHandles->adornee->lock()->position());
+        editorToolHandles->adornee->lock()->size += diff * glm::sign(draggingHandle->normal);
+        
+        // If alt is not pressed, also reposition the part such that only the dragged side gets lengthened
+        if (!(evt->modifiers() & Qt::ControlModifier)) 
+            editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + (diff / 2.0f);
     }
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));

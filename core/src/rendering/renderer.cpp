@@ -114,6 +114,7 @@ void renderParts() {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         glm::mat4 model = part->cframe;
+        if (inst->name == "camera") model = camera.getLookAt();
         model = glm::scale(model, part->size);
         shader->set("model", model);
         shader->set("material", Material {
@@ -196,8 +197,8 @@ void render(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderSkyBox();
-    renderParts();
     renderHandles();
+    renderParts();
 }
 
 void setViewport(int width, int height) {

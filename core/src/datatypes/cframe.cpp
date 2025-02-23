@@ -33,7 +33,7 @@ Data::CFrame::CFrame(const rp::Transform& transform) : Data::CFrame::CFrame(rpTo
 }
 
 glm::mat3 lookAt(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up) {
-    // https://github.com/sgorsten/glm/issues/29#issuecomment-743989030
+    // https://github.com/sgorsten/linalg/issues/29#issuecomment-743989030
 	Data::Vector3 f = (lookAt - position).Unit(); // Forward/Look
 	Data::Vector3 u = up.Unit(); // Up
 	Data::Vector3 s = f.Cross(u).Unit(); // Right

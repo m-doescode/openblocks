@@ -37,6 +37,7 @@ public:
     // World-space handles vs local-space handles
     bool worldMode = false;
     Data::CFrame GetCFrameOfHandle(HandleFace face);
+    Data::CFrame PartCFrameFromHandlePos(HandleFace face, Data::Vector3 newPos);
     std::optional<HandleFace> RaycastHandle(rp3d::Ray ray);
 
     static inline std::shared_ptr<Handles> New() { return std::make_shared<Handles>(); };
