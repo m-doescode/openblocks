@@ -40,11 +40,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     ConnectSelectionChangeHandler();
 
-    connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = SelectedTool::SELECT; updateSelectedTool(); });
-    connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::MOVE : SelectedTool::SELECT; updateSelectedTool(); });
-    connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::SCALE : SelectedTool::SELECT; updateSelectedTool(); });
-    connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::ROTATE : SelectedTool::SELECT; updateSelectedTool(); });
+    connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = SelectedTool::SELECT; updateToolbars(); });
+    connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::MOVE : SelectedTool::SELECT; updateToolbars(); });
+    connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::SCALE : SelectedTool::SELECT; updateToolbars(); });
+    connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::ROTATE : SelectedTool::SELECT; updateToolbars(); });
     ui->actionToolSelect->setChecked(true);
+    selectedTool = SelectedTool::SELECT;
+
+    connect(ui->actionGridSnap1, &QAction::triggered, this, [&]() { snappingMode = GridSnappingMode::SNAP_1_STUD; updateToolbars(); });
+    connect(ui->actionGridSnap05, &QAction::triggered, this, [&]() { snappingMode = GridSnappingMode::SNAP_05_STUDS; updateToolbars(); });
+    connect(ui->actionGridSnapOff, &QAction::triggered, this, [&]() { snappingMode = GridSnappingMode::SNAP_OFF; updateToolbars(); });
+    ui->actionGridSnap1->setChecked(true);
+    snappingMode = GridSnappingMode::SNAP_1_STUD;
 
     connect(ui->actionToggleSimulation, &QAction::triggered, this, [&]() {
         simulationPlaying = !simulationPlaying;
@@ -80,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
     
     addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        updateSelectedTool();
+        updateToolbars();
     });
 
     // ui->explorerView->Init(ui);
@@ -134,11 +141,15 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
     ui->mainWidget->updateCycle();
 }
 
-void MainWindow::updateSelectedTool() {
+void MainWindow::updateToolbars() {
     ui->actionToolSelect->setChecked(selectedTool == SelectedTool::SELECT);
     ui->actionToolMove->setChecked(selectedTool == SelectedTool::MOVE);
     ui->actionToolScale->setChecked(selectedTool == SelectedTool::SCALE);
     ui->actionToolRotate->setChecked(selectedTool == SelectedTool::ROTATE);
+
+    ui->actionGridSnap1->setChecked(snappingMode == GridSnappingMode::SNAP_1_STUD);
+    ui->actionGridSnap05->setChecked(snappingMode == GridSnappingMode::SNAP_05_STUDS);
+    ui->actionGridSnapOff->setChecked(snappingMode == GridSnappingMode::SNAP_OFF);
 
     if (selectedTool == SelectedTool::MOVE) editorToolHandles->worldMode = true;
     if (selectedTool == SelectedTool::SCALE) editorToolHandles->worldMode = false;

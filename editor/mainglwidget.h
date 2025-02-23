@@ -1,6 +1,7 @@
 #ifndef MAINGLWIDGET_H
 #define MAINGLWIDGET_H
 
+#include "mainwindow.h"
 #include "objects/part.h"
 #include "qevent.h"
 #include <QOpenGLWidget>
@@ -31,6 +32,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent* evt) override;
     void keyPressEvent(QKeyEvent* evt) override;
     void keyReleaseEvent(QKeyEvent* evt) override;
+
+    MainWindow* mainWindow();
+    float snappingFactor();
 };
 
 #endif // MAINGLWIDGET_H

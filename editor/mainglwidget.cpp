@@ -2,10 +2,12 @@
 #include <chrono>
 
 #include <QMouseEvent>
+#include <glm/common.hpp>
 #include <glm/ext/matrix_projection.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
+#include <glm/gtc/round.hpp>
 #include <glm/matrix.hpp>
 #include <memory>
 #include <optional>
@@ -14,6 +16,7 @@
 
 #include "datatypes/cframe.h"
 #include "editorcommon.h"
+#include "mainwindow.h"
 #include "objects/handles.h"
 #include "physics/util.h"
 #include "qcursor.h"
@@ -166,16 +169,28 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
     glm::vec3 handlePoint, rb;
     get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
 
-    if (selectedTool == SelectedTool::MOVE)
-        editorToolHandles->adornee->lock()->cframe = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint);
-    else if (selectedTool == SelectedTool::SCALE) {
+    if (selectedTool == SelectedTool::MOVE) {
+        glm::vec3 newPos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
+        glm::vec3 oldPos = editorToolHandles->adornee->lock()->cframe.Position();
+        glm::vec3 diff = newPos - oldPos;
+        
+        // Apply snapping
+        if (snappingFactor()) diff = glm::floor(diff / snappingFactor()) * snappingFactor();
+        newPos = diff + oldPos;
+
+        editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe.Rotation() + newPos;
+    } else if (selectedTool == SelectedTool::SCALE) {
         glm::vec3 handlePos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
         
         // Find change in handles, and negate difference in sign between axes
         glm::vec3 diff = handlePos - glm::vec3(editorToolHandles->adornee->lock()->position());
+        
+        // Apply snapping
+        if (snappingFactor()) diff = glm::floor(diff / snappingFactor()) * snappingFactor();
+
         editorToolHandles->adornee->lock()->size += diff * glm::sign(draggingHandle->normal);
         
-        // If alt is not pressed, also reposition the part such that only the dragged side gets lengthened
+        // If ctrl is not pressed, also reposition the part such that only the dragged side gets lengthened
         if (!(evt->modifiers() & Qt::ControlModifier)) 
             editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + (diff / 2.0f);
     }
@@ -297,4 +312,17 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {
     if (evt->key() == Qt::Key_W || evt->key() == Qt::Key_S) moveZ = 0;
     else if (evt->key() == Qt::Key_A || evt->key() == Qt::Key_D) moveX = 0;
+}
+
+MainWindow* MainGLWidget::mainWindow() {
+    return dynamic_cast<MainWindow*>(window());
+}
+
+float MainGLWidget::snappingFactor() {
+    switch (mainWindow()->snappingMode) {
+        case GridSnappingMode::SNAP_1_STUD: return 1;
+        case GridSnappingMode::SNAP_05_STUDS: return 0.5;
+        case GridSnappingMode::SNAP_OFF: return 0;
+    }
+    return 0;
 }

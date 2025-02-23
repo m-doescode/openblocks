@@ -41,7 +41,7 @@
      <x>0</x>
      <y>0</y>
      <width>1027</width>
-     <height>29</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -114,6 +114,10 @@
    <addaction name="actionToolMove"/>
    <addaction name="actionToolScale"/>
    <addaction name="actionToolRotate"/>
+   <addaction name="separator"/>
+   <addaction name="actionGridSnap1"/>
+   <addaction name="actionGridSnap05"/>
+   <addaction name="actionGridSnapOff"/>
    <addaction name="separator"/>
    <addaction name="actionToggleSimulation"/>
   </widget>
@@ -255,6 +259,60 @@
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="actionGridSnap1">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>assets/icons/editor/snap1.png</normaloff>assets/icons/editor/snap1.png</iconset>
+   </property>
+   <property name="text">
+    <string>1-Stud Snapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Set grid snapping to 1 stud</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionGridSnap05">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>assets/icons/editor/snap05.png</normaloff>assets/icons/editor/snap05.png</iconset>
+   </property>
+   <property name="text">
+    <string>1/2-Stud Snapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Set grid snapping to 1/2 studs</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionGridSnapOff">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>assets/icons/editor/snapoff.png</normaloff>assets/icons/editor/snapoff.png</iconset>
+   </property>
+   <property name="text">
+    <string>No Grid Snapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Turn grid snapping off</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

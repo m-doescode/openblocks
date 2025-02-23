@@ -8,6 +8,12 @@
 #include <QMainWindow>
 #include <QLineEdit>
 
+enum GridSnappingMode {
+    SNAP_1_STUD,
+    SNAP_05_STUDS,
+    SNAP_OFF,
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -22,11 +28,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     
+    GridSnappingMode snappingMode;
+
     Ui::MainWindow *ui;
 private:
     QBasicTimer timer;
 
-    void updateSelectedTool();
+    void updateToolbars();
     void timerEvent(QTimerEvent*) override;
     void ConnectSelectionChangeHandler();
 };
