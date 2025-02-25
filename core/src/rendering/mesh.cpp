@@ -3,7 +3,7 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(int vertexCount, float *vertices) {
+Mesh::Mesh(int vertexCount, float *vertices) : vertexCount(vertexCount) {
     // Generate buffers
     glGenBuffers(1, &VBO);
     glGenVertexArrays(1, &VAO);

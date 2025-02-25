@@ -39,13 +39,9 @@ MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
     setMouseTracking(true);
 }
 
-Shader* identityShader;
-
 void MainGLWidget::initializeGL() {
     glewInit();
     renderInit(NULL, width(), height());
-
-    identityShader = new Shader("assets/shaders/identity.vs", "assets/shaders/identity.fs");
 }
 
 extern int vpx, vpy;
@@ -67,43 +63,6 @@ extern std::optional<HandleFace> draggingHandle;
 extern Shader* shader;
 void MainGLWidget::paintGL() {
     ::render(NULL);
-
-    if (!editorToolHandles->adornee) return;
-
-    for (HandleFace face : HandleFace::Faces) {
-        // Ignore negatives (for now)
-        if (face.normal != glm::abs(face.normal)) continue;
-
-        glm::vec3 axisNormal = face.normal;
-        // // glm::vec3 planeNormal = camera.cameraFront;
-        glm::vec3 planeRight = glm::cross(axisNormal, glm::normalize(camera.cameraFront));
-        glm::vec3 planeNormal = glm::cross(glm::normalize(planeRight), axisNormal);
-
-        auto a = axisNormal;
-        auto b = planeRight;
-        auto c = planeNormal;
-
-        glm::mat3 matrix = {
-            axisNormal,
-            planeRight,
-            -planeNormal,
-        };
-
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), (glm::vec3)editorToolHandles->adornee->lock()->position()) * glm::mat4(matrix);
-        model = glm::scale(model, glm::vec3(5, 5, 0.2));
-
-        shader->set("model", model);
-        shader->set("material", Material {
-            .diffuse = glm::vec3(0.5, 1.f, 0.5),
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 16.0f,
-        });
-        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        shader->set("normalMatrix", normalMatrix);
-
-        CUBE_MESH->bind();
-        // glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
 }
 
 bool isMouseRightDragging = false;

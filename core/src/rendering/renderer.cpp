@@ -27,7 +27,8 @@
 
 Shader* shader = NULL;
 Shader* skyboxShader = NULL;
-Shader* handleShader;
+Shader* handleShader = NULL;
+Shader* identityShader = NULL;
 extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
@@ -61,6 +62,7 @@ void renderInit(GLFWwindow* window, int width, int height) {
     shader = new Shader("assets/shaders/phong.vs", "assets/shaders/phong.fs");
     skyboxShader = new Shader("assets/shaders/skybox.vs", "assets/shaders/skybox.fs");
     handleShader = new Shader("assets/shaders/handle.vs", "assets/shaders/handle.fs");
+    identityShader = new Shader("assets/shaders/identity.vs", "assets/shaders/identity.fs");
 }
 
 void renderParts() {
@@ -72,7 +74,7 @@ void renderParts() {
     // shader->set("lightColor",  glm::vec3(1.0f, 1.0f, 1.0f));
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
     glm::mat4 view = camera.getLookAt();
     shader->set("projection", projection);
     shader->set("view", view);
@@ -136,7 +138,7 @@ void renderSkyBox() {
 
     skyboxShader->use();
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
     // Remove translation component of view, making us always at (0, 0, 0)
     glm::mat4 view = glm::mat4(glm::mat3(camera.getLookAt()));
 
@@ -150,8 +152,6 @@ void renderSkyBox() {
 }
 
 void renderHandles() {
-    // if (getSelection().size() == 0) return;
-    // if (getSelection()[0].lock()->GetClass() != &Part::TYPE) return;
     if (!editorToolHandles->adornee.has_value() || !editorToolHandles->active) return;
 
     glDepthMask(GL_TRUE);
@@ -160,7 +160,7 @@ void renderHandles() {
     handleShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
     glm::mat4 view = camera.getLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
@@ -187,8 +187,29 @@ void renderHandles() {
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         handleShader->set("normalMatrix", normalMatrix);
 
-        CUBE_MESH->bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        SPHERE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, SPHERE_MESH->vertexCount);
+    }
+
+    // 2d square overlay
+    identityShader->use();
+    identityShader->set("aColor", glm::vec3(0.f, 1.f, 1.f));
+    
+    for (auto face : HandleFace::Faces) {
+        Data::CFrame cframe = editorToolHandles->GetCFrameOfHandle(face);
+        glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
+        glm::vec3 ndcCoords = screenPos / screenPos.w;
+
+        float rad = 5;
+        float xRad = rad * 1/viewportWidth;
+        float yRad = rad * 1/viewportHeight;
+
+        glBegin(GL_QUADS);
+            glVertex3f(ndcCoords.x - xRad, ndcCoords.y - yRad, 0);
+            glVertex3f(ndcCoords.x + xRad, ndcCoords.y - yRad, 0);
+            glVertex3f(ndcCoords.x + xRad, ndcCoords.y + yRad, 0);
+            glVertex3f(ndcCoords.x - xRad, ndcCoords.y + yRad, 0);
+        glEnd();
     }
 }
 

@@ -38,8 +38,8 @@ Data::CFrame Handles::GetCFrameOfHandle(HandleFace face) {
 
     // return adornee->lock()->cframe + face.normal * 5.f;
     if (worldMode)
-        return adornee->lock()->cframe + (adornee->lock()->size * 0.5f * face.normal) + face.normal * 5.f;
-    return adornee->lock()->cframe + glm::vec3(glm::mat4(adornee->lock()->cframe.Rotation()) * glm::vec4((adornee->lock()->size * 0.5f * face.normal) + face.normal * 5.f, 0));
+        return adornee->lock()->cframe + (adornee->lock()->size * 0.5f * face.normal) + face.normal * 2.f;
+    return adornee->lock()->cframe + glm::vec3(glm::mat4(adornee->lock()->cframe.Rotation()) * glm::vec4((adornee->lock()->size * 0.5f * face.normal) + face.normal * 2.f, 0));
 }
 
 Data::CFrame Handles::PartCFrameFromHandlePos(HandleFace face, Data::Vector3 newPos) {
@@ -47,8 +47,8 @@ Data::CFrame Handles::PartCFrameFromHandlePos(HandleFace face, Data::Vector3 new
 
     // return adornee->lock()->cframe + face.normal * 5.f;
     if (worldMode)
-        return adornee->lock()->cframe.Rotation() + newPos - (adornee->lock()->size * 0.5f * face.normal) - face.normal * 5.f;
-    return adornee->lock()->cframe.Rotation() + newPos - glm::vec3(glm::mat4(adornee->lock()->cframe.Rotation()) * glm::vec4((adornee->lock()->size * 0.5f * face.normal) + face.normal * 5.f, 0));
+        return adornee->lock()->cframe.Rotation() + newPos - (adornee->lock()->size * 0.5f * face.normal) - face.normal * 2.f;
+    return adornee->lock()->cframe.Rotation() + newPos - glm::vec3(glm::mat4(adornee->lock()->cframe.Rotation()) * glm::vec4((adornee->lock()->size * 0.5f * face.normal) + face.normal * 2.f, 0));
 }
 
 std::optional<HandleFace> Handles::RaycastHandle(rp3d::Ray ray) {
