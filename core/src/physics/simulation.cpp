@@ -73,7 +73,7 @@ void syncPartPhysics(std::shared_ptr<Part> part) {
 
 void physicsStep(float deltaTime) {
     // Step the simulation a few steps
-    world->update(deltaTime / 2);
+    world->update(std::min(deltaTime / 2, (1/60.f)));
 
     // Naive implementation. Parts are only considered so if they are just under Workspace
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
