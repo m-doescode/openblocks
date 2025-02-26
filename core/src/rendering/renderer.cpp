@@ -187,8 +187,8 @@ void renderHandles() {
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         handleShader->set("normalMatrix", normalMatrix);
 
-        SPHERE_MESH->bind();
-        glDrawArrays(GL_TRIANGLES, 0, SPHERE_MESH->vertexCount);
+        ARROW_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, ARROW_MESH->vertexCount);
     }
 
     // 2d square overlay

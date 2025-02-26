@@ -23,16 +23,30 @@ vert_uvs = []
 
 out_vertices = []
 
-# greatest_coord = 0
-# least_coord = 0
+min_coords: tuple[float, float, float] | None = None
+max_coords: tuple[float, float, float] | None = None
 
 def normalize(x, y, z):
-    return (x/2, y/2, z/2)
+    assert min_coords
+    assert max_coords
+    return ((x-max_coords[0])/(max_coords[0]-min_coords[0])+0.5, (y-max_coords[1])/(max_coords[1]-min_coords[1])+0.5, (z-max_coords[2])/(max_coords[2]-min_coords[2])+0.5)
 
 for line in file:
     if line.startswith('v '):
         coords = line.split(' ')[1:]
-        vert_coords.append((float(coords[0]), float(coords[1]), float(coords[2])))
+        coords = (float(coords[0]), float(coords[1]), float(coords[2]))
+        vert_coords.append(coords)
+
+        if not min_coords: min_coords = coords
+        if not max_coords: max_coords = coords
+
+        if coords[0] > max_coords[0]: max_coords = (coords[0], max_coords[1], max_coords[2])
+        if coords[1] > max_coords[1]: max_coords = (max_coords[0], coords[1], max_coords[2])
+        if coords[2] > max_coords[2]: max_coords = (max_coords[0], max_coords[1], coords[2])
+
+        if coords[0] < min_coords[0]: min_coords = (coords[0], min_coords[1], min_coords[2])
+        if coords[1] < min_coords[1]: min_coords = (min_coords[0], coords[1], min_coords[2])
+        if coords[2] < min_coords[2]: min_coords = (min_coords[0], min_coords[1], coords[2])
 
     if line.startswith('vn '):
         coords = line.split(' ')[1:]
