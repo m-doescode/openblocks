@@ -6,6 +6,7 @@
 #include "qabstractitemmodel.h"
 #include "qaction.h"
 #include "qnamespace.h"
+#include <qitemselectionmodel.h>
 
 ExplorerView::ExplorerView(QWidget* parent):
     QTreeView(parent),
@@ -32,7 +33,23 @@ ExplorerView::ExplorerView(QWidget* parent):
         contextMenu.exec(this->viewport()->mapToGlobal(point));
     });
 
+    connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+        std::vector<InstanceRefWeak> selectedInstances;
+        selectedInstances.reserve(selected.count()); // This doesn't reserve everything, but should enhance things anyway
+
+        for (auto range : selected) {
+            for (auto index : range.indexes()) {
+                selectedInstances.push_back(reinterpret_cast<Instance*>(index.internalPointer())->weak_from_this());
+            }
+        }
+
+        ::setSelection(selectedInstances, true);
+    });
+
     addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
+        // It's from us, ignore it.
+        if (fromExplorer) return;
+
         this->clearSelection();
         for (InstanceRefWeak inst : newSelection) {
             if (inst.expired()) continue;
