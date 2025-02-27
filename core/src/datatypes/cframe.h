@@ -7,6 +7,8 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/matrix_access.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/matrix.hpp>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/reactphysics3d.h>
 
@@ -28,6 +30,8 @@ namespace Data {
         CFrame(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up = Data::Vector3(0, 1, 0));
         ~CFrame();
 
+        static const CFrame IDENTITY;
+
         virtual const TypeInfo& GetType() const override;
         static const TypeInfo TYPE;
 
@@ -41,18 +45,21 @@ namespace Data {
         //inline static CFrame identity() { }
         inline Vector3 Position() const { return translation; }
         inline CFrame Rotation() const { return CFrame { glm::vec3(0, 0, 0), rotation }; }
+        CFrame Inverse() const;
         inline float X() const { return translation.x; }
         inline float Y() const { return translation.y; }
         inline float Z() const { return translation.z; }
 
         inline Vector3 RightVector() { return glm::column(rotation, 0); }
         inline Vector3 UpVector() { return glm::column(rotation, 1); }
-        inline Vector3 LookVector() { return glm::column(rotation, 2); }
+        inline Vector3 LookVector() { return -glm::column(rotation, 2); }
 
         Vector3 ToEulerAnglesXYZ();
         static CFrame FromEulerAnglesXYZ(Data::Vector3);
 
         // Operators
+        Data::CFrame operator *(Data::CFrame) const;
+        Data::Vector3 operator *(Data::Vector3) const;
         Data::CFrame operator +(Data::Vector3) const;
         Data::CFrame operator -(Data::Vector3) const;
     };

@@ -109,16 +109,21 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
 
     QPoint position = evt->pos();
 
+    auto part = editorToolHandles->adornee->lock();
+
     // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
     Data::CFrame handleCFrame = editorToolHandles->GetCFrameOfHandle(draggingHandle.value());
+    
+    // Current frame. Identity frame if worldMode == true, selected object's frame if worldMode == false
+    Data::CFrame frame = editorToolHandles->worldMode ? Data::CFrame::IDENTITY + part->position() : part->cframe.Rotation();
 
     // Segment from axis stretching -4096 to +4096 rel to handle's position 
-    glm::vec3 axisSegment0 = handleCFrame.Position() + glm::abs(draggingHandle->normal) * 4096.0f;
-    glm::vec3 axisSegment1 = handleCFrame.Position() + glm::abs(draggingHandle->normal) * -4096.0f;
+    glm::vec3 axisSegment0 = handleCFrame.Position() + (-handleCFrame.LookVector() * 4096.0f);
+    glm::vec3 axisSegment1 = handleCFrame.Position() + (-handleCFrame.LookVector() * -4096.0f);
 
     // Segment from camera stretching 4096 forward
     glm::vec3 mouseSegment0 = camera.cameraPos;
@@ -128,31 +133,16 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
     glm::vec3 handlePoint, rb;
     get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
 
-    if (mainWindow()->selectedTool == SelectedTool::MOVE) {
-        glm::vec3 newPos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
-        glm::vec3 oldPos = editorToolHandles->adornee->lock()->cframe.Position();
-        glm::vec3 diff = newPos - oldPos;
-        
-        // Apply snapping
-        if (snappingFactor()) diff = glm::floor(diff / snappingFactor()) * snappingFactor();
-        newPos = diff + oldPos;
+    // Find new part position
+    glm::vec3 centerPoint = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
 
-        editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe.Rotation() + newPos;
-    } else if (mainWindow()->selectedTool == SelectedTool::SCALE) {
-        glm::vec3 handlePos = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
-        
-        // Find change in handles, and negate difference in sign between axes
-        glm::vec3 diff = handlePos - glm::vec3(editorToolHandles->adornee->lock()->position());
-        
-        // Apply snapping
-        if (snappingFactor()) diff = glm::floor(diff / snappingFactor()) * snappingFactor();
+    // Apply snapping in the current frame
+    glm::vec3 diff = centerPoint - (glm::vec3)editorToolHandles->adornee->lock()->position();
+    // auto odiff = diff;
+    if (snappingFactor()) diff = frame * (glm::round(glm::vec3(frame.Inverse() * diff) * snappingFactor()) / snappingFactor());
 
-        editorToolHandles->adornee->lock()->size += diff * glm::sign(draggingHandle->normal);
-        
-        // If ctrl is not pressed, also reposition the part such that only the dragged side gets lengthened
-        if (!(evt->modifiers() & Qt::ControlModifier)) 
-            editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + (diff / 2.0f);
-    }
+    // Add difference
+    editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + diff;
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }

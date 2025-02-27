@@ -40,6 +40,8 @@ namespace Data {
         float Dot(Data::Vector3) const;
     
         // Operators
+        Data::Vector3 operator *(float) const;
+        Data::Vector3 operator /(float) const;
         Data::Vector3 operator +(Data::Vector3) const;
         Data::Vector3 operator -(Data::Vector3) const;
         Data::Vector3 operator -() const;

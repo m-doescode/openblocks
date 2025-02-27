@@ -2,10 +2,14 @@
 #include "datatypes/vector.h"
 #include "physics/util.h"
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/matrix.hpp>
 #include <reactphysics3d/mathematics/Transform.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 // #include "meta.h" // IWYU pragma: keep
+
+const Data::CFrame Data::CFrame::IDENTITY(glm::vec3(0, 0, 0), glm::mat3(1.f));
 
 Data::CFrame::CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22)
     : translation(x, y, z)
@@ -37,13 +41,9 @@ glm::mat3 lookAt(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up)
 	Data::Vector3 f = (lookAt - position).Unit(); // Forward/Look
 	Data::Vector3 u = up.Unit(); // Up
 	Data::Vector3 s = f.Cross(u).Unit(); // Right
-	u = s.Cross(u);
+	u = s.Cross(f);
 
-	return {
-		{ s.X(), u.X(), -f.X() },
-		{ s.Y(), u.Y(), -f.Y() },
-		{ s.Z(), u.Z(), -f.Z() },
-    };
+	return { s, u, f };
 }
 
 Data::CFrame::CFrame(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up)
@@ -85,7 +85,20 @@ Data::CFrame Data::CFrame::FromEulerAnglesXYZ(Data::Vector3 vector) {
     return Data::CFrame(Data::Vector3::ZERO, glm::column(mat, 2), (Data::Vector3)glm::column(mat, 1)); // Getting LookAt (3rd) and Up (2nd) vectors
 }
 
+Data::CFrame Data::CFrame::Inverse() const {
+    return CFrame { -translation * glm::transpose(glm::inverse(rotation)), glm::inverse(rotation) };
+}
+
+
 // Operators
+
+Data::CFrame Data::CFrame::operator *(Data::CFrame otherFrame) const {
+    return CFrame { this->translation + this->rotation * otherFrame.translation, this->rotation * otherFrame.rotation };
+}
+
+Data::Vector3 Data::CFrame::operator *(Data::Vector3 vector) const {
+    return this->translation + this->rotation * vector;
+}
 
 Data::CFrame Data::CFrame::operator +(Data::Vector3 vector) const {
     return CFrame { this->translation + glm::vec3(vector), this->rotation };

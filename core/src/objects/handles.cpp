@@ -1,4 +1,5 @@
 #include "handles.h"
+#include "common.h"
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
 #include <optional>
@@ -36,19 +37,30 @@ Handles::Handles(): Instance(&TYPE) {
 Data::CFrame Handles::GetCFrameOfHandle(HandleFace face) {
     if (!adornee.has_value() || adornee->expired()) return Data::CFrame(glm::vec3(0,0,0), (Data::Vector3)glm::vec3(0,0,0));
 
-    // return adornee->lock()->cframe + face.normal * 5.f;
-    if (worldMode)
-        return adornee->lock()->cframe + (adornee->lock()->size * 0.5f * face.normal) + face.normal * 2.f;
-    return adornee->lock()->cframe + glm::vec3(glm::mat4(adornee->lock()->cframe.Rotation()) * glm::vec4((adornee->lock()->size * 0.5f * face.normal) + face.normal * 2.f, 0));
+    Data::CFrame localFrame = worldMode ? Data::CFrame::IDENTITY + adornee->lock()->position() : adornee->lock()->cframe;
+
+    // We don't want this to align with local * face.normal, or else we have problems.
+    glm::vec3 upAxis(0, 0, 1);
+    if (glm::abs(glm::dot(glm::vec3(localFrame.Rotation() * face.normal), upAxis)) > 0.9999f)
+        upAxis = glm::vec3(0, 1, 0);
+
+    Data::Vector3 handlePos = localFrame * ((2.f + adornee->lock()->size * 0.5f) * face.normal);
+    Data::CFrame cframe(handlePos, handlePos + localFrame.Rotation() * face.normal, upAxis);
+
+    return cframe;
 }
 
 Data::CFrame Handles::PartCFrameFromHandlePos(HandleFace face, Data::Vector3 newPos) {
     if (!adornee.has_value() || adornee->expired()) return Data::CFrame(glm::vec3(0,0,0), (Data::Vector3)glm::vec3(0,0,0));
 
-    // return adornee->lock()->cframe + face.normal * 5.f;
-    if (worldMode)
-        return adornee->lock()->cframe.Rotation() + newPos - (adornee->lock()->size * 0.5f * face.normal) - face.normal * 2.f;
-    return adornee->lock()->cframe.Rotation() + newPos - glm::vec3(glm::mat4(adornee->lock()->cframe.Rotation()) * glm::vec4((adornee->lock()->size * 0.5f * face.normal) + face.normal * 2.f, 0));
+    Data::CFrame localFrame = worldMode ? Data::CFrame::IDENTITY + adornee->lock()->position() : adornee->lock()->cframe;
+    Data::CFrame inverseFrame = localFrame.Inverse();
+
+    Data::Vector3 handlePos = localFrame * ((2.f + adornee->lock()->size * 0.5f) * face.normal);
+
+    // glm::vec3 localPos = inverseFrame * newPos;
+    glm::vec3 newPartPos = newPos - localFrame.Rotation() * ((2.f + adornee->lock()->size * 0.5f) * face.normal);
+    return adornee->lock()->cframe.Rotation() + newPartPos;
 }
 
 std::optional<HandleFace> Handles::RaycastHandle(rp3d::Ray ray) {

@@ -84,6 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
         ConnectSelectionChangeHandler();
     });
     
+    // Update handles
     addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
         editorToolHandles->adornee = std::nullopt;
         if (newSelection.size() == 0) return;
@@ -91,6 +92,14 @@ MainWindow::MainWindow(QWidget *parent)
         if (inst->GetClass() != &Part::TYPE) return;
 
         editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
+    });
+
+    // Update properties
+    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
+        if (newSelection.size() == 0) return;
+        if (newSelection.size() > 1)
+            ui->propertiesView->setSelected(std::nullopt);
+        ui->propertiesView->setSelected(newSelection[0].lock());
     });
 
     // ui->explorerView->Init(ui);
@@ -110,7 +119,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0),
-        .rotation = glm::vec3(0),
+        .rotation = glm::vec3(0.5, 2, 1),
         .size = glm::vec3(4, 1.2, 2),
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
@@ -118,14 +127,14 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::ConnectSelectionChangeHandler() {
-    connect(ui->explorerView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-        if (selected.count() == 0) return;
+    // connect(ui->explorerView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+    //     if (selected.count() == 0) return;
 
-        std::optional<InstanceRef> inst = selected.count() == 0 ? std::nullopt
-            : std::make_optional(((Instance*)selected.indexes()[0].internalPointer())->shared_from_this());
+    //     std::optional<InstanceRef> inst = selected.count() == 0 ? std::nullopt
+    //         : std::make_optional(((Instance*)selected.indexes()[0].internalPointer())->shared_from_this());
 
-        ui->propertiesView->setSelected(inst);
-    });
+    //     ui->propertiesView->setSelected(inst);
+    // });
 }
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
@@ -154,6 +163,7 @@ void MainWindow::updateToolbars() {
     ui->actionGridSnap05->setChecked(snappingMode == GridSnappingMode::SNAP_05_STUDS);
     ui->actionGridSnapOff->setChecked(snappingMode == GridSnappingMode::SNAP_OFF);
 
+    // editorToolHandles->worldMode = false;
     if (selectedTool == SelectedTool::MOVE) editorToolHandles->worldMode = true;
     if (selectedTool == SelectedTool::SCALE) editorToolHandles->worldMode = false;
     editorToolHandles->active = selectedTool != SelectedTool::SELECT;
