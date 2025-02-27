@@ -138,11 +138,33 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
 
     // Apply snapping in the current frame
     glm::vec3 diff = centerPoint - (glm::vec3)editorToolHandles->adornee->lock()->position();
-    // auto odiff = diff;
-    if (snappingFactor()) diff = frame * (glm::round(glm::vec3(frame.Inverse() * diff) * snappingFactor()) / snappingFactor());
+    if (snappingFactor()) diff = frame * (glm::round(glm::vec3(frame.Inverse() * diff) / snappingFactor()) * snappingFactor());
 
-    // Add difference
-    editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + diff;
+    switch (mainWindow()->selectedTool) {
+        case SelectedTool::SELECT: break;
+        case SelectedTool::MOVE: {
+            // Add difference
+            editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + diff;
+        } break;
+        
+        case SelectedTool::SCALE: {
+            // Find local difference
+            glm::vec3 localDiff = frame.Inverse() * diff;
+            // Find outwarwd difference
+            localDiff = localDiff * glm::sign(draggingHandle->normal);
+
+            // Add local difference to size
+            part->size += localDiff;
+
+            // If ctrl is not pressed, offset the part by half the size difference to keep the other bound where it was originally
+            if (!(evt->modifiers() & Qt::ControlModifier)) 
+                part->cframe = part->cframe + diff * 0.5f;
+        } break;
+
+        case SelectedTool::ROTATE: {
+            // TODO: Implement rotation
+        } break;
+    }
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
