@@ -70,6 +70,8 @@ void renderParts() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     shader->use();
@@ -114,12 +116,40 @@ void renderParts() {
     // Pass in the camera position
     shader->set("viewPos", camera.cameraPos);
 
-    // TODO: Same as todo in src/physics/simulation.cpp
+    // Sort by nearest
+    std::map<float, std::shared_ptr<Part>> sorted;
     for (InstanceRef inst : workspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        if (part->transparency > 0.00001) {
+            float distance = glm::length(glm::vec3(Data::Vector3(camera.cameraPos) - part->position()));
+            sorted[distance] = part;
+        } else {
+            glm::mat4 model = part->cframe;
+            if (part->name == "camera") model = camera.getLookAt();
+            model = glm::scale(model, part->size);
+            shader->set("model", model);
+            shader->set("material", Material {
+                .diffuse = part->color,
+                .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+                .shininess = 16.0f,
+            });
+            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+            shader->set("normalMatrix", normalMatrix);
+            shader->set("texScale", part->size);
+            shader->set("transparency", part->transparency);
+
+            CUBE_MESH->bind();
+            glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
+        }
+    }
+
+    // TODO: Same as todo in src/physics/simulation.cpp
+    // According to LearnOpenGL, std::map automatically sorts its contents.
+    for (std::map<float, std::shared_ptr<Part>>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); it++) {
+        std::shared_ptr<Part> part = it->second;
         glm::mat4 model = part->cframe;
-        if (inst->name == "camera") model = camera.getLookAt();
+        if (part->name == "camera") model = camera.getLookAt();
         model = glm::scale(model, part->size);
         shader->set("model", model);
         shader->set("material", Material {
@@ -130,6 +160,7 @@ void renderParts() {
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         shader->set("normalMatrix", normalMatrix);
         shader->set("texScale", part->size);
+        shader->set("transparency", part->transparency);
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
