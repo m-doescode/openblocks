@@ -31,6 +31,7 @@ namespace Data {
         ~CFrame();
 
         static const CFrame IDENTITY;
+        static const CFrame YToZ;
 
         virtual const TypeInfo& GetType() const override;
         static const TypeInfo TYPE;

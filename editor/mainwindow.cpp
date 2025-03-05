@@ -17,6 +17,7 @@
 #include "editorcommon.h"
 #include "objects/base/instance.h"
 #include "objects/datamodel.h"
+#include "objects/handles.h"
 #include "physics/simulation.h"
 #include "objects/part.h"
 #include "qfiledialog.h"
@@ -167,6 +168,11 @@ void MainWindow::updateToolbars() {
     if (selectedTool == SelectedTool::MOVE) editorToolHandles->worldMode = true;
     if (selectedTool == SelectedTool::SCALE) editorToolHandles->worldMode = false;
     editorToolHandles->active = selectedTool != SelectedTool::SELECT;
+    editorToolHandles->handlesType =
+      selectedTool == SelectedTool::MOVE ? HandlesType::MoveHandles
+    : selectedTool == SelectedTool::SCALE ? HandlesType::ScaleHandles
+    : selectedTool == SelectedTool::ROTATE ? HandlesType::RotateHandles
+    : HandlesType::ScaleHandles;
 }
 
 MainWindow::~MainWindow()

@@ -24,12 +24,20 @@ class HandleFace {
     static std::array<HandleFace, 6> Faces;
 };
 
+enum HandlesType {
+    MoveHandles,
+    ScaleHandles,
+    RotateHandles,
+};
+
 class Handles : public Instance {
 public:
     const static InstanceType TYPE;
 
     bool active;
     std::optional<std::weak_ptr<Part>> adornee;
+    HandlesType handlesType;
+
     // inline std::optional<std::weak_ptr<Part>> GetAdornee() { return adornee; }
     // inline void SetAdornee(std::optional<std::weak_ptr<Part>> newAdornee) { this->adornee = newAdornee; updateAdornee(); };
 
@@ -39,6 +47,7 @@ public:
     bool worldMode = false;
     Data::CFrame GetCFrameOfHandle(HandleFace face);
     Data::CFrame PartCFrameFromHandlePos(HandleFace face, Data::Vector3 newPos);
+    Data::Vector3 HandleSize(HandleFace face);
     std::optional<HandleFace> RaycastHandle(rp3d::Ray ray);
 
     static inline std::shared_ptr<Handles> New() { return std::make_shared<Handles>(); };

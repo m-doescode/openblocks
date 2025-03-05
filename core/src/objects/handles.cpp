@@ -67,8 +67,9 @@ std::optional<HandleFace> Handles::RaycastHandle(rp3d::Ray ray) {
     for (HandleFace face : HandleFace::Faces) {
         Data::CFrame cframe = GetCFrameOfHandle(face);
         // Implement manual detection via boxes instead of... this shit
-        rp3d::RigidBody* body = world->createRigidBody(cframe);
-        body->addCollider(common.createBoxShape(Data::Vector3(.5, .5, .5)), rp3d::Transform::identity());
+        // This code also hardly works, and is not good at all... Hooo nope.
+        rp3d::RigidBody* body = world->createRigidBody(Data::CFrame::IDENTITY + cframe.Position());
+        body->addCollider(common.createBoxShape(cframe.Rotation() * Data::Vector3(HandleSize(face) / 2.f)), rp3d::Transform::identity());
 
         rp3d::RaycastInfo info;
         if (body->raycast(ray, info)) {
@@ -80,4 +81,10 @@ std::optional<HandleFace> Handles::RaycastHandle(rp3d::Ray ray) {
     }
 
     return std::nullopt;
+}
+
+Data::Vector3 Handles::HandleSize(HandleFace face) {
+    if (handlesType == HandlesType::MoveHandles)
+        return glm::vec3(0.5f, 0.5f, 2.f);
+    return glm::vec3(1,1,1);
 }

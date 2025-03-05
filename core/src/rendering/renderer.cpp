@@ -177,7 +177,7 @@ void renderHandles() {
 
     for (auto face : HandleFace::Faces) {
         glm::mat4 model = editorToolHandles->GetCFrameOfHandle(face);
-        model = glm::scale(model, glm::vec3(1,1,1));
+        model = glm::scale(model, (glm::vec3)editorToolHandles->HandleSize(face));
         handleShader->set("model", model);
         handleShader->set("material", Material {
             .diffuse = glm::abs(face.normal),
@@ -187,8 +187,13 @@ void renderHandles() {
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         handleShader->set("normalMatrix", normalMatrix);
 
-        ARROW_MESH->bind();
-        glDrawArrays(GL_TRIANGLES, 0, ARROW_MESH->vertexCount);
+        if (editorToolHandles->handlesType == HandlesType::MoveHandles) {
+            ARROW_MESH->bind();
+            glDrawArrays(GL_TRIANGLES, 0, ARROW_MESH->vertexCount);
+        } else {
+            SPHERE_MESH->bind();
+            glDrawArrays(GL_TRIANGLES, 0, SPHERE_MESH->vertexCount);
+        }
     }
 
     // 2d square overlay
