@@ -32,6 +32,7 @@ public:
     Data::CFrame cframe;
     glm::vec3 size;
     Data::Color3 color;
+    float transparency = 0.f;
     bool selected = false;
     
     bool anchored = false;

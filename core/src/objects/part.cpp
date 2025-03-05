@@ -69,33 +69,37 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .type = &Data::Bool::TYPE,
                 .codec = fieldCodecOf<Data::Bool, bool>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this)
-            } }, { "Position", {
+            }}, { "Position", {
                 .backingField = &cframe,
                 .type = &Data::Vector3::TYPE,
                 .codec = cframePositionCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
                 .flags = PropertyFlags::PROP_NOSAVE
-            } }, { "Rotation", {
+            }}, { "Rotation", {
                 .backingField = &cframe,
                 .type = &Data::Vector3::TYPE,
                 .codec = cframeRotationCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
                 .flags = PropertyFlags::PROP_NOSAVE
-            } }, { "CFrame", {
+            }}, { "CFrame", {
                 .backingField = &cframe,
                 .type = &Data::CFrame::TYPE,
                 .codec = fieldCodecOf<Data::CFrame>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
-            } }, { "Size", {
+            }}, { "Size", {
                 .backingField = &size,
                 .type = &Data::Vector3::TYPE,
                 .codec = fieldCodecOf<Data::Vector3, glm::vec3>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this)
-            } }, { "Color", {
+            }}, { "Color", {
                 .backingField = &color,
                 .type = &Data::Color3::TYPE,
                 .codec = fieldCodecOf<Data::Color3>(),
-            } }
+            }}, { "Transparency", {
+                .backingField = &transparency,
+                .type = &Data::Float::TYPE,
+                .codec = fieldCodecOf<Data::Float, float>(),
+            }}
         }
     });
 }

@@ -56,10 +56,10 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
 
     switch (role) {
     case Qt::EditRole:
-        if (meta.type != &Data::String::TYPE)
+        if (!meta.type->fromString)
             return false;
 
-        selectedItem->SetPropertyValue(propertyName, value.toString().toStdString());
+        selectedItem->SetPropertyValue(propertyName, meta.type->fromString(value.toString().toStdString()));
         return true;
     case Qt::CheckStateRole:
         if (meta.type != &Data::Bool::TYPE)
