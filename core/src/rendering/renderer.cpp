@@ -67,6 +67,9 @@ void renderInit(GLFWwindow* window, int width, int height) {
 
 void renderParts() {
     glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
 
     // Use shader
     shader->use();
@@ -129,12 +132,13 @@ void renderParts() {
         shader->set("texScale", part->size);
 
         CUBE_MESH->bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
     }
 }
 
 void renderSkyBox() {
     glDepthMask(GL_FALSE);
+    glCullFace(GL_FRONT);
 
     skyboxShader->use();
 
@@ -155,6 +159,7 @@ void renderHandles() {
     if (!editorToolHandles->adornee.has_value() || !editorToolHandles->active) return;
 
     glDepthMask(GL_TRUE);
+    glCullFace(GL_BACK);
     
     // Use shader
     handleShader->use();
