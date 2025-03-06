@@ -73,7 +73,7 @@ void main() {
     }
     
     vec4 studPx = texture(studs, vec3(vTexCoords, vSurfaceZ));
-    FragColor = vec4(mix(result, vec3(studPx), studPx.w), 1-transparency);
+    FragColor = vec4(mix(result, vec3(studPx), studPx.w), 1) * (1-transparency);
 }
 
 vec3 calculateDirectionalLight(DirLight light) {

@@ -233,6 +233,8 @@ void renderHandles() {
     }
 
     // 2d square overlay
+    glDisable(GL_CULL_FACE);
+
     identityShader->use();
     identityShader->set("aColor", glm::vec3(0.f, 1.f, 1.f));
     
