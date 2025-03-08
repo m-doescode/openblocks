@@ -1,12 +1,15 @@
 #include "explorerview.h"
 #include "explorermodel.h"
+#include "mainwindow.h"
+#include "../ui_mainwindow.h"
 #include "common.h"
 #include "objects/base/instance.h"
-#include "objects/workspace.h"
 #include "qabstractitemmodel.h"
-#include "qaction.h"
-#include "qnamespace.h"
+#include <qaction.h>
+#include <qnamespace.h>
 #include <qitemselectionmodel.h>
+
+#define M_mainWindow dynamic_cast<MainWindow*>(window())
 
 ExplorerView::ExplorerView(QWidget* parent):
     QTreeView(parent),
@@ -57,8 +60,6 @@ ExplorerView::ExplorerView(QWidget* parent):
             this->selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select);
         }
     });
-
-    buildContextMenu();
 }
 
 ExplorerView::~ExplorerView() {
@@ -67,19 +68,17 @@ ExplorerView::~ExplorerView() {
 void ExplorerView::keyPressEvent(QKeyEvent* event) {
     switch (event->key()) {
     case Qt::Key_Delete:
-        actionDelete->trigger();
+        M_mainWindow->ui->actionDelete->trigger();
         break;
     }
 }
 
-void ExplorerView::buildContextMenu() {
-    // This will leak memory. Anyway...
-    contextMenu.addAction(this->actionDelete = new QAction(QIcon("assets/icons/editor/delete"), "Delete"));
 
-    connect(actionDelete, &QAction::triggered, this, [&]() {
-        QModelIndexList selectedIndexes = this->selectionModel()->selectedIndexes();
-        for (QModelIndex index : selectedIndexes) {
-            model.fromIndex(index)->SetParent(std::nullopt);
-        }
-    });
+void ExplorerView::buildContextMenu() {
+    contextMenu.addAction(M_mainWindow->ui->actionDelete);
+    contextMenu.addSeparator();
+    contextMenu.addAction(M_mainWindow->ui->actionCopy);
+    contextMenu.addAction(M_mainWindow->ui->actionCut);
+    contextMenu.addAction(M_mainWindow->ui->actionPaste);
+    contextMenu.addAction(M_mainWindow->ui->actionPasteInto);
 }

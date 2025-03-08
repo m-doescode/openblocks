@@ -44,6 +44,5 @@ private:
 
     void updateToolbars();
     void timerEvent(QTimerEvent*) override;
-    void ConnectSelectionChangeHandler();
 };
 #endif // MAINWINDOW_H

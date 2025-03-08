@@ -20,18 +20,9 @@ public:
 
     void keyPressEvent(QKeyEvent*) override;
     // void dropEvent(QDropEvent*) override;
+
+    void buildContextMenu();
 private:
     ExplorerModel model;
     QMenu contextMenu;
-
-    // TODO: Move these to a separate top-level namespace so these can be
-    // accessed from multiple locations
-    QAction* actionDelete;
-    QAction* actionCopy;
-    QAction* actionCut;
-    QAction* actionPaste;
-    QAction* actionPasteInto;
-    QAction* actionSelectChildren;
-
-    void buildContextMenu();
 };

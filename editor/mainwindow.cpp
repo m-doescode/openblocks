@@ -12,6 +12,9 @@
 #include <QAbstractItemView>
 #include <memory>
 #include <optional>
+#include <qglobal.h>
+#include <qwindowdefs.h>
+#include <sstream>
 
 #include "common.h"
 #include "editorcommon.h"
@@ -21,7 +24,8 @@
 #include "physics/simulation.h"
 #include "objects/part.h"
 #include "qfiledialog.h"
-#include "qitemselectionmodel.h"
+#include "qclipboard.h"
+#include "qmimedata.h"
 #include "qobject.h"
 #include "qsysinfo.h"
 
@@ -37,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     timer.start(33, this);
     setMouseTracking(true);
 
-    ConnectSelectionChangeHandler();
+    ui->explorerView->buildContextMenu();
 
     connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = SelectedTool::SELECT; updateToolbars(); });
     connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::MOVE : SelectedTool::SELECT; updateToolbars(); });
@@ -82,7 +86,78 @@ MainWindow::MainWindow(QWidget *parent)
         delete ui->explorerView->selectionModel();
         ui->explorerView->reset();
         ui->explorerView->setModel(new ExplorerModel(dataModel));
-        ConnectSelectionChangeHandler();
+    });
+
+    connect(ui->actionDelete, &QAction::triggered, this, [&]() {
+        for (InstanceRefWeak inst : getSelection()) {
+            if (inst.expired()) continue;
+            inst.lock()->SetParent(std::nullopt);
+        }
+        setSelection(std::vector<InstanceRefWeak> {});
+    });
+
+    connect(ui->actionCopy, &QAction::triggered, this, [&]() {
+        pugi::xml_document rootDoc;
+        for (InstanceRefWeak inst : getSelection()) {
+            if (inst.expired()) continue;
+            inst.lock()->Serialize(&rootDoc);
+        }
+
+        std::ostringstream encoded;
+        rootDoc.save(encoded);
+
+        QMimeData* mimeData = new QMimeData;
+        mimeData->setData("application/xml", QByteArray::fromStdString(encoded.str()));
+        QApplication::clipboard()->setMimeData(mimeData);
+    });
+    connect(ui->actionCut, &QAction::triggered, this, [&]() {
+        pugi::xml_document rootDoc;
+        for (InstanceRefWeak inst : getSelection()) {
+            if (inst.expired()) continue;
+            inst.lock()->Serialize(&rootDoc);
+            inst.lock()->SetParent(std::nullopt);
+        }
+
+        std::ostringstream encoded;
+        rootDoc.save(encoded);
+
+        QMimeData* mimeData = new QMimeData;
+        mimeData->setData("application/xml", QByteArray::fromStdString(encoded.str()));
+        QApplication::clipboard()->setMimeData(mimeData);
+    });
+
+    connect(ui->actionPaste, &QAction::triggered, this, [&]() {
+        const QMimeData* mimeData = QApplication::clipboard()->mimeData();
+        if (!mimeData || !mimeData->hasFormat("application/xml")) return;
+        QByteArray bytes = mimeData->data("application/xml");
+        std::string encoded = bytes.toStdString();
+
+        pugi::xml_document rootDoc;
+        rootDoc.load_string(encoded.c_str());
+
+        for (pugi::xml_node instNode : rootDoc.children()) {
+            InstanceRef inst = Instance::Deserialize(&instNode);
+            workspace()->AddChild(inst);
+        }
+    });
+
+    connect(ui->actionPasteInto, &QAction::triggered, this, [&]() {
+        if (getSelection().size() != 1 || getSelection()[0].expired()) return;
+
+        InstanceRef selectedParent = getSelection()[0].lock();
+
+        const QMimeData* mimeData = QApplication::clipboard()->mimeData();
+        if (!mimeData || !mimeData->hasFormat("application/xml")) return;
+        QByteArray bytes = mimeData->data("application/xml");
+        std::string encoded = bytes.toStdString();
+
+        pugi::xml_document rootDoc;
+        rootDoc.load_string(encoded.c_str());
+
+        for (pugi::xml_node instNode : rootDoc.children()) {
+            InstanceRef inst = Instance::Deserialize(&instNode);
+            selectedParent->AddChild(inst);
+        }
     });
     
     // Update handles
@@ -125,17 +200,6 @@ MainWindow::MainWindow(QWidget *parent)
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     syncPartPhysics(ui->mainWidget->lastPart);
-}
-
-void MainWindow::ConnectSelectionChangeHandler() {
-    // connect(ui->explorerView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-    //     if (selected.count() == 0) return;
-
-    //     std::optional<InstanceRef> inst = selected.count() == 0 ? std::nullopt
-    //         : std::make_optional(((Instance*)selected.indexes()[0].internalPointer())->shared_from_this());
-
-    //     ui->propertiesView->setSelected(inst);
-    // });
 }
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
