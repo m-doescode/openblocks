@@ -41,7 +41,7 @@
      <x>0</x>
      <y>0</y>
      <width>1027</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -401,6 +401,28 @@
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSaveModel">
+   <property name="text">
+    <string>Save Model to File</string>
+   </property>
+   <property name="toolTip">
+    <string>Saves objects to file as XML model</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionInsertModel">
+   <property name="text">
+    <string>Insert Model from File</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert model from XML file</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

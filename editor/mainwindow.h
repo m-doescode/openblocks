@@ -7,6 +7,7 @@
 #include "qmenu.h"
 #include <QMainWindow>
 #include <QLineEdit>
+#include <qfiledialog.h>
 
 enum SelectedTool {
     SELECT,
@@ -44,5 +45,7 @@ private:
 
     void updateToolbars();
     void timerEvent(QTimerEvent*) override;
+    
+    std::optional<std::string> openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title = "");
 };
 #endif // MAINWINDOW_H

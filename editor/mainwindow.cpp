@@ -72,16 +72,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
         std::optional<std::string> path;
         if (!dataModel->HasFile())
-            path = QFileDialog::getSaveFileName(this, QString::fromStdString("Save " + dataModel->name), "", "*.obl").toStdString();
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
         if (path == "") return;
 
         dataModel->SaveToFile(path);
     });
 
     connect(ui->actionOpen, &QAction::triggered, this, [&]() {
-        std::string path = QFileDialog::getOpenFileName(this, "Load file", "", "*.obl").toStdString();
-        if (path == "") return;
-        std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path);
+        std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptOpen);
+        if (!path) return;
+        std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path.value());
         dataModel = newModel;
         delete ui->explorerView->selectionModel();
         ui->explorerView->reset();
@@ -155,6 +155,40 @@ MainWindow::MainWindow(QWidget *parent)
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
+            InstanceRef inst = Instance::Deserialize(&instNode);
+            selectedParent->AddChild(inst);
+        }
+    });
+
+    connect(ui->actionSaveModel, &QAction::triggered, this, [&]() {
+        std::optional<std::string> path = openFileDialog("Openblocks Model (*.obm)", ".obm", QFileDialog::AcceptSave);
+        if (!path) return;
+        std::ofstream outStream(path.value());
+
+        // Serialized XML for exporting
+        pugi::xml_document modelDoc;
+        pugi::xml_node modelRoot = modelDoc.append_child("openblocks");
+
+        for (InstanceRefWeak inst : getSelection()) {
+            if (inst.expired()) continue;
+            inst.lock()->Serialize(&modelRoot);
+        }
+
+        modelDoc.save(outStream);
+    });
+
+    connect(ui->actionInsertModel, &QAction::triggered, this, [&]() {
+        if (getSelection().size() != 1 || getSelection()[0].expired()) return;
+        InstanceRef selectedParent = getSelection()[0].lock();
+
+        std::optional<std::string> path = openFileDialog("Openblocks Model (*.obm)", ".obm", QFileDialog::AcceptOpen);
+        if (!path) return;
+        std::ifstream inStream(path.value());
+
+        pugi::xml_document modelDoc;
+        modelDoc.load(inStream);
+
+        for (pugi::xml_node instNode : modelDoc.child("openblocks").children("Item")) {
             InstanceRef inst = Instance::Deserialize(&instNode);
             selectedParent->AddChild(inst);
         }
@@ -237,6 +271,18 @@ void MainWindow::updateToolbars() {
     : selectedTool == SelectedTool::SCALE ? HandlesType::ScaleHandles
     : selectedTool == SelectedTool::ROTATE ? HandlesType::RotateHandles
     : HandlesType::ScaleHandles;
+}
+
+std::optional<std::string> MainWindow::openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title) {
+    QFileDialog dialog(this);
+    if (title != "") dialog.setWindowTitle(title);
+    dialog.setNameFilters(QStringList { filter, "All Files (*)" });
+    dialog.setDefaultSuffix(defaultExtension);
+    dialog.setAcceptMode(acceptMode);
+    if (!dialog.exec())
+        return std::nullopt;
+
+    return dialog.selectedFiles().front().toStdString();
 }
 
 MainWindow::~MainWindow()

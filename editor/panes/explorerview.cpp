@@ -81,4 +81,7 @@ void ExplorerView::buildContextMenu() {
     contextMenu.addAction(M_mainWindow->ui->actionCut);
     contextMenu.addAction(M_mainWindow->ui->actionPaste);
     contextMenu.addAction(M_mainWindow->ui->actionPasteInto);
+    contextMenu.addSeparator();
+    contextMenu.addAction(M_mainWindow->ui->actionSaveModel);
+    contextMenu.addAction(M_mainWindow->ui->actionInsertModel);
 }
