@@ -138,7 +138,9 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
 
     // Apply snapping in the current frame
     glm::vec3 diff = centerPoint - (glm::vec3)editorToolHandles->adornee->lock()->position();
-    if (snappingFactor()) diff = frame * (glm::round(glm::vec3(frame.Inverse() * diff) / snappingFactor()) * snappingFactor());
+    // printf("\n=======\nPre-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
+    if (snappingFactor()) diff = frame.Rotation() * (glm::round(glm::vec3(frame.Inverse().Rotation() * diff) / snappingFactor()) * snappingFactor());
+    // printf("Post-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
 
     switch (mainWindow()->selectedTool) {
         case SelectedTool::SELECT: break;
