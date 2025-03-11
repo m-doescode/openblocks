@@ -234,6 +234,12 @@ bool ExplorerModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     return true;
 }
 
+void ExplorerModel::updateRoot(InstanceRef newRoot) {
+    beginResetModel();
+    rootItem = newRoot;
+    endResetModel();
+}
+
 QMimeData* ExplorerModel::mimeData(const QModelIndexList& indexes) const {
     // application/x-openblocks-instance-pointers
     DragDropSlot* slot = new DragDropSlot();

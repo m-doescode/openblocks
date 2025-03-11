@@ -73,7 +73,6 @@ void ExplorerView::keyPressEvent(QKeyEvent* event) {
     }
 }
 
-
 void ExplorerView::buildContextMenu() {
     contextMenu.addAction(M_mainWindow->ui->actionDelete);
     contextMenu.addSeparator();
@@ -84,4 +83,8 @@ void ExplorerView::buildContextMenu() {
     contextMenu.addSeparator();
     contextMenu.addAction(M_mainWindow->ui->actionSaveModel);
     contextMenu.addAction(M_mainWindow->ui->actionInsertModel);
+}
+
+void ExplorerView::updateRoot(InstanceRef newRoot) {
+    model.updateRoot(newRoot);
 }

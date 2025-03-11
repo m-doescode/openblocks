@@ -22,6 +22,7 @@ public:
     // void dropEvent(QDropEvent*) override;
 
     void buildContextMenu();
+    void updateRoot(InstanceRef newRoot);
 private:
     ExplorerModel model;
     QMenu contextMenu;

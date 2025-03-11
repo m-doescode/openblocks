@@ -83,9 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (!path) return;
         std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path.value());
         dataModel = newModel;
-        delete ui->explorerView->selectionModel();
-        ui->explorerView->reset();
-        ui->explorerView->setModel(new ExplorerModel(dataModel));
+        ui->explorerView->updateRoot(newModel);
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {

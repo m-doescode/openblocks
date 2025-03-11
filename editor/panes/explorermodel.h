@@ -1,18 +1,12 @@
 #pragma once
 
 #include "objects/base/instance.h"
-#include "objects/part.h"
 #include "qabstractitemmodel.h"
 #include "qevent.h"
-#include "qmenu.h"
 #include "qnamespace.h"
-#include "qtreeview.h"
 #include <QOpenGLWidget>
 #include <QWidget>
-#include <memory>
 
-// #ifndef EXPLORERMODEL_H
-// #define EXPLORERMODEL_H
 
 class ExplorerModel : public QAbstractItemModel {
     Q_OBJECT
@@ -42,6 +36,8 @@ public:
     Qt::DropActions supportedDropActions() const override;
     InstanceRef fromIndex(const QModelIndex index) const;
     QModelIndex ObjectToIndex(InstanceRef item);
+
+    void updateRoot(InstanceRef newRoot);
 private:
     InstanceRef rootItem;
     QModelIndex toIndex(InstanceRef item);
