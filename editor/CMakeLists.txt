@@ -14,6 +14,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
+
+
 set(TS_FILES editor_en_US.ts)
 
 set(PROJECT_SOURCES
@@ -64,6 +66,16 @@ endif()
 
 target_include_directories(editor PUBLIC "../core/src" "../include")
 target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets)
+
+# Qt6 does not include QOpenGLWidgets as part of Widgets base anymore, so
+# we have to include it manually
+if (${QT_VERSION} GREATER_EQUAL 6)
+    find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS OpenGL OpenGLWidgets)
+
+    target_include_directories(editor PUBLIC Qt6::OpenGL Qt6::OpenGLWidgets)
+    target_link_libraries(editor PRIVATE Qt6::OpenGL Qt6::OpenGLWidgets)
+endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
