@@ -6,4 +6,4 @@ if [ $# -eq 0 ] || ([ "$1" != "editor" ] && [ "$1" != "client" ]); then echo "Ar
 
 [ "$3" = "-gdb" ] && PRE_COMMAND="gdb -ex run "
 
-cmake $CMAKE_OPTS . && cmake --build . && $PRE_COMMAND ./bin/$1
+cmake -Bbuild $CMAKE_OPTS . && (cd build; cmake --build .; cd ..) && $PRE_COMMAND ./build/bin/$1

@@ -15,8 +15,6 @@ find_package(glm CONFIG REQUIRED)
 find_package(ReactPhysics3D REQUIRED)
 find_package(pugixml REQUIRED)
 
-file(MAKE_DIRECTORY bin)
-
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 add_library(openblocks ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
