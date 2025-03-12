@@ -1,10 +1,9 @@
-glm
-opengl
-assimp
-sdl2
+opengl (Linux: glvnd, Windows: [built-in/none])
 glfw
-glut
 glew
+glm
+sdl2
+stb
 qt6
 reactphysics3d
 pugixml

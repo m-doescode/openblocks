@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.31..)
 
 project(editor VERSION 0.1 LANGUAGES CXX)
 
@@ -13,8 +13,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
-
-
 
 set(TS_FILES editor_en_US.ts)
 
@@ -97,6 +95,8 @@ install(TARGETS editor
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(FILES $<TARGET_RUNTIME_DLLS:editor> TYPE BIN)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(editor)
