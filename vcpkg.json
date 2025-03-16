@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "glew",
+    "glfw3",
+    "glm",
+    { "name": "pugixml", "version>=": "1.15" },
+    "sdl2",
+    "stb"
+  ]
+}
