@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <stb/stb_image.h>
+#include <stb_image.h>
 
 Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned int tileHeight, unsigned int tileCount, unsigned int format) {
     glGenTextures(1, &this->ID);

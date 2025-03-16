@@ -28,7 +28,6 @@ namespace Data {
         std::string name;
         Deserializer deserializer;
         FromString fromString;
-        TypeInfo(const TypeInfo&) = delete;
     };
 
     class String;

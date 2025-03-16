@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <stb/stb_image.h>
+#include <stb_image.h>
 
 #include "skybox.h"
 
