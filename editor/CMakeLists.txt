@@ -76,6 +76,32 @@ if (${QT_VERSION} GREATER_EQUAL 6)
     target_link_libraries(editor PRIVATE Qt6::OpenGL Qt6::OpenGLWidgets)
 endif()
 
+# Copy assets
+add_custom_command(
+        TARGET editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_SOURCE_DIR}/assets
+                $<TARGET_FILE_DIR:editor>/assets)
+
+# Copy Qt files
+if (WIN32)
+    #include("${QT_DEPLOY_SUPPORT}")
+
+    # TODO: Add other translations
+    add_custom_command(
+        TARGET editor POST_BUILD
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:editor> --translations en --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --plugindir $<TARGET_FILE_DIR:editor>/qtplugins
+    )
+    # No sense adding opengl-sw given that hardware acceleration is necessary, anyway
+    # Also don't want to clutter with plugins, add only needed ones
+
+    # Copy qt.conf to override default plugins location
+    add_custom_command(
+        TARGET editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/qt.conf $<TARGET_FILE_DIR:editor>/qt.conf
+    )
+endif ()
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.

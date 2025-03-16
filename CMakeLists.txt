@@ -14,3 +14,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(editor)
+
+
+install(FILES $<TARGET_RUNTIME_DLLS:editor> TYPE BIN)
