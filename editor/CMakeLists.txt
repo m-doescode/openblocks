@@ -123,6 +123,8 @@ install(TARGETS editor
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+install(FILES $<TARGET_RUNTIME_DLLS:editor> TYPE BIN)
+
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(editor)
 endif()
