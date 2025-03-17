@@ -4,6 +4,7 @@
 #include <GL/gl.h>
 #include <stb_image.h>
 
+#include "panic.h"
 #include "logger.h"
 
 Texture::Texture(const char* texturePath, unsigned int format, bool noMipMaps) {
@@ -25,7 +26,7 @@ Texture::Texture(const char* texturePath, unsigned int format, bool noMipMaps) {
 
     if (!data) {
         Logger::fatalErrorf("Failed to load texture '%s'", texturePath);
-        abort();
+        panic();
     }
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,

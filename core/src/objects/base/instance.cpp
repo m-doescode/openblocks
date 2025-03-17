@@ -5,6 +5,7 @@
 #include "objects/base/member.h"
 #include "objects/meta.h"
 #include "logger.h"
+#include "panic.h"
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
@@ -171,7 +172,7 @@ InstanceRef Instance::Deserialize(pugi::xml_node* node) {
     std::string className = node->attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         Logger::fatalErrorf("Unknown type for instance: '%s'", className.c_str());
-        abort();
+        panic();
     }
     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
     // printf("What are you? A %s sandwich\n", className.c_str());

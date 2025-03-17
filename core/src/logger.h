@@ -12,6 +12,8 @@ namespace Logger {
         FATAL_ERROR,
     };
 
+    extern std::string currentLogDir;
+
     void init();
     void finish();
 

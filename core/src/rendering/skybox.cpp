@@ -3,6 +3,7 @@
 #include <stb_image.h>
 
 #include "logger.h"
+#include "panic.h"
 #include "skybox.h"
 
 Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
@@ -17,7 +18,7 @@ Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
 
         if (!data) {
             Logger::fatalErrorf("Failed to load texture '%s'", faces[i].c_str());
-            abort();
+            panic();
         }
 
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format,

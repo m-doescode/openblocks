@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "logger.h"
+#include "panic.h"
 #include "shader.h"
 
 std::string getContents(std::string filePath) {
@@ -27,7 +28,7 @@ unsigned int compileShader(std::string path, GLenum type) {
         char infoLog[256];
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
         Logger::fatalErrorf("Fragment shader %s failed to compile: [%d]: %s", path.c_str(), success, infoLog);
-        abort();
+        panic();
     }
 
     return shader;
@@ -48,7 +49,7 @@ Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
         char infoLog[256];
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         Logger::fatalErrorf("Shader program failed to link: [%d]: %s", success, infoLog);
-        abort();
+        panic();
     }
 
     glDeleteShader(vertexShader);

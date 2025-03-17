@@ -4,6 +4,7 @@
 #include "objects/base/service.h"
 #include "workspace.h"
 #include "logger.h"
+#include "panic.h"
 #include <cstdio>
 #include <fstream>
 #include <memory>
@@ -44,7 +45,7 @@ void DataModel::Init() {
 void DataModel::SaveToFile(std::optional<std::string> path) {
     if (!path.has_value() && !this->currentFile.has_value()) {
         Logger::fatalError("Cannot save DataModel because no path was provided.");
-        abort();
+        panic();
     }
 
     std::string target = path.has_value() ? path.value() : this->currentFile.value();
@@ -68,7 +69,7 @@ void DataModel::DeserializeService(pugi::xml_node* node) {
     std::string className = node->attribute("class").value();
     if (SERVICE_CONSTRUCTORS.count(className) == 0) {
         Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
-        abort();
+        panic();
     }
 
     if (services.count(className) != 0) {

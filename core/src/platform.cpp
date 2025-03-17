@@ -1,5 +1,7 @@
 #include "platform.h"
+
 #include <filesystem>
+#include "panic.h"
 
 // GNU/Linux implementation
 #if defined(_POSIX_VERSION) || defined(__linux) || defined(__linux__)
@@ -41,7 +43,7 @@ std::string getProgramDataDir() {
     int status = SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, localAppData);
     if (status != 0) {
         printErrorMessage("Failed to find local appdata folder");
-        abort();
+        panic();
     }
     return localAppData + "/openblocks";
 }

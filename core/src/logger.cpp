@@ -6,6 +6,7 @@
 #include <format>
 
 static std::ofstream logStream;
+std::string Logger::currentLogDir = "NULL";
 
 void Logger::init() {
     initProgramLogsDir();
@@ -14,7 +15,7 @@ void Logger::init() {
 
     std::string fileName = std::format("log_{0:%Y%m%d}_{0:%H%M%S}.txt", now);
 
-    logStream = std::ofstream(getProgramLogsDir() + "/" + fileName);
+    logStream = std::ofstream(currentLogDir = (getProgramLogsDir() + "/" + fileName));
     Logger::debug("Logger initialized");
 }
 

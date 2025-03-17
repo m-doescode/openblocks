@@ -2,6 +2,7 @@
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
 #include "logger.h"
+#include "panic.h"
 #include <variant>
 
 Data::String Data::Variant::ToString() const {
@@ -19,7 +20,7 @@ void Data::Variant::Serialize(pugi::xml_node* node) const {
 Data::Variant Data::Variant::Deserialize(pugi::xml_node* node) {
     if (Data::TYPE_MAP.count(node->name()) == 0) {
         Logger::fatalErrorf("Unknown type for instance: '%s'", node->name());
-        abort();
+        panic();
     }
 
     const Data::TypeInfo* type = Data::TYPE_MAP[node->name()];

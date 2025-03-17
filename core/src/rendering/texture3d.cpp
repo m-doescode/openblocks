@@ -4,6 +4,7 @@
 #include <GL/gl.h>
 #include <stb_image.h>
 
+#include "panic.h"
 #include "logger.h"
 
 Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned int tileHeight, unsigned int tileCount, unsigned int format) {
@@ -26,7 +27,7 @@ Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned i
 
     if (!data) {
         Logger::fatalErrorf("Failed to load texture '%s'", texturePath);
-        abort();
+        panic();
     }
 
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, format, tileWidth, tileHeight, /* no of layers= */ tileCount, 0, format,
