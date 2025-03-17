@@ -22,7 +22,7 @@ std::string getProgramDataDir() {
     return std::string(homedir) + "/openblocks";
 }
 
-void printErrorMessage(std::string message) {
+void displayErrorMessage(std::string message) {
     fprintf(stderr, "%s\n", message.c_str());
 }
 
@@ -46,7 +46,7 @@ std::string getProgramDataDir() {
     return localAppData + "/openblocks";
 }
 
-void printErrorMessage(std::string message) {
+void displayErrorMessage(std::string message) {
     fprintf(stderr, "%s\n", message.c_str());
     MessageBoxA(NULL, message.c_str(), "Fatal Error", MB_OK);
 }

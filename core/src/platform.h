@@ -20,4 +20,4 @@ void initProgramDataDir();
 void initProgramLogsDir();
 
 // Displays an error message box on Windows, or prints to eprintf
-void printErrorMessage(std::string message);
+void displayErrorMessage(std::string message);

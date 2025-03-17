@@ -16,3 +16,8 @@ add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_libraries(openblocks ${GLEW_LIBRARIES} OpenGL::GL ReactPhysics3D::ReactPhysics3D pugixml::pugixml)
 target_include_directories(openblocks PUBLIC "src" "../include")
+
+# Windows-specific dependencies
+if(WIN32)
+    target_link_libraries(openblocks shell32.lib)
+endif()
