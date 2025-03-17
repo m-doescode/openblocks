@@ -42,15 +42,15 @@ std::string getProgramDataDir() {
     CHAR localAppData[MAX_PATH];
     int status = SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, localAppData);
     if (status != 0) {
-        printErrorMessage("Failed to find local appdata folder");
+        displayErrorMessage("Failed to find local appdata folder");
         panic();
     }
-    return localAppData + "/openblocks";
+    return std::string(localAppData) + "/openblocks";
 }
 
 void displayErrorMessage(std::string message) {
     fprintf(stderr, "%s\n", message.c_str());
-    MessageBoxA(NULL, message.c_str(), "Fatal Error", MB_OK);
+    MessageBoxA(NULL, message.c_str(), "Fatal Error", MB_OK | MB_ICONERROR);
 }
 
 #endif // WIN32

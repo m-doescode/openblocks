@@ -15,7 +15,7 @@ void panic() {
         abort();
     trySafeAbort = true;
 
-#ifndef NDEBUG
+#ifdef NDEBUG
     displayErrorMessage(std::string("A fatal error has occurred and Openblocks had to shut down.\n\
 The currently open document will be attempted to be saved, and logs will be written to " + getProgramLogsDir()));
 #endif
