@@ -9,6 +9,7 @@
 #include "qwidget.h"
 #include "qmimedata.h"
 #include "common.h"
+#include "logger.h"
 #include <algorithm>
 #include <cstdio>
 #include <optional>
@@ -163,10 +164,10 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
     Instance* sourceParent = sourceParentIdx.isValid() ? static_cast<Instance*>(sourceParentIdx.internalPointer()) : rootItem.get();
     Instance* destinationParent = destinationParentIdx.isValid() ? static_cast<Instance*>(destinationParentIdx.internalPointer()) : rootItem.get();
 
-    printf("Moved %d from %s\n", count, sourceParent->name.c_str());
+    Logger::infof("Moved %d from %s", count, sourceParent->name.c_str());
 
     if ((sourceRow + count) >= sourceParent->GetChildren().size()) {
-        fprintf(stderr, "Attempt to move rows %d-%d from %s (%s) while it only has %zu children.\n", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
+        Logger::fatalErrorf("Attempt to move rows %d-%d from %s (%s) while it only has %zu children.", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
         return false;
     }
 

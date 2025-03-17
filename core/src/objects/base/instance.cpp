@@ -1,9 +1,10 @@
 #include "instance.h"
-#include "../../common.h"
-#include "../../datatypes/meta.h"
+#include "common.h"
+#include "datatypes/meta.h"
 #include "datatypes/base.h"
 #include "objects/base/member.h"
 #include "objects/meta.h"
+#include "logger.h"
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
@@ -169,7 +170,7 @@ void Instance::Serialize(pugi::xml_node* parent) {
 InstanceRef Instance::Deserialize(pugi::xml_node* node) {
     std::string className = node->attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
-        fprintf(stderr, "Unknown type for instance: '%s'\n", className.c_str());
+        Logger::fatalErrorf("Unknown type for instance: '%s'", className.c_str());
         abort();
     }
     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
@@ -185,7 +186,7 @@ InstanceRef Instance::Deserialize(pugi::xml_node* node) {
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
         if (!meta_.has_value()) {
-            fprintf(stderr, "Attempt to set unknown property '%s' of %s\n", propertyName.c_str(), object->GetClass()->className.c_str());
+            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
         Data::Variant value = Data::Variant::Deserialize(&propertyNode);

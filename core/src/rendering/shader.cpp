@@ -3,6 +3,7 @@
 #include <GL/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "logger.h"
 #include "shader.h"
 
 std::string getContents(std::string filePath) {
@@ -25,7 +26,7 @@ unsigned int compileShader(std::string path, GLenum type) {
     if(success != 1) {
         char infoLog[256];
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        printf("Fragment shader %s failed to compile: [%d]: %s\n", path.c_str(), success, infoLog);
+        Logger::fatalErrorf("Fragment shader %s failed to compile: [%d]: %s", path.c_str(), success, infoLog);
         abort();
     }
 
@@ -46,7 +47,7 @@ Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
     if(success != 1) {
         char infoLog[256];
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        printf("Shader program failed to link: [%d]: %s\n", success, infoLog);
+        Logger::fatalErrorf("Shader program failed to link: [%d]: %s", success, infoLog);
         abort();
     }
 

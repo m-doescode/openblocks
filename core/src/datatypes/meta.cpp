@@ -1,6 +1,7 @@
 #include "meta.h"
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
+#include "logger.h"
 #include <variant>
 
 Data::String Data::Variant::ToString() const {
@@ -17,7 +18,7 @@ void Data::Variant::Serialize(pugi::xml_node* node) const {
 
 Data::Variant Data::Variant::Deserialize(pugi::xml_node* node) {
     if (Data::TYPE_MAP.count(node->name()) == 0) {
-        fprintf(stderr, "Unknown type for instance: '%s'\n", node->name());
+        Logger::fatalErrorf("Unknown type for instance: '%s'", node->name());
         abort();
     }
 

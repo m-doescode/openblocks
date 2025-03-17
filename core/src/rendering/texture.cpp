@@ -4,6 +4,8 @@
 #include <GL/gl.h>
 #include <stb_image.h>
 
+#include "logger.h"
+
 Texture::Texture(const char* texturePath, unsigned int format, bool noMipMaps) {
     glGenTextures(1, &this->ID);
     glBindTexture(GL_TEXTURE_2D, this->ID);
@@ -22,7 +24,7 @@ Texture::Texture(const char* texturePath, unsigned int format, bool noMipMaps) {
                                     &nrChannels, 0);
 
     if (!data) {
-        printf("Failed to load texture '%s'\n", texturePath);
+        Logger::fatalErrorf("Failed to load texture '%s'", texturePath);
         abort();
     }
 

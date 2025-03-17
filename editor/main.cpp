@@ -1,20 +1,22 @@
 #include "mainwindow.h"
 
+#include "logger.h"
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
 #include <QStyleFactory>
 #include <QBasicTimer>
 
-#include "physics/simulation.h"
-#include "qcoreevent.h"
-#include "qobject.h"
-
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    
+
+    Logger::init();
+
     MainWindow w;
     w.show();
-    return a.exec();
+    int result = a.exec();
+
+    Logger::finish();
+    return result;
 }

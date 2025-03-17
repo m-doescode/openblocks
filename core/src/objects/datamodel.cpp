@@ -3,6 +3,7 @@
 #include "objects/base/instance.h"
 #include "objects/base/service.h"
 #include "workspace.h"
+#include "logger.h"
 #include <cstdio>
 #include <fstream>
 #include <memory>
@@ -42,7 +43,7 @@ void DataModel::Init() {
 
 void DataModel::SaveToFile(std::optional<std::string> path) {
     if (!path.has_value() && !this->currentFile.has_value()) {
-        fprintf(stderr, "Cannot save DataModel because no path was provided.\n");
+        Logger::fatalError("Cannot save DataModel because no path was provided.");
         abort();
     }
 
@@ -60,18 +61,18 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     doc.save(outStream);
     currentFile = target;
     name = target;
-    printf("Place saved succesfully\n");
+    Logger::info("Place saved succesfully");
 }
 
 void DataModel::DeserializeService(pugi::xml_node* node) {
     std::string className = node->attribute("class").value();
     if (SERVICE_CONSTRUCTORS.count(className) == 0) {
-        fprintf(stderr, "Unknown service: '%s'\n", className.c_str());
+        Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
         abort();
     }
 
     if (services.count(className) != 0) {
-        fprintf(stderr, "Service %s defined multiple times in file\n", className.c_str());
+        Logger::fatalErrorf("Service %s defined multiple times in file", className.c_str());
         return;
     }
 
@@ -84,7 +85,7 @@ void DataModel::DeserializeService(pugi::xml_node* node) {
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
         if (!meta_.has_value()) {
-            fprintf(stderr, "Attempt to set unknown property '%s' of %s\n", propertyName.c_str(), object->GetClass()->className.c_str());
+            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
         Data::Variant value = Data::Variant::Deserialize(&propertyNode);

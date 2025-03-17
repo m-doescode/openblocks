@@ -4,6 +4,8 @@
 #include <GL/gl.h>
 #include <stb_image.h>
 
+#include "logger.h"
+
 Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned int tileHeight, unsigned int tileCount, unsigned int format) {
     glGenTextures(1, &this->ID);
     glBindTexture(GL_TEXTURE_2D_ARRAY, this->ID);
@@ -23,7 +25,7 @@ Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned i
                                     &nrChannels, 0);
 
     if (!data) {
-        printf("Failed to load texture '%s'\n", texturePath);
+        Logger::fatalErrorf("Failed to load texture '%s'", texturePath);
         abort();
     }
 

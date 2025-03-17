@@ -7,7 +7,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <memory>
 #include <stdio.h>
+#include <format>
 
+#include "logger.h"
 #include "objects/part.h"
 #include "rendering/renderer.h"
 #include "physics/simulation.h"
@@ -29,6 +31,8 @@ void resizeCallback(GLFWwindow* window, int width, int height);
 std::shared_ptr<Part> lastPart;
 
 int main() {
+    Logger::init();
+
     glfwSetErrorCallback(errorCatcher);
 
     glfwInit();
@@ -85,7 +89,7 @@ int main() {
 }
 
 void errorCatcher(int id, const char* str) {
-    printf("Something *terrible* happened. Here's the briefing: [%d] %s\n", id, str);
+    Logger::fatalError(std::format("GLFW Error: [{}] {}", id, str));
 }
 
 float lastTime;

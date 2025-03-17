@@ -2,6 +2,7 @@
 #include <GL/gl.h>
 #include <stb_image.h>
 
+#include "logger.h"
 #include "skybox.h"
 
 Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
@@ -15,7 +16,7 @@ Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
                                         &nrChannels, 0);
 
         if (!data) {
-            printf("Failed to load texture '%s'\n", faces[i].c_str());
+            Logger::fatalErrorf("Failed to load texture '%s'", faces[i].c_str());
             abort();
         }
 

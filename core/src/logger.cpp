@@ -23,7 +23,7 @@ void Logger::finish() {
     logStream.close();
 }
 
-void log(std::string message, Logger::LogLevel logLevel) {
+void Logger::log(std::string message, Logger::LogLevel logLevel) {
     std::string logLevelStr = logLevel == Logger::LogLevel::INFO ? "INFO" : 
         logLevel == Logger::LogLevel::DEBUG ? "DEBUG" :
         logLevel == Logger::LogLevel::WARNING ? "WARN" :
