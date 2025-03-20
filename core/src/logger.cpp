@@ -36,7 +36,7 @@ void Logger::log(std::string message, Logger::LogLevel logLevel) {
     std::string formattedLogLine = std::format("[{:%Y-%m-%d %X}] [{}] {}", now, logLevelStr, message);
 
     logStream << formattedLogLine << std::endl;
-    printf("FATAL ERROR: %s\n", message.c_str());
+    printf("%s\n", formattedLogLine.c_str());
 
     if (logLevel == Logger::LogLevel::FATAL_ERROR) {
         displayErrorMessage(message);

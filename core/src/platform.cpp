@@ -25,7 +25,7 @@ std::string getProgramDataDir() {
 }
 
 void displayErrorMessage(std::string message) {
-    fprintf(stderr, "%s\n", message.c_str());
+    fprintf(stderr, "FATAL ERROR: %s\n", message.c_str());
 }
 
 #endif // GNU/Linux
@@ -37,6 +37,7 @@ void displayErrorMessage(std::string message) {
 #include <cstdlib>
 #include <shlobj.h>
 #include <winuser.h>
+#include <wincon.h>
 
 std::string getProgramDataDir() {
     CHAR localAppData[MAX_PATH];
@@ -49,8 +50,9 @@ std::string getProgramDataDir() {
 }
 
 void displayErrorMessage(std::string message) {
-    fprintf(stderr, "%s\n", message.c_str());
-    MessageBoxA(NULL, message.c_str(), "Fatal Error", MB_OK | MB_ICONERROR);
+    fprintf(stderr, "FATAL ERROR: %s\n", message.c_str());
+    if (!GetConsoleWindow())
+        MessageBoxA(NULL, message.c_str(), "Fatal Error", MB_OK | MB_ICONERROR);
 }
 
 #endif // WIN32
