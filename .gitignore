@@ -7,7 +7,6 @@
 /CMakeLists.txt.user*
 
 # Clangd
-/compile_commands.json
 /.cache
 
 # Gdb

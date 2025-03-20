@@ -16,6 +16,7 @@
 
 #include "datatypes/cframe.h"
 #include "editorcommon.h"
+#include "logger.h"
 #include "mainwindow.h"
 #include "objects/handles.h"
 #include "physics/util.h"
@@ -280,6 +281,13 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         }));
         syncPartPhysics(lastPart);
     }
+
+    if (evt->key() == Qt::Key_U)
+        Logger::info("info message");
+    if (evt->key() == Qt::Key_I)
+        Logger::warning("warning message");
+    if (evt->key() == Qt::Key_O)
+        Logger::error("error message");
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {

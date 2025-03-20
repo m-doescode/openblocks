@@ -4,8 +4,10 @@
 #include <fstream>
 #include <chrono>
 #include <format>
+#include <vector>
 
 static std::ofstream logStream;
+static std::vector<Logger::LogListener> logListeners;
 std::string Logger::currentLogDir = "NULL";
 
 void Logger::init() {
@@ -38,7 +40,15 @@ void Logger::log(std::string message, Logger::LogLevel logLevel) {
     logStream << formattedLogLine << std::endl;
     printf("%s\n", formattedLogLine.c_str());
 
+    for (Logger::LogListener listener : logListeners) {
+        listener(logLevel, message);
+    }
+
     if (logLevel == Logger::LogLevel::FATAL_ERROR) {
         displayErrorMessage(message);
     }
+}
+
+void Logger::addLogListener(Logger::LogListener listener) {
+    logListeners.push_back(listener);
 }

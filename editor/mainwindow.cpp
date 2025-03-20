@@ -10,14 +10,17 @@
 #include <QWidget>
 #include <QTreeView>
 #include <QAbstractItemView>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <qglobal.h>
+#include <qnamespace.h>
 #include <qwindowdefs.h>
 #include <sstream>
 
 #include "common.h"
 #include "editorcommon.h"
+#include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/datamodel.h"
 #include "objects/handles.h"
@@ -40,6 +43,19 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
+
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+
+    // Logger
+
+    Logger::addLogListener(std::bind(&MainWindow::handleLog, this, std::placeholders::_1, std::placeholders::_2));
+
+    QFont font("");
+    font.setStyleHint(QFont::Monospace);
+    ui->outputTextView->setFont(font);
+
+    // Explorer View
 
     ui->explorerView->buildContextMenu();
 
@@ -232,6 +248,17 @@ MainWindow::MainWindow(QWidget *parent)
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     syncPartPhysics(ui->mainWidget->lastPart);
+}
+
+void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {
+    if (logLevel == Logger::LogLevel::DEBUG) return;
+
+    if (logLevel == Logger::LogLevel::INFO)
+        ui->outputTextView->appendHtml(QString("<p>%1</p>").arg(QString::fromStdString(message)));
+    if (logLevel == Logger::LogLevel::WARNING)
+        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 127, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
+    if (logLevel == Logger::LogLevel::ERROR || logLevel == Logger::LogLevel::FATAL_ERROR)
+        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 0, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
 }
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();

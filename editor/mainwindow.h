@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "logger.h"
 #include "panes/explorerview.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
@@ -45,6 +46,7 @@ private:
 
     void updateToolbars();
     void timerEvent(QTimerEvent*) override;
+    void handleLog(Logger::LogLevel, std::string);
     
     std::optional<std::string> openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title = "");
 };

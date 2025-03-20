@@ -1,6 +1,7 @@
 #pragma once
 
 #include <format>
+#include <functional>
 #include <string>
 
 namespace Logger {
@@ -12,10 +13,13 @@ namespace Logger {
         FATAL_ERROR,
     };
 
+    typedef std::function<void(LogLevel logLeve, std::string message)> LogListener;
+
     extern std::string currentLogDir;
 
     void init();
     void finish();
+    void addLogListener(LogListener);
 
     void log(std::string message, LogLevel logLevel);
     inline void info(std::string message) { log(message, LogLevel::INFO); }
