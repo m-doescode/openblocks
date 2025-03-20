@@ -55,6 +55,18 @@ MainWindow::MainWindow(QWidget *parent)
     font.setStyleHint(QFont::Monospace);
     ui->outputTextView->setFont(font);
 
+    ui->outputTextView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->outputTextView, &QWidget::customContextMenuRequested, [&](QPoint point) {
+        QMenu *menu = ui->outputTextView->createStandardContextMenu(point);
+
+        menu->addAction("Clear Output", [&]() {
+            ui->outputTextView->clear();
+        });
+
+        menu->exec(ui->outputTextView->mapToGlobal(point));
+        delete menu;
+    });
+
     // Explorer View
 
     ui->explorerView->buildContextMenu();
