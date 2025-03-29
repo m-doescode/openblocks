@@ -14,6 +14,7 @@
 #include <memory>
 #include <optional>
 #include <qglobal.h>
+#include <qicon.h>
 #include <qnamespace.h>
 #include <qwindowdefs.h>
 #include <sstream>
@@ -46,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+
+    connect(ui->actionQuit, &QAction::triggered, [&]() {
+        this->close();
+    });
 
     // Logger
 
