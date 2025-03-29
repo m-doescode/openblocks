@@ -9,6 +9,8 @@
 #include <optional>
 #include "physics/simulation.h"
 
+using Data::Vector3;
+
 // template <typename T, typename U>
 // constexpr FieldCodec fieldCodecOf() {
 //     return FieldCodec {
@@ -25,7 +27,7 @@ constexpr FieldCodec cframePositionCodec() {
     return FieldCodec {
         .write = [](Data::Variant source, void* destination) {
             Data::CFrame* cframe = static_cast<Data::CFrame*>(destination);
-            *cframe = cframe->Rotation() + source.get<Data::Vector3>();
+            *cframe = cframe->Rotation() + source.get<Vector3>();
         },
         .read = [](void* source) -> Data::Variant {
             return *static_cast<Data::CFrame*>(source);
@@ -37,7 +39,7 @@ constexpr FieldCodec cframeRotationCodec() {
     return FieldCodec {
         .write = [](Data::Variant source, void* destination) {
             Data::CFrame* cframe = static_cast<Data::CFrame*>(destination);
-            *cframe = Data::CFrame::FromEulerAnglesXYZ(source.get<Data::Vector3>()) + cframe->Position();
+            *cframe = Data::CFrame::FromEulerAnglesXYZ(source.get<Vector3>()) + cframe->Position();
         },
         .read = [](void* source) -> Data::Variant {
             return static_cast<Data::CFrame*>(source)->ToEulerAnglesXYZ();
@@ -71,13 +73,13 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this)
             }}, { "Position", {
                 .backingField = &cframe,
-                .type = &Data::Vector3::TYPE,
+                .type = &Vector3::TYPE,
                 .codec = cframePositionCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
                 .flags = PropertyFlags::PROP_NOSAVE
             }}, { "Rotation", {
                 .backingField = &cframe,
-                .type = &Data::Vector3::TYPE,
+                .type = &Vector3::TYPE,
                 .codec = cframeRotationCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
                 .flags = PropertyFlags::PROP_NOSAVE
@@ -88,8 +90,8 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
             }}, { "Size", {
                 .backingField = &size,
-                .type = &Data::Vector3::TYPE,
-                .codec = fieldCodecOf<Data::Vector3, glm::vec3>(),
+                .type = &Vector3::TYPE,
+                .codec = fieldCodecOf<Vector3, glm::vec3>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this)
             }}, { "Color", {
                 .backingField = &color,
@@ -122,4 +124,32 @@ void Part::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, s
 
 void Part::onUpdated(std::string property) {
     syncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
+}
+
+// Expands provided extents to fit point
+static void expandMaxExtents(Vector3* min, Vector3* max, Vector3 point) {
+    *min = Vector3(glm::min(min->X(), point.X()), glm::min(min->Y(), point.Y()), glm::min(min->Z(), point.Z()));
+    *max = Vector3(glm::max(max->X(), point.X()), glm::max(max->Y(), point.Y()), glm::max(max->Z(), point.Z()));
+}
+
+static Vector3 verts[8] {
+    {-1, -1, -1},
+    {-1, -1, 1},
+    {-1, 1, -1},
+    {-1, 1, 1},
+    {1, -1, -1},
+    {1, -1, 1},
+    {1, 1, -1},
+    {1, 1, 1},
+};
+
+Vector3 Part::GetAABB() {
+    Vector3 min(0, 0, 0);
+    Vector3 max(0, 0, 0);
+    for (Vector3 vert : verts) {
+        Vector3 worldVert = this->cframe.Rotation() * ((Data::Vector3)this->size * vert);
+        expandMaxExtents(&min, &max, worldVert);
+    }
+
+    return (min - max).Abs() / 2;
 }

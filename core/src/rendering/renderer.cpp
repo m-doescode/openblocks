@@ -29,6 +29,7 @@ Shader* shader = NULL;
 Shader* skyboxShader = NULL;
 Shader* handleShader = NULL;
 Shader* identityShader = NULL;
+Shader* ghostShader = NULL;
 extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
@@ -63,6 +64,7 @@ void renderInit(GLFWwindow* window, int width, int height) {
     skyboxShader = new Shader("assets/shaders/skybox.vs", "assets/shaders/skybox.fs");
     handleShader = new Shader("assets/shaders/handle.vs", "assets/shaders/handle.fs");
     identityShader = new Shader("assets/shaders/identity.vs", "assets/shaders/identity.fs");
+    ghostShader = new Shader("assets/shaders/ghost.vs", "assets/shaders/ghost.fs");
 }
 
 void renderParts() {
@@ -126,7 +128,7 @@ void renderParts() {
             sorted[distance] = part;
         } else {
             glm::mat4 model = part->cframe;
-            if (part->name == "camera") model = camera.getLookAt();
+            // if (part->name == "camera") model = camera.getLookAt();
             model = glm::scale(model, part->size);
             shader->set("model", model);
             shader->set("material", Material {
@@ -149,7 +151,7 @@ void renderParts() {
     for (std::map<float, std::shared_ptr<Part>>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); it++) {
         std::shared_ptr<Part> part = it->second;
         glm::mat4 model = part->cframe;
-        if (part->name == "camera") model = camera.getLookAt();
+        // if (part->name == "camera") model = camera.getLookAt();
         model = glm::scale(model, part->size);
         shader->set("model", model);
         shader->set("material", Material {
@@ -256,6 +258,45 @@ void renderHandles() {
     }
 }
 
+void renderAABB() {
+    glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Use shader
+    ghostShader->use();
+
+    // view/projection transformations
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 view = camera.getLookAt();
+    ghostShader->set("projection", projection);
+    ghostShader->set("view", view);
+
+    // Pass in the camera position
+    ghostShader->set("viewPos", camera.cameraPos);
+
+    ghostShader->set("transparency", 0.5f);
+    ghostShader->set("color", glm::vec3(1.f, 0.f, 0.f));
+
+    // Sort by nearest
+    for (InstanceRef inst : workspace()->GetChildren()) {
+        if (inst->GetClass()->className != "Part") continue;
+        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        glm::mat4 model = Data::CFrame::IDENTITY + part->cframe.Position();
+        printf("AABB is supposedly (%f, %f, %f)\n", part->GetAABB().X(), part->GetAABB().Y(), part->GetAABB().Z());
+        model = glm::scale(model, (glm::vec3)part->GetAABB());
+        ghostShader->set("model", model);
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        ghostShader->set("normalMatrix", normalMatrix);
+
+        CUBE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
+    }
+}
+
 void render(GLFWwindow* window) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -263,6 +304,8 @@ void render(GLFWwindow* window) {
     renderSkyBox();
     renderHandles();
     renderParts();
+    // TODO: Make this a debug flag
+    // renderAABB();
 }
 
 void setViewport(int width, int height) {

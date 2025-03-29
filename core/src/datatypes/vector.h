@@ -35,6 +35,7 @@ namespace Data {
         inline float Z() const { return vector.z; }
         inline float Magnitude() const { return glm::length(vector); }
         inline Data::Vector3 Unit() const { return glm::normalize(vector); }
+        inline Data::Vector3 Abs() const { return glm::abs(vector); }
 
         Data::Vector3 Cross(Data::Vector3) const;
         float Dot(Data::Vector3) const;
@@ -42,6 +43,7 @@ namespace Data {
         // Operators
         Data::Vector3 operator *(float) const;
         Data::Vector3 operator /(float) const;
+        Data::Vector3 operator *(Data::Vector3) const; // Component-wise
         Data::Vector3 operator +(Data::Vector3) const;
         Data::Vector3 operator -(Data::Vector3) const;
         Data::Vector3 operator -() const;

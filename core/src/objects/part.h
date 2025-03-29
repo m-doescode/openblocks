@@ -48,4 +48,7 @@ public:
     virtual const InstanceType* GetClass() override;
 
     inline Data::Vector3 position() { return cframe.Position(); }
+
+    // Calculate size of axis-aligned bounding box
+    Data::Vector3 GetAABB();
 };

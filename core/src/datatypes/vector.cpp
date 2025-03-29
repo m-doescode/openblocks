@@ -25,12 +25,18 @@ Data::Vector3::operator glm::vec3() const { return vector; };
 Data::Vector3::operator rp::Vector3() const { return rp::Vector3(X(), Y(), Z()); };
 
 // Operators
+
 Data::Vector3 Data::Vector3::operator *(float scale) const {
     return Data::Vector3(this->X() * scale, this->Y() * scale, this->Z() * scale);
 }
 
 Data::Vector3 Data::Vector3::operator /(float scale) const {
     return Data::Vector3(this->X() / scale, this->Y() / scale, this->Z() / scale);
+}
+
+// Component-wise
+Data::Vector3 Data::Vector3::operator *(Data::Vector3 other) const {
+    return Data::Vector3(this->X() * other.X(), this->Y() * other.Y(), this->Z() * other.Z());
 }
 
 Data::Vector3 Data::Vector3::operator +(Data::Vector3 other) const {
