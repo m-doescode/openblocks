@@ -170,8 +170,7 @@
   </action>
   <action name="actionNew">
    <property name="icon">
-    <iconset>
-     <normaloff>assets/icons/editor/new.png</normaloff>assets/icons/editor/new.png</iconset>
+    <iconset theme="document-new"/>
    </property>
    <property name="text">
     <string>New</string>
@@ -185,8 +184,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
-     <normaloff>assets/icons/editor/open.png</normaloff>assets/icons/editor/open.png</iconset>
+    <iconset theme="document-open"/>
    </property>
    <property name="text">
     <string>Open</string>
@@ -200,8 +198,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
-     <normaloff>assets/icons/editor/save.png</normaloff>assets/icons/editor/save.png</iconset>
+    <iconset theme="document-save"/>
    </property>
    <property name="text">
     <string>Save</string>
