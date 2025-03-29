@@ -124,6 +124,7 @@
    <addaction name="actionToolMove"/>
    <addaction name="actionToolScale"/>
    <addaction name="actionToolRotate"/>
+   <addaction name="actionToggleSpace"/>
    <addaction name="separator"/>
    <addaction name="actionDelete"/>
    <addaction name="actionCopy"/>
@@ -463,6 +464,20 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::QuitRole</enum>
+   </property>
+  </action>
+  <action name="actionToggleSpace">
+   <property name="text">
+    <string>L</string>
+   </property>
+   <property name="toolTip">
+    <string>Switch between local and world space transformations</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

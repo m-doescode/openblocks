@@ -35,6 +35,8 @@
 
 bool simulationPlaying = false;
 
+bool worldSpaceTransforms = false;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -99,6 +101,16 @@ MainWindow::MainWindow(QWidget *parent)
             ui->actionToggleSimulation->setText("Resume simulation");
             ui->actionToggleSimulation->setToolTip("Resume the simulation");
             ui->actionToggleSimulation->setIcon(QIcon::fromTheme("media-playback-start"));
+        }
+    });
+
+    connect(ui->actionToggleSpace, &QAction::triggered, this, [&]() {
+        worldSpaceTransforms = !worldSpaceTransforms;
+        updateToolbars();
+        if (worldSpaceTransforms) {
+            ui->actionToggleSpace->setText("W");
+        } else {
+            ui->actionToggleSpace->setText("L");
         }
     });
 
@@ -305,8 +317,11 @@ void MainWindow::updateToolbars() {
     ui->actionGridSnapOff->setChecked(snappingMode == GridSnappingMode::SNAP_OFF);
 
     // editorToolHandles->worldMode = false;
-    if (selectedTool == SelectedTool::MOVE) editorToolHandles->worldMode = true;
-    if (selectedTool == SelectedTool::SCALE) editorToolHandles->worldMode = false;
+    if (selectedTool == SelectedTool::SCALE)
+        editorToolHandles->worldMode = false;
+    else
+        editorToolHandles->worldMode = worldSpaceTransforms;
+
     editorToolHandles->active = selectedTool != SelectedTool::SELECT;
     editorToolHandles->handlesType =
       selectedTool == SelectedTool::MOVE ? HandlesType::MoveHandles
