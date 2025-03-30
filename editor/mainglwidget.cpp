@@ -138,13 +138,14 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     if (!rayHit) return;
 
     Data::Vector3 vec = rayHit->worldPoint;
-    Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe;
-    Data::CFrame localFrame = targetFrame.Inverse() * draggingObject->lock()->cframe;
+    Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe.Rotation();
+    Data::CFrame localFrame = (targetFrame.Inverse() * draggingObject->lock()->cframe).Rotation();
 
     // Snap axis
-    Data::CFrame newFrame = targetFrame * snapCFrame(localFrame);
-    draggingObject->lock()->cframe = newFrame.Rotation() + vec;
-
+    localFrame = snapCFrame(localFrame);
+    localFrame = localFrame;
+    Data::CFrame newFrame = targetFrame * localFrame;
+    draggingObject->lock()->cframe = newFrame + vec + localFrame.Rotation() * ((localFrame.Inverse().Rotation() * rayHit->worldNormal) * draggingObject->lock()->size / 2);
 
     syncPartPhysics(draggingObject->lock());
 }
