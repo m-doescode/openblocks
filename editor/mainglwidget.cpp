@@ -5,6 +5,7 @@
 #include <glm/common.hpp>
 #include <glm/ext/matrix_projection.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/round.hpp>
@@ -77,6 +78,50 @@ void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
     // QCursor::setPos(lastMousePos);
 }
 
+
+static Data::Vector3 orthoVecs[6] {
+    {1, 0, 0},
+    {-1, 0, 0},
+    {0, 1, 0},
+    {0, -1, 0},
+    {0, 0, 1},
+    {0, 0, -1},
+};
+
+// Snaps CFrame to the neareest 90 degree angle
+// https://gamedev.stackexchange.com/a/183342
+Data::CFrame snapCFrame(Data::CFrame frame) {
+    Data::Vector3 closestVec1{0, 0, 0};
+    float closest1 = 0.f;
+
+    // Primary vector
+    for (Data::Vector3 vec : orthoVecs) {
+        float closeness = glm::dot((glm::vec3)frame.LookVector(), (glm::vec3)vec);
+        if (closeness > closest1) {
+            closest1 = closeness;
+            closestVec1 = vec;
+        }
+    }
+
+    Data::Vector3 closestVec2{0, 0, 0};
+    float closest2 = 0.f;
+
+    // Second vector
+    for (Data::Vector3 vec : orthoVecs) {
+        // Guard against accidental linear dependency
+        if (vec == closestVec1) continue;
+
+        float closeness = glm::dot((glm::vec3)frame.UpVector(), (glm::vec3)vec);
+        if (closeness > closest2) {
+            closest2 = closeness;
+            closestVec2 = vec;
+        }
+    }
+
+    // Data::Vector3 thirdVec = closestVec1.Cross(closestVec2);
+    return Data::CFrame(frame.Position(), frame.Position() + closestVec1, closestVec2);
+}
+
 bool isMouseDragging = false;
 std::optional<std::weak_ptr<Part>> draggingObject;
 std::optional<HandleFace> draggingHandle;
@@ -91,9 +136,16 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     });
     
     if (!rayHit) return;
+
     Data::Vector3 vec = rayHit->worldPoint;
-    vec = vec + Data::Vector3(rpToGlm(rayHit->worldNormal) * draggingObject->lock()->size / 2.f);
-    draggingObject->lock()->cframe = draggingObject->lock()->cframe.Rotation() + vec;
+    Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe;
+    Data::CFrame localFrame = targetFrame.Inverse() * draggingObject->lock()->cframe;
+
+    // Snap axis
+    Data::CFrame newFrame = targetFrame * snapCFrame(localFrame);
+    draggingObject->lock()->cframe = newFrame.Rotation() + vec;
+
+
     syncPartPhysics(draggingObject->lock());
 }
 

@@ -51,6 +51,10 @@ Data::Vector3 Data::Vector3::operator -() const {
     return Data::Vector3(-this->X(), -this->Y(), -this->Z());
 }
 
+bool Data::Vector3::operator ==(Data::Vector3 other) const {
+    return this->X() == other.X() && this->Y() == other.Y() && this->Z() == other.Z();
+}
+
 Data::Vector3 Data::Vector3::Cross(Data::Vector3 other) const {
     return glm::cross(this->vector, other.vector);
 }

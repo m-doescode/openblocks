@@ -47,5 +47,7 @@ namespace Data {
         Data::Vector3 operator +(Data::Vector3) const;
         Data::Vector3 operator -(Data::Vector3) const;
         Data::Vector3 operator -() const;
+
+        bool operator ==(Data::Vector3) const;
     };
 }
