@@ -193,6 +193,7 @@ void renderHandles() {
 
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);
+    glFrontFace(GL_CCW); // This is right... Probably.....
     
     // Use shader
     handleShader->use();

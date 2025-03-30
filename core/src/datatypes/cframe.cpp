@@ -42,9 +42,9 @@ glm::mat3 lookAt(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up)
 	Data::Vector3 f = (lookAt - position).Unit(); // Forward/Look
 	Data::Vector3 u = up.Unit(); // Up
 	Data::Vector3 s = f.Cross(u).Unit(); // Right
-	u = s.Cross(f);
+	u = s.Cross(f).Unit();
 
-	return { s, u, f };
+	return { s, u, -f };
 }
 
 Data::CFrame::CFrame(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up)

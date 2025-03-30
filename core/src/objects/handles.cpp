@@ -46,7 +46,7 @@ Data::CFrame Handles::GetCFrameOfHandle(HandleFace face) {
 
     Data::Vector3 handleOffset = this->worldMode ? ((Data::Vector3::ONE * 2.f) + adornee->lock()->GetAABB() * 0.5f) : Data::Vector3(2.f + adornee->lock()->size * 0.5f);
     Data::Vector3 handlePos = localFrame * (handleOffset * face.normal);
-    Data::CFrame cframe(handlePos, handlePos + localFrame.Rotation() * face.normal, upAxis);
+    Data::CFrame cframe(handlePos, handlePos + localFrame.Rotation() * -face.normal, upAxis);
 
     return cframe;
 }
