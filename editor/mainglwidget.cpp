@@ -156,6 +156,10 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
             // Find outwarwd difference
             localDiff = localDiff * glm::sign(draggingHandle->normal);
 
+            // Minimum size of 0.01f
+            localDiff = glm::max(part->size + localDiff, 0.01f) - part->size;
+            diff = frame * (localDiff * glm::sign(draggingHandle->normal));
+
             // Add local difference to size
             part->size += localDiff;
 
