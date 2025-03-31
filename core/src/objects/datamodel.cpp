@@ -62,7 +62,7 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     doc.save(outStream);
     currentFile = target;
     name = target;
-    Logger::info("Place saved succesfully");
+    Logger::info("Place saved successfully");
 }
 
 void DataModel::DeserializeService(pugi::xml_node* node) {
