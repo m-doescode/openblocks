@@ -51,3 +51,7 @@ namespace Data {
         bool operator ==(Data::Vector3) const;
     };
 }
+
+inline void printVec(Data::Vector3 vec) {
+    printf("(%f, %f, %f)\n", vec.X(), vec.Y(), vec.Z());
+}
