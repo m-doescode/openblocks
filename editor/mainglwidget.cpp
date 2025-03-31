@@ -138,14 +138,20 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     if (!rayHit) return;
 
     Data::Vector3 vec = rayHit->worldPoint;
-    Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe.Rotation();
+    Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe;
+    Data::Vector3 surfaceNormal = targetFrame.Inverse().Rotation() * rayHit->worldNormal;
+    // The part being dragged's frame local to the hit target's frame, but without its position component
     Data::CFrame localFrame = (targetFrame.Inverse() * draggingObject->lock()->cframe).Rotation();
 
     // Snap axis
     localFrame = snapCFrame(localFrame);
-    localFrame = localFrame;
-    Data::CFrame newFrame = targetFrame * localFrame;
-    draggingObject->lock()->cframe = newFrame + vec + localFrame.Rotation() * ((localFrame.Inverse().Rotation() * rayHit->worldNormal) * draggingObject->lock()->size / 2);
+
+    // Unsink the object
+    // Get the normal of the surface relative to the part's frame, and get the size along that vector
+    Data::Vector3 partOffset = localFrame * ((localFrame.Inverse() * rayHit->worldNormal) * draggingObject->lock()->size / 2);
+
+    Data::CFrame newFrame = targetFrame.Rotation() * localFrame;
+    draggingObject->lock()->cframe = newFrame + vec + partOffset;
 
     syncPartPhysics(draggingObject->lock());
 }
