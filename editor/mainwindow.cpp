@@ -123,6 +123,13 @@ MainWindow::MainWindow(QWidget *parent)
         dataModel->SaveToFile(path);
     });
 
+    connect(ui->actionSaveAs, &QAction::triggered, this, [&]() {
+        std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save as " + dataModel->name));
+        if (path == "") return;
+
+        dataModel->SaveToFile(path);
+    });
+
     connect(ui->actionOpen, &QAction::triggered, this, [&]() {
         std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptOpen);
         if (!path) return;
