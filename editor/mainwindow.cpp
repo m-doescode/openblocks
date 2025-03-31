@@ -118,21 +118,21 @@ MainWindow::MainWindow(QWidget *parent)
         std::optional<std::string> path;
         if (!dataModel->HasFile())
             path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
-        if (path == "") return;
+        if (!path || path == "") return;
 
         dataModel->SaveToFile(path);
     });
 
     connect(ui->actionSaveAs, &QAction::triggered, this, [&]() {
         std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save as " + dataModel->name));
-        if (path == "") return;
+        if (!path || path == "") return;
 
         dataModel->SaveToFile(path);
     });
 
     connect(ui->actionOpen, &QAction::triggered, this, [&]() {
         std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptOpen);
-        if (!path) return;
+        if (!path || path == "") return;
         std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path.value());
         dataModel = newModel;
         ui->explorerView->updateRoot(newModel);
