@@ -23,7 +23,8 @@ protected:
 
     void handleCameraRotate(QMouseEvent* evt);
     void handleObjectDrag(QMouseEvent* evt);
-    void handleHandleDrag(QMouseEvent* evt);
+    void handleLinearTransform(QMouseEvent* evt);
+    void handleRotationalTransform(QMouseEvent* evt);
     void handleCursorChange(QMouseEvent* evt);
     std::optional<HandleFace> raycastHandle(glm::vec3 pointDir);
 

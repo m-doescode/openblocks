@@ -10,12 +10,14 @@
 #include <glm/geometric.hpp>
 #include <glm/gtc/round.hpp>
 #include <glm/matrix.hpp>
+#include <glm/trigonometric.hpp>
 #include <memory>
 #include <optional>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
 
 #include "datatypes/cframe.h"
+#include "datatypes/vector.h"
 #include "editorcommon.h"
 #include "logger.h"
 #include "mainwindow.h"
@@ -33,7 +35,6 @@
 #include "rendering/shader.h"
 
 #include "mainglwidget.h"
-#include "../core/src/rendering/defaultmeshes.h"
 #include "math_helper.h"
 
 MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
@@ -161,11 +162,8 @@ inline glm::vec3 vec3fy(glm::vec4 vec) {
     return vec / vec.w;
 }
 
-QPoint lastPoint;
-void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
-    QPoint cLastPoint = lastPoint;
-    lastPoint = evt->pos();
-
+// Taken from Godot's implementation of moving handles (godot/editor/plugins/gizmos/gizmo_3d_helper.cpp)
+void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
 
     QPoint position = evt->pos();
@@ -204,7 +202,6 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
     // printf("Post-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
 
     switch (mainWindow()->selectedTool) {
-        case SelectedTool::SELECT: break;
         case SelectedTool::MOVE: {
             // Add difference
             editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + diff;
@@ -228,10 +225,50 @@ void MainGLWidget::handleHandleDrag(QMouseEvent* evt) {
                 part->cframe = part->cframe + diff * 0.5f;
         } break;
 
-        case SelectedTool::ROTATE: {
-            // TODO: Implement rotation
-        } break;
+        default:
+        Logger::error("Invalid tool was set to be handled by handleLinearTransform\n");
     }
+
+    syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
+}
+
+// Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
+glm::vec2 startPoint;
+QPoint _lastPoint;
+void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
+    QPoint lastPoint = _lastPoint;
+    _lastPoint = evt->pos();
+
+    glm::vec2 startPoint(lastPoint.x(), lastPoint.y());
+
+    if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
+
+    glm::vec2 destPoint = glm::vec2(evt->pos().x(), evt->pos().y());
+    auto part = editorToolHandles->adornee->lock();
+
+    // Calculate part pos as screen point
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 1000.0f);
+    glm::mat4 view = camera.getLookAt();
+    glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)part->cframe.Position(), 1.f);
+    screenPos /= screenPos.w * 2;
+    screenPos += 0.5f;
+    screenPos = glm::vec4(screenPos.x, 1-screenPos.y, 0, 0);
+    screenPos *= glm::vec4(width(), height(), 0, 0);
+
+    // https://wumbo.net/formulas/angle-between-two-vectors-2d/
+    glm::vec2 initVec = glm::normalize(startPoint - (glm::vec2)screenPos);
+    glm::vec2 destVec = glm::normalize(destPoint - (glm::vec2)screenPos);
+    float angle = atan2f(initVec.x * destVec.y - initVec.y * destVec.x, initVec.x * destVec.x + initVec.y * destVec.y);
+
+    float sign = glm::sign(initVec.x) * glm::sign(destVec.x);
+    // printf(": %f\n", part->cframe.ToEulerAnglesXYZ().Y());
+    // printVec(part->cframe.ToEulerAnglesXYZ());
+
+    Data::Vector3 angles = part->cframe.ToEulerAnglesXYZ();
+    // Make angles positive, for convenience
+    // angles = glm::mod(glm::vec3(angles + glm::vec3(0, 0.01, 0) + glm::vec3(2*glm::pi<float>())), glm::pi<float>());
+    angles = angles + glm::sign(angles.X()) * glm::vec3(0, angle, 0);
+    part->cframe = Data::CFrame::FromEulerAnglesXYZ(angles) + part->cframe.Position();
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
@@ -263,8 +300,19 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
 void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     handleCameraRotate(evt);
     handleObjectDrag(evt);
-    handleHandleDrag(evt);
     handleCursorChange(evt);
+
+    switch (mainWindow()->selectedTool) {
+    case SelectedTool::MOVE:
+    case SelectedTool::SCALE:
+        handleLinearTransform(evt);
+        break;
+    case SelectedTool::ROTATE:
+        handleRotationalTransform(evt);
+        break;
+    default:
+        break;
+    }
 }
 
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
@@ -282,6 +330,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         // raycast handles
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
+            startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
             isMouseDragging = true;
             draggingHandle = handle;
             return;

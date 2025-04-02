@@ -3,6 +3,7 @@
 #include "physics/util.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/matrix.hpp>
 #include <reactphysics3d/mathematics/Transform.h>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -83,7 +84,7 @@ Data::Vector3 Data::CFrame::ToEulerAnglesXYZ() {
 
 Data::CFrame Data::CFrame::FromEulerAnglesXYZ(Data::Vector3 vector) {
     glm::mat3 mat = glm::eulerAngleXYZ(vector.X(), vector.Y(), vector.Z());
-    return Data::CFrame(Data::Vector3::ZERO, glm::column(mat, 2), (Data::Vector3)glm::column(mat, 1)); // Getting LookAt (3rd) and Up (2nd) vectors
+    return Data::CFrame((glm::vec3)Data::Vector3::ZERO, mat);
 }
 
 Data::CFrame Data::CFrame::Inverse() const {
