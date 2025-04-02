@@ -37,6 +37,8 @@
 #include "mainglwidget.h"
 #include "math_helper.h"
 
+static Data::CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
+
 MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     setMouseTracking(true);
@@ -259,8 +261,20 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     glm::vec2 initVec = glm::normalize(startPoint - (glm::vec2)screenPos);
     glm::vec2 destVec = glm::normalize(destPoint - (glm::vec2)screenPos);
     float angle = atan2f(initVec.x * destVec.y - initVec.y * destVec.x, initVec.x * destVec.x + initVec.y * destVec.y);
-    
-    part->cframe = part->cframe * Data::CFrame::FromEulerAnglesXYZ(glm::vec3(0, -angle, 0));
+
+    // Yes, it's messy. But it works so I don't wanna hear it.
+    // Maybe I'll clean it up next week.
+    // TODO: ?
+    glm::vec4 pos1 = projection * view * glm::vec4((glm::vec3)part->cframe.Position(), 1.f);
+    pos1 /= pos1.w;
+    glm::vec4 otherVec = projection * view * glm::vec4((glm::vec3)(part->cframe * glm::abs(draggingHandle->normal)), 1.f);
+    otherVec /= otherVec.w;
+    glm::vec4 signVec = glm::normalize(otherVec - pos1);
+    float sign = glm::sign(signVec.z);
+
+    glm::vec3 angles = glm::abs(draggingHandle->normal) * -sign * glm::vec3(angle);
+
+    part->cframe = part->cframe * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }

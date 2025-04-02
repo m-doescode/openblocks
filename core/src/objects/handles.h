@@ -34,6 +34,7 @@ class Handles : public Instance {
 public:
     const static InstanceType TYPE;
 
+    bool nixAxes = false; // XYZ -> ZXY, used with rotation
     bool active;
     std::optional<std::weak_ptr<Part>> adornee;
     HandlesType handlesType;

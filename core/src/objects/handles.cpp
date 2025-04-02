@@ -16,6 +16,8 @@ HandleFace HandleFace::ZPos(4, glm::vec3(0,0,1));
 HandleFace HandleFace::ZNeg(5, glm::vec3(0,0,-1));
 std::array<HandleFace, 6> HandleFace::Faces { HandleFace::XPos, HandleFace::XNeg, HandleFace::YPos, HandleFace::YNeg, HandleFace::ZPos, HandleFace::ZNeg };
 
+static Data::CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
+
 // Shitty solution
 static rp3d::PhysicsCommon common;
 static rp3d::PhysicsWorld* world = common.createPhysicsWorld();
@@ -39,14 +41,18 @@ Data::CFrame Handles::GetCFrameOfHandle(HandleFace face) {
 
     Data::CFrame localFrame = worldMode ? Data::CFrame::IDENTITY + adornee->lock()->position() : adornee->lock()->cframe;
 
+    Data::Vector3 handleNormal = face.normal;
+    if (nixAxes)
+        handleNormal = XYZToZXY * face.normal;
+
     // We don't want this to align with local * face.normal, or else we have problems.
     glm::vec3 upAxis(0, 0, 1);
-    if (glm::abs(glm::dot(glm::vec3(localFrame.Rotation() * face.normal), upAxis)) > 0.9999f)
+    if (glm::abs(glm::dot(glm::vec3(localFrame.Rotation() * handleNormal), upAxis)) > 0.9999f)
         upAxis = glm::vec3(0, 1, 0);
 
     Data::Vector3 handleOffset = this->worldMode ? ((Data::Vector3::ONE * 2.f) + adornee->lock()->GetAABB() * 0.5f) : Data::Vector3(2.f + adornee->lock()->size * 0.5f);
-    Data::Vector3 handlePos = localFrame * (handleOffset * face.normal);
-    Data::CFrame cframe(handlePos, handlePos + localFrame.Rotation() * -face.normal, upAxis);
+    Data::Vector3 handlePos = localFrame * (handleOffset * handleNormal);
+    Data::CFrame cframe(handlePos, handlePos + localFrame.Rotation() * -handleNormal, upAxis);
 
     return cframe;
 }
