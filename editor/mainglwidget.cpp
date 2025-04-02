@@ -259,16 +259,8 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     glm::vec2 initVec = glm::normalize(startPoint - (glm::vec2)screenPos);
     glm::vec2 destVec = glm::normalize(destPoint - (glm::vec2)screenPos);
     float angle = atan2f(initVec.x * destVec.y - initVec.y * destVec.x, initVec.x * destVec.x + initVec.y * destVec.y);
-
-    float sign = glm::sign(initVec.x) * glm::sign(destVec.x);
-    // printf(": %f\n", part->cframe.ToEulerAnglesXYZ().Y());
-    // printVec(part->cframe.ToEulerAnglesXYZ());
-
-    Data::Vector3 angles = part->cframe.ToEulerAnglesXYZ();
-    // Make angles positive, for convenience
-    // angles = glm::mod(glm::vec3(angles + glm::vec3(0, 0.01, 0) + glm::vec3(2*glm::pi<float>())), glm::pi<float>());
-    angles = angles + glm::sign(angles.X()) * glm::vec3(0, angle, 0);
-    part->cframe = Data::CFrame::FromEulerAnglesXYZ(angles) + part->cframe.Position();
+    
+    part->cframe = part->cframe * Data::CFrame::FromEulerAnglesXYZ(glm::vec3(0, -angle, 0));
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
