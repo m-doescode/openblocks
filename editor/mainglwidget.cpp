@@ -12,6 +12,7 @@
 #include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
@@ -140,6 +141,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     
     if (!rayHit) return;
 
+    glm::vec3 partSize = partFromBody(rayHit->body)->size;
     Data::Vector3 vec = rayHit->worldPoint;
     Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe;
     Data::Vector3 surfaceNormal = targetFrame.Inverse().Rotation() * rayHit->worldNormal;
@@ -149,6 +151,14 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     // Snap axis
     localFrame = snapCFrame(localFrame);
+
+    // Snap to studs
+    Data::Vector3 inverseSurfaceNormal = Data::Vector3::ONE - surfaceNormal.Abs();
+    glm::vec3 inverseNormalPartSize = (Data::Vector3)(partSize + 1.f) * inverseSurfaceNormal / 2.f;
+    if (snappingFactor() > 0)
+        localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
+                                            + localFrame.Position() * surfaceNormal.Abs();
+
     Data::CFrame newFrame = targetFrame * localFrame;
 
     // Unsink the object
@@ -236,13 +246,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
 glm::vec2 startPoint;
-QPoint _lastPoint;
+Data::CFrame initialFrame = Data::CFrame::IDENTITY;
 void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
-    QPoint lastPoint = _lastPoint;
-    _lastPoint = evt->pos();
-
-    glm::vec2 startPoint(lastPoint.x(), lastPoint.y());
-
     if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
 
     glm::vec2 destPoint = glm::vec2(evt->pos().x(), evt->pos().y());
@@ -253,7 +258,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     glm::mat4 view = camera.getLookAt();
 
     // The rotated part's origin projected onto the screen
-    glm::vec4 partCenterRaw = projection * view * glm::vec4((glm::vec3)part->cframe.Position(), 1.f);
+    glm::vec4 partCenterRaw = projection * view * glm::vec4((glm::vec3)initialFrame.Position(), 1.f);
     partCenterRaw /= partCenterRaw.w;
     glm::vec2 partCenter = glm::vec2(partCenterRaw.x*0.5f + 0.5f, 1-(partCenterRaw.y*0.5f+0.5f));
     partCenter *= glm::vec2(width(), height());
@@ -262,17 +267,21 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     glm::vec2 initVec = glm::normalize(startPoint - (glm::vec2)partCenter);
     glm::vec2 destVec = glm::normalize(destPoint - (glm::vec2)partCenter);
     float angle = atan2f(initVec.x * destVec.y - initVec.y * destVec.x, initVec.x * destVec.x + initVec.y * destVec.y);
+    
+    // Snap the angle
+    if (snappingFactor() > 0)
+        angle = roundf(angle * 4 / std::numbers::pi / snappingFactor()) / 4 * std::numbers::pi * snappingFactor();
 
     // Checks if the rotation axis is facing towards, or away from the camera
     // If it pointing away from the camera, then we need to invert the angle change
-    glm::vec4 rotationAxis = projection * view * glm::vec4((glm::vec3)(part->cframe * glm::abs(draggingHandle->normal)), 1.f);
+    glm::vec4 rotationAxis = projection * view * glm::vec4((glm::vec3)(initialFrame * glm::abs(draggingHandle->normal)), 1.f);
     rotationAxis /= rotationAxis.w;
     glm::vec4 signVec = glm::normalize(rotationAxis - partCenterRaw);
     float sign = -glm::sign(signVec.z);
 
     glm::vec3 angles = glm::abs(draggingHandle->normal) * sign * glm::vec3(angle);
 
-    part->cframe = part->cframe * Data::CFrame::FromEulerAnglesXYZ(-angles);
+    part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
@@ -335,6 +344,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
             startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
+            initialFrame = editorToolHandles->adornee->lock()->cframe;
             isMouseDragging = true;
             draggingHandle = handle;
             return;

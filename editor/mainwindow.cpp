@@ -323,7 +323,7 @@ void MainWindow::updateToolbars() {
     ui->actionGridSnap05->setChecked(snappingMode == GridSnappingMode::SNAP_05_STUDS);
     ui->actionGridSnapOff->setChecked(snappingMode == GridSnappingMode::SNAP_OFF);
 
-    editorToolHandles->worldMode = selectedTool == SelectedTool::SCALE ? false : worldSpaceTransforms;
+    editorToolHandles->worldMode = (selectedTool == SelectedTool::SCALE || selectedTool == SelectedTool::ROTATE) ? false : worldSpaceTransforms;
     editorToolHandles->nixAxes = selectedTool == SelectedTool::ROTATE;
 
     editorToolHandles->active = selectedTool != SelectedTool::SELECT;
