@@ -13,10 +13,14 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <qcoreapplication.h>
 #include <qglobal.h>
 #include <qicon.h>
+#include <qmessagebox.h>
 #include <qnamespace.h>
 #include <qwindowdefs.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 #include <sstream>
 
 #include "common.h"
@@ -32,6 +36,10 @@
 #include "qmimedata.h"
 #include "qobject.h"
 #include "qsysinfo.h"
+
+#ifdef _NDEBUG
+#define NDEBUG
+#endif
 
 bool simulationPlaying = false;
 
@@ -112,6 +120,53 @@ MainWindow::MainWindow(QWidget *parent)
         } else {
             ui->actionToggleSpace->setText("L");
         }
+    });
+
+    connect(ui->actionNew, &QAction::triggered, this, [&]() {
+        // Don't ask for confirmation if running a debug build (makes development easier)
+        #ifdef NDEBUG
+        // Ask if the user wants to save their changes
+        // https://stackoverflow.com/a/33890731
+        QMessageBox msgBox;
+        msgBox.setText("Save changes before creating new document?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int result = msgBox.exec();
+
+        if (result == QMessageBox::Cancel) return;
+        if (result == QMessageBox::Save) {
+            std::optional<std::string> path;
+            if (!dataModel->HasFile())
+                path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
+            if (!path || path == "") return;
+    
+            dataModel->SaveToFile(path);
+        }
+        #endif
+
+        // TODO: Also remove this (the reason this is here is because all parts are expected to
+        // be deleted before their parent DataModel is. So it expects rigidBody to not be null, and tries
+        // to destroy it, causing a segfault since it's already been destroyed. This is important for the later code.
+        // TL;DR: This stinks and I need to fix it.)
+        ui->mainWidget->lastPart = Part::New();
+
+        dataModel = DataModel::New();
+        dataModel->Init();
+        ui->explorerView->updateRoot(dataModel);
+
+        // TODO: Remove this and use a proper fix. This *WILL* cause a leak and memory issues in the future
+        simulationInit();
+
+        // Baseplate
+        workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+            .position = glm::vec3(0, -5, 0),
+            .rotation = glm::vec3(0),
+            .size = glm::vec3(512, 1.2, 512),
+            .color = glm::vec3(0.388235, 0.372549, 0.384314),
+            .anchored = true,
+        }));
+        ui->mainWidget->lastPart->name = "Baseplate";
+        syncPartPhysics(ui->mainWidget->lastPart);
     });
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
@@ -284,6 +339,28 @@ MainWindow::MainWindow(QWidget *parent)
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     syncPartPhysics(ui->mainWidget->lastPart);
+}
+
+void MainWindow::closeEvent(QCloseEvent* evt) {
+    #ifdef NDEBUG
+    // Ask if the user wants to save their changes
+    // https://stackoverflow.com/a/33890731
+    QMessageBox msgBox;
+    msgBox.setText("Save changes before creating new document?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    int result = msgBox.exec();
+
+    if (result == QMessageBox::Cancel) return evt->ignore();
+    if (result == QMessageBox::Save) {
+        std::optional<std::string> path;
+        if (!dataModel->HasFile())
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
+        if (!path || path == "") return evt->ignore();
+
+        dataModel->SaveToFile(path);
+    }
+    #endif
 }
 
 void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {

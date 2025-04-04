@@ -8,7 +8,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/bin/editor",
+            "program": "${workspaceFolder}/build/bin/editor",
             "args": [],
             "cwd": "${workspaceFolder}",
         }

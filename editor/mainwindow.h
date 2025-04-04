@@ -46,6 +46,7 @@ private:
 
     void updateToolbars();
     void timerEvent(QTimerEvent*) override;
+    void closeEvent(QCloseEvent* evt) override;
     void handleLog(Logger::LogLevel, std::string);
     
     std::optional<std::string> openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title = "");
