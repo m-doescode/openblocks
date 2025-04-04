@@ -251,28 +251,26 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     // Calculate part pos as screen point
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 1000.0f);
     glm::mat4 view = camera.getLookAt();
-    glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)part->cframe.Position(), 1.f);
-    screenPos /= screenPos.w * 2;
-    screenPos += 0.5f;
-    screenPos = glm::vec4(screenPos.x, 1-screenPos.y, 0, 0);
-    screenPos *= glm::vec4(width(), height(), 0, 0);
+
+    // The rotated part's origin projected onto the screen
+    glm::vec4 partCenterRaw = projection * view * glm::vec4((glm::vec3)part->cframe.Position(), 1.f);
+    partCenterRaw /= partCenterRaw.w;
+    glm::vec2 partCenter = glm::vec2(partCenterRaw.x*0.5f + 0.5f, 1-(partCenterRaw.y*0.5f+0.5f));
+    partCenter *= glm::vec2(width(), height());
 
     // https://wumbo.net/formulas/angle-between-two-vectors-2d/
-    glm::vec2 initVec = glm::normalize(startPoint - (glm::vec2)screenPos);
-    glm::vec2 destVec = glm::normalize(destPoint - (glm::vec2)screenPos);
+    glm::vec2 initVec = glm::normalize(startPoint - (glm::vec2)partCenter);
+    glm::vec2 destVec = glm::normalize(destPoint - (glm::vec2)partCenter);
     float angle = atan2f(initVec.x * destVec.y - initVec.y * destVec.x, initVec.x * destVec.x + initVec.y * destVec.y);
 
-    // Yes, it's messy. But it works so I don't wanna hear it.
-    // Maybe I'll clean it up next week.
-    // TODO: ?
-    glm::vec4 pos1 = projection * view * glm::vec4((glm::vec3)part->cframe.Position(), 1.f);
-    pos1 /= pos1.w;
-    glm::vec4 otherVec = projection * view * glm::vec4((glm::vec3)(part->cframe * glm::abs(draggingHandle->normal)), 1.f);
-    otherVec /= otherVec.w;
-    glm::vec4 signVec = glm::normalize(otherVec - pos1);
-    float sign = glm::sign(signVec.z);
+    // Checks if the rotation axis is facing towards, or away from the camera
+    // If it pointing away from the camera, then we need to invert the angle change
+    glm::vec4 rotationAxis = projection * view * glm::vec4((glm::vec3)(part->cframe * glm::abs(draggingHandle->normal)), 1.f);
+    rotationAxis /= rotationAxis.w;
+    glm::vec4 signVec = glm::normalize(rotationAxis - partCenterRaw);
+    float sign = -glm::sign(signVec.z);
 
-    glm::vec3 angles = glm::abs(draggingHandle->normal) * -sign * glm::vec3(angle);
+    glm::vec3 angles = glm::abs(draggingHandle->normal) * sign * glm::vec3(angle);
 
     part->cframe = part->cframe * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
