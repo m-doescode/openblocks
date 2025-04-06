@@ -113,6 +113,11 @@ void renderParts() {
     shader->set("surfaces[1]", SurfaceStuds);
     shader->set("surfaces[4]", SurfaceInlets);
 
+    shader->set("surfaces[0]", SurfaceStuds);
+    shader->set("surfaces[2]", SurfaceStuds);
+    shader->set("surfaces[3]", SurfaceStuds);
+    shader->set("surfaces[5]", SurfaceStuds);
+
     // Pre-calculate the normal matrix for the shader
 
     // Pass in the camera position

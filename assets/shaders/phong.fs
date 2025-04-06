@@ -39,8 +39,9 @@ const int FaceFront	= 5;
 // I/O
 
 in vec3 vPos;
+in vec3 lPos;
 in vec3 vNormal;
-in vec2 vTexCoords;
+in vec3 lNormal;
 flat in int vSurfaceZ;
 
 out vec4 FragColor;
@@ -54,12 +55,13 @@ uniform DirLight sunLight;
 uniform Material material;
 uniform sampler2DArray studs;
 uniform float transparency;
+uniform vec3 texScale;
 
 // Functions
 
 vec3 calculateDirectionalLight(DirLight light);
 vec3 calculatePointLight(PointLight light);
-
+mat3 lookAlong(vec3 pos, vec3 forward, vec3 up);
 
 // Main
 
@@ -71,9 +73,26 @@ void main() {
     for (int i = 0; i < numPointLights; i++) {
         result += calculatePointLight(pointLights[i]);
     }
+
+    vec3 otherVec = abs(dot(lNormal, vec3(0, 1, 0))) > 0.99 ? vec3(0, 0, 1)
+                    : abs(dot(lNormal, vec3(0, 0, 1))) > 0.99 ? vec3(1, 0, 0)
+                    : vec3(0, 1, 0);
+                    // We use abs(lNormal) so opposing sides "cut" from the same side
+    mat3 transform = transpose(inverse(lookAlong(vec3(0, 0, 0), abs(lNormal), otherVec)));
     
-    vec4 studPx = texture(studs, vec3(vTexCoords, vSurfaceZ));
+    vec2 texCoords = vec2((transform * lPos) * (transform * texScale) / 2) - vec2(mod((transform * texScale) / 4, 1));
+
+    vec4 studPx = texture(studs, vec3(texCoords, vSurfaceZ));
     FragColor = vec4(mix(result, vec3(studPx), studPx.w), 1) * (1-transparency);
+}
+
+mat3 lookAlong(vec3 pos, vec3 forward, vec3 up) {
+    vec3 f = normalize(forward); // Forward/Look
+	vec3 u = normalize(up); // Up
+	vec3 s = normalize(cross(f, u)); // Right
+	u = normalize(cross(s, f));
+
+	return mat3(s, u, f);
 }
 
 vec3 calculateDirectionalLight(DirLight light) {

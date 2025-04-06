@@ -18,7 +18,9 @@ const int SurfaceInlets = 4;
 const int SurfaceUniversal = 5;
 
 out vec3 vPos;
+out vec3 lPos;
 out vec3 vNormal;
+out vec3 lNormal;
 out vec2 vTexCoords;
 flat out int vSurfaceZ;
 
@@ -33,7 +35,9 @@ void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     vPos = vec3(model * vec4(aPos, 1.0));
+    lPos = aPos;
     vNormal = normalMatrix * aNormal;
+    lNormal = aNormal;
     int vFace = aNormal == vec3(0,1,0) ? FaceTop :
             aNormal == vec3(0, -1, 0) ? FaceBottom :
             aNormal == vec3(1, 0, 0) ? FaceRight :
@@ -43,20 +47,4 @@ void main()
 
     vSurfaceZ = surfaces[vFace];
     // if (surfaces[vFace] > SurfaceUniversal) vSurfaceZ = 0;
-
-    switch (vFace) {
-    case FaceTop:
-    case FaceBottom:
-        // vTexCoords = aTexCoords * vec2(texScale.x / 2, fract(surfaceOffset + texScale.z / 12));
-        vTexCoords = aTexCoords * vec2(texScale.x, texScale.z) / 2;
-        break;
-    case FaceLeft:
-    case FaceRight:
-        vTexCoords = aTexCoords * vec2(texScale.y, texScale.z) / 2;
-        break;
-    case FaceFront:
-    case FaceBack:
-        vTexCoords = aTexCoords * vec2(texScale.x, texScale.y) / 2;
-        break;
-    };
 }
