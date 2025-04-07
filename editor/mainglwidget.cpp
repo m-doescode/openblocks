@@ -16,6 +16,7 @@
 #include <optional>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
+#include <QSound>
 
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
@@ -370,8 +371,12 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
                 case Left: part->leftSurface = surface; break;
                 case Bottom: part->bottomSurface = surface; break;
                 case Front: part->frontSurface = surface; break;
-                default: break;
+                default: return;
             }
+
+            if (QFile::exists("./assets/excluded/electronicpingshort.wav"))
+                QSound::play("./assets/excluded/electronicpingshort.wav");
+
             return;
         }
 

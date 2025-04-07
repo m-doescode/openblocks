@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Multimedia LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Multimedia LinguistTools)
 
 
 set(TS_FILES editor_en_US.ts)
@@ -64,7 +64,7 @@ else()
 endif()
 
 target_include_directories(editor PUBLIC "../core/src" "../include")
-target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
 
 # Qt6 does not include QOpenGLWidgets as part of Widgets base anymore, so
 # we have to include it manually

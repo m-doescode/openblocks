@@ -11,3 +11,6 @@
 
 # Gdb
 /.gdb_history
+
+# Excluded assets
+/assets/excluded
