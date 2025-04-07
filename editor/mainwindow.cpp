@@ -15,6 +15,7 @@
 #include <optional>
 #include <qcoreapplication.h>
 #include <qglobal.h>
+#include <qguiapplication.h>
 #include <qicon.h>
 #include <qmessagebox.h>
 #include <qnamespace.h>
@@ -22,6 +23,7 @@
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include <sstream>
+#include <QStyleHints>
 
 #include "common.h"
 #include "editorcommon.h"
@@ -45,6 +47,19 @@ bool simulationPlaying = false;
 
 bool worldSpaceTransforms = false;
 
+inline bool isDarkMode() {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    const auto scheme = QGuiApplication::styleHints()->colorScheme();
+    return scheme == Qt::ColorScheme::Dark;
+#else
+    const QPalette defaultPalette;
+    const auto text = defaultPalette.color(QPalette::WindowText);
+    const auto window = defaultPalette.color(QPalette::Window);
+    return text.lightness() > window.lightness();
+#endif // QT_VERSION
+}
+    
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -54,6 +69,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     timer.start(33, this);
     setMouseTracking(true);
+
+    // https://stackoverflow.com/a/78854851/16255372
+    QIcon::setThemeSearchPaths(QIcon::themeSearchPaths() + QStringList { "./assets/icons" });
+    if (isDarkMode())
+        QIcon::setFallbackThemeName("editor-dark");
+    else
+        QIcon::setFallbackThemeName("editor");
+    
 
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);

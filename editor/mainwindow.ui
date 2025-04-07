@@ -40,7 +40,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1027</width>
+     <width>1612</width>
      <height>30</height>
     </rect>
    </property>
@@ -99,46 +99,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QToolBar" name="toolBar">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionNew"/>
-   <addaction name="actionOpen"/>
-   <addaction name="actionSave"/>
-   <addaction name="separator"/>
-   <addaction name="actionAddPart"/>
-   <addaction name="separator"/>
-   <addaction name="actionToolSelect"/>
-   <addaction name="actionToolMove"/>
-   <addaction name="actionToolScale"/>
-   <addaction name="actionToolRotate"/>
-   <addaction name="actionToggleSpace"/>
-   <addaction name="separator"/>
-   <addaction name="actionDelete"/>
-   <addaction name="actionCopy"/>
-   <addaction name="actionCut"/>
-   <addaction name="actionPaste"/>
-   <addaction name="actionPasteInto"/>
-   <addaction name="separator"/>
-   <addaction name="actionGridSnap1"/>
-   <addaction name="actionGridSnap05"/>
-   <addaction name="actionGridSnapOff"/>
-   <addaction name="separator"/>
-   <addaction name="actionToggleSimulation"/>
-  </widget>
   <widget class="QDockWidget" name="outputWidget">
    <property name="windowTitle">
     <string>Output</string>
@@ -157,6 +117,95 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_2">
+   <property name="windowTitle">
+    <string>toolBar_2</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionToolSelect"/>
+   <addaction name="actionToolMove"/>
+   <addaction name="actionToolScale"/>
+   <addaction name="actionToolRotate"/>
+   <addaction name="actionToggleSpace"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_3">
+   <property name="windowTitle">
+    <string>toolBar_3</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionDelete"/>
+   <addaction name="actionCopy"/>
+   <addaction name="actionCut"/>
+   <addaction name="actionPaste"/>
+   <addaction name="actionPasteInto"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_4">
+   <property name="windowTitle">
+    <string>toolBar_4</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionGridSnap1"/>
+   <addaction name="actionGridSnap05"/>
+   <addaction name="actionGridSnapOff"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_5">
+   <property name="windowTitle">
+    <string>toolBar_5</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionToggleSimulation"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_6">
+   <property name="windowTitle">
+    <string>toolBar_6</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionToolSmooth"/>
+   <addaction name="actionToolGlue"/>
+   <addaction name="actionToolWeld"/>
+   <addaction name="actionToolStuds"/>
+   <addaction name="actionToolInlets"/>
+   <addaction name="actionToolUniversal"/>
   </widget>
   <action name="actionAddPart">
    <property name="icon">
@@ -300,8 +349,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>assets/icons/editor/snap1.png</normaloff>assets/icons/editor/snap1.png</iconset>
+    <iconset theme="snap1"/>
    </property>
    <property name="text">
     <string>1-Stud Snapping</string>
@@ -318,8 +366,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>assets/icons/editor/snap05.png</normaloff>assets/icons/editor/snap05.png</iconset>
+    <iconset theme="snap05"/>
    </property>
    <property name="text">
     <string>1/2-Stud Snapping</string>
@@ -336,8 +383,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>assets/icons/editor/snapoff.png</normaloff>assets/icons/editor/snapoff.png</iconset>
+    <iconset theme="snapoff"/>
    </property>
    <property name="text">
     <string>No Grid Snapping</string>
@@ -490,6 +536,90 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolStuds">
+   <property name="icon">
+    <iconset theme="surface-studs"/>
+   </property>
+   <property name="text">
+    <string>Studs</string>
+   </property>
+   <property name="toolTip">
+    <string>Studs</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolInlets">
+   <property name="icon">
+    <iconset theme="surface-inlets"/>
+   </property>
+   <property name="text">
+    <string>Inlets</string>
+   </property>
+   <property name="toolTip">
+    <string>Inlets</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolUniversal">
+   <property name="icon">
+    <iconset theme="surface-universal"/>
+   </property>
+   <property name="text">
+    <string>Universal</string>
+   </property>
+   <property name="toolTip">
+    <string>Universal</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolSmooth">
+   <property name="icon">
+    <iconset theme="surface-smooth"/>
+   </property>
+   <property name="text">
+    <string>Smooth</string>
+   </property>
+   <property name="toolTip">
+    <string>Smooth</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolWeld">
+   <property name="icon">
+    <iconset theme="surface-weld"/>
+   </property>
+   <property name="text">
+    <string>Weld</string>
+   </property>
+   <property name="toolTip">
+    <string>Weld</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolGlue">
+   <property name="icon">
+    <iconset theme="surface-glue"/>
+   </property>
+   <property name="text">
+    <string>Glue</string>
+   </property>
+   <property name="toolTip">
+    <string>Glue</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

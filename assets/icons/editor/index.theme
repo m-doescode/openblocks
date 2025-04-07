@@ -1,0 +1,8 @@
+[Icon Theme]
+Name=editor
+Comment=icon theme
+
+[actions/48]
+Size=48
+Context=Actions
+Type=Fixed

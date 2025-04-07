@@ -1,0 +1,8 @@
+[Icon Theme]
+Name=editor-dark
+Comment=icon theme (dark)
+
+[actions/48]
+Size=48
+Context=Actions
+Type=Fixed
