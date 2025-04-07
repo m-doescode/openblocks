@@ -19,6 +19,9 @@
 class Instance;
 typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 
+class DataModel;
+class Workspace;
+
 // Struct describing information about an instance
 struct InstanceType {
     const InstanceType* super; // May be null
@@ -47,6 +50,13 @@ protected:
     virtual ~Instance();
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
+
+    // The root data model this object is a descendant of
+    std::optional<std::shared_ptr<DataModel>> dataModel();
+    // The root workspace this object is a descendant of
+    // NOTE: This value is not necessarily present if dataModel is present
+    // Objects under services other than workspace will NOT have this field set
+    std::optional<std::shared_ptr<Workspace>> workspace();
 
     template <typename T> inline std::shared_ptr<T> shared() { return std::dynamic_pointer_cast<T>(this->shared_from_this()); }
 public:

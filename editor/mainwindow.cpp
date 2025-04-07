@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    dataModel->Init();
+    gDataModel->Init();
 
     ui->setupUi(this);
     timer.start(33, this);
@@ -136,11 +136,11 @@ MainWindow::MainWindow(QWidget *parent)
         if (result == QMessageBox::Cancel) return;
         if (result == QMessageBox::Save) {
             std::optional<std::string> path;
-            if (!dataModel->HasFile())
-                path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
+            if (!gDataModel->HasFile())
+                path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
             if (!path || path == "") return;
     
-            dataModel->SaveToFile(path);
+            gDataModel->SaveToFile(path);
         }
         #endif
 
@@ -150,15 +150,15 @@ MainWindow::MainWindow(QWidget *parent)
         // TL;DR: This stinks and I need to fix it.)
         ui->mainWidget->lastPart = Part::New();
 
-        dataModel = DataModel::New();
-        dataModel->Init();
-        ui->explorerView->updateRoot(dataModel);
+        gDataModel = DataModel::New();
+        gDataModel->Init();
+        ui->explorerView->updateRoot(gDataModel);
 
         // TODO: Remove this and use a proper fix. This *WILL* cause a leak and memory issues in the future
         simulationInit();
 
         // Baseplate
-        workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+        gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
             .position = glm::vec3(0, -5, 0),
             .rotation = glm::vec3(0),
             .size = glm::vec3(512, 1.2, 512),
@@ -171,25 +171,30 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
         std::optional<std::string> path;
-        if (!dataModel->HasFile())
-            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
+        if (!gDataModel->HasFile())
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
         if (!path || path == "") return;
 
-        dataModel->SaveToFile(path);
+        gDataModel->SaveToFile(path);
     });
 
     connect(ui->actionSaveAs, &QAction::triggered, this, [&]() {
-        std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save as " + dataModel->name));
+        std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save as " + gDataModel->name));
         if (!path || path == "") return;
 
-        dataModel->SaveToFile(path);
+        gDataModel->SaveToFile(path);
     });
 
     connect(ui->actionOpen, &QAction::triggered, this, [&]() {
         std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptOpen);
         if (!path || path == "") return;
+        
+        // // See TODO: Also remove this (the reaso
+        // ui->mainWidget->lastPart = Part::New();
+        
+        // simulationInit();
         std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path.value());
-        dataModel = newModel;
+        gDataModel = newModel;
         ui->explorerView->updateRoot(newModel);
     });
 
@@ -242,7 +247,7 @@ MainWindow::MainWindow(QWidget *parent)
 
         for (pugi::xml_node instNode : rootDoc.children()) {
             InstanceRef inst = Instance::Deserialize(&instNode);
-            workspace()->AddChild(inst);
+            gWorkspace()->AddChild(inst);
         }
     });
 
@@ -322,7 +327,7 @@ MainWindow::MainWindow(QWidget *parent)
     simulationInit();
 
     // Baseplate
-    workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),
         .rotation = glm::vec3(0),
         .size = glm::vec3(512, 1.2, 512),
@@ -332,7 +337,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainWidget->lastPart->name = "Baseplate";
     syncPartPhysics(ui->mainWidget->lastPart);
 
-    workspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0),
         .rotation = glm::vec3(0.5, 2, 1),
         .size = glm::vec3(4, 1.2, 2),
@@ -354,11 +359,11 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
     if (result == QMessageBox::Cancel) return evt->ignore();
     if (result == QMessageBox::Save) {
         std::optional<std::string> path;
-        if (!dataModel->HasFile())
-            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + dataModel->name));
+        if (!gDataModel->HasFile())
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
         if (!path || path == "") return evt->ignore();
 
-        dataModel->SaveToFile(path);
+        gDataModel->SaveToFile(path);
     }
     #endif
 }

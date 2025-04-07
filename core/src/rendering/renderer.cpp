@@ -125,7 +125,7 @@ void renderParts() {
 
     // Sort by nearest
     std::map<float, std::shared_ptr<Part>> sorted;
-    for (InstanceRef inst : workspace()->GetChildren()) {
+    for (InstanceRef inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (part->transparency > 0.00001) {
@@ -288,7 +288,7 @@ void renderAABB() {
     ghostShader->set("color", glm::vec3(1.f, 0.f, 0.f));
 
     // Sort by nearest
-    for (InstanceRef inst : workspace()->GetChildren()) {
+    for (InstanceRef inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         glm::mat4 model = Data::CFrame::IDENTITY + part->cframe.Position();

@@ -72,6 +72,36 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
     return true;
 }
 
+std::optional<std::shared_ptr<DataModel>> Instance::dataModel() {
+    // TODO: This algorithm will defer calculations to every time the root data model
+    // is accessed from any instance. This is inefficient as this can happen many times
+    // a tick. A better option is to cache these values and only update them if the ancestry
+    // changes, as that happens way less often.
+
+    std::optional<std::shared_ptr<Instance>> currentParent = GetParent();
+    while (currentParent) {
+        if (currentParent.value()->GetClass() == &DataModel::TYPE)
+            return std::dynamic_pointer_cast<DataModel>(currentParent.value());
+
+        currentParent = currentParent.value()->GetParent();
+    }
+
+    return std::nullopt;
+}
+
+std::optional<std::shared_ptr<Workspace>> Instance::workspace() {
+    // See comment in above function
+    std::optional<std::shared_ptr<Instance>> currentParent = GetParent();
+    while (currentParent) {
+        if (currentParent.value()->GetClass() == &DataModel::TYPE)
+            return std::dynamic_pointer_cast<Workspace>(currentParent.value());
+
+        currentParent = currentParent.value()->GetParent();
+    }
+
+    return std::nullopt;
+}
+
 std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
     if (!parent.has_value()) return std::nullopt;
     if (parent.value().expired()) return std::nullopt;

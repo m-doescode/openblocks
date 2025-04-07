@@ -15,8 +15,8 @@ typedef std::function<void(std::vector<InstanceRefWeak> oldSelection, std::vecto
 // TEMPORARY COMMON DATA FOR VARIOUS INTERNAL COMPONENTS
 
 extern Camera camera;
-extern std::shared_ptr<DataModel> dataModel;
-inline std::shared_ptr<Workspace> workspace() { return std::dynamic_pointer_cast<Workspace>(dataModel->services["Workspace"]); }
+extern std::shared_ptr<DataModel> gDataModel;
+inline std::shared_ptr<Workspace> gWorkspace() { return std::dynamic_pointer_cast<Workspace>(gDataModel->services["Workspace"]); }
 extern std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 extern std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
 extern std::shared_ptr<Handles> editorToolHandles;

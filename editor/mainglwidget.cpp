@@ -400,7 +400,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     else if (evt->key() == Qt::Key_D) moveX = -1;
 
     if (evt->key() == Qt::Key_F) {
-        workspace()->AddChild(lastPart = Part::New({
+        gWorkspace()->AddChild(lastPart = Part::New({
             .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
             .rotation = glm::vec3(0),
             .size = glm::vec3(1, 1, 1),
