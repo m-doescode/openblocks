@@ -14,9 +14,10 @@
 #include <memory>
 #include <numbers>
 #include <optional>
+#include <qsoundeffect.h>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <vector>
-#include <QSound>
+#include <QSoundEffect>
 
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
@@ -50,6 +51,13 @@ MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
 void MainGLWidget::initializeGL() {
     glewInit();
     renderInit(NULL, width(), height());
+}
+
+inline void playSound(QString path) {
+    QSoundEffect *sound = new QSoundEffect;
+    sound->setSource(QUrl::fromLocalFile(path));
+    sound->play();
+    sound->connect(sound, &QSoundEffect::playingChanged, [=]() { /* Thank you QSound source code! */ sound->deleteLater(); return false; });
 }
 
 extern int vpx, vpy;
@@ -245,7 +253,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     }
 
     if (mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
-                QSound::play("./assets/excluded/switch.wav");
+        playSound("./assets/excluded/switch.wav");
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
@@ -320,7 +328,7 @@ void MainGLWidget::wheelEvent(QWheelEvent* evt) {
     camera.processMovement(evt->angleDelta().y() < 0 ? DIRECTION_BACKWARDS : DIRECTION_FORWARD, 0.25f);
 
     if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/SWITCH3.wav"))
-        QSound::play("./assets/excluded/SWITCH3.wav");
+        playSound("./assets/excluded/SWITCH3.wav");
 }
 
 void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
@@ -386,7 +394,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             }
 
             if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
-                QSound::play("./assets/excluded/electronicpingshort.wav");
+                playSound("./assets/excluded/electronicpingshort.wav");
 
             return;
         }
