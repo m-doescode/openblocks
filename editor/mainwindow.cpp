@@ -131,7 +131,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionToggleEditSounds, &QAction::triggered, this, [&](bool state) {
         editSoundEffects = state;
-        printf("%d\n", editSoundEffects);
         ui->actionToggleEditSounds->setIcon(QIcon::fromTheme(editSoundEffects ? "audio-volume-high" : "audio-volume-muted"));
     });
     ui->actionToggleEditSounds->setChecked(true);

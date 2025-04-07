@@ -212,9 +212,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
 
     // Apply snapping in the current frame
     glm::vec3 diff = centerPoint - (glm::vec3)editorToolHandles->adornee->lock()->position();
-    // printf("\n=======\nPre-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
     if (snappingFactor()) diff = frame.Rotation() * (glm::round(glm::vec3(frame.Inverse().Rotation() * diff) / snappingFactor()) * snappingFactor());
-    // printf("Post-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
 
     Data::Vector3 oldSize = part->size;
 
@@ -316,6 +314,13 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
     }
 
     setCursor(Qt::ArrowCursor);
+}
+
+void MainGLWidget::wheelEvent(QWheelEvent* evt) {
+    camera.processMovement(evt->angleDelta().y() < 0 ? DIRECTION_BACKWARDS : DIRECTION_FORWARD, 0.25f);
+
+    if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/SWITCH3.wav"))
+        QSound::play("./assets/excluded/SWITCH3.wav");
 }
 
 void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {

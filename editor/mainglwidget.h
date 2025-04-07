@@ -28,6 +28,7 @@ protected:
     void handleCursorChange(QMouseEvent* evt);
     std::optional<HandleFace> raycastHandle(glm::vec3 pointDir);
 
+    void wheelEvent(QWheelEvent* evt) override;
     void mouseMoveEvent(QMouseEvent* evt) override;
     void mousePressEvent(QMouseEvent* evt) override;
     void mouseReleaseEvent(QMouseEvent* evt) override;
