@@ -129,6 +129,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionGridSnap1->setChecked(true);
     snappingMode = GridSnappingMode::SNAP_1_STUD;
 
+    connect(ui->actionToggleEditSounds, &QAction::triggered, this, [&](bool state) {
+        editSoundEffects = state;
+        printf("%d\n", editSoundEffects);
+        ui->actionToggleEditSounds->setIcon(QIcon::fromTheme(editSoundEffects ? "audio-volume-high" : "audio-volume-muted"));
+    });
+    ui->actionToggleEditSounds->setChecked(true);
+
     connect(ui->actionToggleSimulation, &QAction::triggered, this, [&]() {
         simulationPlaying = !simulationPlaying;
         if (simulationPlaying) {

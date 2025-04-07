@@ -40,7 +40,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1027</width>
+     <width>935</width>
      <height>30</height>
     </rect>
    </property>
@@ -118,9 +118,9 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="fileTools">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>File Tools</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -132,9 +132,9 @@
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
   </widget>
-  <widget class="QToolBar" name="toolBar_2">
+  <widget class="QToolBar" name="transformTools">
    <property name="windowTitle">
-    <string>toolBar_2</string>
+    <string>Transform Tools</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -148,7 +148,7 @@
    <addaction name="actionToolRotate"/>
    <addaction name="actionToggleSpace"/>
   </widget>
-  <widget class="QToolBar" name="toolBar_3">
+  <widget class="QToolBar" name="editTools">
    <property name="windowTitle">
     <string>toolBar_3</string>
    </property>
@@ -164,9 +164,9 @@
    <addaction name="actionPaste"/>
    <addaction name="actionPasteInto"/>
   </widget>
-  <widget class="QToolBar" name="toolBar_4">
+  <widget class="QToolBar" name="snappingOptions">
    <property name="windowTitle">
-    <string>toolBar_4</string>
+    <string>Snapping Options</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -178,9 +178,9 @@
    <addaction name="actionGridSnap05"/>
    <addaction name="actionGridSnapOff"/>
   </widget>
-  <widget class="QToolBar" name="toolBar_5">
+  <widget class="QToolBar" name="simulationControls">
    <property name="windowTitle">
-    <string>toolBar_5</string>
+    <string>Simulation Controls</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -190,9 +190,9 @@
    </attribute>
    <addaction name="actionToggleSimulation"/>
   </widget>
-  <widget class="QToolBar" name="toolBar_6">
+  <widget class="QToolBar" name="surfaceTools">
    <property name="windowTitle">
-    <string>toolBar_6</string>
+    <string>Surface Tools</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -206,6 +206,18 @@
    <addaction name="actionToolStuds"/>
    <addaction name="actionToolInlets"/>
    <addaction name="actionToolUniversal"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionToggleEditSounds"/>
   </widget>
   <action name="actionAddPart">
    <property name="icon">
@@ -641,6 +653,23 @@
    </property>
    <property name="toolTip">
     <string>Glue</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToggleEditSounds">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="audio-volume-high"/>
+   </property>
+   <property name="text">
+    <string>Toggle Edit Sounds</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles edit sound effects</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

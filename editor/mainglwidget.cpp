@@ -216,6 +216,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     if (snappingFactor()) diff = frame.Rotation() * (glm::round(glm::vec3(frame.Inverse().Rotation() * diff) / snappingFactor()) * snappingFactor());
     // printf("Post-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
 
+    Data::Vector3 oldSize = part->size;
+
     switch (mainWindow()->selectedTool) {
         case TOOL_MOVE: {
             // Add difference
@@ -243,6 +245,9 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
         default:
         Logger::error("Invalid tool was set to be handled by handleLinearTransform\n");
     }
+
+    if (mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
+                QSound::play("./assets/excluded/switch.wav");
 
     syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
@@ -375,7 +380,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
                 default: return;
             }
 
-            if (QFile::exists("./assets/excluded/electronicpingshort.wav"))
+            if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
                 QSound::play("./assets/excluded/electronicpingshort.wav");
 
             return;

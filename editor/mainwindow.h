@@ -46,6 +46,7 @@ public:
     
     SelectedTool selectedTool;
     GridSnappingMode snappingMode;
+    bool editSoundEffects = true;
 
     Ui::MainWindow *ui;
 private:
