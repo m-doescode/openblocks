@@ -514,8 +514,11 @@
    </property>
   </action>
   <action name="actionToggleSpace">
+   <property name="icon">
+    <iconset theme="space-local"/>
+   </property>
    <property name="text">
-    <string>L</string>
+    <string>Local</string>
    </property>
    <property name="toolTip">
     <string>Switch between local and world space transformations</string>

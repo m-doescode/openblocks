@@ -139,9 +139,11 @@ MainWindow::MainWindow(QWidget *parent)
         worldSpaceTransforms = !worldSpaceTransforms;
         updateToolbars();
         if (worldSpaceTransforms) {
-            ui->actionToggleSpace->setText("W");
+            ui->actionToggleSpace->setText("World");
+            ui->actionToggleSpace->setIcon(QIcon::fromTheme("space-global"));
         } else {
-            ui->actionToggleSpace->setText("L");
+            ui->actionToggleSpace->setText("Local");
+            ui->actionToggleSpace->setIcon(QIcon::fromTheme("space-local"));
         }
     });
 
