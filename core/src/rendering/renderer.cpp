@@ -125,7 +125,8 @@ void renderParts() {
 
     // Sort by nearest
     std::map<float, std::shared_ptr<Part>> sorted;
-    for (InstanceRef inst : gWorkspace()->GetChildren()) {
+    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+        InstanceRef inst = *it;
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (part->transparency > 0.00001) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iterator>
 #include <vector>
 #include <memory>
 #include <optional>
@@ -29,6 +30,8 @@ struct InstanceType {
     InstanceConstructor constructor;
     std::string explorerIcon = "";
 };
+
+class DescendantsIterator;
 
 // Base class for all instances in the data model
                  // Note: enable_shared_from_this HAS to be public or else its field will not be populated
@@ -69,7 +72,9 @@ public:
     std::optional<std::shared_ptr<Instance>> GetParent();
     bool IsParentLocked();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
-
+    
+    DescendantsIterator GetDescendantsStart();
+    DescendantsIterator GetDescendantsEnd();
     // Utility functions
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
 
@@ -88,3 +93,27 @@ public:
 
 typedef std::shared_ptr<Instance> InstanceRef;
 typedef std::weak_ptr<Instance> InstanceRefWeak;
+
+// https://gist.github.com/jeetsukumaran/307264
+class DescendantsIterator {
+public:
+    typedef DescendantsIterator self_type;
+    typedef std::shared_ptr<Instance> value_type;
+    typedef std::shared_ptr<Instance>& reference;
+    typedef std::shared_ptr<Instance> pointer;
+    typedef std::forward_iterator_tag iterator_category;
+    typedef int difference_type;
+
+    DescendantsIterator(std::shared_ptr<Instance> current);
+    inline self_type operator++() { self_type i = *this; ++*this; return i; }
+    inline std::shared_ptr<Instance> operator*() { return current; }
+    inline std::shared_ptr<Instance> operator->() { return current; }
+    inline bool operator==(const self_type& rhs) { return current == rhs.current; }
+    inline bool operator!=(const self_type& rhs) { return current != rhs.current; }
+
+    self_type operator++(int _);
+private:
+    std::optional<std::shared_ptr<Instance>> root;
+    std::shared_ptr<Instance> current;
+    std::vector<int> siblingIndex;
+};

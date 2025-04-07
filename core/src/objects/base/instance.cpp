@@ -108,6 +108,15 @@ std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
     return parent.value().lock();
 }
 
+static std::shared_ptr<Instance> DUMMY_INSTANCE;
+DescendantsIterator Instance::GetDescendantsStart() {
+    return DescendantsIterator(GetChildren().size() > 0 ? GetChildren()[0] : DUMMY_INSTANCE);
+}
+
+DescendantsIterator Instance::GetDescendantsEnd() {
+    return DescendantsIterator(DUMMY_INSTANCE);
+}
+
 bool Instance::IsParentLocked() {
     return this->parentLocked;
 }
@@ -231,4 +240,49 @@ InstanceRef Instance::Deserialize(pugi::xml_node* node) {
     }
 
     return object;
+}
+
+// DescendantsIterator
+
+DescendantsIterator::DescendantsIterator(std::shared_ptr<Instance> current) : current(current), root(current == DUMMY_INSTANCE ? DUMMY_INSTANCE : current->GetParent()), siblingIndex { 0 } { }
+
+DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
+    // If the current item is dummy, an error has occurred, this is not supposed to happen.
+    if (current == DUMMY_INSTANCE) {
+        Logger::fatalError("Attempt to increment a descendant iterator past its end\n");
+        panic();
+    }
+
+    // If the current item has children, enter it
+    if (current->GetChildren().size() > 0) {
+        siblingIndex.push_back(0);
+        current = current->GetChildren()[0];
+        return *this;
+    }
+
+    // Otherwise, we move to the next sibling, if applicable.
+
+    // But not if one up is null or the root element
+    if (!current->GetParent() || current == root) {
+        current = DUMMY_INSTANCE;
+        return *this;
+    }
+
+    // If we've hit the end of this item's children, move one up
+    while (current->GetParent() && current->GetParent().value()->GetChildren().size() <= (siblingIndex.back() + 1)) {
+        siblingIndex.pop_back();
+        current = current->GetParent().value();
+
+        // But not if one up is null or the root element
+        if (!current->GetParent() || current == root) {
+            current = DUMMY_INSTANCE;
+            return *this;
+        }
+    }
+
+    // Now move to the next sibling
+    siblingIndex.back()++;
+    current = current->GetParent().value()->GetChildren()[siblingIndex.back()];
+
+    return *this;
 }
