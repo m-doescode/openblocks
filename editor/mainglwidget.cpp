@@ -155,11 +155,12 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     localFrame = snapCFrame(localFrame);
 
     // Snap to studs
+    Data::Vector3 draggingPartSize = draggingObject->lock()->size;
     Data::Vector3 inverseSurfaceNormal = Data::Vector3::ONE - surfaceNormal.Abs();
-    glm::vec3 inverseNormalPartSize = (Data::Vector3)(partSize + 1.f) * inverseSurfaceNormal / 2.f;
+    glm::vec3 inverseNormalPartSize = (Data::Vector3)(partSize + glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
     if (snappingFactor() > 0)
         localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
-                                            + localFrame.Position() * surfaceNormal.Abs();
+                                           + localFrame.Position() * surfaceNormal.Abs();
 
     Data::CFrame newFrame = targetFrame * localFrame;
 
