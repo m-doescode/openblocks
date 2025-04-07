@@ -11,10 +11,17 @@
 #include <qfiledialog.h>
 
 enum SelectedTool {
-    SELECT,
-    MOVE,
-    SCALE,
-    ROTATE,
+    TOOL_SELECT,
+    TOOL_MOVE,
+    TOOL_SCALE,
+    TOOL_ROTATE,
+
+    TOOL_SMOOTH,
+    TOOL_GLUE,
+    TOOL_WELD,
+    TOOL_STUDS,
+    TOOL_INLETS,
+    TOOL_UNIVERSAL,
 };
 
 enum GridSnappingMode {

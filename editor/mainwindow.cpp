@@ -109,12 +109,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->explorerView->buildContextMenu();
 
-    connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = SelectedTool::SELECT; updateToolbars(); });
-    connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::MOVE : SelectedTool::SELECT; updateToolbars(); });
-    connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::SCALE : SelectedTool::SELECT; updateToolbars(); });
-    connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? SelectedTool::ROTATE : SelectedTool::SELECT; updateToolbars(); });
+    connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_MOVE : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_SCALE : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_ROTATE : TOOL_SELECT; updateToolbars(); });
+    
+    connect(ui->actionToolSmooth, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_SMOOTH : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolGlue, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_GLUE : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolWeld, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_WELD : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolStuds, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_STUDS : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolInlets, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_INLETS : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolUniversal, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_UNIVERSAL : TOOL_SELECT; updateToolbars(); });
     ui->actionToolSelect->setChecked(true);
-    selectedTool = SelectedTool::SELECT;
+    selectedTool = TOOL_SELECT;
 
     connect(ui->actionGridSnap1, &QAction::triggered, this, [&]() { snappingMode = GridSnappingMode::SNAP_1_STUD; updateToolbars(); });
     connect(ui->actionGridSnap05, &QAction::triggered, this, [&]() { snappingMode = GridSnappingMode::SNAP_05_STUDS; updateToolbars(); });
@@ -421,23 +428,30 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
 }
 
 void MainWindow::updateToolbars() {
-    ui->actionToolSelect->setChecked(selectedTool == SelectedTool::SELECT);
-    ui->actionToolMove->setChecked(selectedTool == SelectedTool::MOVE);
-    ui->actionToolScale->setChecked(selectedTool == SelectedTool::SCALE);
-    ui->actionToolRotate->setChecked(selectedTool == SelectedTool::ROTATE);
+    ui->actionToolSelect->setChecked(selectedTool == TOOL_SELECT);
+    ui->actionToolMove->setChecked(selectedTool == TOOL_MOVE);
+    ui->actionToolScale->setChecked(selectedTool == TOOL_SCALE);
+    ui->actionToolRotate->setChecked(selectedTool == TOOL_ROTATE);
+
+    ui->actionToolSmooth->setChecked(selectedTool == TOOL_SMOOTH);
+    ui->actionToolGlue->setChecked(selectedTool == TOOL_GLUE);
+    ui->actionToolWeld->setChecked(selectedTool == TOOL_WELD);
+    ui->actionToolStuds->setChecked(selectedTool == TOOL_STUDS);
+    ui->actionToolInlets->setChecked(selectedTool == TOOL_INLETS);
+    ui->actionToolUniversal->setChecked(selectedTool == TOOL_UNIVERSAL);
 
     ui->actionGridSnap1->setChecked(snappingMode == GridSnappingMode::SNAP_1_STUD);
     ui->actionGridSnap05->setChecked(snappingMode == GridSnappingMode::SNAP_05_STUDS);
     ui->actionGridSnapOff->setChecked(snappingMode == GridSnappingMode::SNAP_OFF);
 
-    editorToolHandles->worldMode = (selectedTool == SelectedTool::SCALE || selectedTool == SelectedTool::ROTATE) ? false : worldSpaceTransforms;
-    editorToolHandles->nixAxes = selectedTool == SelectedTool::ROTATE;
+    editorToolHandles->worldMode = (selectedTool == TOOL_SCALE || selectedTool == TOOL_ROTATE) ? false : worldSpaceTransforms;
+    editorToolHandles->nixAxes = selectedTool == TOOL_ROTATE;
 
-    editorToolHandles->active = selectedTool != SelectedTool::SELECT;
+    editorToolHandles->active = selectedTool > TOOL_SELECT && selectedTool < TOOL_SMOOTH;
     editorToolHandles->handlesType =
-      selectedTool == SelectedTool::MOVE ? HandlesType::MoveHandles
-    : selectedTool == SelectedTool::SCALE ? HandlesType::ScaleHandles
-    : selectedTool == SelectedTool::ROTATE ? HandlesType::RotateHandles
+      selectedTool == TOOL_MOVE ? HandlesType::MoveHandles
+    : selectedTool == TOOL_SCALE ? HandlesType::ScaleHandles
+    : selectedTool == TOOL_ROTATE ? HandlesType::RotateHandles
     : HandlesType::ScaleHandles;
 }
 

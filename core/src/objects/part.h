@@ -8,6 +8,7 @@
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
+#include "rendering/surface.h"
 #include <reactphysics3d/reactphysics3d.h>
 
 namespace rp = reactphysics3d;
@@ -37,6 +38,13 @@ public:
     
     bool anchored = false;
     rp::RigidBody* rigidBody = nullptr;
+
+    SurfaceType topSurface = SurfaceType::SurfaceStuds;
+    SurfaceType bottomSurface = SurfaceType::SurfaceInlets;
+    SurfaceType leftSurface = SurfaceType::SurfaceSmooth;
+    SurfaceType rightSurface = SurfaceType::SurfaceSmooth;
+    SurfaceType frontSurface = SurfaceType::SurfaceSmooth;
+    SurfaceType backSurface = SurfaceType::SurfaceSmooth;
     
     Part();
     Part(PartConstructParams params);

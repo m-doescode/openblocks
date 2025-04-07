@@ -40,7 +40,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1612</width>
+     <width>1027</width>
      <height>30</height>
     </rect>
    </property>
@@ -545,6 +545,9 @@
    </property>
   </action>
   <action name="actionToolStuds">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="surface-studs"/>
    </property>
@@ -559,6 +562,9 @@
    </property>
   </action>
   <action name="actionToolInlets">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="surface-inlets"/>
    </property>
@@ -573,6 +579,9 @@
    </property>
   </action>
   <action name="actionToolUniversal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="surface-universal"/>
    </property>
@@ -587,6 +596,9 @@
    </property>
   </action>
   <action name="actionToolSmooth">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="surface-smooth"/>
    </property>
@@ -601,6 +613,9 @@
    </property>
   </action>
   <action name="actionToolWeld">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="surface-weld"/>
    </property>
@@ -615,6 +630,9 @@
    </property>
   </action>
   <action name="actionToolGlue">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="surface-glue"/>
    </property>

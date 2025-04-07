@@ -37,6 +37,7 @@
 
 #include "mainglwidget.h"
 #include "math_helper.h"
+#include "rendering/surface.h"
 
 static Data::CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
@@ -130,7 +131,7 @@ bool isMouseDragging = false;
 std::optional<std::weak_ptr<Part>> draggingObject;
 std::optional<HandleFace> draggingHandle;
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
-    if (!isMouseDragging || !draggingObject) return;
+    if (!isMouseDragging || !draggingObject || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
 
     QPoint position = evt->pos();
 
@@ -214,12 +215,12 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     // printf("Post-snap: (%f, %f, %f)\n", diff.x, diff.y, diff.z);
 
     switch (mainWindow()->selectedTool) {
-        case SelectedTool::MOVE: {
+        case TOOL_MOVE: {
             // Add difference
             editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + diff;
         } break;
         
-        case SelectedTool::SCALE: {
+        case TOOL_SCALE: {
             // Find local difference
             glm::vec3 localDiff = frame.Inverse() * diff;
             // Find outwarwd difference
@@ -316,11 +317,11 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     handleCursorChange(evt);
 
     switch (mainWindow()->selectedTool) {
-    case SelectedTool::MOVE:
-    case SelectedTool::SCALE:
+    case TOOL_MOVE:
+    case TOOL_SCALE:
         handleLinearTransform(evt);
         break;
-    case SelectedTool::ROTATE:
+    case TOOL_ROTATE:
         handleRotationalTransform(evt);
         break;
     default:
@@ -356,6 +357,24 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
         if (part->name == "Baseplate") return;
         
+        // Handle surface tool
+        if (mainWindow()->selectedTool >= TOOL_SMOOTH) {
+            Data::Vector3 localNormal = part->cframe.Inverse().Rotation() * rayHit->worldNormal;
+            NormalId face = faceFromNormal(localNormal);
+            SurfaceType surface = SurfaceType(mainWindow()->selectedTool - TOOL_SMOOTH);
+
+            switch (face) {
+                case Right: part->rightSurface = surface; break;
+                case Top: part->topSurface = surface; break;
+                case Back: part->backSurface = surface; break;
+                case Left: part->leftSurface = surface; break;
+                case Bottom: part->bottomSurface = surface; break;
+                case Front: part->frontSurface = surface; break;
+                default: break;
+            }
+            return;
+        }
+
         //part.selected = true;
         isMouseDragging = true;
         draggingObject = part;

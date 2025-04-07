@@ -109,14 +109,6 @@ void renderParts() {
     // });
     studsTexture->activate(0);
     shader->set("studs", 0);
-    // shader->set("surfaces[1]", SurfaceStuds);
-    shader->set("surfaces[1]", SurfaceStuds);
-    shader->set("surfaces[4]", SurfaceInlets);
-
-    shader->set("surfaces[0]", SurfaceStuds);
-    shader->set("surfaces[2]", SurfaceStuds);
-    shader->set("surfaces[3]", SurfaceStuds);
-    shader->set("surfaces[5]", SurfaceStuds);
 
     // Pre-calculate the normal matrix for the shader
 
@@ -147,6 +139,13 @@ void renderParts() {
             shader->set("texScale", part->size);
             shader->set("transparency", part->transparency);
 
+            shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", part->rightSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", part->topSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", part->backSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", part->leftSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", part->bottomSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", part->frontSurface);
+
             CUBE_MESH->bind();
             glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
         }
@@ -169,6 +168,13 @@ void renderParts() {
         shader->set("normalMatrix", normalMatrix);
         shader->set("texScale", part->size);
         shader->set("transparency", part->transparency);
+
+        shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", part->rightSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", part->topSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", part->backSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", part->leftSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", part->bottomSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", part->frontSurface);
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);

@@ -42,8 +42,8 @@ void main()
             aNormal == vec3(0, -1, 0) ? FaceBottom :
             aNormal == vec3(1, 0, 0) ? FaceRight :
             aNormal == vec3(-1, 0, 0) ? FaceLeft :
-            aNormal == vec3(0, 0, 1) ? FaceFront :
-            aNormal == vec3(0, 0, -1) ? FaceBack : -1;
+            aNormal == vec3(0, 0, -1) ? FaceFront :
+            aNormal == vec3(0, 0, 1) ? FaceBack : -1;
 
     vSurfaceZ = surfaces[vFace];
     // if (surfaces[vFace] > SurfaceUniversal) vSurfaceZ = 0;
