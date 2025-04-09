@@ -211,7 +211,7 @@ MainWindow::MainWindow(QWidget *parent)
         std::optional<std::string> path;
         if (!gDataModel->HasFile())
             path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
-        if (!path || path == "") return;
+        if (!gDataModel->HasFile() && (!path || path == "")) return;
 
         gDataModel->SaveToFile(path);
     });
