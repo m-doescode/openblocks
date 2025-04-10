@@ -6,10 +6,10 @@
 #include <memory>
 class Service : public Instance {
 protected:
-    std::weak_ptr<DataModel> dataModel;
-
-    Service(const InstanceType* type, std::weak_ptr<DataModel> root);
+    Service(const InstanceType* type);
     virtual void InitService();
+
+    void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) override;
 
     friend class DataModel;
 };

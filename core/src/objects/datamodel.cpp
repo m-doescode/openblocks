@@ -2,6 +2,7 @@
 #include "base/service.h"
 #include "objects/base/instance.h"
 #include "objects/base/service.h"
+#include "objects/meta.h"
 #include "workspace.h"
 #include "logger.h"
 #include "panic.h"
@@ -9,12 +10,6 @@
 #include <fstream>
 #include <memory>
 #include <functional>
-
-// TODO: Move this to a different file
-// ONLY add services here, all types are expected to inherit from Service, or errors WILL occur
-std::map<std::string, std::function<std::shared_ptr<Service>(std::weak_ptr<DataModel>)>> SERVICE_CONSTRUCTORS = {
-    { "Workspace", &Workspace::Create },
-};
 
 const InstanceType DataModel::TYPE = {
     .super = &Instance::TYPE,
@@ -33,8 +28,10 @@ DataModel::DataModel()
 
 void DataModel::Init() {
     // Create the workspace if it doesn't exist
-    if (this->services.count("Workspace") == 0)
-        this->services["Workspace"] = std::make_shared<Workspace>(shared<DataModel>());
+    if (this->services.count("Workspace") == 0) {
+        this->services["Workspace"] = std::make_shared<Workspace>();
+        AddChild(this->services["Workspace"]);
+    }
     
     // Init all services
     for (auto [_, service] : this->services) {
@@ -67,7 +64,7 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
 
 void DataModel::DeserializeService(pugi::xml_node* node) {
     std::string className = node->attribute("class").value();
-    if (SERVICE_CONSTRUCTORS.count(className) == 0) {
+    if (INSTANCE_MAP.count(className) == 0) {
         Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
         panic();
     }
@@ -78,7 +75,8 @@ void DataModel::DeserializeService(pugi::xml_node* node) {
     }
 
     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
-    InstanceRef object = SERVICE_CONSTRUCTORS[className](shared<DataModel>());
+    InstanceRef object = INSTANCE_MAP[className]->constructor();
+    AddChild(object);
 
     // Read properties
     pugi::xml_node propertiesNode = node->child("Properties");

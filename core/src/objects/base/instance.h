@@ -23,12 +23,19 @@ typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 class DataModel;
 class Workspace;
 
+typedef int InstanceFlags;
+// This instance should only be instantiated in special circumstances (i.e. by DataModel) and should be creatable directly via any API 
+const InstanceFlags INSTANCE_NOTCREATABLE = (InstanceFlags)0x1;
+// This instance is a service
+const InstanceFlags INSTANCE_SERVICE = (InstanceFlags)0x2;
+
 // Struct describing information about an instance
 struct InstanceType {
     const InstanceType* super; // May be null
     std::string className;
     InstanceConstructor constructor;
     std::string explorerIcon = "";
+    InstanceFlags flags;
 };
 
 class DescendantsIterator;
