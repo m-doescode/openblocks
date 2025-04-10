@@ -1,9 +1,4 @@
 #include "color3.h"
-#include <algorithm>
-#include <glm/ext/quaternion_geometric.hpp>
-#include <iomanip>
-#include <ios>
-#include <string>
 #include "meta.h" // IWYU pragma: keep
 
 Data::Color3::Color3(float r, float g, float b) : r(std::clamp(r, 0.f, 1.f)), g(std::clamp(g, 0.f, 1.f)), b(std::clamp(b, 0.f, 1.f)) {};

@@ -1,45 +1,12 @@
 #include <GL/glew.h>
-#include <chrono>
-
-#include <QMouseEvent>
-#include <glm/common.hpp>
-#include <glm/ext/matrix_projection.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <glm/geometric.hpp>
-#include <glm/gtc/round.hpp>
-#include <glm/matrix.hpp>
-#include <glm/trigonometric.hpp>
-#include <memory>
-#include <numbers>
-#include <optional>
 #include <qsoundeffect.h>
-#include <reactphysics3d/collision/RaycastInfo.h>
-#include <vector>
-#include <QSoundEffect>
-
-#include "datatypes/cframe.h"
-#include "datatypes/vector.h"
-#include "editorcommon.h"
-#include "logger.h"
-#include "mainwindow.h"
-#include "objects/handles.h"
-#include "physics/util.h"
-#include "qcursor.h"
-#include "qevent.h"
-#include "qnamespace.h"
-#include "qwindowdefs.h"
-#include "rendering/renderer.h"
-#include "physics/simulation.h"
-#include "camera.h"
-
-#include "common.h"
-#include "rendering/shader.h"
-
 #include "mainglwidget.h"
+#include "common.h"
 #include "math_helper.h"
-#include "rendering/surface.h"
+#include "physics/simulation.h"
+#include "physics/util.h"
+#include "rendering/renderer.h"
+#include "rendering/shader.h"
 
 static Data::CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 

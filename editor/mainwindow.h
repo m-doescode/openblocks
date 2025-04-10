@@ -2,10 +2,8 @@
 #define MAINWINDOW_H
 
 #include "logger.h"
-#include "panes/explorerview.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
-#include "qmenu.h"
 #include <QMainWindow>
 #include <QLineEdit>
 #include <qfiledialog.h>

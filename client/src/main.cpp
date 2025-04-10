@@ -1,20 +1,8 @@
 #include <GL/glew.h>
-#include <GL/gl.h>
 #include <GLFW/glfw3.h>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/quaternion_trigonometric.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <memory>
-#include <stdio.h>
-#include <format>
-
-#include "logger.h"
 #include "objects/part.h"
-#include "rendering/renderer.h"
 #include "physics/simulation.h"
-#include "camera.h"
-
+#include "rendering/renderer.h"
 #include "common.h"
 
 void errorCatcher(int id, const char* str);

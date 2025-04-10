@@ -1,13 +1,6 @@
 #include "explorerview.h"
-#include "explorermodel.h"
-#include "mainwindow.h"
-#include "../ui_mainwindow.h"
 #include "common.h"
-#include "objects/base/instance.h"
-#include "qabstractitemmodel.h"
-#include <qaction.h>
-#include <qnamespace.h>
-#include <qitemselectionmodel.h>
+#include "../ui_mainwindow.h"
 
 #define M_mainWindow dynamic_cast<MainWindow*>(window())
 

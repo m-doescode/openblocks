@@ -1,13 +1,12 @@
 #pragma once
 
-#include "base.h"
 #include <memory>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
-#include "../rendering/material.h"
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
+#include "objects/base/instance.h"
 #include "rendering/surface.h"
 #include <reactphysics3d/reactphysics3d.h>
 

@@ -1,15 +1,10 @@
 #pragma once
 
 #include "objects/base/instance.h"
-#include "objects/part.h"
 #include "qabstractitemmodel.h"
-#include "qevent.h"
-#include "qmenu.h"
 #include "qnamespace.h"
-#include "qtreeview.h"
 #include <QOpenGLWidget>
 #include <QWidget>
-#include <memory>
 
 class PropertiesModel : public QAbstractItemModel {
     Q_OBJECT

@@ -9,10 +9,8 @@
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
-#include <vector>
 
 #include "datatypes/cframe.h"
-#include "physics/util.h"
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"

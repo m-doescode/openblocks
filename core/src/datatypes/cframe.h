@@ -2,12 +2,8 @@
 
 #include "base.h"
 #include "datatypes/vector.h"
-#include <glm/ext/matrix_float3x3.hpp>
-#include <glm/ext/quaternion_geometric.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <glm/fwd.hpp>
+#include <glm/ext/quaternion_float.hpp>
 #include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/matrix.hpp>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/reactphysics3d.h>

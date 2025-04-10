@@ -2,11 +2,6 @@
 
 #include "objects/base/instance.h"
 #include "qabstractitemmodel.h"
-#include "qevent.h"
-#include "qnamespace.h"
-#include <QOpenGLWidget>
-#include <QWidget>
-
 
 class ExplorerModel : public QAbstractItemModel {
     Q_OBJECT

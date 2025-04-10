@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <fstream>
 #include <memory>
-#include <functional>
 
 const InstanceType DataModel::TYPE = {
     .super = &Instance::TYPE,

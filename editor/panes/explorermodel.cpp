@@ -1,20 +1,7 @@
 #include "explorermodel.h"
-#include "objects/base/instance.h"
-#include "qabstractitemmodel.h"
-#include "qcontainerfwd.h"
-#include "qimage.h"
-#include "qnamespace.h"
-#include "qobject.h"
-#include "qstringview.h"
-#include "qwidget.h"
-#include "qmimedata.h"
 #include "common.h"
-#include "logger.h"
-#include <algorithm>
-#include <cstdio>
-#include <optional>
-#include <vector>
-#include "objects/base/instance.h"
+#include <qmimedata.h>
+#include <QWidget>
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
 
