@@ -12,6 +12,6 @@ protected:
 
 public:
     std::string getMessage();
-    void logMessage(Logger::LogLevel logLevel = Logger::LogLevel::INFO);
+    void logMessage(Logger::LogLevel logLevel = Logger::LogLevel::ERROR);
     void logMessageFatal();
 };

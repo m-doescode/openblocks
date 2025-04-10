@@ -9,9 +9,9 @@ std::string Error::getMessage() {
 }
 
 void Error::logMessage(Logger::LogLevel logLevel) {
-    Logger::logf("%s", logLevel, this->message);
+    Logger::log(this->message, logLevel);
 }
 
 void Error::logMessageFatal() {
-    Logger::fatalErrorf("%s", this->message);
+    Logger::fatalError(this->message);
 }

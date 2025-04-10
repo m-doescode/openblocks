@@ -15,6 +15,8 @@
 #include <expected.hpp>
 #include <pugixml.hpp>
 
+#include "error/error.h"
+#include "error/result.h"
 #include "member.h"
 
 class Instance;
@@ -36,6 +38,12 @@ struct InstanceType {
     InstanceConstructor constructor;
     std::string explorerIcon = "";
     InstanceFlags flags;
+};
+
+// Errors
+class NoSuchInstance : public Error {
+    public:
+    inline NoSuchInstance(std::string className) : Error("Cannot create instance of unknown type " + className) {}
 };
 
 class DescendantsIterator;
@@ -95,7 +103,7 @@ public:
 
     // Serialization
     void Serialize(pugi::xml_node parent);
-    static std::shared_ptr<Instance> Deserialize(pugi::xml_node node);
+    static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node);
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;

@@ -66,7 +66,7 @@ void DataModel::DeserializeService(pugi::xml_node node) {
     std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
-        panic();
+        return;
     }
 
     if (services.count(className) != 0) {
@@ -93,8 +93,12 @@ void DataModel::DeserializeService(pugi::xml_node node) {
 
     // Add children
     for (pugi::xml_node childNode : node.children("Item")) {
-        InstanceRef child = Instance::Deserialize(childNode);
-        object->AddChild(child);
+        result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode);
+        if (child.is_error()) {
+            std::get<NoSuchInstance>(child.error().value()).logMessage();
+            continue;
+        }
+        object->AddChild(child.expect());
     }
 
     // We add the service to the list

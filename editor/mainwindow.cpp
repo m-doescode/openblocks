@@ -10,6 +10,7 @@
 #include <QWidget>
 #include <QTreeView>
 #include <QAbstractItemView>
+#include <cstdio>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -284,8 +285,9 @@ MainWindow::MainWindow(QWidget *parent)
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
-            InstanceRef inst = Instance::Deserialize(instNode);
-            gWorkspace()->AddChild(inst);
+            result<InstanceRef, NoSuchInstance> inst = Instance::Deserialize(instNode);
+            if (!inst) { inst.logError(); continue; }
+            gWorkspace()->AddChild(inst.expect());
         }
     });
 
@@ -303,8 +305,9 @@ MainWindow::MainWindow(QWidget *parent)
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
-            InstanceRef inst = Instance::Deserialize(instNode);
-            selectedParent->AddChild(inst);
+            result<InstanceRef, NoSuchInstance> inst = Instance::Deserialize(instNode);
+            if (!inst) { inst.logError(); continue; }
+            selectedParent->AddChild(inst.expect());
         }
     });
 
@@ -337,8 +340,9 @@ MainWindow::MainWindow(QWidget *parent)
         modelDoc.load(inStream);
 
         for (pugi::xml_node instNode : modelDoc.child("openblocks").children("Item")) {
-            InstanceRef inst = Instance::Deserialize(instNode);
-            selectedParent->AddChild(inst);
+            result<InstanceRef, NoSuchInstance> inst = Instance::Deserialize(instNode);
+            if (!inst) { inst.logError(); continue; }
+            selectedParent->AddChild(inst.expect());
         }
     });
     
