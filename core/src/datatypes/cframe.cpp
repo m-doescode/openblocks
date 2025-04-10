@@ -112,35 +112,35 @@ Data::CFrame Data::CFrame::operator -(Data::Vector3 vector) const {
 
 // Serialization
 
-void Data::CFrame::Serialize(pugi::xml_node* node) const {
-    node->append_child("X").text().set(std::to_string(this->X()));
-    node->append_child("Y").text().set(std::to_string(this->Y()));
-    node->append_child("Z").text().set(std::to_string(this->Z()));
-    node->append_child("R00").text().set(std::to_string(this->rotation[0][0]));
-    node->append_child("R01").text().set(std::to_string(this->rotation[1][0]));
-    node->append_child("R02").text().set(std::to_string(this->rotation[2][0]));
-    node->append_child("R10").text().set(std::to_string(this->rotation[0][1]));
-    node->append_child("R11").text().set(std::to_string(this->rotation[1][1]));
-    node->append_child("R12").text().set(std::to_string(this->rotation[2][1]));
-    node->append_child("R20").text().set(std::to_string(this->rotation[0][2]));
-    node->append_child("R21").text().set(std::to_string(this->rotation[1][2]));
-    node->append_child("R22").text().set(std::to_string(this->rotation[2][2]));
+void Data::CFrame::Serialize(pugi::xml_node node) const {
+    node.append_child("X").text().set(std::to_string(this->X()));
+    node.append_child("Y").text().set(std::to_string(this->Y()));
+    node.append_child("Z").text().set(std::to_string(this->Z()));
+    node.append_child("R00").text().set(std::to_string(this->rotation[0][0]));
+    node.append_child("R01").text().set(std::to_string(this->rotation[1][0]));
+    node.append_child("R02").text().set(std::to_string(this->rotation[2][0]));
+    node.append_child("R10").text().set(std::to_string(this->rotation[0][1]));
+    node.append_child("R11").text().set(std::to_string(this->rotation[1][1]));
+    node.append_child("R12").text().set(std::to_string(this->rotation[2][1]));
+    node.append_child("R20").text().set(std::to_string(this->rotation[0][2]));
+    node.append_child("R21").text().set(std::to_string(this->rotation[1][2]));
+    node.append_child("R22").text().set(std::to_string(this->rotation[2][2]));
 }
 
 
-Data::Variant Data::CFrame::Deserialize(pugi::xml_node* node) {
+Data::Variant Data::CFrame::Deserialize(pugi::xml_node node) {
     return Data::CFrame(
-        node->child("X").text().as_float(),
-        node->child("Y").text().as_float(),
-        node->child("Z").text().as_float(),
-        node->child("R00").text().as_float(),
-        node->child("R01").text().as_float(),
-        node->child("R02").text().as_float(),
-        node->child("R10").text().as_float(),
-        node->child("R11").text().as_float(),
-        node->child("R12").text().as_float(),
-        node->child("R20").text().as_float(),
-        node->child("R21").text().as_float(),
-        node->child("R22").text().as_float()
+        node.child("X").text().as_float(),
+        node.child("Y").text().as_float(),
+        node.child("Z").text().as_float(),
+        node.child("R00").text().as_float(),
+        node.child("R01").text().as_float(),
+        node.child("R02").text().as_float(),
+        node.child("R10").text().as_float(),
+        node.child("R11").text().as_float(),
+        node.child("R12").text().as_float(),
+        node.child("R20").text().as_float(),
+        node.child("R21").text().as_float(),
+        node.child("R22").text().as_float()
     );
 }

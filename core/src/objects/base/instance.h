@@ -94,8 +94,8 @@ public:
     std::vector<std::string> GetProperties();
 
     // Serialization
-    void Serialize(pugi::xml_node* parent);
-    static std::shared_ptr<Instance> Deserialize(pugi::xml_node* node);
+    void Serialize(pugi::xml_node parent);
+    static std::shared_ptr<Instance> Deserialize(pugi::xml_node node);
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;

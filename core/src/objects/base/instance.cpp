@@ -186,8 +186,8 @@ std::vector<std::string> Instance::GetProperties() {
 
 // Serialization
 
-void Instance::Serialize(pugi::xml_node* parent) {
-    pugi::xml_node node = parent->append_child("Item");
+void Instance::Serialize(pugi::xml_node parent) {
+    pugi::xml_node node = parent.append_child("Item");
     node.append_attribute("class").set_value(this->GetClass()->className);
 
     // Add properties
@@ -198,17 +198,17 @@ void Instance::Serialize(pugi::xml_node* parent) {
 
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
         propertyNode.append_attribute("name").set_value(name);
-        GetPropertyValue(name)->Serialize(&propertyNode);
+        GetPropertyValue(name)->Serialize(propertyNode);
     }
 
     // Add children
     for (InstanceRef child : this->children) {
-        child->Serialize(&node);
+        child->Serialize(node);
     }
 }
 
-InstanceRef Instance::Deserialize(pugi::xml_node* node) {
-    std::string className = node->attribute("class").value();
+InstanceRef Instance::Deserialize(pugi::xml_node node) {
+    std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         Logger::fatalErrorf("Unknown type for instance: '%s'", className.c_str());
         panic();
@@ -221,7 +221,7 @@ InstanceRef Instance::Deserialize(pugi::xml_node* node) {
     // const InstanceType* type = INSTANCE_MAP.at(className);
 
     // Read properties
-    pugi::xml_node propertiesNode = node->child("Properties");
+    pugi::xml_node propertiesNode = node.child("Properties");
     for (pugi::xml_node propertyNode : propertiesNode) {
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
@@ -229,13 +229,13 @@ InstanceRef Instance::Deserialize(pugi::xml_node* node) {
             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
-        Data::Variant value = Data::Variant::Deserialize(&propertyNode);
+        Data::Variant value = Data::Variant::Deserialize(propertyNode);
         object->SetPropertyValue(propertyName, value);
     }
 
     // Read children
-    for (pugi::xml_node childNode : node->children("Item")) {
-        InstanceRef child = Instance::Deserialize(&childNode);
+    for (pugi::xml_node childNode : node.children("Item")) {
+        InstanceRef child = Instance::Deserialize(childNode);
         object->AddChild(child);
     }
 

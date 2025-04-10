@@ -43,10 +43,10 @@ Data::Color3 Data::Color3::FromHex(std::string hex) {
 
 // Serialization
 
-void Data::Color3::Serialize(pugi::xml_node* node) const {
-    node->text().set(this->ToHex());
+void Data::Color3::Serialize(pugi::xml_node node) const {
+    node.text().set(this->ToHex());
 }
 
-Data::Variant Data::Color3::Deserialize(pugi::xml_node* node) {
-    return Color3::FromHex(node->text().get());
+Data::Variant Data::Color3::Deserialize(pugi::xml_node node) {
+    return Color3::FromHex(node.text().get());
 }

@@ -248,7 +248,7 @@ MainWindow::MainWindow(QWidget *parent)
         pugi::xml_document rootDoc;
         for (InstanceRefWeak inst : getSelection()) {
             if (inst.expired()) continue;
-            inst.lock()->Serialize(&rootDoc);
+            inst.lock()->Serialize(rootDoc);
         }
 
         std::ostringstream encoded;
@@ -262,7 +262,7 @@ MainWindow::MainWindow(QWidget *parent)
         pugi::xml_document rootDoc;
         for (InstanceRefWeak inst : getSelection()) {
             if (inst.expired()) continue;
-            inst.lock()->Serialize(&rootDoc);
+            inst.lock()->Serialize(rootDoc);
             inst.lock()->SetParent(std::nullopt);
         }
 
@@ -284,7 +284,7 @@ MainWindow::MainWindow(QWidget *parent)
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
-            InstanceRef inst = Instance::Deserialize(&instNode);
+            InstanceRef inst = Instance::Deserialize(instNode);
             gWorkspace()->AddChild(inst);
         }
     });
@@ -303,7 +303,7 @@ MainWindow::MainWindow(QWidget *parent)
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
-            InstanceRef inst = Instance::Deserialize(&instNode);
+            InstanceRef inst = Instance::Deserialize(instNode);
             selectedParent->AddChild(inst);
         }
     });
@@ -319,7 +319,7 @@ MainWindow::MainWindow(QWidget *parent)
 
         for (InstanceRefWeak inst : getSelection()) {
             if (inst.expired()) continue;
-            inst.lock()->Serialize(&modelRoot);
+            inst.lock()->Serialize(modelRoot);
         }
 
         modelDoc.save(outStream);
@@ -337,7 +337,7 @@ MainWindow::MainWindow(QWidget *parent)
         modelDoc.load(inStream);
 
         for (pugi::xml_node instNode : modelDoc.child("openblocks").children("Item")) {
-            InstanceRef inst = Instance::Deserialize(&instNode);
+            InstanceRef inst = Instance::Deserialize(instNode);
             selectedParent->AddChild(inst);
         }
     });

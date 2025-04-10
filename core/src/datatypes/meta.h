@@ -34,8 +34,8 @@ namespace Data {
         template <typename T> T get() { return std::get<T>(wrapped); }
         Data::String ToString() const;
         
-        void Serialize(pugi::xml_node* node) const;
-        static Data::Variant Deserialize(pugi::xml_node* node);
+        void Serialize(pugi::xml_node node) const;
+        static Data::Variant Deserialize(pugi::xml_node node);
     };
 
     // Map of all data types to their type names

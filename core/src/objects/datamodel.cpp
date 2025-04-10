@@ -53,7 +53,7 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     pugi::xml_node root = doc.append_child("openblocks");
 
     for (InstanceRef child : this->GetChildren()) {
-        child->Serialize(&root);
+        child->Serialize(root);
     }
 
     doc.save(outStream);
@@ -62,8 +62,8 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     Logger::info("Place saved successfully");
 }
 
-void DataModel::DeserializeService(pugi::xml_node* node) {
-    std::string className = node->attribute("class").value();
+void DataModel::DeserializeService(pugi::xml_node node) {
+    std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
         panic();
@@ -79,7 +79,7 @@ void DataModel::DeserializeService(pugi::xml_node* node) {
     AddChild(object);
 
     // Read properties
-    pugi::xml_node propertiesNode = node->child("Properties");
+    pugi::xml_node propertiesNode = node.child("Properties");
     for (pugi::xml_node propertyNode : propertiesNode) {
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
@@ -87,13 +87,13 @@ void DataModel::DeserializeService(pugi::xml_node* node) {
             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
-        Data::Variant value = Data::Variant::Deserialize(&propertyNode);
+        Data::Variant value = Data::Variant::Deserialize(propertyNode);
         object->SetPropertyValue(propertyName, value);
     }
 
     // Add children
-    for (pugi::xml_node childNode : node->children("Item")) {
-        InstanceRef child = Instance::Deserialize(&childNode);
+    for (pugi::xml_node childNode : node.children("Item")) {
+        InstanceRef child = Instance::Deserialize(childNode);
         object->AddChild(child);
     }
 
@@ -111,7 +111,7 @@ std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
     std::shared_ptr<DataModel> newModel = std::make_shared<DataModel>();
 
     for (pugi::xml_node childNode : rootNode.children("Item")) {
-        newModel->DeserializeService(&childNode);
+        newModel->DeserializeService(childNode);
     }
 
     newModel->Init();

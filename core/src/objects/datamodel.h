@@ -15,7 +15,7 @@ class Service;
 // The root instance to all objects in the hierarchy
 class DataModel : public Instance {
 private:
-    void DeserializeService(pugi::xml_node* node);
+    void DeserializeService(pugi::xml_node node);
 public:
     const static InstanceType TYPE;
 

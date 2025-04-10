@@ -14,14 +14,14 @@ public: \
     static const TypeInfo TYPE; \
     \
     virtual const Data::String ToString() const override; \
-    virtual void Serialize(pugi::xml_node* node) const override; \
-    static Data::Variant Deserialize(pugi::xml_node* node); \
+    virtual void Serialize(pugi::xml_node node) const override; \
+    static Data::Variant Deserialize(pugi::xml_node node); \
     static Data::Variant FromString(std::string); \
 };
 
 namespace Data {
     class Variant;
-    typedef std::function<Data::Variant(pugi::xml_node*)> Deserializer;
+    typedef std::function<Data::Variant(pugi::xml_node)> Deserializer;
     typedef std::function<Data::Variant(std::string)> FromString;
 
     struct TypeInfo {
@@ -36,7 +36,7 @@ namespace Data {
         virtual ~Base();
         virtual const TypeInfo& GetType() const = 0;
         virtual const Data::String ToString() const = 0;
-        virtual void Serialize(pugi::xml_node* node) const = 0;
+        virtual void Serialize(pugi::xml_node node) const = 0;
     };
 
     class Null : Base {
@@ -47,8 +47,8 @@ namespace Data {
         static const TypeInfo TYPE;
 
         virtual const Data::String ToString() const override;
-        virtual void Serialize(pugi::xml_node* node) const override;
-        static Data::Variant Deserialize(pugi::xml_node* node);
+        virtual void Serialize(pugi::xml_node node) const override;
+        static Data::Variant Deserialize(pugi::xml_node node);
     };
 
     DEF_WRAPPER_CLASS(Bool, bool)

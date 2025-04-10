@@ -11,19 +11,19 @@ Data::String Data::Variant::ToString() const {
     }, this->wrapped);
 }
 
-void Data::Variant::Serialize(pugi::xml_node* node) const {
+void Data::Variant::Serialize(pugi::xml_node node) const {
     std::visit([&](auto&& it) {
         it.Serialize(node);
     }, this->wrapped);
 }
 
-Data::Variant Data::Variant::Deserialize(pugi::xml_node* node) {
-    if (Data::TYPE_MAP.count(node->name()) == 0) {
-        Logger::fatalErrorf("Unknown type for instance: '%s'", node->name());
+Data::Variant Data::Variant::Deserialize(pugi::xml_node node) {
+    if (Data::TYPE_MAP.count(node.name()) == 0) {
+        Logger::fatalErrorf("Unknown type for instance: '%s'", node.name());
         panic();
     }
 
-    const Data::TypeInfo* type = Data::TYPE_MAP[node->name()];
+    const Data::TypeInfo* type = Data::TYPE_MAP[node.name()];
     return type->deserializer(node);
 }
 

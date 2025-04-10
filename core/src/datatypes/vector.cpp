@@ -65,12 +65,12 @@ float Data::Vector3::Dot(Data::Vector3 other) const {
 
 // Serialization
 
-void Data::Vector3::Serialize(pugi::xml_node* node) const {
-    node->append_child("X").text().set(std::to_string(this->X()));
-    node->append_child("Y").text().set(std::to_string(this->Y()));
-    node->append_child("Z").text().set(std::to_string(this->Z()));
+void Data::Vector3::Serialize(pugi::xml_node node) const {
+    node.append_child("X").text().set(std::to_string(this->X()));
+    node.append_child("Y").text().set(std::to_string(this->Y()));
+    node.append_child("Z").text().set(std::to_string(this->Z()));
 }
 
-Data::Variant Data::Vector3::Deserialize(pugi::xml_node* node) {
-    return Data::Vector3(node->child("X").text().as_float(), node->child("Y").text().as_float(), node->child("Z").text().as_float());
+Data::Variant Data::Vector3::Deserialize(pugi::xml_node node) {
+    return Data::Vector3(node.child("X").text().as_float(), node.child("Y").text().as_float(), node.child("Z").text().as_float());
 }
