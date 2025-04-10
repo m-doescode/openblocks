@@ -1,6 +1,7 @@
 #include "workspace.h"
 #include "objects/base/instance.h"
 #include "physics/util.h"
+#include <reactphysics3d/engine/PhysicsCommon.h>
 
 const InstanceType Workspace::TYPE = {
     .super = &Instance::TYPE,
@@ -14,21 +15,21 @@ const InstanceType* Workspace::GetClass() {
     return &TYPE;
 }
 
-static rp::PhysicsCommon physicsCommon;
+rp::PhysicsCommon *physicsCommon = new rp::PhysicsCommon;
 
 Workspace::Workspace(): Service(&TYPE) {
 }
 
 Workspace::~Workspace() {
-    if (physicsWorld)
-        physicsCommon.destroyPhysicsWorld(physicsWorld);
+    if (physicsWorld && physicsCommon)
+        physicsCommon->destroyPhysicsWorld(physicsWorld);
 }
 
 void Workspace::InitService() {
     if (initialized) return;
     initialized = true;
 
-    physicsWorld = physicsCommon.createPhysicsWorld();
+    physicsWorld = physicsCommon->createPhysicsWorld();
 
     physicsWorld->setGravity(rp::Vector3(0, -196.2, 0));
     // world->setContactsPositionCorrectionTechnique(rp3d::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
@@ -58,7 +59,7 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
         part->rigidBody->setTransform(transform);
     }
 
-    rp::BoxShape* shape = physicsCommon.createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
+    rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
 
     if (part->rigidBody->getNbColliders() > 0) {
         part->rigidBody->removeCollider(part->rigidBody->getCollider(0));
