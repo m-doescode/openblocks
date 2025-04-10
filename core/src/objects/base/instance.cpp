@@ -88,14 +88,12 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
         this->_workspace = std::nullopt;
     }
 
-    // Algorithm for updating descendant's dataModel and workspace fields 
-    if (oldDataModel != _dataModel || oldWorkspace != _workspace)
-        updateAncestry();
+    updateAncestry(this->shared<Instance>(), newParent);
 
     return true;
 }
 
-void Instance::updateAncestry() {
+void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedChild, std::optional<std::shared_ptr<Instance>> newParent) {
     if (GetParent()) {
         this->_dataModel = GetParent().value()->GetClass() == &DataModel::TYPE ? std::make_optional(std::dynamic_pointer_cast<DataModel>(GetParent().value())) : GetParent().value()->dataModel();
         this->_workspace = GetParent().value()->GetClass() == &Workspace::TYPE ? std::make_optional(std::dynamic_pointer_cast<Workspace>(GetParent().value())) : GetParent().value()->workspace();
@@ -104,9 +102,11 @@ void Instance::updateAncestry() {
         this->_workspace = std::nullopt;
     }
 
+    OnAncestryChanged(updatedChild, newParent);
+
     // Update ancestry in descendants
     for (InstanceRef child : children) {
-        child->updateAncestry();
+        child->updateAncestry(updatedChild, newParent);
     }
 }
 
@@ -138,6 +138,10 @@ bool Instance::IsParentLocked() {
 }
 
 void Instance::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
+    // Empty stub
+}
+
+void Instance::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
     // Empty stub
 }
 

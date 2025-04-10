@@ -1,5 +1,6 @@
 #include "part.h"
 #include "base/instance.h"
+#include "common.h"
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
@@ -7,7 +8,6 @@
 #include "objects/base/member.h"
 #include <memory>
 #include <optional>
-#include "physics/simulation.h"
 
 using Data::Vector3;
 
@@ -106,24 +106,26 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
     });
 }
 
-// This feels wrong. Get access to PhysicsWorld somehow else? Part will need access to this often though, most likely...
-extern rp::PhysicsWorld* world;
 Part::~Part() {
     // This relies on physicsCommon still existing. Be very careful.
-    if (this->rigidBody)
-        world->destroyRigidBody(rigidBody);
+    if (this->rigidBody && workspace())
+        workspace().value()->DestroyRigidBody(rigidBody);
 }
 
 
-void Part::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
+void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
     if (this->rigidBody)
-        this->rigidBody->setIsActive(newParent.has_value());
+        this->rigidBody->setIsActive(workspace().has_value());
+
+    if (workspace())
+        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
 
     // TODO: Sleeping bodies that touch this one also need to be updated
 }
 
 void Part::onUpdated(std::string property) {
-    syncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
+    if (workspace())
+        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
 }
 
 // Expands provided extents to fit point

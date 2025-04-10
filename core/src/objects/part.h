@@ -24,7 +24,7 @@ struct PartConstructParams {
 
 class Part : public Instance {
 protected:
-    void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) override;
+    void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
 public:
     const static InstanceType TYPE;

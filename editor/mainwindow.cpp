@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "common.h"
-#include "physics/simulation.h"
 #include <qclipboard.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
@@ -160,9 +159,6 @@ MainWindow::MainWindow(QWidget *parent)
         gDataModel->Init();
         ui->explorerView->updateRoot(gDataModel);
 
-        // TODO: Remove this and use a proper fix. This *WILL* cause a leak and memory issues in the future
-        simulationInit();
-
         // Baseplate
         gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
             .position = glm::vec3(0, -5, 0),
@@ -172,7 +168,7 @@ MainWindow::MainWindow(QWidget *parent)
             .anchored = true,
         }));
         ui->mainWidget->lastPart->name = "Baseplate";
-        syncPartPhysics(ui->mainWidget->lastPart);
+        gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
     });
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
@@ -201,6 +197,7 @@ MainWindow::MainWindow(QWidget *parent)
         // simulationInit();
         std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path.value());
         gDataModel = newModel;
+        newModel->Init();
         ui->explorerView->updateRoot(newModel);
     });
 
@@ -333,8 +330,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ui->explorerView->Init(ui);
 
-    simulationInit();
-
     // Baseplate
     gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),
@@ -344,7 +339,7 @@ MainWindow::MainWindow(QWidget *parent)
         .anchored = true,
     }));
     ui->mainWidget->lastPart->name = "Baseplate";
-    syncPartPhysics(ui->mainWidget->lastPart);
+    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
 
     gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
         .position = glm::vec3(0),
@@ -352,7 +347,7 @@ MainWindow::MainWindow(QWidget *parent)
         .size = glm::vec3(4, 1.2, 2),
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
-    syncPartPhysics(ui->mainWidget->lastPart);
+    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
@@ -399,7 +394,7 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
     lastTime = std::chrono::steady_clock::now();
 
     if (simulationPlaying)
-        physicsStep(deltaTime);
+        gWorkspace()->PhysicsStep(deltaTime);
     ui->mainWidget->update();
     ui->mainWidget->updateCycle();
 }

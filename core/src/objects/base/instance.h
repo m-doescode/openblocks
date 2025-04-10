@@ -61,7 +61,7 @@ private:
     std::optional<std::weak_ptr<Workspace>> _workspace;
 
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
-    void updateAncestry();
+    void updateAncestry(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
 protected:
     bool parentLocked = false;
     std::unique_ptr<MemberMap> memberMap;
@@ -70,6 +70,7 @@ protected:
     virtual ~Instance();
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
+    virtual void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
 
     // The root data model this object is a descendant of
     std::optional<std::shared_ptr<DataModel>> dataModel();

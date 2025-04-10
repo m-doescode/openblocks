@@ -3,7 +3,6 @@
 #include "mainglwidget.h"
 #include "common.h"
 #include "math_helper.h"
-#include "physics/simulation.h"
 #include "physics/util.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
@@ -112,7 +111,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     QPoint position = evt->pos();
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
-    std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000, [](std::shared_ptr<Part> part) {
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000, [](std::shared_ptr<Part> part) {
         return (part == draggingObject->lock()) ? FilterResult::PASS : FilterResult::TARGET;
     });
     
@@ -145,7 +144,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     draggingObject->lock()->cframe = newFrame + unsinkOffset;
 
-    syncPartPhysics(draggingObject->lock());
+    gWorkspace()->SyncPartPhysics(draggingObject->lock());
 }
 
 inline glm::vec3 vec3fy(glm::vec4 vec) {
@@ -222,7 +221,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     if (mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
         playSound("./assets/excluded/switch.wav");
 
-    syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
+    gWorkspace()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
@@ -264,7 +263,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 
     part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
-    syncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
+    gWorkspace()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
@@ -282,7 +281,7 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
         return;
     };
 
-    std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000);
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
     if (rayHit && partFromBody(rayHit->body)->name != "Baseplate") {
         setCursor(Qt::OpenHandCursor);
         return;
@@ -339,7 +338,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         }
 
         // raycast part
-        std::optional<const RaycastResult> rayHit = castRayNearest(camera.cameraPos, pointDir, 50000);
+        std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
         if (!rayHit || !partFromBody(rayHit->body)) return;
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
         if (part->name == "Baseplate") return;
@@ -416,7 +415,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
             .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
-        syncPartPhysics(lastPart);
+        gWorkspace()->SyncPartPhysics(lastPart);
     }
 
     if (evt->key() == Qt::Key_U)

@@ -1,7 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "objects/part.h"
-#include "physics/simulation.h"
 #include "rendering/renderer.h"
 #include "common.h"
 
@@ -34,7 +33,6 @@ int main() {
     glewInit();
 
     gDataModel->Init();
-    simulationInit();
     renderInit(window, 1200, 900);
 
     // Baseplate
@@ -56,7 +54,7 @@ int main() {
     for (InstanceRef inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
-        syncPartPhysics(part);
+        gWorkspace()->SyncPartPhysics(part);
     }
 
     float lastTime = glfwGetTime();
@@ -65,7 +63,7 @@ int main() {
         lastTime = glfwGetTime();
         
         processInput(window);
-        physicsStep(deltaTime);
+        gWorkspace()->PhysicsStep(deltaTime);
         render(window);
 
         glfwSwapBuffers(window);
@@ -103,15 +101,15 @@ void processInput(GLFWwindow* window) {
         shiftFactor *= deltaTime;
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
             // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
             // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
             // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
     }
 }
@@ -152,35 +150,35 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
-        syncPartPhysics(lastPart);
+        gWorkspace()->SyncPartPhysics(lastPart);
     }
 
     float shiftFactor = (mods & GLFW_MOD_SHIFT) ? -0.2 : 0.2;
     if (mode == 0) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
             // lastPart->position.x += shiftFactor;
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
             // lastPart->position.y += shiftFactor;
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
             // lastPart->position.z += shiftFactor;
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
     } else if (mode == 1) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
             lastPart->size.x += shiftFactor;
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
             lastPart->size.y += shiftFactor;
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
             lastPart->size.z += shiftFactor;
-            syncPartPhysics(lastPart);
+            gWorkspace()->SyncPartPhysics(lastPart);
         }
     }
     
