@@ -39,6 +39,12 @@ Instance::Instance(const InstanceType* type) {
 Instance::~Instance () {
 }
 
+template <typename T>
+bool operator ==(std::optional<std::weak_ptr<T>> a, std::optional<std::weak_ptr<T>> b) {
+    return (!a.has_value() || a.value().expired()) && (!b.has_value() || b.value().expired())
+    || (a.has_value() && !a.value().expired()) && (b.has_value() && !b.value().expired()) && a.value().lock() == b.value().lock();
+}
+
 // TODO: Test this
 bool Instance::ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent) {
     for (std::optional<std::shared_ptr<Instance>> currentParent = newParent; currentParent.has_value(); currentParent = currentParent.value()->GetParent()) {
@@ -69,37 +75,47 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
     if (hierarchyPostUpdateHandler.has_value()) hierarchyPostUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
 
     this->OnParentUpdated(lastParent, newParent);
+
+    auto oldDataModel = _dataModel;
+    auto oldWorkspace = _workspace;
+
+    // Update parent data model and workspace, if applicable
+    if (newParent) {
+        this->_dataModel = newParent->get()->GetClass() == &DataModel::TYPE ? std::make_optional(std::dynamic_pointer_cast<DataModel>(newParent.value())) : newParent.value()->dataModel();
+        this->_workspace = newParent->get()->GetClass() == &Workspace::TYPE ? std::make_optional(std::dynamic_pointer_cast<Workspace>(newParent.value())) : newParent.value()->workspace();
+    } else {
+        this->_dataModel = std::nullopt;
+        this->_workspace = std::nullopt;
+    }
+
+    // Algorithm for updating descendant's dataModel and workspace fields 
+    if (oldDataModel != _dataModel || oldWorkspace != _workspace)
+        updateAncestry();
+
     return true;
 }
 
-std::optional<std::shared_ptr<DataModel>> Instance::dataModel() {
-    // TODO: This algorithm will defer calculations to every time the root data model
-    // is accessed from any instance. This is inefficient as this can happen many times
-    // a tick. A better option is to cache these values and only update them if the ancestry
-    // changes, as that happens way less often.
-
-    std::optional<std::shared_ptr<Instance>> currentParent = GetParent();
-    while (currentParent) {
-        if (currentParent.value()->GetClass() == &DataModel::TYPE)
-            return std::dynamic_pointer_cast<DataModel>(currentParent.value());
-
-        currentParent = currentParent.value()->GetParent();
+void Instance::updateAncestry() {
+    if (GetParent()) {
+        this->_dataModel = GetParent().value()->GetClass() == &DataModel::TYPE ? std::make_optional(std::dynamic_pointer_cast<DataModel>(GetParent().value())) : GetParent().value()->dataModel();
+        this->_workspace = GetParent().value()->GetClass() == &Workspace::TYPE ? std::make_optional(std::dynamic_pointer_cast<Workspace>(GetParent().value())) : GetParent().value()->workspace();
+    } else {
+        this->_dataModel = std::nullopt;
+        this->_workspace = std::nullopt;
     }
 
-    return std::nullopt;
+    // Update ancestry in descendants
+    for (InstanceRef child : children) {
+        child->updateAncestry();
+    }
+}
+
+std::optional<std::shared_ptr<DataModel>> Instance::dataModel() {
+    return (!_dataModel || _dataModel->expired()) ? std::nullopt : std::make_optional(_dataModel.value().lock());
 }
 
 std::optional<std::shared_ptr<Workspace>> Instance::workspace() {
-    // See comment in above function
-    std::optional<std::shared_ptr<Instance>> currentParent = GetParent();
-    while (currentParent) {
-        if (currentParent.value()->GetClass() == &DataModel::TYPE)
-            return std::dynamic_pointer_cast<Workspace>(currentParent.value());
-
-        currentParent = currentParent.value()->GetParent();
-    }
-
-    return std::nullopt;
+    return (!_workspace || _workspace->expired()) ? std::nullopt : std::make_optional(_workspace.value().lock());
 }
 
 std::optional<std::shared_ptr<Instance>> Instance::GetParent() {

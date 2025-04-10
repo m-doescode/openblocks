@@ -57,7 +57,11 @@ private:
 
     std::optional<std::vector<std::string>> cachedMemberList;
 
+    std::optional<std::weak_ptr<DataModel>> _dataModel;
+    std::optional<std::weak_ptr<Workspace>> _workspace;
+
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
+    void updateAncestry();
 protected:
     bool parentLocked = false;
     std::unique_ptr<MemberMap> memberMap;
