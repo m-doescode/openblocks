@@ -31,12 +31,10 @@ ExplorerView::ExplorerView(QWidget* parent):
 
     connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
         std::vector<InstanceRefWeak> selectedInstances;
-        selectedInstances.reserve(selected.count()); // This doesn't reserve everything, but should enhance things anyway
+        selectedInstances.reserve(selectedIndexes().count()); // This doesn't reserve everything, but should enhance things anyway
 
-        for (auto range : selected) {
-            for (auto index : range.indexes()) {
-                selectedInstances.push_back(reinterpret_cast<Instance*>(index.internalPointer())->weak_from_this());
-            }
+        for (auto index : selectedIndexes()) {
+            selectedInstances.push_back(reinterpret_cast<Instance*>(index.internalPointer())->weak_from_this());
         }
 
         ::setSelection(selectedInstances, true);
