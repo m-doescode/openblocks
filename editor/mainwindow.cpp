@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "common.h"
+#include <memory>
 #include <qclipboard.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
@@ -90,6 +91,20 @@ MainWindow::MainWindow(QWidget *parent)
         if (newSelection.size() > 1)
             ui->propertiesView->setSelected(std::nullopt);
         ui->propertiesView->setSelected(newSelection[0].lock());
+    });
+
+    addSelectionListener([&](auto oldSelection, auto newSelection, bool __) {
+        for (InstanceRefWeak inst : oldSelection) {
+            if (inst.expired() || inst.lock()->GetClass() != &Part::TYPE) continue;
+            std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst.lock());
+            part->selected = false;
+        }
+
+        for (InstanceRefWeak inst : newSelection) {
+            if (inst.expired() || inst.lock()->GetClass() != &Part::TYPE) continue;
+            std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst.lock());
+            part->selected = true;
+        }
     });
 
     // ui->explorerView->Init(ui);
