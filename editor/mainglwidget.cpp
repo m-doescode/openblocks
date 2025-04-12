@@ -1,8 +1,10 @@
 #include <GL/glew.h>
+#include <qnamespace.h>
 #include <qsoundeffect.h>
 #include "mainglwidget.h"
 #include "common.h"
 #include "math_helper.h"
+#include "objects/base/instance.h"
 #include "physics/util.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
@@ -368,7 +370,20 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         //part.selected = true;
         isMouseDragging = true;
         draggingObject = part;
-        setSelection(std::vector<InstanceRefWeak> { part });
+        if (evt->modifiers() & Qt::ControlModifier) {
+            std::vector<InstanceRefWeak> currentSelection = getSelection();
+            for (int i = 0; i < currentSelection.size(); i++) {
+                InstanceRefWeak inst = currentSelection[i];
+                if (!inst.expired() && inst.lock() == part) {
+                    currentSelection.erase(currentSelection.begin() + i);
+                    goto skipAddPart;
+                }
+            }
+            currentSelection.push_back(part);
+            skipAddPart:
+            setSelection(currentSelection);
+        }else
+            setSelection(std::vector<InstanceRefWeak> { part });
         // Disable bit so that we can ignore the part while raycasting
         // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
 
