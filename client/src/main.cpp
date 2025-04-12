@@ -42,6 +42,7 @@ int main() {
         .size = glm::vec3(512, 1.2, 512),
         .color = glm::vec3(0.388235, 0.372549, 0.384314),
         .anchored = true,
+        .locked = true,
     }));
 
     gWorkspace()->AddChild(lastPart = Part::New({

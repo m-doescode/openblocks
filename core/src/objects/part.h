@@ -20,6 +20,7 @@ struct PartConstructParams {
     Data::Color3 color;
     
     bool anchored = false;
+    bool locked = false;
 };
 
 class Part : public Instance {
@@ -36,6 +37,7 @@ public:
     bool selected = false;
     
     bool anchored = false;
+    bool locked = false;
     rp::RigidBody* rigidBody = nullptr;
 
     SurfaceType topSurface = SurfaceType::SurfaceStuds;

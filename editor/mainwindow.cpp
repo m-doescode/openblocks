@@ -72,6 +72,99 @@ MainWindow::MainWindow(QWidget *parent)
         delete menu;
     });
 
+    connectActionHandlers();
+    
+    // Update handles
+    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
+        editorToolHandles->adornee = std::nullopt;
+        if (newSelection.size() == 0) return;
+        InstanceRef inst = newSelection[0].lock();
+        if (inst->GetClass() != &Part::TYPE) return;
+
+        editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
+    });
+
+    // Update properties
+    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
+        if (newSelection.size() == 0) return;
+        if (newSelection.size() > 1)
+            ui->propertiesView->setSelected(std::nullopt);
+        ui->propertiesView->setSelected(newSelection[0].lock());
+    });
+
+    // ui->explorerView->Init(ui);
+
+    // Baseplate
+    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+        .position = glm::vec3(0, -5, 0),
+        .rotation = glm::vec3(0),
+        .size = glm::vec3(512, 1.2, 512),
+        .color = glm::vec3(0.388235, 0.372549, 0.384314),
+        .anchored = true,
+        .locked = true,
+    }));
+    ui->mainWidget->lastPart->name = "Baseplate";
+    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
+
+    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+        .position = glm::vec3(0),
+        .rotation = glm::vec3(0.5, 2, 1),
+        .size = glm::vec3(4, 1.2, 2),
+        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
+    }));
+    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
+}
+
+void MainWindow::closeEvent(QCloseEvent* evt) {
+    #ifdef NDEBUG
+    // Ask if the user wants to save their changes
+    // https://stackoverflow.com/a/33890731
+    QMessageBox msgBox;
+    msgBox.setText("Save changes before creating new document?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    int result = msgBox.exec();
+
+    if (result == QMessageBox::Cancel) return evt->ignore();
+    if (result == QMessageBox::Save) {
+        std::optional<std::string> path;
+        if (!gDataModel->HasFile())
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
+        if (!path || path == "") return evt->ignore();
+
+        gDataModel->SaveToFile(path);
+    }
+    #endif
+}
+
+void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {
+    if (logLevel == Logger::LogLevel::DEBUG) return;
+
+    if (logLevel == Logger::LogLevel::INFO)
+        ui->outputTextView->appendHtml(QString("<p>%1</p>").arg(QString::fromStdString(message)));
+    if (logLevel == Logger::LogLevel::WARNING)
+        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 127, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
+    if (logLevel == Logger::LogLevel::ERROR || logLevel == Logger::LogLevel::FATAL_ERROR)
+        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 0, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
+}
+
+static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
+void MainWindow::timerEvent(QTimerEvent* evt) {
+    if (evt->timerId() != timer.timerId()) {
+        QWidget::timerEvent(evt);
+        return;
+    }
+
+    float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
+    lastTime = std::chrono::steady_clock::now();
+
+    if (simulationPlaying)
+        gWorkspace()->PhysicsStep(deltaTime);
+    ui->mainWidget->update();
+    ui->mainWidget->updateCycle();
+}
+
+void MainWindow::connectActionHandlers() {
     // Explorer View
 
     ui->explorerView->buildContextMenu();
@@ -166,6 +259,7 @@ MainWindow::MainWindow(QWidget *parent)
             .size = glm::vec3(512, 1.2, 512),
             .color = glm::vec3(0.388235, 0.372549, 0.384314),
             .anchored = true,
+            .locked = true,
         }));
         ui->mainWidget->lastPart->name = "Baseplate";
         gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
@@ -309,94 +403,6 @@ MainWindow::MainWindow(QWidget *parent)
             selectedParent->AddChild(inst.expect());
         }
     });
-    
-    // Update handles
-    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        editorToolHandles->adornee = std::nullopt;
-        if (newSelection.size() == 0) return;
-        InstanceRef inst = newSelection[0].lock();
-        if (inst->GetClass() != &Part::TYPE) return;
-
-        editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
-    });
-
-    // Update properties
-    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        if (newSelection.size() == 0) return;
-        if (newSelection.size() > 1)
-            ui->propertiesView->setSelected(std::nullopt);
-        ui->propertiesView->setSelected(newSelection[0].lock());
-    });
-
-    // ui->explorerView->Init(ui);
-
-    // Baseplate
-    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-        .position = glm::vec3(0, -5, 0),
-        .rotation = glm::vec3(0),
-        .size = glm::vec3(512, 1.2, 512),
-        .color = glm::vec3(0.388235, 0.372549, 0.384314),
-        .anchored = true,
-    }));
-    ui->mainWidget->lastPart->name = "Baseplate";
-    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-
-    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-        .position = glm::vec3(0),
-        .rotation = glm::vec3(0.5, 2, 1),
-        .size = glm::vec3(4, 1.2, 2),
-        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    }));
-    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-}
-
-void MainWindow::closeEvent(QCloseEvent* evt) {
-    #ifdef NDEBUG
-    // Ask if the user wants to save their changes
-    // https://stackoverflow.com/a/33890731
-    QMessageBox msgBox;
-    msgBox.setText("Save changes before creating new document?");
-    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Save);
-    int result = msgBox.exec();
-
-    if (result == QMessageBox::Cancel) return evt->ignore();
-    if (result == QMessageBox::Save) {
-        std::optional<std::string> path;
-        if (!gDataModel->HasFile())
-            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
-        if (!path || path == "") return evt->ignore();
-
-        gDataModel->SaveToFile(path);
-    }
-    #endif
-}
-
-void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {
-    if (logLevel == Logger::LogLevel::DEBUG) return;
-
-    if (logLevel == Logger::LogLevel::INFO)
-        ui->outputTextView->appendHtml(QString("<p>%1</p>").arg(QString::fromStdString(message)));
-    if (logLevel == Logger::LogLevel::WARNING)
-        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 127, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
-    if (logLevel == Logger::LogLevel::ERROR || logLevel == Logger::LogLevel::FATAL_ERROR)
-        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 0, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
-}
-
-static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
-void MainWindow::timerEvent(QTimerEvent* evt) {
-    if (evt->timerId() != timer.timerId()) {
-        QWidget::timerEvent(evt);
-        return;
-    }
-
-    float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
-    lastTime = std::chrono::steady_clock::now();
-
-    if (simulationPlaying)
-        gWorkspace()->PhysicsStep(deltaTime);
-    ui->mainWidget->update();
-    ui->mainWidget->updateCycle();
 }
 
 void MainWindow::updateToolbars() {

@@ -282,7 +282,7 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
     };
 
     std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-    if (rayHit && partFromBody(rayHit->body)->name != "Baseplate") {
+    if (rayHit && !partFromBody(rayHit->body)->locked) {
         setCursor(Qt::OpenHandCursor);
         return;
     }
@@ -341,7 +341,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
         if (!rayHit || !partFromBody(rayHit->body)) return;
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
-        if (part->name == "Baseplate") return;
+        if (part->locked) return;
         
         // Handle surface tool
         if (mainWindow()->selectedTool >= TOOL_SMOOTH) {
