@@ -49,12 +49,23 @@ enum PropertyFlags {
     PROP_NOSAVE = 1 << 1, // Do not serialize
 };
 
+enum PropertyCategory {
+    PROP_CATEGORY_DATA,
+    PROP_CATEGORY_APPEARENCE,
+    PROP_CATEGORY_BEHAVIOR,
+    PROP_CATEGORY_PART,
+    PROP_CATEGORY_SURFACE,
+};
+
+const int PROPERTY_CATEGORY_MAX = PROP_CATEGORY_SURFACE;
+
 struct PropertyMeta {
     void* backingField;
     const Data::TypeInfo* type;
     FieldCodec codec;
     std::optional<std::function<void(std::string name)>> updateCallback;
     PropertyFlags flags;
+    PropertyCategory category = PROP_CATEGORY_DATA;
 };
 
 typedef std::variant<PropertyMeta> MemberMeta;

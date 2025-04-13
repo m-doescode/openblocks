@@ -70,11 +70,13 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .backingField = &anchored,
                 .type = &Data::Bool::TYPE,
                 .codec = fieldCodecOf<Data::Bool, bool>(),
-                .updateCallback = memberFunctionOf(&Part::onUpdated, this)
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .category = PROP_CATEGORY_BEHAVIOR,
             }}, { "Locked", {
                 .backingField = &locked,
                 .type = &Data::Bool::TYPE,
                 .codec = fieldCodecOf<Data::Bool, bool>(),
+                .category = PROP_CATEGORY_BEHAVIOR,
             }}, { "Position", {
                 .backingField = &cframe,
                 .type = &Vector3::TYPE,
@@ -96,15 +98,18 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .backingField = &size,
                 .type = &Vector3::TYPE,
                 .codec = fieldCodecOf<Vector3, glm::vec3>(),
-                .updateCallback = memberFunctionOf(&Part::onUpdated, this)
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .category = PROP_CATEGORY_PART,
             }}, { "Color", {
                 .backingField = &color,
                 .type = &Data::Color3::TYPE,
                 .codec = fieldCodecOf<Data::Color3>(),
+                .category = PROP_CATEGORY_APPEARENCE,
             }}, { "Transparency", {
                 .backingField = &transparency,
                 .type = &Data::Float::TYPE,
                 .codec = fieldCodecOf<Data::Float, float>(),
+                .category = PROP_CATEGORY_APPEARENCE,
             }}
         }
     });
