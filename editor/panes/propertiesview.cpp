@@ -1,30 +1,15 @@
-#include "propertiesview.h"
-#include "datatypes/base.h"
-#include "datatypes/color3.h"
-#include "datatypes/meta.h"
-#include "objects/base/member.h"
-#include <map>
-#include <qabstractitemdelegate.h>
-#include <qbrush.h>
-#include <qcolordialog.h>
-#include <qlineedit.h>
-#include <qnamespace.h>
-#include <qpalette.h>
-#include <qspinbox.h>
-#include <qstyle.h>
-#include <qstyleditemdelegate.h>
-#include <qstyleoption.h>
-#include <qtreewidget.h>
-#include <QDebug>
-#include <QStyledItemDelegate>
-#include <private/qtreeview_p.h>
-#include <QDoubleSpinBox>
-#include <QColorDialog>
+#include "panes/propertiesview.h"
 
-class CustomItemDelegate : public QStyledItemDelegate {
+#include <QColorDialog>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QStyledItemDelegate>
+#include <QPainter>
+
+class PropertiesItemDelegate : public QStyledItemDelegate {
     PropertiesView* view;
 public:
-    CustomItemDelegate(PropertiesView* parent) : view(parent), QStyledItemDelegate(parent) {}
+    PropertiesItemDelegate(PropertiesView* parent) : view(parent), QStyledItemDelegate(parent) {}
 
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override {
         // https://stackoverflow.com/a/76645757/16255372
@@ -34,9 +19,7 @@ public:
 
         QStyledItemDelegate::initStyleOption(option, index);
 
-        if (index.parent().isValid()) {
-            option->rect.adjust(-indent, 0, -indent, 0);
-        } else {
+        if (!index.parent().isValid()) {
             option->state &= ~QStyle::State_Selected;
 
             option->backgroundBrush = view->palette().dark();
@@ -89,10 +72,6 @@ public:
         }
 
         return nullptr;
-    }
-
-    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/* index */) const override {
-        editor->setGeometry(option.rect.adjusted(-view->indentation(), 0, -view->indentation(), 0));
     }
 
     void setEditorData(QWidget *editor, const QModelIndex &index) const override {
@@ -179,7 +158,7 @@ PropertiesView::PropertiesView(QWidget* parent):
     setHeaderHidden(true);
     setColumnCount(2);
     setAlternatingRowColors(true);
-    setItemDelegate(new CustomItemDelegate(this));
+    setItemDelegate(new PropertiesItemDelegate(this));
 
     connect(this, &QTreeWidget::itemChanged, this, &PropertiesView::propertyChanged);
     connect(this, &QTreeWidget::itemActivated, this, [&](auto* item, int column) {
@@ -208,36 +187,12 @@ QModelIndex PropertiesView::indexAt(const QPoint &point) const {
 
 void PropertiesView::drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const {
     // https://codebrowser.dev/qt5/qtbase/src/widgets/itemviews/qtreeview.cpp.html#312opt
-    Q_D(const QTreeView);
-    QStyleOptionViewItem opt = viewOptions();
-
-    const QTreeViewItem& viewItem = d->viewItems.at(d->current);
-    
-    // Taken from source code (above)
-    bool hoverRow = selectionBehavior() == QAbstractItemView::SelectRows
-        && opt.showDecorationSelected
-        && index.parent() == d->hover.parent()
-        && index.row() == d->hover.row();
-
-    // Un-indent branch
-    opt.rect = rect;
-    if (index.parent().isValid())
-        opt.rect.adjust(0, 0, -indentation(), 0);
-    opt.state |= QStyle::State_Item;
-    if (viewItem.hasChildren)
-        opt.state |= QStyle::State_Children;
-    if (viewItem.expanded)
-        opt.state |= QStyle::State_Open;
-    if (viewItem.hasMoreSiblings || viewItem.parentItem > -1 && d->viewItems.at(viewItem.parentItem).hasMoreSiblings)
-        opt.state |= QStyle::State_Sibling;
-
-    opt.state.setFlag(QStyle::State_MouseOver, hoverRow || d->current == d->hoverBranch);
 
     // Draw background for headings
     if (!index.parent().isValid())
-        painter->fillRect(opt.rect, palette().dark());
+        painter->fillRect(rect, palette().dark());
 
-    style()->drawPrimitive(QStyle::PE_IndicatorBranch, &opt, painter, this);
+    QTreeWidget::drawBranches(painter, rect, index);
 }
 
 void PropertiesView::setSelected(std::optional<InstanceRef> instance) {

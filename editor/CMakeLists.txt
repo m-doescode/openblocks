@@ -62,7 +62,7 @@ else()
 endif()
 
 target_include_directories(editor PUBLIC "../core/src" "../include")
-target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::WidgetsPrivate Qt${QT_VERSION_MAJOR}::Multimedia)
+target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
 
 # Qt6 does not include QOpenGLWidgets as part of Widgets base anymore, so
 # we have to include it manually

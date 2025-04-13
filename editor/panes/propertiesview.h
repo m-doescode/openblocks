@@ -5,7 +5,7 @@
 
 class Ui_MainWindow;
 
-class CustomItemDelegate;
+class PropertiesItemDelegate;
 
 class PropertiesView : public QTreeWidget {
     Q_DECLARE_PRIVATE(QTreeView)
@@ -14,7 +14,7 @@ class PropertiesView : public QTreeWidget {
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);
 
-    friend CustomItemDelegate;
+    friend PropertiesItemDelegate;
 protected:
     void drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const override;
     QModelIndex indexAt(const QPoint &point) const override;
