@@ -13,7 +13,7 @@ const Data::TypeInfo Data::Color3::TYPE = {
 const Data::TypeInfo& Data::Color3::GetType() const { return Data::Color3::TYPE; };
 
 const Data::String Data::Color3::ToString() const {
-    return std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b);
+    return std::to_string(int(r*256)) + ", " + std::to_string(int(g*256)) + ", " + std::to_string(int(b*256));
 }
 
 Data::Color3::operator glm::vec3() const { return glm::vec3(r, g, b); };

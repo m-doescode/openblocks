@@ -1,10 +1,12 @@
 #include "propertiesview.h"
 #include "datatypes/base.h"
+#include "datatypes/color3.h"
 #include "datatypes/meta.h"
 #include "objects/base/member.h"
 #include <map>
 #include <qabstractitemdelegate.h>
 #include <qbrush.h>
+#include <qcolordialog.h>
 #include <qlineedit.h>
 #include <qnamespace.h>
 #include <qpalette.h>
@@ -17,6 +19,7 @@
 #include <QStyledItemDelegate>
 #include <private/qtreeview_p.h>
 #include <QDoubleSpinBox>
+#include <QColorDialog>
 
 class CustomItemDelegate : public QStyledItemDelegate {
     PropertiesView* view;
@@ -57,6 +60,7 @@ public:
             if (meta.flags & PROP_UNIT_FLOAT) {
                 spinBox->setMinimum(0);
                 spinBox->setMaximum(1);
+                spinBox->setSingleStep(0.1);
             }
 
             return spinBox;
@@ -70,6 +74,13 @@ public:
             lineEdit->setText(QString::fromStdString(currentValue.get<Data::String>()));
 
             return lineEdit;
+        } else if (meta.type == &Data::Color3::TYPE) {
+            QColorDialog* colorDialog = new QColorDialog(parent->window());
+
+            Data::Color3 color = currentValue.get<Data::Color3>();
+            colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
+
+            return colorDialog;
         } else if (meta.type->fromString) {
             QLineEdit* lineEdit = new QLineEdit(parent);
             lineEdit->setText(QString::fromStdString(currentValue.ToString()));
@@ -106,6 +117,11 @@ public:
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             lineEdit->setText(QString::fromStdString((std::string)currentValue.get<Data::String>()));
+        } else if (meta.type == &Data::Color3::TYPE) {
+            QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
+
+            Data::Color3 color = currentValue.get<Data::Color3>();
+            colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
         } else if (meta.type->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
@@ -137,6 +153,14 @@ public:
 
             inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString()));
             model->setData(index, lineEdit->text());
+        } else if (meta.type == &Data::Color3::TYPE) {
+            QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
+
+            QColor color = colorDialog->currentColor();
+            Data::Color3 color3(color.redF(), color.greenF(), color.blueF());
+            inst->SetPropertyValue(propertyName, color3);
+            model->setData(index, QString::fromStdString(color3.ToString()), Qt::DisplayRole);
+            model->setData(index, color, Qt::DecorationRole);
         } else if (meta.type->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
@@ -252,11 +276,15 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         
         if (meta.type == &Data::Bool::TYPE) {
             item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+        } else if (meta.type == &Data::Color3::TYPE) {
+            Data::Color3 color = currentValue.get<Data::Color3>();
+            item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
+            item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
 
-        if (!meta.type->fromString || meta.flags & PROP_READONLY) {
+        if (meta.type != &Data::Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
             item->setDisabled(true);
         }
 
