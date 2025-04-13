@@ -40,7 +40,7 @@ public:
         }
     };
 
-    QWidget * createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+    QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         if (index.column() == 0) return nullptr;
     
         if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return nullptr;
@@ -84,6 +84,35 @@ public:
         editor->setGeometry(option.rect.adjusted(-view->indentation(), 0, -view->indentation(), 0));
     }
 
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override {
+        if (index.column() == 0) return;
+    
+        if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return;
+        InstanceRef inst = view->currentInstance->lock();
+
+        std::string propertyName = view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString();
+        PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+        Data::Variant currentValue = inst->GetPropertyValue(propertyName).value();
+
+        if (meta.type == &Data::Float::TYPE) {
+            QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
+
+            spinBox->setValue(currentValue.get<Data::Float>());
+        } else if (meta.type == &Data::Int::TYPE) {
+            QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
+
+            spinBox->setValue(currentValue.get<Data::Int>());
+        } else if (meta.type == &Data::String::TYPE) {
+            QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
+
+            lineEdit->setText(QString::fromStdString((std::string)currentValue.get<Data::String>()));
+        } else if (meta.type->fromString) {
+            QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
+
+            lineEdit->setText(QString::fromStdString((std::string)currentValue.ToString()));
+        }
+    }
+
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override {
         if (index.column() == 0) return;
     
@@ -97,18 +126,24 @@ public:
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
             inst->SetPropertyValue(propertyName, Data::Float((float)spinBox->value()));
+            model->setData(index, spinBox->value());
         } else if (meta.type == &Data::Int::TYPE) {
             QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
 
             inst->SetPropertyValue(propertyName, Data::Int((float)spinBox->value()));
+            model->setData(index, spinBox->value());
         } else if (meta.type == &Data::String::TYPE) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString()));
+            model->setData(index, lineEdit->text());
         } else if (meta.type->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
-            inst->SetPropertyValue(propertyName, meta.type->fromString(lineEdit->text().toStdString()));
+            std::optional<Data::Variant> parsedResult = meta.type->fromString(lineEdit->text().toStdString());
+            if (!parsedResult) return;
+            inst->SetPropertyValue(propertyName, parsedResult.value());
+            model->setData(index, QString::fromStdString(parsedResult.value().ToString()));
         }
     }
 };

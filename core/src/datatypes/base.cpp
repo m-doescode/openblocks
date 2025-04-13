@@ -1,5 +1,7 @@
 #include "base.h"
 #include "meta.h"
+#include <ios>
+#include <sstream>
 
 #define IMPL_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE, TYPE_NAME) Data::CLASS_NAME::CLASS_NAME(WRAPPED_TYPE in) : value(in) {} \
 Data::CLASS_NAME::~CLASS_NAME() = default; \
@@ -45,7 +47,7 @@ Data::Variant Data::Bool::Deserialize(pugi::xml_node node) {
     return Data::Bool(node.text().as_bool());
 }
 
-Data::Variant Data::Bool::FromString(std::string string) {
+std::optional<Data::Variant> Data::Bool::FromString(std::string string) {
     return Data::Bool(string[0] == 't' || string[0] == 'T' || string[0] == '1' || string[0] == 'y' || string[0] == 'Y');
 }
 
@@ -58,21 +60,29 @@ Data::Variant Data::Int::Deserialize(pugi::xml_node node) {
     return Data::Int(node.text().as_int());
 }
 
-Data::Variant Data::Int::FromString(std::string string) {
-    return Data::Int(std::stoi(string));
+std::optional<Data::Variant> Data::Int::FromString(std::string string) {
+    char* endPos;
+    int value = (int)std::strtol(string.c_str(), &endPos, 10);
+    if (endPos == string.c_str()) return std::nullopt;
+    return Data::Int(value);
 }
 
 
 const Data::String Data::Float::ToString() const {
-    return Data::String(std::to_string(value));
+    std::stringstream stream;
+    stream << std::noshowpoint << value;
+    return Data::String(stream.str());
 }
 
 Data::Variant Data::Float::Deserialize(pugi::xml_node node) {
     return Data::Float(node.text().as_float());
 }
 
-Data::Variant Data::Float::FromString(std::string string) {
-    return Data::Float(std::stof(string));
+std::optional<Data::Variant> Data::Float::FromString(std::string string) {
+    char* endPos;
+    float value = std::strtof(string.c_str(), &endPos);
+    if (endPos == string.c_str()) return std::nullopt;
+    return Data::Float(value);
 }
 
 
@@ -84,6 +94,6 @@ Data::Variant Data::String::Deserialize(pugi::xml_node node) {
     return Data::String(node.text().as_string());
 }
 
-Data::Variant Data::String::FromString(std::string string) {
+std::optional<Data::Variant> Data::String::FromString(std::string string) {
     return Data::String(string);
 }

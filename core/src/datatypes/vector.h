@@ -27,7 +27,7 @@ namespace Data {
         virtual void Serialize(pugi::xml_node node) const override;
 
         static Data::Variant Deserialize(pugi::xml_node node);
-        static Data::Variant FromString(std::string);
+        static std::optional<Data::Variant> FromString(std::string);
 
         operator glm::vec3() const;
         operator rp::Vector3() const;

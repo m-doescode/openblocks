@@ -21,7 +21,7 @@ Data::Vector3 Data::Vector3::ONE(1, 1, 1);
 
 const Data::String Data::Vector3::ToString() const {
     // https://stackoverflow.com/a/46424921/16255372
-    std::ostringstream stream;
+    std::stringstream stream;
     stream << std::setprecision(8) << std::noshowpoint << X() << ", " << Y() << ", " << Z();
     return stream.str();
 }
@@ -80,11 +80,11 @@ Data::Variant Data::Vector3::Deserialize(pugi::xml_node node) {
     return Data::Vector3(node.child("X").text().as_float(), node.child("Y").text().as_float(), node.child("Z").text().as_float());
 }
 
-Data::Variant Data::Vector3::FromString(std::string string) {
+std::optional<Data::Variant> Data::Vector3::FromString(std::string string) {
     float components[3];
 
     for (int i = 0; i < 3; i++) {
-        if (string.length() == 0) return Data::Vector3(0, 0, 0);
+        if (string.length() == 0) return std::nullopt;
         while (string[0] == ' ' && string.length() > 0) string.erase(0, 1);
         size_t nextPos = string.find(",");
         if (nextPos == -1) nextPos = string.length();
@@ -93,7 +93,7 @@ Data::Variant Data::Vector3::FromString(std::string string) {
 
         char* cpos;
         float value = std::strtof(term.c_str(), &cpos);
-        if (cpos == term.c_str()) return Data::Vector3(0, 0, 0);
+        if (cpos == term.c_str()) return std::nullopt;
 
         components[i] = value;
     }

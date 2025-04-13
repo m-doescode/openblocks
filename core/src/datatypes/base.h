@@ -2,6 +2,7 @@
 
 #include <string>
 #include <functional>
+#include <optional>
 #include <pugixml.hpp>
 
 #define DEF_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) class CLASS_NAME : public Data::Base { \
@@ -16,13 +17,13 @@ public: \
     virtual const Data::String ToString() const override; \
     virtual void Serialize(pugi::xml_node node) const override; \
     static Data::Variant Deserialize(pugi::xml_node node); \
-    static Data::Variant FromString(std::string); \
+    static std::optional<Data::Variant> FromString(std::string); \
 };
 
 namespace Data {
     class Variant;
     typedef std::function<Data::Variant(pugi::xml_node)> Deserializer;
-    typedef std::function<Data::Variant(std::string)> FromString;
+    typedef std::function<std::optional<Data::Variant>(std::string)> FromString;
 
     struct TypeInfo {
         std::string name;
