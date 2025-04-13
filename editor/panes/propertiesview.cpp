@@ -1,4 +1,5 @@
 #include "panes/propertiesview.h"
+#include "datatypes/base.h"
 
 #include <QColorDialog>
 #include <QLineEdit>
@@ -31,10 +32,31 @@ public:
     
         if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return nullptr;
         InstanceRef inst = view->currentInstance->lock();
-    
-        std::string propertyName = view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString();
+
+        // If the property is deeper than 1 layer, then it is considered composite
+        // Handle specially
+
+        bool isComposite = index.parent().parent().isValid();
+        std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
+
+        std::string propertyName = !isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
+            : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
         Data::Variant currentValue = inst->GetPropertyValue(propertyName).value();
+
+        if (isComposite) {
+            if (meta.type == &Data::Vector3::TYPE) {
+                Data::Vector3 vector = currentValue.get<Data::Vector3>();
+                float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
+
+                QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
+                spinBox->setValue(value);
+
+                return spinBox;
+            }
+
+            return nullptr;
+        }
 
         if (meta.type == &Data::Float::TYPE) {
             QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
@@ -80,9 +102,27 @@ public:
         if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return;
         InstanceRef inst = view->currentInstance->lock();
 
-        std::string propertyName = view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString();
+        bool isComposite = index.parent().parent().isValid();
+        std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
+
+        std::string propertyName = !index.parent().parent().isValid() ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
+            : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
         Data::Variant currentValue = inst->GetPropertyValue(propertyName).value();
+        
+        if (isComposite) {
+            if (meta.type == &Data::Vector3::TYPE) {
+                Data::Vector3 vector = currentValue.get<Data::Vector3>();
+                float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
+
+                QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
+                spinBox->setValue(value);
+
+                return;
+            }
+            
+            return;
+        }
 
         if (meta.type == &Data::Float::TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
@@ -114,8 +154,30 @@ public:
         if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return;
         InstanceRef inst = view->currentInstance->lock();
 
-        std::string propertyName = view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString();
+        bool isComposite = index.parent().parent().isValid();
+        std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
+
+        std::string propertyName = !index.parent().parent().isValid() ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
+            : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+
+        if (isComposite) {
+            if (meta.type == &Data::Vector3::TYPE) {
+                QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
+                float value = spinBox->value();
+
+                Data::Vector3 prev = inst->GetPropertyValue(propertyName).value().get<Data::Vector3>();
+                Data::Vector3 newVector = componentName == "X" ? Data::Vector3(value, prev.Y(), prev.Z())
+                : componentName == "Y" ? Data::Vector3(prev.X(), value, prev.Z())
+                : componentName == "Z" ? Data::Vector3(prev.X(), prev.Y(), value) : prev;
+
+                inst->SetPropertyValue(propertyName, newVector);
+                view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Data::Vector3::TYPE, newVector);
+                return;
+            }
+
+            return;
+        }
 
         if (meta.type == &Data::Float::TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
@@ -147,6 +209,7 @@ public:
             if (!parsedResult) return;
             inst->SetPropertyValue(propertyName, parsedResult.value());
             model->setData(index, QString::fromStdString(parsedResult.value().ToString()));
+            view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type, parsedResult.value());
         }
     }
 };
@@ -235,6 +298,9 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
             Data::Color3 color = currentValue.get<Data::Color3>();
             item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+        } else if (meta.type == &Data::Vector3::TYPE) {
+            Data::Vector3 vector = currentValue.get<Data::Vector3>();
+            item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
@@ -242,6 +308,8 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         if (meta.type != &Data::Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
             item->setDisabled(true);
         }
+
+        rebuildCompositeProperty(item, meta.type, currentValue);
 
         propertyCategories[meta.category]->addChild(item);
         propertyCategories[meta.category]->setExpanded(true);
@@ -258,7 +326,7 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
 }
 
 void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
-    if (!item->parent() || !currentInstance || currentInstance->expired()) return;
+    if (!item->parent() || (item->parent() && item->parent()->parent()) || !currentInstance || currentInstance->expired()) return;
     InstanceRef inst = currentInstance->lock();
 
     std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
@@ -266,5 +334,31 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
 
     if (meta.type == &Data::Bool::TYPE) {
         inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
+    }
+}
+
+void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo* type, Data::Variant value) {
+    if (type == &Data::Vector3::TYPE) {
+        // https://forum.qt.io/post/266837
+        foreach(auto i, item->takeChildren()) delete i;
+
+        Data::Vector3 vector = value.get<Data::Vector3>();
+        item->setData(1, Qt::DisplayRole, QString::fromStdString(value.ToString()));
+
+        QTreeWidgetItem* xItem = new QTreeWidgetItem;
+        xItem->setData(0, Qt::DisplayRole, "X");
+        xItem->setData(1, Qt::DisplayRole, vector.X());
+
+        QTreeWidgetItem* yItem = new QTreeWidgetItem;
+        yItem->setData(0, Qt::DisplayRole, "Y");
+        yItem->setData(1, Qt::DisplayRole, vector.Y());
+
+        QTreeWidgetItem* zItem = new QTreeWidgetItem;
+        zItem->setData(0, Qt::DisplayRole, "Z");
+        zItem->setData(1, Qt::DisplayRole, vector.Z());
+
+        item->addChild(xItem);
+        item->addChild(yItem);
+        item->addChild(zItem);
     }
 }

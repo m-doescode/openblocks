@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QTreeWidget>
+#include "datatypes/base.h"
 #include "objects/base/instance.h"
 
 class Ui_MainWindow;
@@ -13,6 +14,7 @@ class PropertiesView : public QTreeWidget {
     std::optional<InstanceRefWeak> currentInstance;
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);
+    void rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo*, Data::Variant);
 
     friend PropertiesItemDelegate;
 protected:
