@@ -47,6 +47,7 @@ std::function<void(std::string name)> memberFunctionOf(void(T::*func)(std::strin
 enum PropertyFlags {
     PROP_HIDDEN = 1 << 0, // Hidden from the editor
     PROP_NOSAVE = 1 << 1, // Do not serialize
+    PROP_UNIT_FLOAT = 1 << 2, // Float between 0 and 1
 };
 
 enum PropertyCategory {

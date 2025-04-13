@@ -109,6 +109,7 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .backingField = &transparency,
                 .type = &Data::Float::TYPE,
                 .codec = fieldCodecOf<Data::Float, float>(),
+                .flags = PROP_UNIT_FLOAT,
                 .category = PROP_CATEGORY_APPEARENCE,
             }}
         }

@@ -5,8 +5,10 @@
 #include <map>
 #include <qabstractitemdelegate.h>
 #include <qbrush.h>
+#include <qlineedit.h>
 #include <qnamespace.h>
 #include <qpalette.h>
+#include <qspinbox.h>
 #include <qstyle.h>
 #include <qstyleditemdelegate.h>
 #include <qstyleoption.h>
@@ -14,10 +16,12 @@
 #include <QDebug>
 #include <QStyledItemDelegate>
 #include <private/qtreeview_p.h>
+#include <QDoubleSpinBox>
 
 class CustomItemDelegate : public QStyledItemDelegate {
+    PropertiesView* view;
 public:
-    CustomItemDelegate(QObject* parent = nullptr) : QStyledItemDelegate(parent) {}
+    CustomItemDelegate(PropertiesView* parent) : view(parent), QStyledItemDelegate(parent) {}
 
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override {
         // https://stackoverflow.com/a/76645757/16255372
@@ -32,10 +36,72 @@ public:
         } else {
             option->state &= ~QStyle::State_Selected;
 
-            QWidget* parentWidget = dynamic_cast<QWidget*>(parent());
-            option->backgroundBrush = parentWidget->palette().dark();
+            option->backgroundBrush = view->palette().dark();
         }
     };
+
+    QWidget * createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        if (index.column() == 0) return nullptr;
+    
+        if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return nullptr;
+        InstanceRef inst = view->currentInstance->lock();
+    
+        std::string propertyName = view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString();
+        PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+        Data::Variant currentValue = inst->GetPropertyValue(propertyName).value();
+
+        if (meta.type == &Data::Float::TYPE) {
+            QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
+            spinBox->setValue(currentValue.get<Data::Float>());
+
+            if (meta.flags & PROP_UNIT_FLOAT) {
+                spinBox->setMinimum(0);
+                spinBox->setMaximum(1);
+            }
+
+            return spinBox;
+        } else if (meta.type == &Data::Int::TYPE) {
+            QSpinBox* spinBox = new QSpinBox(parent);
+            spinBox->setValue(currentValue.get<Data::Int>());
+
+            return spinBox;
+        } else if (meta.type == &Data::String::TYPE) {
+            QLineEdit* lineEdit = new QLineEdit(parent);
+            lineEdit->setText(QString::fromStdString(currentValue.get<Data::String>()));
+
+            return lineEdit;
+        }
+
+        return nullptr;
+    }
+
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/* index */) const override {
+        editor->setGeometry(option.rect.adjusted(-view->indentation(), 0, -view->indentation(), 0));
+    }
+
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override {
+        if (index.column() == 0) return;
+    
+        if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return;
+        InstanceRef inst = view->currentInstance->lock();
+
+        std::string propertyName = view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString();
+        PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+
+        if (meta.type == &Data::Float::TYPE) {
+            QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
+
+            inst->SetPropertyValue(propertyName, Data::Float((float)spinBox->value()));
+        } else if (meta.type == &Data::Int::TYPE) {
+            QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
+
+            inst->SetPropertyValue(propertyName, Data::Int((float)spinBox->value()));
+        } else if (meta.type == &Data::String::TYPE) {
+            QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
+
+            inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString()));
+        }
+    }
 };
 
 PropertiesView::PropertiesView(QWidget* parent):
@@ -67,7 +133,6 @@ QStringList PROPERTY_CATEGORY_NAMES {
     "Part",
     "Surface"
 };
-
 
 QModelIndex PropertiesView::indexAt(const QPoint &point) const {
     return QTreeWidget::indexAt(point + QPoint(indentation(), 0));
@@ -163,16 +228,16 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     if (!item->parent() || !currentInstance || currentInstance->expired()) return;
     InstanceRef inst = currentInstance->lock();
 
-    std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
-    PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+    // std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
+    // PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
 
-    if (meta.type == &Data::String::TYPE) {
-        inst->SetPropertyValue(propertyName, Data::String(item->data(1, Qt::EditRole).toString().toStdString()));
-    } else if (meta.type == &Data::Bool::TYPE) {
-        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
-    } else {
-        inst->SetPropertyValue(propertyName, meta.type->fromString(item->data(1, Qt::EditRole).toString().toStdString()));
-    }
+    // if (meta.type == &Data::String::TYPE) {
+    //     inst->SetPropertyValue(propertyName, Data::String(item->data(1, Qt::EditRole).toString().toStdString()));
+    // } else if (meta.type == &Data::Bool::TYPE) {
+    //     inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
+    // } else {
+    //     inst->SetPropertyValue(propertyName, meta.type->fromString(item->data(1, Qt::EditRole).toString().toStdString()));
+    // }
 
-    update(indexFromItem(item, column));
+    // update(indexFromItem(item, column));
 }
