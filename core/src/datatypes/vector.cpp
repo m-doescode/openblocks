@@ -1,5 +1,6 @@
 #include "vector.h"
 #include <glm/ext/quaternion_geometric.hpp>
+#include <string>
 #include "meta.h" // IWYU pragma: keep
 
 Data::Vector3::Vector3(const glm::vec3& src) : vector(src) {};
@@ -10,6 +11,7 @@ Data::Vector3::~Vector3() = default;
 const Data::TypeInfo Data::Vector3::TYPE = {
     .name = "Vector3",
     .deserializer = &Data::Vector3::Deserialize,
+    .fromString = &Data::Vector3::FromString,
 };
 
 const Data::TypeInfo& Data::Vector3::GetType() const { return Data::Vector3::TYPE; };
@@ -18,7 +20,10 @@ Data::Vector3 Data::Vector3::ZERO(0, 0, 0);
 Data::Vector3 Data::Vector3::ONE(1, 1, 1);
 
 const Data::String Data::Vector3::ToString() const {
-    return std::to_string(X()) + ", " + std::to_string(Y()) + ", " + std::to_string(Z());
+    // https://stackoverflow.com/a/46424921/16255372
+    std::ostringstream stream;
+    stream << std::setprecision(8) << std::noshowpoint << X() << ", " << Y() << ", " << Z();
+    return stream.str();
 }
 
 Data::Vector3::operator glm::vec3() const { return vector; };
@@ -73,4 +78,25 @@ void Data::Vector3::Serialize(pugi::xml_node node) const {
 
 Data::Variant Data::Vector3::Deserialize(pugi::xml_node node) {
     return Data::Vector3(node.child("X").text().as_float(), node.child("Y").text().as_float(), node.child("Z").text().as_float());
+}
+
+Data::Variant Data::Vector3::FromString(std::string string) {
+    float components[3];
+
+    for (int i = 0; i < 3; i++) {
+        if (string.length() == 0) return Data::Vector3(0, 0, 0);
+        while (string[0] == ' ' && string.length() > 0) string.erase(0, 1);
+        size_t nextPos = string.find(",");
+        if (nextPos == -1) nextPos = string.length();
+        std::string term = string.substr(0, nextPos);
+        string.erase(0, nextPos+1);
+
+        char* cpos;
+        float value = std::strtof(term.c_str(), &cpos);
+        if (cpos == term.c_str()) return Data::Vector3(0, 0, 0);
+
+        components[i] = value;
+    }
+
+    return Data::Vector3(components[0], components[1], components[2]);
 }

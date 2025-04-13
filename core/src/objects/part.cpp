@@ -30,7 +30,7 @@ constexpr FieldCodec cframePositionCodec() {
             *cframe = cframe->Rotation() + source.get<Vector3>();
         },
         .read = [](void* source) -> Data::Variant {
-            return *static_cast<Data::CFrame*>(source);
+            return static_cast<Data::CFrame*>(source)->Position();
         },
     };
 }

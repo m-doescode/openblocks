@@ -70,6 +70,11 @@ public:
             lineEdit->setText(QString::fromStdString(currentValue.get<Data::String>()));
 
             return lineEdit;
+        } else if (meta.type->fromString) {
+            QLineEdit* lineEdit = new QLineEdit(parent);
+            lineEdit->setText(QString::fromStdString(currentValue.ToString()));
+
+            return lineEdit;
         }
 
         return nullptr;
@@ -100,6 +105,10 @@ public:
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString()));
+        } else if (meta.type->fromString) {
+            QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
+
+            inst->SetPropertyValue(propertyName, meta.type->fromString(lineEdit->text().toStdString()));
         }
     }
 };
@@ -127,8 +136,8 @@ PropertiesView::~PropertiesView() {
 }
 
 QStringList PROPERTY_CATEGORY_NAMES {
-    "Data",
     "Appearence",
+    "Data",
     "Behavior",
     "Part",
     "Surface"
@@ -200,6 +209,8 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         PropertyMeta meta = inst->GetPropertyMeta(property).value();
         Data::Variant currentValue = inst->GetPropertyValue(property).value();
 
+        if (meta.type == &Data::CFrame::TYPE) continue;
+
         QTreeWidgetItem* item = new QTreeWidgetItem;
         item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
         item->setData(0, Qt::DisplayRole, QString::fromStdString(property));
@@ -208,6 +219,10 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
             item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+        }
+
+        if (!meta.type->fromString || meta.flags & PROP_READONLY) {
+            item->setDisabled(true);
         }
 
         propertyCategories[meta.category]->addChild(item);
@@ -228,16 +243,10 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     if (!item->parent() || !currentInstance || currentInstance->expired()) return;
     InstanceRef inst = currentInstance->lock();
 
-    // std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
-    // PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+    std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
+    PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
 
-    // if (meta.type == &Data::String::TYPE) {
-    //     inst->SetPropertyValue(propertyName, Data::String(item->data(1, Qt::EditRole).toString().toStdString()));
-    // } else if (meta.type == &Data::Bool::TYPE) {
-    //     inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
-    // } else {
-    //     inst->SetPropertyValue(propertyName, meta.type->fromString(item->data(1, Qt::EditRole).toString().toStdString()));
-    // }
-
-    // update(indexFromItem(item, column));
+    if (meta.type == &Data::Bool::TYPE) {
+        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
+    }
 }
