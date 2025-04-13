@@ -48,11 +48,12 @@ enum PropertyFlags {
     PROP_HIDDEN = 1 << 0, // Hidden from the editor
     PROP_NOSAVE = 1 << 1, // Do not serialize
     PROP_UNIT_FLOAT = 1 << 2, // Float between 0 and 1
+    PROP_READONLY = 1 << 3, // Read only property, do not write
 };
 
 enum PropertyCategory {
-    PROP_CATEGORY_DATA,
     PROP_CATEGORY_APPEARENCE,
+    PROP_CATEGORY_DATA,
     PROP_CATEGORY_BEHAVIOR,
     PROP_CATEGORY_PART,
     PROP_CATEGORY_SURFACE,

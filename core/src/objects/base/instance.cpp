@@ -25,13 +25,23 @@ const InstanceType Instance::TYPE = {
 //     return &TYPE_;
 // }
 
+constexpr FieldCodec classNameCodec() {
+    return FieldCodec {
+        .write = nullptr,
+        .read = [](void* source) -> Data::Variant {
+            return Data::String(((const InstanceType*)source)->className);
+        },
+    };
+}
+
 Instance::Instance(const InstanceType* type) {
     this->name = type->className;
 
     this->memberMap = std::make_unique<MemberMap>( MemberMap {
         .super = std::nullopt,
         .members = {
-            { "Name", { .backingField = &name, .type = &Data::String::TYPE, .codec = fieldCodecOf<Data::String, std::string>() } }
+            { "Name", { .backingField = &name, .type = &Data::String::TYPE, .codec = fieldCodecOf<Data::String, std::string>() } },
+            { "ClassName", { .backingField = const_cast<InstanceType*>(type), .type = &Data::String::TYPE, .codec = classNameCodec(), .flags = PROP_READONLY } },
         }
     });
 }
@@ -156,7 +166,7 @@ auto meta = GetPropertyMeta(name);
 
 tl::expected<void, MemberNotFound> Instance::SetPropertyValue(std::string name, Data::Variant value) {
     auto meta = GetPropertyMeta(name);
-    if (!meta) return tl::make_unexpected(MemberNotFound());
+    if (!meta || meta->flags & PROP_READONLY) return tl::make_unexpected(MemberNotFound());
 
     meta->codec.write(value, meta->backingField);
     if (meta->updateCallback) meta->updateCallback.value()(name);
