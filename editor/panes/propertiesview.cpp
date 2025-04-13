@@ -1,9 +1,7 @@
 #include "propertiesview.h"
+#include "datatypes/base.h"
 #include "datatypes/meta.h"
 #include "objects/base/member.h"
-#include "propertiesmodel.h"
-#include "qaction.h"
-#include <array>
 #include <map>
 #include <qabstractitemdelegate.h>
 #include <qbrush.h>
@@ -48,6 +46,15 @@ PropertiesView::PropertiesView(QWidget* parent):
     setColumnCount(2);
     setAlternatingRowColors(true);
     setItemDelegate(new CustomItemDelegate(this));
+
+    connect(this, &QTreeWidget::itemChanged, this, &PropertiesView::propertyChanged);
+    connect(this, &QTreeWidget::itemActivated, this, [&](auto* item, int column) {
+        // Prevent editing the first column
+        if (column == 0)
+            item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+        else if (item->parent())
+            item->setFlags(item->flags() | Qt::ItemIsEditable);
+    });
 }
 
 PropertiesView::~PropertiesView() {
@@ -60,6 +67,11 @@ QStringList PROPERTY_CATEGORY_NAMES {
     "Part",
     "Surface"
 };
+
+
+QModelIndex PropertiesView::indexAt(const QPoint &point) const {
+    return QTreeWidget::indexAt(point + QPoint(indentation(), 0));
+}
 
 void PropertiesView::drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const {
     // https://codebrowser.dev/qt5/qtbase/src/widgets/itemviews/qtreeview.cpp.html#312opt
@@ -99,6 +111,7 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
     clear();
     if (!instance) return;
     InstanceRef inst = instance.value();
+    currentInstance = inst;
 
     std::map<PropertyCategory, QTreeWidgetItem*> propertyCategories;
 
@@ -123,8 +136,14 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         Data::Variant currentValue = inst->GetPropertyValue(property).value();
 
         QTreeWidgetItem* item = new QTreeWidgetItem;
+        item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
         item->setData(0, Qt::DisplayRole, QString::fromStdString(property));
-        item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+        
+        if (meta.type == &Data::Bool::TYPE) {
+            item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+        } else {
+            item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+        }
 
         propertyCategories[meta.category]->addChild(item);
         propertyCategories[meta.category]->setExpanded(true);
@@ -138,4 +157,22 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
     }
 
     resizeColumnToContents(0);
+}
+
+void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
+    if (!item->parent() || !currentInstance || currentInstance->expired()) return;
+    InstanceRef inst = currentInstance->lock();
+
+    std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
+    PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+
+    if (meta.type == &Data::String::TYPE) {
+        inst->SetPropertyValue(propertyName, Data::String(item->data(1, Qt::EditRole).toString().toStdString()));
+    } else if (meta.type == &Data::Bool::TYPE) {
+        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
+    } else {
+        inst->SetPropertyValue(propertyName, meta.type->fromString(item->data(1, Qt::EditRole).toString().toStdString()));
+    }
+
+    update(indexFromItem(item, column));
 }

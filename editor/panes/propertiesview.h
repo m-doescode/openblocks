@@ -7,8 +7,12 @@ class Ui_MainWindow;
 
 class PropertiesView : public QTreeWidget {
     Q_DECLARE_PRIVATE(QTreeView)
+
+    std::optional<InstanceRefWeak> currentInstance;
+    void propertyChanged(QTreeWidgetItem *item, int column);
 protected:
     void drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const override;
+    QModelIndex indexAt(const QPoint &point) const override;
 public:
     PropertiesView(QWidget* parent = nullptr);
     ~PropertiesView() override;
