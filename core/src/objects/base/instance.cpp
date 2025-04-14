@@ -42,7 +42,7 @@ Instance::Instance(const InstanceType* type) {
         .super = std::nullopt,
         .members = {
             { "Name", { .backingField = &name, .type = &Data::String::TYPE, .codec = fieldCodecOf<Data::String, std::string>() } },
-            { "ClassName", { .backingField = const_cast<InstanceType*>(type), .type = &Data::String::TYPE, .codec = classNameCodec(), .flags = PROP_READONLY } },
+            { "ClassName", { .backingField = const_cast<InstanceType*>(type), .type = &Data::String::TYPE, .codec = classNameCodec(), .flags = (PropertyFlags)(PROP_READONLY | PROP_NOSAVE) } },
         }
     });
 }
@@ -228,7 +228,7 @@ void Instance::Serialize(pugi::xml_node parent) {
     pugi::xml_node propertiesNode = node.append_child("Properties");
     for (std::string name : GetProperties()) {
         PropertyMeta meta = GetPropertyMeta(name).expect("Meta of declared property is missing");
-        if (meta.flags & PropertyFlags::PROP_NOSAVE) continue; // This property should not be serialized. Skip...
+        if (meta.flags & (PropertyFlags::PROP_NOSAVE | PropertyFlags::PROP_READONLY)) continue; // This property should not be serialized. Skip...
 
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
         propertyNode.append_attribute("name").set_value(name);
