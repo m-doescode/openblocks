@@ -187,6 +187,7 @@ void renderParts() {
 void renderSkyBox() {
     glDepthMask(GL_FALSE);
     glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
 
     skyboxShader->use();
 
@@ -354,69 +355,43 @@ void renderWireframe() {
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
-void renderOutline() {
+void renderOutlines() {
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
+    glFrontFace(GL_CCW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-    glLineWidth(10.f);
 
     // Use shader
-    wireframeShader->use();
+    outlineShader->use();
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
     glm::mat4 view = camera.getLookAt();
-    wireframeShader->set("projection", projection);
-    wireframeShader->set("view", view);
+    outlineShader->set("projection", projection);
+    outlineShader->set("view", view);
 
     // Pass in the camera position
-    wireframeShader->set("viewPos", camera.cameraPos);
+    outlineShader->set("viewPos", camera.cameraPos);
 
-    wireframeShader->set("transparency", 0.5f);
-    wireframeShader->set("color", glm::vec3(0.204, 0.584, 0.922));
+    // outlineShader->set("color", glm::vec3(1.f, 0.f, 0.f));
 
     // Sort by nearest
-    for (InstanceRef inst : gWorkspace()->GetChildren()) {
-        if (inst->GetClass()->className != "Part") continue;
+    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+        InstanceRef inst = *it;
+        if (inst->GetClass() != &Part::TYPE) continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (!part->selected) continue;
+
         glm::mat4 model = part->cframe;
-        model = glm::scale(model, (glm::vec3)part->size / glm::vec3(2) + glm::vec3(0.001));
-        wireframeShader->set("model", model);
-        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        wireframeShader->set("normalMatrix", normalMatrix);
+        model = glm::scale(model, (glm::vec3)part->size + glm::vec3(0.01));
+        outlineShader->set("model", model);
+        outlineShader->set("scale", part->size + glm::vec3(0.01));
 
-        // CUBE_MESH->bind();
-        // glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
-
-        glBegin(GL_LINES);
-            // Upper face
-            glVertex3f(-1., 1., -1.); glVertex3f(1., 1., -1.);
-            glVertex3f(-1., 1., 1.); glVertex3f(1., 1., 1.);
-
-            glVertex3f(-1., 1., -1.); glVertex3f(-1., 1., 1.);
-            glVertex3f(1., 1., -1.); glVertex3f(1., 1., 1.);
-            
-            // Lower face
-            glVertex3f(-1., -1., -1.); glVertex3f(1., -1., -1.);
-            glVertex3f(-1., -1., 1.); glVertex3f(1., -1., 1.);
-
-            glVertex3f(-1., -1., -1.); glVertex3f(-1., -1., 1.);
-            glVertex3f(1., -1., -1.); glVertex3f(1., -1., 1.);
-
-            // Connecting vertical lines
-            glVertex3f(-1., -1., -1.); glVertex3f(-1., 1., -1.);
-            glVertex3f(1., -1., -1.); glVertex3f(1., 1., -1.);
-            glVertex3f(-1., -1., 1.); glVertex3f(-1., 1., 1.);
-            glVertex3f(1., -1., 1.); glVertex3f(1., 1., 1.);
-        glEnd();
+        OUTLINE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, OUTLINE_MESH->vertexCount);
     }
-
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
 void render(GLFWwindow* window) {
@@ -426,7 +401,7 @@ void render(GLFWwindow* window) {
     renderSkyBox();
     renderHandles();
     renderParts();
-    renderOutline();
+    renderOutlines();
     if (wireframeRendering)
         renderWireframe();
     // TODO: Make this a debug flag
