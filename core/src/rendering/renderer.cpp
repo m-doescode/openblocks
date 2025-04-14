@@ -260,6 +260,8 @@ void renderHandles() {
     for (auto face : HandleFace::Faces) {
         Data::CFrame cframe = editorToolHandles->GetCFrameOfHandle(face);
         glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
+
+        if (screenPos.z < 0) continue;
         glm::vec3 ndcCoords = screenPos / screenPos.w;
 
         float rad = 5;
