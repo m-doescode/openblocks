@@ -8,9 +8,14 @@ out vec3 vPos;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec3 scale;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    float thickness = 0.4;
+    vec3 distFromEdge = sign(aPos) * 0.5 - aPos;
+    vec3 tVec = (scale * sign(aPos) * 0.5 - distFromEdge * thickness) / scale;
+
+    gl_Position = projection * view * model * vec4(tVec, 1);
     vPos = aPos;
 }

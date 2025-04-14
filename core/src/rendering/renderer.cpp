@@ -385,9 +385,9 @@ void renderOutlines() {
         if (!part->selected) continue;
 
         glm::mat4 model = part->cframe;
-        model = glm::scale(model, (glm::vec3)part->size + glm::vec3(0.01));
+        model = glm::scale(model, (glm::vec3)part->size + glm::vec3(0.2));
         outlineShader->set("model", model);
-        outlineShader->set("scale", part->size + glm::vec3(0.01));
+        outlineShader->set("scale", part->size + glm::vec3(0.1));
 
         OUTLINE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, OUTLINE_MESH->vertexCount);
