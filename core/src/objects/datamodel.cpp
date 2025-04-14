@@ -82,12 +82,12 @@ void DataModel::DeserializeService(pugi::xml_node node) {
     for (pugi::xml_node propertyNode : propertiesNode) {
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
-        if (!meta_.has_value()) {
+        if (!meta_) {
             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
         Data::Variant value = Data::Variant::Deserialize(propertyNode);
-        object->SetPropertyValue(propertyName, value);
+        object->SetPropertyValue(propertyName, value).expect();
     }
 
     // Add children

@@ -41,8 +41,8 @@ public:
 
         std::string propertyName = !isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
             : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
-        PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
-        Data::Variant currentValue = inst->GetPropertyValue(propertyName).value();
+        PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
+        Data::Variant currentValue = inst->GetPropertyValue(propertyName).expect();
 
         if (isComposite) {
             if (meta.type == &Data::Vector3::TYPE) {
@@ -107,8 +107,8 @@ public:
 
         std::string propertyName = !index.parent().parent().isValid() ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
             : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
-        PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
-        Data::Variant currentValue = inst->GetPropertyValue(propertyName).value();
+        PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
+        Data::Variant currentValue = inst->GetPropertyValue(propertyName).expect();
         
         if (isComposite) {
             if (meta.type == &Data::Vector3::TYPE) {
@@ -159,19 +159,19 @@ public:
 
         std::string propertyName = !index.parent().parent().isValid() ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
             : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
-        PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+        PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
         if (isComposite) {
             if (meta.type == &Data::Vector3::TYPE) {
                 QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
                 float value = spinBox->value();
 
-                Data::Vector3 prev = inst->GetPropertyValue(propertyName).value().get<Data::Vector3>();
+                Data::Vector3 prev = inst->GetPropertyValue(propertyName).expect().get<Data::Vector3>();
                 Data::Vector3 newVector = componentName == "X" ? Data::Vector3(value, prev.Y(), prev.Z())
                 : componentName == "Y" ? Data::Vector3(prev.X(), value, prev.Z())
                 : componentName == "Z" ? Data::Vector3(prev.X(), prev.Y(), value) : prev;
 
-                inst->SetPropertyValue(propertyName, newVector);
+                inst->SetPropertyValue(propertyName, newVector).expect();
                 view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Data::Vector3::TYPE, newVector);
                 return;
             }
@@ -182,24 +182,24 @@ public:
         if (meta.type == &Data::Float::TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
-            inst->SetPropertyValue(propertyName, Data::Float((float)spinBox->value()));
+            inst->SetPropertyValue(propertyName, Data::Float((float)spinBox->value())).expect();
             model->setData(index, spinBox->value());
         } else if (meta.type == &Data::Int::TYPE) {
             QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
 
-            inst->SetPropertyValue(propertyName, Data::Int((float)spinBox->value()));
+            inst->SetPropertyValue(propertyName, Data::Int((float)spinBox->value())).expect();
             model->setData(index, spinBox->value());
         } else if (meta.type == &Data::String::TYPE) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
-            inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString()));
+            inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString())).expect();
             model->setData(index, lineEdit->text());
         } else if (meta.type == &Data::Color3::TYPE) {
             QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
 
             QColor color = colorDialog->currentColor();
             Data::Color3 color3(color.redF(), color.greenF(), color.blueF());
-            inst->SetPropertyValue(propertyName, color3);
+            inst->SetPropertyValue(propertyName, color3).expect();
             model->setData(index, QString::fromStdString(color3.ToString()), Qt::DisplayRole);
             model->setData(index, color, Qt::DecorationRole);
         } else if (meta.type->fromString) {
@@ -207,7 +207,7 @@ public:
 
             std::optional<Data::Variant> parsedResult = meta.type->fromString(lineEdit->text().toStdString());
             if (!parsedResult) return;
-            inst->SetPropertyValue(propertyName, parsedResult.value());
+            inst->SetPropertyValue(propertyName, parsedResult.value()).expect();
             model->setData(index, QString::fromStdString(parsedResult.value().ToString()));
             view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type, parsedResult.value());
         }
@@ -283,8 +283,8 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
     std::vector<std::string> properties = inst->GetProperties();
 
     for (std::string property : properties) {
-        PropertyMeta meta = inst->GetPropertyMeta(property).value();
-        Data::Variant currentValue = inst->GetPropertyValue(property).value();
+        PropertyMeta meta = inst->GetPropertyMeta(property).expect();
+        Data::Variant currentValue = inst->GetPropertyValue(property).expect();
 
         if (meta.type == &Data::CFrame::TYPE) continue;
 
@@ -330,10 +330,10 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     InstanceRef inst = currentInstance->lock();
 
     std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
-    PropertyMeta meta = inst->GetPropertyMeta(propertyName).value();
+    PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
     if (meta.type == &Data::Bool::TYPE) {
-        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1)));
+        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1))).expect();
     }
 }
 

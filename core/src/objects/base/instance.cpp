@@ -2,6 +2,7 @@
 #include "common.h"
 #include "datatypes/meta.h"
 #include "datatypes/base.h"
+#include "error/instance.h"
 #include "objects/base/member.h"
 #include "objects/meta.h"
 #include "logger.h"
@@ -157,24 +158,27 @@ void Instance::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child,
 
 // Properties
 
-tl::expected<Data::Variant, MemberNotFound> Instance::GetPropertyValue(std::string name) {
-auto meta = GetPropertyMeta(name);
-    if (!meta) return tl::make_unexpected(MemberNotFound());
+result<Data::Variant, MemberNotFound> Instance::GetPropertyValue(std::string name) {
+    auto meta_ = GetPropertyMeta(name);
+    if (!meta_) return MemberNotFound(GetClass()->className, name);
+    auto meta = meta_.expect();
 
-    return meta->codec.read(meta->backingField);
+    return meta.codec.read(meta.backingField);
 }
 
-tl::expected<void, MemberNotFound> Instance::SetPropertyValue(std::string name, Data::Variant value) {
-    auto meta = GetPropertyMeta(name);
-    if (!meta || meta->flags & PROP_READONLY) return tl::make_unexpected(MemberNotFound());
+fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Data::Variant value) {
+    auto meta_ = GetPropertyMeta(name);
+    if (!meta_) return MemberNotFound(GetClass()->className, name);
+    auto meta = meta_.expect();
+    if (meta.flags & PROP_READONLY) AssignToReadOnlyMember(GetClass()->className, name);
 
-    meta->codec.write(value, meta->backingField);
-    if (meta->updateCallback) meta->updateCallback.value()(name);
+    meta.codec.write(value, meta.backingField);
+    if (meta.updateCallback) meta.updateCallback.value()(name);
 
     return {};
 }
 
-tl::expected<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name) {
+result<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name) {
     MemberMap* current = &*memberMap;
     while (true) {
         // We look for the property in current member map
@@ -186,7 +190,7 @@ tl::expected<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string
 
         // It is not found, If there are no other maps to search, return null
         if (!current->super.has_value())
-            return tl::make_unexpected(MemberNotFound());
+            return MemberNotFound(GetClass()->className, name);
 
         // Search in the parent
         current = current->super->get();
@@ -223,12 +227,12 @@ void Instance::Serialize(pugi::xml_node parent) {
     // Add properties
     pugi::xml_node propertiesNode = node.append_child("Properties");
     for (std::string name : GetProperties()) {
-        PropertyMeta meta = GetPropertyMeta(name).value();
+        PropertyMeta meta = GetPropertyMeta(name).expect("Meta of declared property is missing");
         if (meta.flags & PropertyFlags::PROP_NOSAVE) continue; // This property should not be serialized. Skip...
 
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
         propertyNode.append_attribute("name").set_value(name);
-        GetPropertyValue(name)->Serialize(propertyNode);
+        GetPropertyValue(name).expect("Declared property is missing").Serialize(propertyNode);
     }
 
     // Add children
@@ -254,12 +258,12 @@ result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node) {
     for (pugi::xml_node propertyNode : propertiesNode) {
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
-        if (!meta_.has_value()) {
+        if (!meta_) {
             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
         Data::Variant value = Data::Variant::Deserialize(propertyNode);
-        object->SetPropertyValue(propertyName, value);
+        object->SetPropertyValue(propertyName, value).expect("Declared property was missing");
     }
 
     // Read children

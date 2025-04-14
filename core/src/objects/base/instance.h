@@ -9,8 +9,6 @@
 #include <optional>
 #include <string>
 #include <vector>
-// #include <../../include/expected.hpp>
-#include <expected.hpp>
 #include <pugixml.hpp>
 
 #include "error/instance.h"
@@ -92,10 +90,9 @@ public:
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
 
     // Properties
-    // Do I like using expected?
-    tl::expected<Data::Variant, MemberNotFound> GetPropertyValue(std::string name);
-    tl::expected<void, MemberNotFound> SetPropertyValue(std::string name, Data::Variant value);
-    tl::expected<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
+    result<Data::Variant, MemberNotFound> GetPropertyValue(std::string name);
+    fallible<MemberNotFound, AssignToReadOnlyMember> SetPropertyValue(std::string name, Data::Variant value);
+    result<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
     // Returning a list of property names feels kinda janky. Is this really the way to go?
     std::vector<std::string> GetProperties();
 

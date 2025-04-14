@@ -16,3 +16,13 @@ class ServiceAlreadyExists : public Error {
     public:
     inline ServiceAlreadyExists(std::string className) : Error("ServiceAlreadyExists", "Service " + className + " is already inserted") {}
 };
+
+class MemberNotFound : public Error {
+    public:
+    inline MemberNotFound(std::string className, std::string memberName) : Error("MemberNotFound", "Could not find member '" + memberName + "' in class " + className) {}
+};
+
+class AssignToReadOnlyMember : public Error {
+    public:
+    inline AssignToReadOnlyMember(std::string className, std::string memberName) : Error("AssignToReadOnlyMember", "Attempt to assign value to read-only member '" + memberName + "' in class " + className) {}
+};

@@ -76,5 +76,3 @@ struct MemberMap {
     std::optional<std::unique_ptr<MemberMap>> super;
     std::map<std::string, PropertyMeta> members;
 };
-
-struct MemberNotFound {};
