@@ -13,7 +13,7 @@
 #include <expected.hpp>
 #include <pugixml.hpp>
 
-#include "error/error.h"
+#include "error/instance.h"
 #include "error/result.h"
 #include "member.h"
 
@@ -38,11 +38,6 @@ struct InstanceType {
     InstanceFlags flags;
 };
 
-// Errors
-class NoSuchInstance : public Error {
-    public:
-    inline NoSuchInstance(std::string className) : Error("Cannot create instance of unknown type " + className) {}
-};
 
 class DescendantsIterator;
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base.h"
 #include "error/result.h"
 #include "logger.h"
 #include "objects/base/instance.h"
@@ -13,16 +12,6 @@ class Workspace;
 
 class DataModel;
 class Service;
-
-class NoSuchService : public Error {
-    public:
-    inline NoSuchService(std::string className) : Error("Cannot insert service of unknown type " + className) {}
-};
-
-class ServiceAlreadyExists : public Error {
-    public:
-    inline ServiceAlreadyExists(std::string className) : Error("Service " + className + " is already inserted") {}
-};
 
 // The root instance to all objects in the hierarchy
 class DataModel : public Instance {

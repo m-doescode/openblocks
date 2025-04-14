@@ -240,7 +240,7 @@ void Instance::Serialize(pugi::xml_node parent) {
 result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node) {
     std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
-        return std::variant<NoSuchInstance>(NoSuchInstance(className));
+        return NoSuchInstance(className);
     }
     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
     // printf("What are you? A %s sandwich\n", className.c_str());
@@ -265,7 +265,7 @@ result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node) {
     // Read children
     for (pugi::xml_node childNode : node.children("Item")) {
         result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode);
-        if (child.is_error()) {
+        if (child.isError()) {
             std::get<NoSuchInstance>(child.error().value()).logMessage();
             continue;
         }

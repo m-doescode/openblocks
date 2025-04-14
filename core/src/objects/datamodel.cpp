@@ -93,7 +93,7 @@ void DataModel::DeserializeService(pugi::xml_node node) {
     // Add children
     for (pugi::xml_node childNode : node.children("Item")) {
         result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode);
-        if (child.is_error()) {
+        if (child.isError()) {
             std::get<NoSuchInstance>(child.error().value()).logMessage();
             continue;
         }

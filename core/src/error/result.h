@@ -1,59 +1,68 @@
 #pragma once
 
-#include "error.h"
+#include "error/error.h"
 #include "logger.h"
 #include "panic.h"
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <variant>
 
 struct DUMMY_VALUE {};
 
-template <typename Result, typename ...E>
+template <typename T_Result, typename ...T_Errors>
 class [[nodiscard]] result {
-    struct ErrorContainer {
-        std::variant<E...> error;
+    static_assert(std::conjunction_v<std::is_base_of<Error, T_Errors>...>, "result<T_Errors...> requires T_Errors to derive from Error");
+
+    struct error_state {
+        std::variant<T_Errors...> error;
     };
 
-    struct SuccessContainer {
-        Result success;
+    struct success_state {
+        T_Result success;
     };
 
-    std::variant<SuccessContainer, ErrorContainer> value;
+    std::variant<success_state, error_state> value;
 public:
-    result(Result success) : value(SuccessContainer { success }) {}
-    result(std::variant<E...> error) : value(ErrorContainer { error }) {}
+    result(T_Result success) : value(success_state { success }) {}
+    result(std::variant<T_Errors...> error) : value(error_state { error }) {}
+    template <typename T_Error, std::enable_if_t<std::disjunction_v<std::is_same<T_Error, T_Errors>...>, int> = 0>
+    result(T_Error error) : value(error_state { error }) {}
 
     // Expects the result to be successful, otherwise panic with error message
-    Result expect(std::string errMsg = "Unwrapped a result with failure value") {
-        if (is_success())
-            return std::get<SuccessContainer>(value).success;
-        Logger::fatalError(errMsg);
+    T_Result expect(std::string errMsg = "Expected result to contain success") {
+        if (isSuccess())
+            return std::get<success_state>(value).success;
+        std::visit([&](auto&& it) {
+            Logger::fatalErrorf("Unwrapped a result with error value: [%s] %s\n\t%s", it.errorType(), it.message(), errMsg);
+        }, error().value());
         panic();
     }
 
-    bool is_success() { return std::holds_alternative<SuccessContainer>(value); }
-    bool is_error() { return std::holds_alternative<ErrorContainer>(value); }
+    bool isSuccess() { return std::holds_alternative<success_state>(value); }
+    bool isError() { return std::holds_alternative<error_state>(value); }
 
-    std::optional<Result> success() { return is_success() ? std::get<SuccessContainer>(value).success : std::nullopt; }
-    std::optional<std::variant<E...>> error() { return is_error() ? std::make_optional(std::get<ErrorContainer>(value).error) : std::nullopt; }
+    std::optional<T_Result> success() { return isSuccess() ? std::get<success_state>(value).success : std::nullopt; }
+    std::optional<std::variant<T_Errors...>> error() { return isError() ? std::make_optional(std::get<error_state>(value).error) : std::nullopt; }
 
     void logError(Logger::LogLevel logLevel = Logger::LogLevel::ERROR) {
-        if (is_success()) return;
+        if (isSuccess()) return;
         std::visit([&](auto&& it) {
             it.logMessage(logLevel);
         }, error().value());
     }
 
     // Equivalent to .success
-    operator std::optional<Result>() { return success(); }
-    operator bool() { return is_success(); }
-    bool operator !() { return is_error(); }
+    operator std::optional<T_Result>() { return success(); }
+    operator bool() { return isSuccess(); }
+    bool operator !() { return isError(); }
 };
 
-template <typename ...E>
-class fallible : public result<DUMMY_VALUE, E...> {
+template <typename ...T_Errors>
+class [[nodiscard]] fallible : public result<DUMMY_VALUE, T_Errors...> {
 public:
-    fallible() : result<DUMMY_VALUE, E...>(DUMMY_VALUE {}) {}
-    fallible(std::variant<E...> error) : result<DUMMY_VALUE, E...>(error) {}
+    fallible() : result<DUMMY_VALUE, T_Errors...>(DUMMY_VALUE {}) {}
+    fallible(std::variant<T_Errors...> error) : result<DUMMY_VALUE, T_Errors...>(error) {}
+    template <typename T_Error, std::enable_if_t<std::disjunction_v<std::is_same<T_Error, T_Errors>...>, int> = 0>
+    fallible(T_Error error) : result<DUMMY_VALUE, T_Errors...>(error) {}
 };
