@@ -147,6 +147,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     draggingObject->lock()->cframe = newFrame + unsinkOffset;
 
     gWorkspace()->SyncPartPhysics(draggingObject->lock());
+    sendPropertyUpdatedSignal(draggingObject->lock(), "Position", draggingObject->lock()->position());
 }
 
 inline glm::vec3 vec3fy(glm::vec4 vec) {
@@ -224,6 +225,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
         playSound("./assets/excluded/switch.wav");
 
     gWorkspace()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
+    sendPropertyUpdatedSignal(draggingObject->lock(), "Position", draggingObject->lock()->position());
+    sendPropertyUpdatedSignal(draggingObject->lock(), "Size", Data::Vector3(draggingObject->lock()->size));
 }
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
@@ -266,6 +269,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
     gWorkspace()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
+    sendPropertyUpdatedSignal(draggingObject->lock(), "Rotation", draggingObject->lock()->cframe.ToEulerAnglesXYZ());
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {

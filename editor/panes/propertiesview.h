@@ -5,8 +5,8 @@
 #include "objects/base/instance.h"
 
 class Ui_MainWindow;
-
 class PropertiesItemDelegate;
+namespace Data { class Variant; };
 
 class PropertiesView : public QTreeWidget {
     Q_DECLARE_PRIVATE(QTreeView)
@@ -15,6 +15,7 @@ class PropertiesView : public QTreeWidget {
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);
     void rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo*, Data::Variant);
+    void onPropertyUpdated(InstanceRef instance, std::string property, Data::Variant newValue);
 
     friend PropertiesItemDelegate;
 protected:

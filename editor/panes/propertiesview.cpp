@@ -1,4 +1,5 @@
 #include "panes/propertiesview.h"
+#include "common.h"
 #include "datatypes/base.h"
 
 #include <QColorDialog>
@@ -6,6 +7,11 @@
 #include <QSpinBox>
 #include <QStyledItemDelegate>
 #include <QPainter>
+#include <QTime>
+#include <chrono>
+#include <functional>
+#include <qnamespace.h>
+#include <qtreewidget.h>
 
 class PropertiesItemDelegate : public QStyledItemDelegate {
     PropertiesView* view;
@@ -231,6 +237,8 @@ PropertiesView::PropertiesView(QWidget* parent):
         else if (item->parent())
             item->setFlags(item->flags() | Qt::ItemIsEditable);
     });
+
+    addPropertyUpdateListener(std::bind(&PropertiesView::onPropertyUpdated, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 PropertiesView::~PropertiesView() {
@@ -360,5 +368,47 @@ void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const Data:
         item->addChild(xItem);
         item->addChild(yItem);
         item->addChild(zItem);
+    }
+}
+
+// static auto lastUpdateTime = std::chrono::steady_clock::now();
+void PropertiesView::onPropertyUpdated(InstanceRef inst, std::string property, Data::Variant newValue) {
+    // if (!currentInstance || currentInstance->expired() || instance != currentInstance->lock()) return;
+    // if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - lastUpdateTime).count() < 1000) return;
+    // lastUpdateTime = std::chrono::steady_clock::now();
+
+    PropertyMeta meta = inst->GetPropertyMeta(property).expect();
+    Data::Variant currentValue = inst->GetPropertyValue(property).expect();
+    
+    if (meta.type == &Data::CFrame::TYPE) return;
+
+    for (int categoryItemIdx = 0; categoryItemIdx < topLevelItemCount(); categoryItemIdx++) {
+        QTreeWidgetItem* categoryItem = topLevelItem(categoryItemIdx);
+        for (int itemIdx = 0; itemIdx < categoryItem->childCount(); itemIdx++) {
+            QTreeWidgetItem* item = categoryItem->child(itemIdx);
+
+            if (item->data(0, Qt::DisplayRole).toString().toStdString() != property) continue;
+
+            if (meta.type == &Data::Bool::TYPE) {
+                item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+            } else if (meta.type == &Data::Color3::TYPE) {
+                Data::Color3 color = currentValue.get<Data::Color3>();
+                item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
+                item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+            } else if (meta.type == &Data::Vector3::TYPE) {
+                Data::Vector3 vector = currentValue.get<Data::Vector3>();
+                item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+            } else {
+                item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+            }
+
+            if (meta.type != &Data::Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
+                item->setDisabled(true);
+            }
+
+            rebuildCompositeProperty(item, meta.type, currentValue);
+
+            return;
+        }
     }
 }

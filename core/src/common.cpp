@@ -12,10 +12,11 @@ std::shared_ptr<Handles> editorToolHandles = Handles::New();
 
 
 std::vector<InstanceRefWeak> currentSelection;
-std::vector<SelectionUpdateHandler> selectionUpdateHandlers;
+std::vector<SelectionUpdateHandler> selectionUpdateListeners;
+std::vector<PropertyUpdateHandler> propertyUpdatelisteners;
 
 void setSelection(std::vector<InstanceRefWeak> newSelection, bool fromExplorer) {
-    for (SelectionUpdateHandler handler : selectionUpdateHandlers) {
+    for (SelectionUpdateHandler handler : selectionUpdateListeners) {
         handler(currentSelection, newSelection, fromExplorer);
     }
 
@@ -27,5 +28,15 @@ const std::vector<InstanceRefWeak> getSelection() {
 }
 
 void addSelectionListener(SelectionUpdateHandler handler) {
-    selectionUpdateHandlers.push_back(handler);
+    selectionUpdateListeners.push_back(handler);
+}
+
+void sendPropertyUpdatedSignal(InstanceRef instance, std::string property, Data::Variant newValue) {
+    for (PropertyUpdateHandler handler : propertyUpdatelisteners) {
+        handler(instance, property, newValue);
+    }
+}
+
+void addPropertyUpdateListener(PropertyUpdateHandler handler) {
+    propertyUpdatelisteners.push_back(handler);
 }

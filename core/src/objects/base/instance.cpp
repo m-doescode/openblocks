@@ -174,6 +174,7 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std:
 
     meta.codec.write(value, meta.backingField);
     if (meta.updateCallback) meta.updateCallback.value()(name);
+    sendPropertyUpdatedSignal(shared_from_this(), name, value);
 
     return {};
 }

@@ -111,7 +111,47 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
                 .codec = fieldCodecOf<Data::Float, float>(),
                 .flags = PROP_UNIT_FLOAT,
                 .category = PROP_CATEGORY_APPEARENCE,
-            }}
+            }},
+
+            // Surfaces
+
+            { "TopSurface", {
+                .backingField = &topSurface,
+                .type = &Data::Int::TYPE, // Replace with enum
+                .codec = fieldCodecOf<Data::Int, int>(),
+                .flags = PROP_HIDDEN,
+                .category = PROP_CATEGORY_SURFACE,
+            }}, { "BottomSurface", {
+                .backingField = &bottomSurface,
+                .type = &Data::Int::TYPE, // Replace with enum
+                .codec = fieldCodecOf<Data::Int, int>(),
+                .flags = PROP_HIDDEN,
+                .category = PROP_CATEGORY_SURFACE,
+            }}, { "FrontSurface", {
+                .backingField = &frontSurface,
+                .type = &Data::Int::TYPE, // Replace with enum
+                .codec = fieldCodecOf<Data::Int, int>(),
+                .flags = PROP_HIDDEN,
+                .category = PROP_CATEGORY_SURFACE,
+            }}, { "BackSurface", {
+                .backingField = &backSurface,
+                .type = &Data::Int::TYPE, // Replace with enum
+                .codec = fieldCodecOf<Data::Int, int>(),
+                .flags = PROP_HIDDEN,
+                .category = PROP_CATEGORY_SURFACE,
+            }}, { "RightSurface", {
+                .backingField = &rightSurface,
+                .type = &Data::Int::TYPE, // Replace with enum
+                .codec = fieldCodecOf<Data::Int, int>(),
+                .flags = PROP_HIDDEN,
+                .category = PROP_CATEGORY_SURFACE,
+            }}, { "LeftSurface", {
+                .backingField = &leftSurface,
+                .type = &Data::Int::TYPE, // Replace with enum
+                .codec = fieldCodecOf<Data::Int, int>(),
+                .flags = PROP_HIDDEN,
+                .category = PROP_CATEGORY_SURFACE,
+            }}, 
         }
     });
 }
