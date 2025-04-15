@@ -34,7 +34,7 @@ public:
         if (isSuccess())
             return std::get<success_state>(value).success;
         std::visit([&](auto&& it) {
-            Logger::fatalErrorf("Unwrapped a result with error value: [%s] %s\n\t%s", it.errorType(), it.message(), errMsg);
+            Logger::fatalErrorf("Unwrapped a result with error value: [%s] %s\n\t%s", it.errorType().c_str(), it.message().c_str(), errMsg.c_str());
         }, error().value());
         panic();
     }
