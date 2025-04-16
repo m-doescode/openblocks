@@ -61,7 +61,7 @@ const InstanceType* Part::GetClass() {
 Part::Part(): Part(PartConstructParams { .color = Data::Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
-Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(params.position, params.rotation)),
+Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame::FromEulerAnglesXYZ((Data::Vector3)params.rotation) + params.position),
                                         size(params.size), color(params.color), anchored(params.anchored), locked(params.locked) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
@@ -158,8 +158,10 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame(par
 
 Part::~Part() {
     // This relies on physicsCommon still existing. Be very careful.
-    if (this->rigidBody && workspace())
+    if (this->rigidBody && workspace()) {
         workspace().value()->DestroyRigidBody(rigidBody);
+        this->rigidBody = nullptr;
+    }
 }
 
 

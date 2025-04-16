@@ -24,11 +24,16 @@ enum FilterResult {
 };
 
 class Part;
+class Snap;
+
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
 
 class Workspace : public Service {
-    rp::PhysicsWorld *physicsWorld = nullptr;
+    rp::PhysicsWorld* physicsWorld = nullptr;
+    static rp::PhysicsCommon* physicsCommon; 
 
+    friend Part;
+    friend Snap;
 protected:
     void InitService() override;
     bool initialized = false;

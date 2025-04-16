@@ -15,7 +15,7 @@ const InstanceType* Workspace::GetClass() {
     return &TYPE;
 }
 
-rp::PhysicsCommon *physicsCommon = new rp::PhysicsCommon;
+rp::PhysicsCommon* Workspace::physicsCommon = new rp::PhysicsCommon;
 
 Workspace::Workspace(): Service(&TYPE) {
 }

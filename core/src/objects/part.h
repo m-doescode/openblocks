@@ -15,7 +15,7 @@ namespace rp = reactphysics3d;
 // For easy construction from C++. Maybe should be removed?
 struct PartConstructParams {
     glm::vec3 position;
-    glm::quat rotation = glm::identity<glm::quat>();
+    glm::vec3 rotation;
     glm::vec3 size;
     Data::Color3 color;
     

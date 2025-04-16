@@ -64,6 +64,8 @@ protected:
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
     virtual void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
+    virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace);
+    virtual void OnWorkspaceRemoved(std::optional<std::shared_ptr<Workspace>> oldWorkspace);
 
     // The root data model this object is a descendant of
     std::optional<std::shared_ptr<DataModel>> dataModel();
@@ -93,6 +95,8 @@ public:
     result<Data::Variant, MemberNotFound> GetPropertyValue(std::string name);
     fallible<MemberNotFound, AssignToReadOnlyMember> SetPropertyValue(std::string name, Data::Variant value);
     result<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
+    // Manually trigger the update of a property. Useful internally when setting properties directly
+    void UpdateProperty(std::string name);
     // Returning a list of property names feels kinda janky. Is this really the way to go?
     std::vector<std::string> GetProperties();
 

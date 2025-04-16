@@ -11,7 +11,9 @@
 // #include "meta.h" // IWYU pragma: keep
 
 const Data::CFrame Data::CFrame::IDENTITY(glm::vec3(0, 0, 0), glm::mat3(1.f));
- const Data::CFrame Data::CFrame::YToZ(glm::vec3(0, 0, 0), glm::mat3(glm::vec3(1, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
+const Data::CFrame Data::CFrame::YToZ(glm::vec3(0, 0, 0), glm::mat3(glm::vec3(1, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
+
+Data::CFrame::CFrame() : Data::CFrame::CFrame(glm::vec3(0, 0, 0), glm::mat3(1.f)) {}
 
 Data::CFrame::CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22)
     : translation(x, y, z)

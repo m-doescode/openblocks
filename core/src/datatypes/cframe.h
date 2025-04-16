@@ -20,6 +20,7 @@ namespace Data {
         // CFrame(float x, float y, float z);
         // CFrame(const glm::vec3&);
         // CFrame(const rp::Vector3&);
+        CFrame();
         CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
         CFrame(const rp::Transform&);
         CFrame(Data::Vector3 position, glm::quat quat);

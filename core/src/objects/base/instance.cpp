@@ -87,24 +87,16 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
 
     this->OnParentUpdated(lastParent, newParent);
 
-    auto oldDataModel = _dataModel;
-    auto oldWorkspace = _workspace;
-
-    // Update parent data model and workspace, if applicable
-    if (newParent) {
-        this->_dataModel = newParent->get()->GetClass() == &DataModel::TYPE ? std::make_optional(std::dynamic_pointer_cast<DataModel>(newParent.value())) : newParent.value()->dataModel();
-        this->_workspace = newParent->get()->GetClass() == &Workspace::TYPE ? std::make_optional(std::dynamic_pointer_cast<Workspace>(newParent.value())) : newParent.value()->workspace();
-    } else {
-        this->_dataModel = std::nullopt;
-        this->_workspace = std::nullopt;
-    }
-
     updateAncestry(this->shared<Instance>(), newParent);
 
     return true;
 }
 
 void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedChild, std::optional<std::shared_ptr<Instance>> newParent) {
+    auto oldDataModel = _dataModel;
+    auto oldWorkspace = _workspace;
+
+    // Update parent data model and workspace, if applicable
     if (GetParent()) {
         this->_dataModel = GetParent().value()->GetClass() == &DataModel::TYPE ? std::make_optional(std::dynamic_pointer_cast<DataModel>(GetParent().value())) : GetParent().value()->dataModel();
         this->_workspace = GetParent().value()->GetClass() == &Workspace::TYPE ? std::make_optional(std::dynamic_pointer_cast<Workspace>(GetParent().value())) : GetParent().value()->workspace();
@@ -114,6 +106,16 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
     }
 
     OnAncestryChanged(updatedChild, newParent);
+
+    // Old workspace used to exist, and workspaces differ
+    if (oldWorkspace.has_value() && !oldWorkspace->expired() && (!_workspace || _workspace->expired() || oldWorkspace->lock() != _workspace->lock())) {
+        OnWorkspaceRemoved((oldWorkspace.has_value() && !oldWorkspace->expired()) ? std::make_optional(oldWorkspace->lock()) : std::nullopt);
+    }
+
+    // New workspace exists, and workspaces differ
+    if (_workspace.has_value() && !_workspace->expired() && (!oldWorkspace || oldWorkspace->expired() || _workspace->lock() != oldWorkspace->lock())) {
+        OnWorkspaceAdded((oldWorkspace.has_value() && !oldWorkspace->expired()) ? std::make_optional(oldWorkspace->lock()) : std::nullopt, _workspace->lock());
+    }
 
     // Update ancestry in descendants
     for (InstanceRef child : children) {
@@ -153,6 +155,14 @@ void Instance::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParen
 }
 
 void Instance::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
+    // Empty stub
+}
+
+void Instance::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
+    // Empty stub
+}
+
+void Instance::OnWorkspaceRemoved(std::optional<std::shared_ptr<Workspace>> oldWorkspace) {
     // Empty stub
 }
 
@@ -196,6 +206,12 @@ result<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name)
         // Search in the parent
         current = current->super->get();
     }
+}
+
+void Instance::UpdateProperty(std::string name) {
+    PropertyMeta meta = GetPropertyMeta(name).expect();
+    if (!meta.updateCallback) return; // Nothing to update, exit.
+    meta.updateCallback.value()(name);
 }
 
 std::vector<std::string> Instance::GetProperties() {
