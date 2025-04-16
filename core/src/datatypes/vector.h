@@ -12,6 +12,7 @@ namespace Data {
         glm::vec3 vector;
     
     public:
+        Vector3();
         Vector3(float x, float y, float z);
         Vector3(const glm::vec3&);
         Vector3(const rp::Vector3&);

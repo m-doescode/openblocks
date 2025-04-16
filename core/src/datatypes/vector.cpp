@@ -3,6 +3,7 @@
 #include <string>
 #include "meta.h" // IWYU pragma: keep
 
+Data::Vector3::Vector3() : vector(glm::vec3(0, 0, 0)) {};
 Data::Vector3::Vector3(const glm::vec3& src) : vector(src) {};
 Data::Vector3::Vector3(const rp::Vector3& src) : vector(glm::vec3(src.x, src.y, src.z)) {};
 Data::Vector3::Vector3(float x, const float y, float z) : vector(glm::vec3(x, y, z)) {};

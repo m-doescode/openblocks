@@ -107,6 +107,9 @@ Data::CFrame snapCFrame(Data::CFrame frame) {
 bool isMouseDragging = false;
 std::optional<std::weak_ptr<Part>> draggingObject;
 std::optional<HandleFace> draggingHandle;
+Data::Vector3 initialHitPos;
+Data::Vector3 initialHitNormal;
+Data::CFrame initialFrame;
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     if (!isMouseDragging || !draggingObject || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
 
@@ -119,10 +122,13 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     
     if (!rayHit) return;
 
-    glm::vec3 partSize = partFromBody(rayHit->body)->size;
-    Data::Vector3 vec = rayHit->worldPoint;
     Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe;
     Data::Vector3 surfaceNormal = targetFrame.Inverse().Rotation() * rayHit->worldNormal;
+    Data::Vector3 inverseSurfaceNormal = Data::Vector3::ONE - surfaceNormal.Abs();
+    glm::vec3 partSize = partFromBody(rayHit->body)->size;
+    Data::Vector3 tFormedHitPos = targetFrame * ((targetFrame.Inverse() * initialHitPos) * inverseSurfaceNormal);
+    Data::Vector3 tFormedInitialPos = targetFrame * ((targetFrame.Inverse() * initialFrame.Position()) * inverseSurfaceNormal);
+    Data::Vector3 vec = rayHit->worldPoint + (tFormedInitialPos - tFormedHitPos);
     // The part being dragged's frame local to the hit target's frame, but without its position component
     // To find a world vector local to the new frame, use newFrame, not localFrame, as localFrame is localFrame is local to targetFrame in itself
     Data::CFrame localFrame = (targetFrame.Inverse() * (draggingObject->lock()->cframe.Rotation() + vec));
@@ -132,7 +138,6 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     // Snap to studs
     Data::Vector3 draggingPartSize = draggingObject->lock()->size;
-    Data::Vector3 inverseSurfaceNormal = Data::Vector3::ONE - surfaceNormal.Abs();
     glm::vec3 inverseNormalPartSize = (Data::Vector3)(partSize - glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
     if (snappingFactor() > 0)
         localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
@@ -145,6 +150,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     Data::Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * draggingObject->lock()->size / 2);
 
     draggingObject->lock()->cframe = newFrame + unsinkOffset;
+
 
     gWorkspace()->SyncPartPhysics(draggingObject->lock());
     sendPropertyUpdatedSignal(draggingObject->lock(), "Position", draggingObject->lock()->position());
@@ -231,7 +237,6 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
 glm::vec2 startPoint;
-Data::CFrame initialFrame = Data::CFrame::IDENTITY;
 void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
 
@@ -348,6 +353,9 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         if (!rayHit || !partFromBody(rayHit->body)) return;
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
         if (part->locked) return;
+        initialFrame = part->cframe;
+        initialHitPos = rayHit->worldPoint;
+        initialHitNormal = rayHit->worldNormal;
         
         // Handle surface tool
         if (mainWindow()->selectedTool >= TOOL_SMOOTH) {
