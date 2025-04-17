@@ -119,7 +119,7 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
 
     // Old workspace used to exist, and workspaces differ
     if (!oldWorkspace.expired() && oldWorkspace != _workspace) {
-        OnWorkspaceRemoved(!oldWorkspace.expired() ? std::make_optional(oldWorkspace.lock()) : std::nullopt);
+        OnWorkspaceRemoved(oldWorkspace.lock());
     }
 
     // New workspace exists, and workspaces differ
@@ -171,7 +171,7 @@ void Instance::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWor
     // Empty stub
 }
 
-void Instance::OnWorkspaceRemoved(std::optional<std::shared_ptr<Workspace>> oldWorkspace) {
+void Instance::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
     // Empty stub
 }
 

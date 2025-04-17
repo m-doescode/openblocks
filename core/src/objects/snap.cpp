@@ -26,22 +26,22 @@ Snap::Snap(): Instance(&TYPE) {
                 .backingField = &part0,
                 .type = &Data::InstanceRef::TYPE,
                 .codec = fieldCodecOf<Data::InstanceRef, std::weak_ptr<Instance>>(),
-                // .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .updateCallback = memberFunctionOf(&Snap::onUpdated, this),
             }}, { "Part1", {
                 .backingField = &part1,
                 .type = &Data::InstanceRef::TYPE,
                 .codec = fieldCodecOf<Data::InstanceRef, std::weak_ptr<Instance>>(),
-                // .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .updateCallback = memberFunctionOf(&Snap::onUpdated, this),
             }}, { "C0", {
                 .backingField = &c0,
                 .type = &Data::CFrame::TYPE,
                 .codec = fieldCodecOf<Data::CFrame>(),
-                // .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .updateCallback = memberFunctionOf(&Snap::onUpdated, this),
             }}, { "C1", {
                 .backingField = &c0,
                 .type = &Data::CFrame::TYPE,
                 .codec = fieldCodecOf<Data::CFrame>(),
-                // .updateCallback = memberFunctionOf(&Part::onUpdated, this),
+                .updateCallback = memberFunctionOf(&Snap::onUpdated, this),
             }}, 
         }
     });
@@ -60,11 +60,22 @@ void Snap::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspa
     buildJoint();
 }
 
-void Snap::OnWorkspaceRemoved(std::optional<std::shared_ptr<Workspace>> oldWorkspace) {
+void Snap::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
     if (!this->joint) return;
 
-    if (!oldWorkspace) oldWorkspace.value()->physicsWorld->destroyJoint(this->joint);
+    oldWorkspace->physicsWorld->destroyJoint(this->joint);
     this->joint = nullptr;
+}
+
+void Snap::onUpdated(std::string property) {
+    // We are not in the workspace, so we don't really care what values are currently set
+    if (!workspace()) return;
+
+    // Workspace cannot have changed, so if the joint currently exists, it is in the present one
+    if (this->joint)
+        workspace().value()->physicsWorld->destroyJoint(this->joint);
+
+    buildJoint();
 }
 
 void Snap::buildJoint() {

@@ -65,7 +65,7 @@ protected:
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
     virtual void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
     virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace);
-    virtual void OnWorkspaceRemoved(std::optional<std::shared_ptr<Workspace>> oldWorkspace);
+    virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace);
 
     // The root data model this object is a descendant of
     std::optional<std::shared_ptr<DataModel>> dataModel();
