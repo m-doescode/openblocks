@@ -1,11 +1,15 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "common.h"
+#include "logger.h"
 #include "objects/snap.h"
+#include <map>
 #include <memory>
 #include <qclipboard.h>
+#include <qglobal.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
+#include <qstylefactory.h>
 #include <qstylehints.h>
 
 #ifdef _NDEBUG
@@ -27,7 +31,23 @@ inline bool isDarkMode() {
     return text.lightness() > window.lightness();
 #endif // QT_VERSION
 }
-    
+
+QtMessageHandler defaultMessageHandler = nullptr;
+
+std::map<QtMsgType, Logger::LogLevel> QT_MESSAGE_TYPE_TO_LOG_LEVEL = {
+    { QtMsgType::QtInfoMsg, Logger::LogLevel::INFO },  
+    { QtMsgType::QtSystemMsg, Logger::LogLevel::INFO }, 
+    { QtMsgType::QtDebugMsg, Logger::LogLevel::DEBUG }, 
+    { QtMsgType::QtWarningMsg, Logger::LogLevel::WARNING }, 
+    { QtMsgType::QtCriticalMsg, Logger::LogLevel::ERROR }, 
+    { QtMsgType::QtFatalMsg, Logger::LogLevel::FATAL_ERROR }, 
+};
+
+void logQtMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+    Logger::log("[Qt] " + msg.toStdString(), QT_MESSAGE_TYPE_TO_LOG_LEVEL[type]);
+
+    // if (defaultMessageHandler) defaultMessageHandler(type, context, msg);
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,7 +65,9 @@ MainWindow::MainWindow(QWidget *parent)
         QIcon::setFallbackThemeName("editor-dark");
     else
         QIcon::setFallbackThemeName("editor");
-    
+
+    // qApp->setStyle(QStyleFactory::create("fusion"));
+    defaultMessageHandler = qInstallMessageHandler(logQtMessage);
 
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
