@@ -290,6 +290,7 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
     }
 
     std::vector<std::string> properties = inst->GetProperties();
+    std::sort(properties.begin(),properties.end(), [&](auto a, auto b) { return a < b; });
 
     for (std::string property : properties) {
         PropertyMeta meta = inst->GetPropertyMeta(property).expect();
