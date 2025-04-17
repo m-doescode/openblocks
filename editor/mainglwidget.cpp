@@ -1,4 +1,6 @@
 #include <GL/glew.h>
+#include <glm/common.hpp>
+#include <glm/vector_relational.hpp>
 #include <qnamespace.h>
 #include <qsoundeffect.h>
 #include "mainglwidget.h"
@@ -210,6 +212,15 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
             glm::vec3 localDiff = frame.Inverse() * diff;
             // Find outwarwd difference
             localDiff = localDiff * glm::sign(draggingHandle->normal);
+
+            // Special case: minimum size to size mod snapping factor
+            if (snappingFactor() > 0 && glm::all(glm::lessThan((part->size + localDiff) * glm::abs(draggingHandle->normal), glm::vec3(0.01f)))) {
+                // I tried something fancy here, but honestly I'm not smart enough. Return;
+                // glm::vec3 finalSize = part->size + localDiff;
+                // finalSize = glm::mod(finalSize * glm::abs(draggingHandle->normal), snappingFactor()) + finalSize * (glm::vec3(1) - glm::abs(draggingHandle->normal));
+                // localDiff = finalSize - part->size;
+                return;
+            }
 
             // Minimum size of 0.01f
             localDiff = glm::max(part->size + localDiff, 0.01f) - part->size;
