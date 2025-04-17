@@ -42,7 +42,7 @@ public:
     bool isSuccess() { return std::holds_alternative<success_state>(value); }
     bool isError() { return std::holds_alternative<error_state>(value); }
 
-    std::optional<T_Result> success() { return isSuccess() ? std::get<success_state>(value).success : std::nullopt; }
+    std::optional<T_Result> success() { return isSuccess() ? std::make_optional(std::get<success_state>(value).success) : std::nullopt; }
     std::optional<std::variant<T_Errors...>> error() { return isError() ? std::make_optional(std::get<error_state>(value).error) : std::nullopt; }
 
     void logError(Logger::LogLevel logLevel = Logger::LogLevel::ERROR) {

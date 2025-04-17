@@ -5,13 +5,20 @@
 #include <optional>
 
 class Part;
+class Workspace;
 
 class Snap : public Instance {
     rp::FixedJoint* joint = nullptr;
-protected:
-    void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
-    void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
 
+    std::weak_ptr<Instance> oldParent;
+    // The actual workspace the joint is a part of
+    std::weak_ptr<Workspace> oldWorkspace;
+    // The pseudo-workspace the joint is a part of (including if parented to JointsService)
+    std::weak_ptr<Workspace> oldJointWorkspace;
+protected:
+    void OnAncestryChanged(std::optional<std::shared_ptr<Instance>>, std::optional<std::shared_ptr<Instance>>) override;
+
+    std::optional<std::shared_ptr<Workspace>> jointWorkspace();
     void onUpdated(std::string property);
     void buildJoint();
     void breakJoint();

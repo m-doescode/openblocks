@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "common.h"
 #include "logger.h"
+#include "objects/jointsservice.h"
 #include "objects/snap.h"
 #include <map>
 #include <memory>
@@ -169,7 +170,8 @@ MainWindow::MainWindow(QWidget *parent)
     snap->c0 = part1->cframe;
     snap->c1 = part0->cframe;
 
-    gWorkspace()->AddChild(snap);
+    // gWorkspace()->AddChild(snap);
+    gDataModel->GetService<JointsService>("JointsService").expect()->AddChild(snap);
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {

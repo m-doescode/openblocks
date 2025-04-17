@@ -1,4 +1,5 @@
 #include "meta.h"
+#include "objects/jointsservice.h"
 #include "objects/part.h"
 #include "objects/snap.h"
 #include "objects/workspace.h"
@@ -9,4 +10,5 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Workspace", &Workspace::TYPE },
     { "DataModel", &DataModel::TYPE },
     { "Snap", &Snap::TYPE },
+    { "JointsService", &JointsService::TYPE },
 };

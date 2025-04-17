@@ -49,7 +49,7 @@ public:
     template <typename T>
     result<std::shared_ptr<T>, NoSuchService> GetService(std::string name) {
         if (services.count(name) != 0)
-            return services[name];
+            return std::dynamic_pointer_cast<T>(services[name]);
         
         // TODO: Replace this with a result return type
         if (!INSTANCE_MAP[name] || (INSTANCE_MAP[name]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
@@ -59,13 +59,13 @@ public:
         services[name] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[name]->constructor());
         AddChild(std::dynamic_pointer_cast<Instance>(services[name]));
 
-        return services[name];
+        return std::dynamic_pointer_cast<T>(services[name]);
     }
 
     template <typename T>
     std::optional<std::shared_ptr<T>> FindService() {
         if (services.count(name) != 0)
-            return services[name];
+            return std::dynamic_pointer_cast<T>(services[name]);
         return std::nullopt;
     }
 
