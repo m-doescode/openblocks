@@ -44,7 +44,7 @@ void MainGLWidget::resizeGL(int w, int h) {
 glm::vec2 firstPoint;
 glm::vec2 secondPoint;
 
-extern std::optional<std::weak_ptr<Part>> draggingObject;
+extern std::weak_ptr<Part> draggingObject;
 extern std::optional<HandleFace> draggingHandle;
 extern Shader* shader;
 void MainGLWidget::paintGL() {
@@ -107,19 +107,19 @@ Data::CFrame snapCFrame(Data::CFrame frame) {
 }
 
 bool isMouseDragging = false;
-std::optional<std::weak_ptr<Part>> draggingObject;
+std::weak_ptr<Part> draggingObject;
 std::optional<HandleFace> draggingHandle;
 Data::Vector3 initialHitPos;
 Data::Vector3 initialHitNormal;
 Data::CFrame initialFrame;
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
-    if (!isMouseDragging || !draggingObject || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
+    if (!isMouseDragging || draggingObject.expired() || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
 
     QPoint position = evt->pos();
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000, [](std::shared_ptr<Part> part) {
-        return (part == draggingObject->lock()) ? FilterResult::PASS : FilterResult::TARGET;
+        return (part == draggingObject.lock()) ? FilterResult::PASS : FilterResult::TARGET;
     });
     
     if (!rayHit) return;
@@ -133,13 +133,13 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     Data::Vector3 vec = rayHit->worldPoint + (tFormedInitialPos - tFormedHitPos);
     // The part being dragged's frame local to the hit target's frame, but without its position component
     // To find a world vector local to the new frame, use newFrame, not localFrame, as localFrame is localFrame is local to targetFrame in itself
-    Data::CFrame localFrame = (targetFrame.Inverse() * (draggingObject->lock()->cframe.Rotation() + vec));
+    Data::CFrame localFrame = (targetFrame.Inverse() * (draggingObject.lock()->cframe.Rotation() + vec));
 
     // Snap axis
     localFrame = snapCFrame(localFrame);
 
     // Snap to studs
-    Data::Vector3 draggingPartSize = draggingObject->lock()->size;
+    Data::Vector3 draggingPartSize = draggingObject.lock()->size;
     glm::vec3 inverseNormalPartSize = (Data::Vector3)(partSize - glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
     if (snappingFactor() > 0)
         localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
@@ -149,13 +149,13 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     // Unsink the object
     // Get the normal of the surface relative to the part's frame, and get the size along that vector
-    Data::Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * draggingObject->lock()->size / 2);
+    Data::Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * draggingObject.lock()->size / 2);
 
-    draggingObject->lock()->cframe = newFrame + unsinkOffset;
+    draggingObject.lock()->cframe = newFrame + unsinkOffset;
 
 
-    gWorkspace()->SyncPartPhysics(draggingObject->lock());
-    sendPropertyUpdatedSignal(draggingObject->lock(), "Position", draggingObject->lock()->position());
+    gWorkspace()->SyncPartPhysics(draggingObject.lock());
+    sendPropertyUpdatedSignal(draggingObject.lock(), "Position", draggingObject.lock()->position());
 }
 
 inline glm::vec3 vec3fy(glm::vec4 vec) {
@@ -164,11 +164,11 @@ inline glm::vec3 vec3fy(glm::vec4 vec) {
 
 // Taken from Godot's implementation of moving handles (godot/editor/plugins/gizmos/gizmo_3d_helper.cpp)
 void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
-    if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
+    if (!isMouseDragging || !draggingHandle|| editorToolHandles->adornee.expired() || !editorToolHandles->active) return;
 
     QPoint position = evt->pos();
 
-    auto part = editorToolHandles->adornee->lock();
+    auto part = editorToolHandles->adornee.lock();
 
     // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
 
@@ -196,7 +196,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 centerPoint = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
 
     // Apply snapping in the current frame
-    glm::vec3 diff = centerPoint - (glm::vec3)editorToolHandles->adornee->lock()->position();
+    glm::vec3 diff = centerPoint - (glm::vec3)part->position();
     if (snappingFactor()) diff = frame.Rotation() * (glm::round(glm::vec3(frame.Inverse().Rotation() * diff) / snappingFactor()) * snappingFactor());
 
     Data::Vector3 oldSize = part->size;
@@ -204,7 +204,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     switch (mainWindow()->selectedTool) {
         case TOOL_MOVE: {
             // Add difference
-            editorToolHandles->adornee->lock()->cframe = editorToolHandles->adornee->lock()->cframe + diff;
+            part->cframe = part->cframe + diff;
         } break;
         
         case TOOL_SCALE: {
@@ -241,18 +241,18 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     if (mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
         playSound("./assets/excluded/switch.wav");
 
-    gWorkspace()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
-    sendPropertyUpdatedSignal(draggingObject->lock(), "Position", draggingObject->lock()->position());
-    sendPropertyUpdatedSignal(draggingObject->lock(), "Size", Data::Vector3(draggingObject->lock()->size));
+    gWorkspace()->SyncPartPhysics(part);
+    sendPropertyUpdatedSignal(part, "Position", part->position());
+    sendPropertyUpdatedSignal(part, "Size", Data::Vector3(part->size));
 }
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
 glm::vec2 startPoint;
 void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
-    if (!isMouseDragging || !draggingHandle || !editorToolHandles->adornee || !editorToolHandles->active) return;
+    if (!isMouseDragging || !draggingHandle || editorToolHandles->adornee.expired() || !editorToolHandles->active) return;
 
     glm::vec2 destPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-    auto part = editorToolHandles->adornee->lock();
+    auto part = editorToolHandles->adornee.lock();
 
     // Calculate part pos as screen point
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 1000.0f);
@@ -284,12 +284,12 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 
     part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
-    gWorkspace()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(editorToolHandles->adornee->lock()));
-    sendPropertyUpdatedSignal(draggingObject->lock(), "Rotation", draggingObject->lock()->cframe.ToEulerAnglesXYZ());
+    gWorkspace()->SyncPartPhysics(part);
+    sendPropertyUpdatedSignal(draggingObject.lock(), "Rotation", draggingObject.lock()->cframe.ToEulerAnglesXYZ());
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
-    if (!editorToolHandles->adornee.has_value() || !editorToolHandles->active) return std::nullopt;
+    if (editorToolHandles->adornee.expired() || !editorToolHandles->active) return std::nullopt;
     return editorToolHandles->RaycastHandle(rp3d::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
 }
 
@@ -353,7 +353,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
             startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-            initialFrame = editorToolHandles->adornee->lock()->cframe;
+            initialFrame = editorToolHandles->adornee.lock()->cframe;
             isMouseDragging = true;
             draggingHandle = handle;
             return;
@@ -417,10 +417,10 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
 }
 
 void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
-    // if (isMouseDragging) draggingObject->lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
+    // if (isMouseDragging) draggingObject.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
     isMouseRightDragging = false;
     isMouseDragging = false;
-    draggingObject = std::nullopt;
+    draggingObject = {};
     draggingHandle = std::nullopt;
 }
 

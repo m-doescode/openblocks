@@ -205,7 +205,7 @@ void renderSkyBox() {
 }
 
 void renderHandles() {
-    if (!editorToolHandles->adornee.has_value() || !editorToolHandles->active) return;
+    if (editorToolHandles->adornee.expired() || !editorToolHandles->active) return;
 
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);

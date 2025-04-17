@@ -45,13 +45,13 @@ class DescendantsIterator;
                  // https://stackoverflow.com/q/56415222/16255372
 class Instance : public std::enable_shared_from_this<Instance> {
 private:
-    std::optional<std::weak_ptr<Instance>> parent;
+    std::weak_ptr<Instance> parent;
     std::vector<std::shared_ptr<Instance>> children;
 
     std::optional<std::vector<std::string>> cachedMemberList;
 
-    std::optional<std::weak_ptr<DataModel>> _dataModel;
-    std::optional<std::weak_ptr<Workspace>> _workspace;
+    std::weak_ptr<DataModel> _dataModel;
+    std::weak_ptr<Workspace> _workspace;
 
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
     void updateAncestry(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);

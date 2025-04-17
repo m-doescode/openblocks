@@ -22,18 +22,18 @@ Snap::~Snap() {
 }
 
 void Snap::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
-    if (!part0 || !part1 || part0->expired() || part1->expired()) return;
+    if (part0.expired() || part1.expired()) return;
     
-    printVec((part0->lock()->cframe * (c1.Inverse() * c0)).Rotation().ToEulerAnglesXYZ());
-    printVec(part1->lock()->cframe.Rotation().ToEulerAnglesXYZ());
+    printVec((part0.lock()->cframe * (c1.Inverse() * c0)).Rotation().ToEulerAnglesXYZ());
+    printVec(part1.lock()->cframe.Rotation().ToEulerAnglesXYZ());
     
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
-    Data::CFrame newFrame = part0->lock()->cframe * (c1.Inverse() * c0);
-    part1->lock()->cframe = newFrame;
-    newWorkspace->SyncPartPhysics(part1->lock());
+    Data::CFrame newFrame = part0.lock()->cframe * (c1.Inverse() * c0);
+    part1.lock()->cframe = newFrame;
+    newWorkspace->SyncPartPhysics(part1.lock());
 
-    rp::FixedJointInfo jointInfo(part0->lock()->rigidBody, part1->lock()->rigidBody, (c0.Inverse() * c1).Position());
+    rp::FixedJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position());
     this->joint = dynamic_cast<rp::FixedJoint*>(workspace().value()->physicsWorld->createJoint(jointInfo));
 }
 

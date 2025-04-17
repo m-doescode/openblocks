@@ -56,6 +56,16 @@ bool operator ==(std::optional<std::weak_ptr<T>> a, std::optional<std::weak_ptr<
     || (a.has_value() && !a.value().expired()) && (b.has_value() && !b.value().expired()) && a.value().lock() == b.value().lock();
 }
 
+template <typename T>
+bool operator ==(std::weak_ptr<T> a, std::weak_ptr<T> b) {
+    return a.expired() && b.expired() || (!a.expired() && !b.expired() && a.lock() == b.lock());
+}
+
+template <typename T>
+std::weak_ptr<T> optional_to_weak(std::optional<std::shared_ptr<T>> a) {
+    return a ? a.value() : std::weak_ptr<T>();
+}
+
 // TODO: Test this
 bool Instance::ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent) {
     for (std::optional<std::shared_ptr<Instance>> currentParent = newParent; currentParent.has_value(); currentParent = currentParent.value()->GetParent()) {
@@ -72,15 +82,15 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
     auto lastParent = GetParent();
     if (hierarchyPreUpdateHandler.has_value()) hierarchyPreUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
     // If we currently have a parent, remove ourselves from it before adding ourselves to the new one
-    if (this->parent.has_value() && !this->parent.value().expired()) {
-        auto oldParent = this->parent.value().lock();
+    if (!this->parent.expired()) {
+        auto oldParent = this->parent.lock();
         oldParent->children.erase(std::find(oldParent->children.begin(), oldParent->children.end(), this->shared_from_this()));
     }
     // Add ourselves to the new parent
     if (newParent.has_value()) {
         newParent.value()->children.push_back(this->shared_from_this());
     }
-    this->parent = newParent;
+    this->parent = optional_to_weak(newParent);
     // TODO: Add code for sending signals for parent updates
     // TODO: Yeahhh maybe this isn't the best way of doing this?
     if (hierarchyPostUpdateHandler.has_value()) hierarchyPostUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
@@ -98,23 +108,23 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
 
     // Update parent data model and workspace, if applicable
     if (GetParent()) {
-        this->_dataModel = GetParent().value()->GetClass() == &DataModel::TYPE ? std::make_optional(std::dynamic_pointer_cast<DataModel>(GetParent().value())) : GetParent().value()->dataModel();
-        this->_workspace = GetParent().value()->GetClass() == &Workspace::TYPE ? std::make_optional(std::dynamic_pointer_cast<Workspace>(GetParent().value())) : GetParent().value()->workspace();
+        this->_dataModel = GetParent().value()->GetClass() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent().value()) : GetParent().value()->_dataModel;
+        this->_workspace = GetParent().value()->GetClass() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent().value()) : GetParent().value()->_workspace;
     } else {
-        this->_dataModel = std::nullopt;
-        this->_workspace = std::nullopt;
+        this->_dataModel = {};
+        this->_workspace = {};
     }
 
     OnAncestryChanged(updatedChild, newParent);
 
     // Old workspace used to exist, and workspaces differ
-    if (oldWorkspace.has_value() && !oldWorkspace->expired() && (!_workspace || _workspace->expired() || oldWorkspace->lock() != _workspace->lock())) {
-        OnWorkspaceRemoved((oldWorkspace.has_value() && !oldWorkspace->expired()) ? std::make_optional(oldWorkspace->lock()) : std::nullopt);
+    if (!oldWorkspace.expired() && oldWorkspace != _workspace) {
+        OnWorkspaceRemoved(!oldWorkspace.expired() ? std::make_optional(oldWorkspace.lock()) : std::nullopt);
     }
 
     // New workspace exists, and workspaces differ
-    if (_workspace.has_value() && !_workspace->expired() && (!oldWorkspace || oldWorkspace->expired() || _workspace->lock() != oldWorkspace->lock())) {
-        OnWorkspaceAdded((oldWorkspace.has_value() && !oldWorkspace->expired()) ? std::make_optional(oldWorkspace->lock()) : std::nullopt, _workspace->lock());
+    if (!_workspace.expired() && (_workspace != oldWorkspace)) {
+        OnWorkspaceAdded(!oldWorkspace.expired() ? std::make_optional(oldWorkspace.lock()) : std::nullopt, _workspace.lock());
     }
 
     // Update ancestry in descendants
@@ -124,17 +134,16 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
 }
 
 std::optional<std::shared_ptr<DataModel>> Instance::dataModel() {
-    return (!_dataModel || _dataModel->expired()) ? std::nullopt : std::make_optional(_dataModel.value().lock());
+    return (_dataModel.expired()) ? std::nullopt : std::make_optional(_dataModel.lock());
 }
 
 std::optional<std::shared_ptr<Workspace>> Instance::workspace() {
-    return (!_workspace || _workspace->expired()) ? std::nullopt : std::make_optional(_workspace.value().lock());
+    return (_workspace.expired()) ? std::nullopt : std::make_optional(_workspace.lock());
 }
 
 std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
-    if (!parent.has_value()) return std::nullopt;
-    if (parent.value().expired()) return std::nullopt;
-    return parent.value().lock();
+    if (parent.expired()) return std::nullopt;
+    return parent.lock();
 }
 
 static std::shared_ptr<Instance> DUMMY_INSTANCE;

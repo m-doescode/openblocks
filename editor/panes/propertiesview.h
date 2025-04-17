@@ -11,7 +11,7 @@ namespace Data { class Variant; };
 class PropertiesView : public QTreeWidget {
     Q_DECLARE_PRIVATE(QTreeView)
 
-    std::optional<InstanceRefWeak> currentInstance;
+    InstanceRefWeak currentInstance;
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);
     void rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo*, Data::Variant);

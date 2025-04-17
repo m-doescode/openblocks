@@ -36,11 +36,11 @@ public:
 
     bool nixAxes = false; // XYZ -> ZXY, used with rotation
     bool active;
-    std::optional<std::weak_ptr<Part>> adornee;
+    std::weak_ptr<Part> adornee;
     HandlesType handlesType;
 
-    // inline std::optional<std::weak_ptr<Part>> GetAdornee() { return adornee; }
-    // inline void SetAdornee(std::optional<std::weak_ptr<Part>> newAdornee) { this->adornee = newAdornee; updateAdornee(); };
+    // inline std::weak_ptr<Part> GetAdornee() { return adornee; }
+    // inline void SetAdornee(std::weak_ptr<Part> newAdornee) { this->adornee = newAdornee; updateAdornee(); };
 
     Handles();
 

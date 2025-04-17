@@ -100,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
     
     // Update handles
     addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        editorToolHandles->adornee = std::nullopt;
+        editorToolHandles->adornee = {};
         if (newSelection.size() == 0) return;
         InstanceRef inst = newSelection[0].lock();
         if (inst->GetClass() != &Part::TYPE) return;

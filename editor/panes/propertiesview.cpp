@@ -36,8 +36,8 @@ public:
     QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         if (index.column() == 0) return nullptr;
     
-        if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return nullptr;
-        InstanceRef inst = view->currentInstance->lock();
+        if (!index.parent().isValid() || view->currentInstance.expired()) return nullptr;
+        InstanceRef inst = view->currentInstance.lock();
 
         // If the property is deeper than 1 layer, then it is considered composite
         // Handle specially
@@ -105,8 +105,8 @@ public:
     void setEditorData(QWidget *editor, const QModelIndex &index) const override {
         if (index.column() == 0) return;
     
-        if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return;
-        InstanceRef inst = view->currentInstance->lock();
+        if (!index.parent().isValid() || view->currentInstance.expired()) return;
+        InstanceRef inst = view->currentInstance.lock();
 
         bool isComposite = index.parent().parent().isValid();
         std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
@@ -157,8 +157,8 @@ public:
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override {
         if (index.column() == 0) return;
     
-        if (!index.parent().isValid() || !view->currentInstance || view->currentInstance->expired()) return;
-        InstanceRef inst = view->currentInstance->lock();
+        if (!index.parent().isValid() || view->currentInstance.expired()) return;
+        InstanceRef inst = view->currentInstance.lock();
 
         bool isComposite = index.parent().parent().isValid();
         std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
@@ -268,6 +268,7 @@ void PropertiesView::drawBranches(QPainter *painter, const QRect &rect, const QM
 
 void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
     clear();
+    currentInstance = {};
     if (!instance) return;
     InstanceRef inst = instance.value();
     currentInstance = inst;
@@ -334,8 +335,8 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
 }
 
 void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
-    if (!item->parent() || (item->parent() && item->parent()->parent()) || !currentInstance || currentInstance->expired()) return;
-    InstanceRef inst = currentInstance->lock();
+    if (!item->parent() || (item->parent() && item->parent()->parent()) || currentInstance.expired()) return;
+    InstanceRef inst = currentInstance.lock();
 
     std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
     PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();

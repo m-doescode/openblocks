@@ -14,8 +14,8 @@ protected:
 public:
     const static InstanceType TYPE;
 
-    std::optional<std::weak_ptr<Part>> part0;
-    std::optional<std::weak_ptr<Part>> part1;
+    std::weak_ptr<Part> part0;
+    std::weak_ptr<Part> part1;
     Data::CFrame c0;
     Data::CFrame c1;
 
