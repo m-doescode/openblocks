@@ -2,6 +2,7 @@
 #include "common.h"
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
+#include <glm/ext/scalar_common.hpp>
 #include <optional>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
@@ -50,7 +51,8 @@ Data::CFrame Handles::GetCFrameOfHandle(HandleFace face) {
     if (glm::abs(glm::dot(glm::vec3(localFrame.Rotation() * handleNormal), upAxis)) > 0.9999f)
         upAxis = glm::vec3(0, 1, 0);
 
-    Data::Vector3 handleOffset = this->worldMode ? ((Data::Vector3::ONE * 2.f) + adornee.lock()->GetAABB() * 0.5f) : Data::Vector3(2.f + adornee.lock()->size * 0.5f);
+    glm::vec3 partSize = handlesType == HandlesType::RotateHandles ? glm::vec3(glm::max(adornee.lock()->size.x, adornee.lock()->size.y, adornee.lock()->size.z)) : adornee.lock()->size;
+    Data::Vector3 handleOffset = this->worldMode ? ((Data::Vector3::ONE * 2.f) + adornee.lock()->GetAABB() * 0.5f) : Data::Vector3(2.f + partSize * 0.5f);
     Data::Vector3 handlePos = localFrame * (handleOffset * handleNormal);
     Data::CFrame cframe(handlePos, handlePos + localFrame.Rotation() * -handleNormal, upAxis);
 

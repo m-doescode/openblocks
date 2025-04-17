@@ -285,7 +285,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
     gWorkspace()->SyncPartPhysics(part);
-    sendPropertyUpdatedSignal(draggingObject.lock(), "Rotation", draggingObject.lock()->cframe.ToEulerAnglesXYZ());
+    sendPropertyUpdatedSignal(part, "Rotation", part->cframe.ToEulerAnglesXYZ());
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {

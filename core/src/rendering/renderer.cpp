@@ -1,16 +1,20 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
+#include <cmath>
 #include <cstdio>
 #include <glm/ext.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
 
 #include "datatypes/cframe.h"
+#include "objects/handles.h"
+#include "rendering/torus.h"
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
@@ -42,6 +46,8 @@ void renderInit(GLFWwindow* window, int width, int height) {
     viewportWidth = width, viewportHeight = height;
     glViewport(0, 0, width, height);
 
+    int argc = 1;
+    char* argv = const_cast<char*>("");
     initMeshes();
 
     glEnable(GL_DEPTH_TEST);
@@ -396,6 +402,57 @@ void renderOutlines() {
     }
 }
 
+void renderRotationArcs() {
+    if (editorToolHandles->adornee.expired() || editorToolHandles->handlesType != HandlesType::RotateHandles) return;
+
+    glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Use shader
+    handleShader->use();
+
+    handleShader->set("sunLight", DirLight {
+        .direction = glm::vec3(-0.2f, -1.0f, -0.3f),
+        .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
+        .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+        .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+    });
+
+    // view/projection transformations
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 view = camera.getLookAt();
+    handleShader->set("projection", projection);
+    handleShader->set("view", view);
+
+    // Pass in the camera position
+    handleShader->set("viewPos", camera.cameraPos);
+
+    std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(getSelection()[0].lock());
+
+    for (HandleFace face : HandleFace::Faces) {
+        if (glm::any(glm::lessThan(face.normal, glm::vec3(0)))) continue;
+        glm::mat4 model = part->cframe * Data::CFrame(glm::vec3(0), face.normal, glm::vec3(0, 1.01, 0.1));
+        handleShader->set("model", model);
+
+        float radius = glm::max(part->size.x, part->size.y, part->size.z) / 2.f + 2.f;
+
+        handleShader->set("material", Material {
+            .diffuse = glm::abs(face.normal),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 16.0f,
+        });
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        handleShader->set("normalMatrix", normalMatrix);
+
+        genTorus(radius, 0.05f, 20, 20);
+    }
+}
+
 void render(GLFWwindow* window) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -404,6 +461,7 @@ void render(GLFWwindow* window) {
     renderHandles();
     renderParts();
     renderOutlines();
+    renderRotationArcs();
     if (wireframeRendering)
         renderWireframe();
     // TODO: Make this a debug flag
