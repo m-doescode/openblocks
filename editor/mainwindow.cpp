@@ -151,25 +151,25 @@ MainWindow::MainWindow(QWidget *parent)
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-    // auto part0 = ui->mainWidget->lastPart;
+    auto part0 = ui->mainWidget->lastPart;
 
-    // gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-    //     .position = glm::vec3(1.6691498, 0.82489049, -0.73040605),
-    //     // .rotation = glm::vec3(0.5, 2, 1),
-    //     .rotation = glm::vec3(-2.6415927, 1.1415926, -2.141639),
-    //     .size = glm::vec3(4, 1.2, 2),
-    //     .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    // }));
-    // gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-    // auto part1 = ui->mainWidget->lastPart;
+    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+        .position = glm::vec3(1.6691498, 0.82489049, -0.73040605),
+        // .rotation = glm::vec3(0.5, 2, 1),
+        .rotation = glm::vec3(-2.6415927, 1.1415926, -2.141639),
+        .size = glm::vec3(4, 1.2, 2),
+        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
+    }));
+    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
+    auto part1 = ui->mainWidget->lastPart;
 
-    // auto snap = Snap::New();
-    // snap->part0 = part0;
-    // snap->part1 = part1;
-    // snap->c0 = part1->cframe;
-    // snap->c1 = part0->cframe;
+    auto snap = Snap::New();
+    snap->part0 = part0;
+    snap->part1 = part1;
+    snap->c0 = part1->cframe;
+    snap->c1 = part0->cframe;
 
-    // gWorkspace()->AddChild(snap);
+    gWorkspace()->AddChild(snap);
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {

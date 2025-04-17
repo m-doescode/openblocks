@@ -7,10 +7,13 @@
 class Part;
 
 class Snap : public Instance {
-    rp::FixedJoint* joint;
+    rp::FixedJoint* joint = nullptr;
 protected:
     void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
     void OnWorkspaceRemoved(std::optional<std::shared_ptr<Workspace>> oldWorkspace) override;
+
+    void buildJoint();
+    void breakJoint();
 public:
     const static InstanceType TYPE;
 

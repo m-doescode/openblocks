@@ -4,6 +4,7 @@
 #include <map>
 #include "base.h"
 #include "datatypes/color3.h"
+#include "datatypes/ref.h"
 #include "vector.h"
 #include "cframe.h"
 
@@ -24,7 +25,8 @@ namespace Data {
         String,
         Vector3,
         CFrame,
-        Color3
+        Color3,
+        InstanceRef
     > __VARIANT_TYPE;
 
     class Variant {
