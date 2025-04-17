@@ -6,7 +6,8 @@
 
 ExplorerView::ExplorerView(QWidget* parent):
     QTreeView(parent),
-    model(ExplorerModel(std::dynamic_pointer_cast<Instance>(gDataModel))) {
+    model(ExplorerModel(std::dynamic_pointer_cast<Instance>(gDataModel))),
+    contextMenu(this) {
 
     this->setModel(&model);
     // Disabling the root decoration will cause the expand/collapse chevrons to be hidden too, we don't want that
