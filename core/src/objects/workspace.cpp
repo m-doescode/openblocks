@@ -35,6 +35,8 @@ void Workspace::InitService() {
     // world->setContactsPositionCorrectionTechnique(rp3d::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
     physicsWorld->setNbIterationsPositionSolver(2000);
     physicsWorld->setNbIterationsVelocitySolver(2000);
+    // physicsWorld->setSleepLinearVelocity(10);
+    // physicsWorld->setSleepAngularVelocity(5);
 
     // physicsWorld->setEventListener(&eventListener);
 
@@ -61,17 +63,22 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
 
     rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
 
-    if (part->rigidBody->getNbColliders() > 0) {
+    if (part->rigidBody->getNbColliders() > 0)
         part->rigidBody->removeCollider(part->rigidBody->getCollider(0));
-    }
 
-    if (part->rigidBody->getNbColliders() == 0)
-        part->rigidBody->addCollider(shape, rp::Transform());
+    part->rigidBody->addCollider(shape, rp::Transform());
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
     part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
 
-    float density = 1.f;
-    part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
+    rp::Material& material = part->rigidBody->getCollider(0)->getMaterial();
+    material.setFrictionCoefficient(0.35);
+    material.setMassDensity(1.f);
+
+    //https://github.com/DanielChappuis/reactphysics3d/issues/170#issuecomment-691514860
+    part->rigidBody->updateMassFromColliders();
+    part->rigidBody->updateLocalInertiaTensorFromColliders();
+
+    // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
 
     part->rigidBody->setUserData(&*part);
 }

@@ -155,7 +155,7 @@ MainWindow::MainWindow(QWidget *parent)
     auto part0 = ui->mainWidget->lastPart;
 
     gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-        .position = glm::vec3(1.6691498, 0.82489049, -0.73040605),
+        .position = glm::vec3(1.7610925, 0.48568499, -0.82623518),
         // .rotation = glm::vec3(0.5, 2, 1),
         .rotation = glm::vec3(-2.6415927, 1.1415926, -2.141639),
         .size = glm::vec3(4, 1.2, 2),
