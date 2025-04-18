@@ -70,6 +70,9 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
     part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
 
+    float density = 1.f;
+    part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
+
     part->rigidBody->setUserData(&*part);
 }
 

@@ -2,7 +2,6 @@
 
 #include "datatypes/cframe.h"
 #include "datatypes/ref.h"
-#include "datatypes/vector.h"
 #include "objects/datamodel.h"
 #include "objects/jointsservice.h"
 #include "workspace.h"
