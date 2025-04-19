@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <fstream>
 #include <memory>
+#include <optional>
 
 const InstanceType DataModel::TYPE = {
     .super = &Instance::TYPE,
@@ -120,4 +121,28 @@ std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
     newModel->Init();
 
     return newModel;
+}
+
+result<std::shared_ptr<Service>, NoSuchService> DataModel::GetService(std::string className) {
+    if (services.count(className) != 0)
+        return std::dynamic_pointer_cast<Service>(services[className]);
+    
+    if (!INSTANCE_MAP[className] || (INSTANCE_MAP[className]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
+        return NoSuchService(className);
+    }
+
+    services[className] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[className]->constructor());
+    AddChild(std::dynamic_pointer_cast<Instance>(services[className]));
+
+    return std::dynamic_pointer_cast<Service>(services[className]);
+}
+
+result<std::optional<std::shared_ptr<Service>>, NoSuchService> DataModel::FindService(std::string className) {
+    if (!INSTANCE_MAP[className] || (INSTANCE_MAP[className]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
+        return NoSuchService(className);
+    }
+
+    if (services.count(className) != 0)
+        return std::make_optional(std::dynamic_pointer_cast<Service>(services[className]));
+    return (std::optional<std::shared_ptr<Service>>)std::nullopt;
 }

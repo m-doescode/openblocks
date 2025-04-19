@@ -26,3 +26,8 @@ class AssignToReadOnlyMember : public Error {
     public:
     inline AssignToReadOnlyMember(std::string className, std::string memberName) : Error("AssignToReadOnlyMember", "Attempt to assign value to read-only member '" + memberName + "' in class " + className) {}
 };
+
+class InstanceCastError : public Error {
+    public:
+    inline InstanceCastError(std::string sourceClass, std::string targetClass) : Error("InstanceCastError", "Attempt to cast object of type " + sourceClass + " to incompatible type " + targetClass) {}
+};

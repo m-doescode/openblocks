@@ -100,6 +100,15 @@ public:
     // Returning a list of property names feels kinda janky. Is this really the way to go?
     std::vector<std::string> GetProperties();
 
+    template <typename T>
+    result<std::shared_ptr<T>, InstanceCastError> CastTo() {
+        // TODO: Too lazy to implement a manual check
+        std::shared_ptr<T> result = std::dynamic_pointer_cast<T>(shared_from_this());
+        if (result != nullptr)
+            return InstanceCastError(GetClass()->className, T::TYPE.className);
+        return result;
+    }
+
     // Serialization
     void Serialize(pugi::xml_node parent);
     static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node);

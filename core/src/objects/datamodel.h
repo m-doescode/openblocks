@@ -1,5 +1,6 @@
 #pragma once
 
+#include "error/instance.h"
 #include "error/result.h"
 #include "logger.h"
 #include "objects/base/instance.h"
@@ -46,27 +47,21 @@ public:
         return {};
     }
 
+    result<std::shared_ptr<Service>, NoSuchService> GetService(std::string className);
+    result<std::optional<std::shared_ptr<Service>>, NoSuchService> FindService(std::string className);
+
     template <typename T>
-    result<std::shared_ptr<T>, NoSuchService> GetService(std::string name) {
-        if (services.count(name) != 0)
-            return std::dynamic_pointer_cast<T>(services[name]);
-        
-        // TODO: Replace this with a result return type
-        if (!INSTANCE_MAP[name] || (INSTANCE_MAP[name]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
-            return NoSuchService(name);
-        }
-
-        services[name] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[name]->constructor());
-        AddChild(std::dynamic_pointer_cast<Instance>(services[name]));
-
-        return std::dynamic_pointer_cast<T>(services[name]);
+    result<std::shared_ptr<T>, NoSuchService> GetService() {
+        auto result = GetService(T::TYPE.className);
+        if (result.isError()) return result.error().value();
+        return std::dynamic_pointer_cast<T>(result.success().value());
     }
 
     template <typename T>
     std::optional<std::shared_ptr<T>> FindService() {
-        if (services.count(name) != 0)
-            return std::dynamic_pointer_cast<T>(services[name]);
-        return std::nullopt;
+        auto result = FindService(T::TYPE.className);
+        if (result.isError()) return result.error().value();
+        return std::dynamic_pointer_cast<T>(result.success().value());
     }
 
     // Saving/loading
