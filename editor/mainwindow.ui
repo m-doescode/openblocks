@@ -188,7 +188,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionToggleSimulation"/>
+   <addaction name="actionRunSimulation"/>
+   <addaction name="actionPauseSimulation"/>
+   <addaction name="actionStopSimulation"/>
   </widget>
   <widget class="QToolBar" name="surfaceTools">
    <property name="windowTitle">
@@ -670,6 +672,48 @@
    </property>
    <property name="toolTip">
     <string>Toggles edit sound effects</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionRunSimulation">
+   <property name="icon">
+    <iconset theme="media-playback-start"/>
+   </property>
+   <property name="text">
+    <string>Run</string>
+   </property>
+   <property name="toolTip">
+    <string>Run simulation</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionPauseSimulation">
+   <property name="icon">
+    <iconset theme="media-playback-pause"/>
+   </property>
+   <property name="text">
+    <string>Pause</string>
+   </property>
+   <property name="toolTip">
+    <string>Pause simulation</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionStopSimulation">
+   <property name="icon">
+    <iconset theme="media-playback-stop"/>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop simulation</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

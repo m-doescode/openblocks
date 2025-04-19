@@ -17,7 +17,13 @@
 #define NDEBUG
 #endif
 
-bool simulationPlaying = false;
+enum RunState {
+    RUN_STOPPED,
+    RUN_RUNNING,
+    RUN_PAUSED
+};
+
+RunState runState = RUN_STOPPED;
 
 bool worldSpaceTransforms = false;
 
@@ -171,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     snap->c1 = part0->cframe;
 
     // gWorkspace()->AddChild(snap);
-    gDataModel->GetService<JointsService>("JointsService").expect()->AddChild(snap);
+    gDataModel->GetService<JointsService>().expect()->AddChild(snap);
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
@@ -217,7 +223,7 @@ void MainWindow::timerEvent(QTimerEvent* evt) {
     float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
     lastTime = std::chrono::steady_clock::now();
 
-    if (simulationPlaying)
+    if (runState == RUN_RUNNING)
         gWorkspace()->PhysicsStep(deltaTime);
     ui->mainWidget->update();
     ui->mainWidget->updateCycle();
@@ -254,18 +260,44 @@ void MainWindow::connectActionHandlers() {
     });
     ui->actionToggleEditSounds->setChecked(true);
 
-    connect(ui->actionToggleSimulation, &QAction::triggered, this, [&]() {
-        simulationPlaying = !simulationPlaying;
-        if (simulationPlaying) {
-            ui->actionToggleSimulation->setText("Pause simulation");
-            ui->actionToggleSimulation->setToolTip("Pause the simulation");
-            ui->actionToggleSimulation->setIcon(QIcon::fromTheme("media-playback-pause"));
-        } else {
-            ui->actionToggleSimulation->setText("Resume simulation");
-            ui->actionToggleSimulation->setToolTip("Resume the simulation");
-            ui->actionToggleSimulation->setIcon(QIcon::fromTheme("media-playback-start"));
+    connect(ui->actionRunSimulation, &QAction::triggered, this, [&]() {
+        if (runState == RUN_RUNNING) return;
+
+        if (runState == RUN_PAUSED) {
+            runState = RUN_RUNNING;
+            ui->actionRunSimulation->setEnabled(false);
+            ui->actionPauseSimulation->setEnabled(true);
+            return;
         }
+
+        runState = RUN_RUNNING;
+        ui->actionRunSimulation->setEnabled(false);
+        ui->actionPauseSimulation->setEnabled(true);
+        ui->actionStopSimulation->setEnabled(true);
     });
+
+    connect(ui->actionPauseSimulation, &QAction::triggered, this, [&]() {
+        if (runState != RUN_RUNNING) return;
+
+        runState = RUN_PAUSED;
+        ui->actionRunSimulation->setEnabled(true);
+        ui->actionPauseSimulation->setEnabled(false);
+        return;
+    });
+
+    connect(ui->actionStopSimulation, &QAction::triggered, this, [&]() {
+        if (runState == RUN_STOPPED) return;
+
+        runState = RUN_STOPPED;
+        ui->actionRunSimulation->setEnabled(true);
+        ui->actionPauseSimulation->setEnabled(false);
+        ui->actionStopSimulation->setEnabled(false);
+        return;
+    });
+
+    ui->actionRunSimulation->setEnabled(true);
+    ui->actionPauseSimulation->setEnabled(false);
+    ui->actionStopSimulation->setEnabled(false);
 
     connect(ui->actionToggleSpace, &QAction::triggered, this, [&]() {
         worldSpaceTransforms = !worldSpaceTransforms;

@@ -111,7 +111,7 @@ std::optional<std::shared_ptr<Workspace>> Snap::jointWorkspace() {
     if (workspace()) return workspace();
 
     if (GetParent() && GetParent().value()->GetClass() == &JointsService::TYPE)
-        return std::dynamic_pointer_cast<DataModel>(GetParent().value()->GetParent().value())->GetService<Workspace>("Workspace");
+        return std::dynamic_pointer_cast<DataModel>(GetParent().value()->GetParent().value())->GetService<Workspace>();
 
     return {};
 }
