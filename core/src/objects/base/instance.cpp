@@ -2,8 +2,10 @@
 #include "common.h"
 #include "datatypes/meta.h"
 #include "datatypes/base.h"
+#include "datatypes/ref.h"
 #include "error/instance.h"
 #include "objects/base/member.h"
+#include "objects/base/refstate.h"
 #include "objects/meta.h"
 #include "logger.h"
 #include "panic.h"
@@ -12,6 +14,9 @@
 #include <cstdio>
 #include <memory>
 #include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 // Static so that this variable name is "local" to this source file
 const InstanceType Instance::TYPE = {
@@ -348,4 +353,73 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
     current = current->GetParent().value()->GetChildren()[siblingIndex.back()];
 
     return *this;
+}
+
+std::optional<std::shared_ptr<Instance>> Instance::Clone(RefState<_RefStatePropertyCell> state) {
+    std::shared_ptr<Instance> newInstance = GetClass()->constructor();
+
+    // Copy properties
+    for (std::string property : GetProperties()) {
+        PropertyMeta meta = GetPropertyMeta(property).expect();
+        
+        if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
+
+        // Update InstanceRef properties using map above
+        if (meta.type == &Data::InstanceRef::TYPE) {
+            std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<Data::InstanceRef>();
+            if (refWeak.expired()) continue;
+
+            auto ref = refWeak.lock();
+            auto remappedRef = state->remappedInstances[ref]; // TODO: I think this is okay? Maybe?? Add null check?
+            
+            if (remappedRef) {
+                // If the instance has already been remapped, set the new value
+                newInstance->SetPropertyValue(property, Data::InstanceRef(remappedRef)).expect();
+            } else {
+                // Otheriise, queue this property to be updated later, and keep its current value
+                auto& refs = state->refsAwaitingRemap[ref];
+                refs.push_back(std::make_pair(ref, property));
+                state->refsAwaitingRemap[ref] = refs;
+
+                newInstance->SetPropertyValue(property, Data::InstanceRef(ref)).expect();
+            }
+        } else {
+            Data::Variant value = GetPropertyValue(property).expect();
+            newInstance->SetPropertyValue(property, value).expect();
+        }
+    }
+
+    // Remap self
+    state->remappedInstances[shared_from_this()] = newInstance;
+
+    // Remap queued properties
+    for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[shared_from_this()]) {
+        ref.first->SetPropertyValue(ref.second, Data::InstanceRef(newInstance)).expect();
+    }
+
+    // Clone children
+    for (std::shared_ptr<Instance> child : GetChildren()) {
+        std::optional<std::shared_ptr<Instance>> clonedChild = child->Clone(state);
+        if (clonedChild)
+            newInstance->AddChild(clonedChild.value());
+    }
+
+    return newInstance;
+}
+
+std::vector<std::pair<std::string, std::shared_ptr<Instance>>> Instance::GetReferenceProperties() {
+    std::vector<std::pair<std::string, std::shared_ptr<Instance>>> referenceProperties;
+
+    auto propertyNames = GetProperties();
+
+    for (std::string property : propertyNames) {
+        PropertyMeta meta = GetPropertyMeta(property).expect();
+        if (meta.type != &Data::InstanceRef::TYPE) continue;
+
+        std::weak_ptr<Instance> ref = GetPropertyValue(property).expect().get<Data::InstanceRef>();
+        if (ref.expired()) continue;
+        referenceProperties.push_back(std::make_pair(property, ref.lock()));
+    }
+
+    return referenceProperties;
 }

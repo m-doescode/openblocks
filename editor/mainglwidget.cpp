@@ -462,6 +462,9 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         Logger::warning("warning message");
     if (evt->key() == Qt::Key_O)
         Logger::error("error message");
+
+    if (evt->key() == Qt::Key_C && getSelection().size() > 0 && !getSelection()[0].expired())
+        getSelection()[0].lock()->Clone().value()->SetParent(gWorkspace());
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {

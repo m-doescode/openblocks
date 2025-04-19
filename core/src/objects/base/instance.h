@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <utility>
 #include <vector>
 #include <memory>
 #include <optional>
@@ -14,6 +15,7 @@
 #include "error/instance.h"
 #include "error/result.h"
 #include "member.h"
+#include "objects/base/refstate.h"
 
 class Instance;
 typedef std::shared_ptr<Instance>(*InstanceConstructor)();
@@ -36,6 +38,7 @@ struct InstanceType {
     InstanceFlags flags;
 };
 
+typedef std::pair<std::shared_ptr<Instance>, std::string> _RefStatePropertyCell;
 
 class DescendantsIterator;
 
@@ -99,6 +102,7 @@ public:
     void UpdateProperty(std::string name);
     // Returning a list of property names feels kinda janky. Is this really the way to go?
     std::vector<std::string> GetProperties();
+    std::vector<std::pair<std::string, std::shared_ptr<Instance>>> GetReferenceProperties();
 
     template <typename T>
     result<std::shared_ptr<T>, InstanceCastError> CastTo() {
@@ -112,6 +116,7 @@ public:
     // Serialization
     void Serialize(pugi::xml_node parent);
     static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node);
+    std::optional<std::shared_ptr<Instance>> Clone(RefState<_RefStatePropertyCell> state = std::make_shared<__RefState<_RefStatePropertyCell>>());
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;
