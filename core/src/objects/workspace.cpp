@@ -1,5 +1,7 @@
 #include "workspace.h"
 #include "objects/base/instance.h"
+#include "objects/jointsservice.h"
+#include "objects/snap.h"
 #include "physics/util.h"
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
@@ -46,6 +48,20 @@ void Workspace::InitService() {
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         this->SyncPartPhysics(part);
+    }
+
+    // Activate all joints
+    for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
+        InstanceRef obj = *it;
+        if (obj->GetClass()->className != "Snap") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
+        std::shared_ptr<Snap> joint = std::dynamic_pointer_cast<Snap>(obj);
+        joint->UpdateProperty("Part0");
+    }
+
+    for (auto obj : dataModel().value()->GetService<JointsService>()->GetChildren()) {
+        if (obj->GetClass()->className != "Snap") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
+        std::shared_ptr<Snap> joint = std::dynamic_pointer_cast<Snap>(obj);
+        joint->UpdateProperty("Part0");
     }
 }
 

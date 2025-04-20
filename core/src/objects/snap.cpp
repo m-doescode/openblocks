@@ -8,6 +8,7 @@
 #include "part.h"
 #include <memory>
 #include <reactphysics3d/constraint/FixedJoint.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 const InstanceType Snap::TYPE = {
     .super = &Instance::TYPE,
@@ -52,66 +53,45 @@ Snap::~Snap() {
 }
 
 void Snap::OnAncestryChanged(std::optional<std::shared_ptr<Instance>>, std::optional<std::shared_ptr<Instance>>) {
-    // If the old workspace existed, and the new one differs, delete the current joint
-    if (this->joint && !this->oldWorkspace.expired() && (!workspace() || workspace().value() != this->oldWorkspace.lock())) {
-        // printf("Broke joint - Removed from workspace\n");
-        oldJointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
-        this->joint = nullptr;
-    }
+    // Destroy and rebuild the joint, it's the simplest solution that actually works
 
-    // If the previous parent was JointsService, and now it isn't, delete the joint
-    if (this->joint && !oldParent.expired() && oldParent.lock()->GetClass() == &JointsService::TYPE && (!GetParent() || GetParent() != oldParent.lock())) {
-        // printf("Broke joint - Removed from JointsService\n");
-        oldJointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
-        this->joint = nullptr;
-    }
-
-    // If the new workspace exists, and the old one differs, create the joint
-    if (!this->joint && workspace() && (oldWorkspace.expired() || oldWorkspace.lock() != workspace().value())) {
-        // printf("Made joint - Added to workspace\n");
-        buildJoint();
-    }
-
-    // If the new parent is JointsService and the previous wasn't, then create the joint
-    if (!this->joint && GetParent() && GetParent().value()->GetClass() == &JointsService::TYPE && (oldParent.expired() || GetParent() != oldParent.lock())) {
-        // printf("Made joint - Added to JointsService\n");
-        buildJoint();
-    }
-
-    this->oldParent = !GetParent() ? std::weak_ptr<Instance>() : GetParent().value();
-    this->oldWorkspace = !workspace() ? std::weak_ptr<Workspace>() : workspace().value();
-    this->oldJointWorkspace = !jointWorkspace() ? std::weak_ptr<Workspace>() : jointWorkspace().value();
+    breakJoint();
+    buildJoint();
 }
 
 void Snap::onUpdated(std::string property) {
-    // We are not in the workspace, so we don't really care what values are currently set
-    if (!jointWorkspace()) return;
+    // Destroy and rebuild the joint, if applicable
 
-    // Workspace cannot have changed, so if the joint currently exists, it is in the present one
-    if (this->joint)
-        jointWorkspace().value()->physicsWorld->destroyJoint(this->joint);
-
+    breakJoint();
     buildJoint();
 }
 
 void Snap::buildJoint() {
-    if (part0.expired() || part1.expired() || !jointWorkspace()) return;
+    // Only if both parts are set, are not the same part, are part of a workspace, and are part of the same workspace, we build the joint
+    if (part0.expired() || part1.expired() || part0.lock() == part1.lock() || !part0.lock()->workspace() || part0.lock()->workspace() != part1.lock()->workspace()) return;
+
+    // Don't build the joint if we're not part of either a workspace or JointsService
+    if ((!GetParent() || GetParent().value()->GetClass() != &JointsService::TYPE) && !workspace()) return;
+
+    std::shared_ptr<Workspace> workspace = part0.lock()->workspace().value();
+    if (!workspace->physicsWorld) return;
 
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
     Data::CFrame newFrame = part0.lock()->cframe * (c1.Inverse() * c0);
     part1.lock()->cframe = newFrame;
-    jointWorkspace().value()->SyncPartPhysics(part1.lock());
+    workspace->SyncPartPhysics(part1.lock());
 
     rp::FixedJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position());
-    this->joint = dynamic_cast<rp::FixedJoint*>(jointWorkspace().value()->physicsWorld->createJoint(jointInfo));
+    this->joint = dynamic_cast<rp::FixedJoint*>(workspace->physicsWorld->createJoint(jointInfo));
+    jointWorkspace = workspace;
 }
 
-std::optional<std::shared_ptr<Workspace>> Snap::jointWorkspace() {
-    if (workspace()) return workspace();
+// !!! REMINDER: This has to be called manually when parts are destroyed/removed from the workspace, or joints will linger
+void Snap::breakJoint() {
+    // If the joint doesn't exist, or its workspace expired (not our problem anymore), then no need to do anything
+    if (!this->joint || jointWorkspace.expired() || !jointWorkspace.lock()->physicsWorld) return;
 
-    if (GetParent() && GetParent().value()->GetClass() == &JointsService::TYPE)
-        return std::dynamic_pointer_cast<DataModel>(GetParent().value()->GetParent().value())->GetService<Workspace>();
-
-    return {};
+    jointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
+    this->joint = nullptr;
 }

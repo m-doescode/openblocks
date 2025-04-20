@@ -41,6 +41,7 @@ struct InstanceType {
 typedef std::pair<std::shared_ptr<Instance>, std::string> _RefStatePropertyCell;
 
 class DescendantsIterator;
+class Snap;
 
 // Base class for all instances in the data model
                  // Note: enable_shared_from_this HAS to be public or else its field will not be populated
@@ -58,6 +59,8 @@ private:
 
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
     void updateAncestry(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
+
+    friend Snap; // This isn't ideal, but oh well
 protected:
     bool parentLocked = false;
     std::unique_ptr<MemberMap> memberMap;

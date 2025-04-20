@@ -296,7 +296,7 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         PropertyMeta meta = inst->GetPropertyMeta(property).expect();
         Data::Variant currentValue = inst->GetPropertyValue(property).expect();
 
-        if (meta.type == &Data::CFrame::TYPE) continue;
+        // if (meta.type == &Data::CFrame::TYPE) continue;
 
         QTreeWidgetItem* item = new QTreeWidgetItem;
         item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
@@ -310,6 +310,9 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else if (meta.type == &Data::Vector3::TYPE) {
             Data::Vector3 vector = currentValue.get<Data::Vector3>();
+            item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+        } else if (meta.type == &Data::CFrame::TYPE) {
+            Data::Vector3 vector = currentValue.get<Data::CFrame>().Position();
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));

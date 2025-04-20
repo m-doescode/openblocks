@@ -2,7 +2,12 @@
 
 #include "objects/base/service.h"
 
+class Snap;
 class JointsService : public Service {
+private:
+    std::optional<std::shared_ptr<Workspace>> jointWorkspace();
+
+    friend Snap;
 protected:
     void InitService() override;
     bool initialized = false;

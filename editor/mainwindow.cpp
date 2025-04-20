@@ -177,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     snap->c1 = part0->cframe;
 
     // gWorkspace()->AddChild(snap);
-    gDataModel->GetService<JointsService>().expect()->AddChild(snap);
+    gDataModel->GetService<JointsService>()->AddChild(snap);
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {

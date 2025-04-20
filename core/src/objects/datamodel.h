@@ -53,17 +53,16 @@ public:
     result<std::optional<std::shared_ptr<Service>>, NoSuchService> FindService(std::string className);
 
     template <typename T>
-    result<std::shared_ptr<T>, NoSuchService> GetService() {
+    std::shared_ptr<T> GetService() {
         auto result = GetService(T::TYPE.className);
-        if (result.isError()) return result.error().value();
-        return std::dynamic_pointer_cast<T>(result.success().value());
+        return std::dynamic_pointer_cast<T>(result.expect("GetService<T>() was called with a non-service instance type"));
     }
 
     template <typename T>
     std::optional<std::shared_ptr<T>> FindService() {
-        auto result = FindService(T::TYPE.className);
-        if (result.isError()) return result.error().value();
-        return std::dynamic_pointer_cast<T>(result.success().value());
+        auto result = FindService(T::TYPE.className).expect("FindService<T>() was called with a non-service instance type");
+        if (!result) return std::nullopt;
+        return std::dynamic_pointer_cast<T>(result.value());
     }
 
     // Saving/loading

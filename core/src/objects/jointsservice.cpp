@@ -1,4 +1,5 @@
 #include "jointsservice.h"
+#include "workspace.h"
 
 const InstanceType JointsService::TYPE = {
     .super = &Instance::TYPE,
@@ -20,4 +21,10 @@ JointsService::~JointsService() = default;
 void JointsService::InitService() {
     if (initialized) return;
     initialized = true;
+}
+
+std::optional<std::shared_ptr<Workspace>> JointsService::jointWorkspace() {
+    if (!dataModel()) return std::nullopt;
+
+    return dataModel().value()->FindService<Workspace>();
 }
