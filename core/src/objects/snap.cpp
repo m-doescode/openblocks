@@ -5,7 +5,6 @@
 #include "objects/datamodel.h"
 #include "objects/jointsservice.h"
 #include "workspace.h"
-#include "part.h"
 #include <memory>
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
@@ -40,7 +39,7 @@ Snap::Snap(): Instance(&TYPE) {
                 .codec = fieldCodecOf<Data::CFrame>(),
                 .updateCallback = memberFunctionOf(&Snap::onUpdated, this),
             }}, { "C1", {
-                .backingField = &c0,
+                .backingField = &c1,
                 .type = &Data::CFrame::TYPE,
                 .codec = fieldCodecOf<Data::CFrame>(),
                 .updateCallback = memberFunctionOf(&Snap::onUpdated, this),
@@ -82,6 +81,8 @@ void Snap::buildJoint() {
     part1.lock()->cframe = newFrame;
     workspace->SyncPartPhysics(part1.lock());
 
+    // printf("c1.Rotation: ");
+    // printVec(c1.ToEulerAnglesXYZ());
     rp::FixedJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position());
     this->joint = dynamic_cast<rp::FixedJoint*>(workspace->physicsWorld->createJoint(jointInfo));
     jointWorkspace = workspace;
