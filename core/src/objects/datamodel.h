@@ -4,6 +4,7 @@
 #include "error/result.h"
 #include "logger.h"
 #include "objects/base/instance.h"
+#include "objects/base/refstate.h"
 #include "objects/meta.h"
 #include "panic.h"
 #include <memory>
@@ -18,6 +19,7 @@ class Service;
 class DataModel : public Instance {
 private:
     void DeserializeService(pugi::xml_node node);
+    static void cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service>, RefState<_RefStatePropertyCell>);
 public:
     const static InstanceType TYPE;
 
@@ -68,4 +70,5 @@ public:
     inline bool HasFile() { return this->currentFile.has_value(); }
     void SaveToFile(std::optional<std::string> path = std::nullopt);
     static std::shared_ptr<DataModel> LoadFromFile(std::string path);
+    std::shared_ptr<DataModel> CloneModel();
 };

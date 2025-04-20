@@ -17,6 +17,7 @@ typedef std::function<void(InstanceRef instance, std::string property, Data::Var
 
 extern Camera camera;
 extern std::shared_ptr<DataModel> gDataModel;
+extern std::shared_ptr<DataModel> editModeDataModel;
 inline std::shared_ptr<Workspace> gWorkspace() { return std::dynamic_pointer_cast<Workspace>(gDataModel->services["Workspace"]); }
 extern std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 extern std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;

@@ -378,7 +378,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefState<_RefStatePrope
             } else {
                 // Otheriise, queue this property to be updated later, and keep its current value
                 auto& refs = state->refsAwaitingRemap[ref];
-                refs.push_back(std::make_pair(ref, property));
+                refs.push_back(std::make_pair(newInstance, property));
                 state->refsAwaitingRemap[ref] = refs;
 
                 newInstance->SetPropertyValue(property, Data::InstanceRef(ref)).expect();

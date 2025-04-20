@@ -1,6 +1,7 @@
 #include "datamodel.h"
 #include "base/service.h"
 #include "objects/base/instance.h"
+#include "objects/base/refstate.h"
 #include "objects/base/service.h"
 #include "objects/meta.h"
 #include "workspace.h"
@@ -145,4 +146,130 @@ result<std::optional<std::shared_ptr<Service>>, NoSuchService> DataModel::FindSe
     if (services.count(className) != 0)
         return std::make_optional(std::dynamic_pointer_cast<Service>(services[className]));
     return (std::optional<std::shared_ptr<Service>>)std::nullopt;
+}
+
+std::shared_ptr<DataModel> DataModel::CloneModel() {
+    RefState<_RefStatePropertyCell> state = std::make_shared<__RefState<_RefStatePropertyCell>>();
+    std::shared_ptr<DataModel> newModel = DataModel::New();
+
+    // Copy properties
+    for (std::string property : GetProperties()) {
+        PropertyMeta meta = GetPropertyMeta(property).expect();
+        
+        if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
+
+        // Update InstanceRef properties using map above
+        if (meta.type == &Data::InstanceRef::TYPE) {
+            std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<Data::InstanceRef>();
+            if (refWeak.expired()) continue;
+
+            auto ref = refWeak.lock();
+            auto remappedRef = state->remappedInstances[ref]; // TODO: I think this is okay? Maybe?? Add null check?
+            
+            if (remappedRef) {
+                // If the instance has already been remapped, set the new value
+                newModel->SetPropertyValue(property, Data::InstanceRef(remappedRef)).expect();
+            } else {
+                // Otheriise, queue this property to be updated later, and keep its current value
+                auto& refs = state->refsAwaitingRemap[ref];
+                refs.push_back(std::make_pair(newModel, property));
+                state->refsAwaitingRemap[ref] = refs;
+
+                newModel->SetPropertyValue(property, Data::InstanceRef(ref)).expect();
+            }
+        } else {
+            Data::Variant value = GetPropertyValue(property).expect();
+            newModel->SetPropertyValue(property, value).expect();
+        }
+    }
+
+    // Remap self
+    state->remappedInstances[shared_from_this()] = newModel;
+
+    // Remap queued properties
+    for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[shared_from_this()]) {
+        ref.first->SetPropertyValue(ref.second, Data::InstanceRef(newModel)).expect();
+    }
+
+    // Clone services
+    for (std::shared_ptr<Instance> child : GetChildren()) {
+        // Special case: Instances parented to DataModel which are not services
+        if (!(child->GetClass()->flags & INSTANCE_SERVICE)) {
+            auto result = child->Clone(state);
+            if (result)
+                newModel->AddChild(result.value());
+            continue;
+        }
+        DataModel::cloneService(newModel, std::dynamic_pointer_cast<Service>(child), state);
+    }
+
+    // Clone children of services
+    for (const auto& [className, service] : services) {
+        for (auto child : service->GetChildren()) {
+            auto result = child->Clone(state);
+            if (result)
+                service->AddChild(result.value());
+        }
+    }
+
+    return newModel;
+}
+
+void DataModel::cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service> service, RefState<_RefStatePropertyCell> state) {
+    // !!!!! THIS MAY CAUSE PROBLEMS !!!!!
+    // The way we are updating references means that their property onUpdate handler
+    // gets called immediately. They may expect certain invariants to be held such as workspace existing, while this
+    // is not the case. Currently, since this invariant is only used in the case of referring directly to workspace etc.,
+    // this is fine, since GetService will avoid duplication problems. But here be dragons.
+    std::shared_ptr<Instance> newInstance = target->GetService(service->GetClass()->className).expect();
+
+    // Copy properties
+    for (std::string property : service->GetProperties()) {
+        PropertyMeta meta = service->GetPropertyMeta(property).expect();
+        
+        if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
+
+        // Update InstanceRef properties using map above
+        if (meta.type == &Data::InstanceRef::TYPE) {
+            std::weak_ptr<Instance> refWeak = service->GetPropertyValue(property).expect().get<Data::InstanceRef>();
+            if (refWeak.expired()) continue;
+
+            auto ref = refWeak.lock();
+            auto remappedRef = state->remappedInstances[ref]; // TODO: I think this is okay? Maybe?? Add null check?
+            
+            if (remappedRef) {
+                // If the instance has already been remapped, set the new value
+                newInstance->SetPropertyValue(property, Data::InstanceRef(remappedRef)).expect();
+            } else {
+                // Otheriise, queue this property to be updated later, and keep its current value
+                auto& refs = state->refsAwaitingRemap[ref];
+                refs.push_back(std::make_pair(newInstance, property));
+                state->refsAwaitingRemap[ref] = refs;
+
+                newInstance->SetPropertyValue(property, Data::InstanceRef(ref)).expect();
+            }
+        } else {
+            Data::Variant value = service->GetPropertyValue(property).expect();
+            newInstance->SetPropertyValue(property, value).expect();
+        }
+    }
+
+    // Remap self
+    state->remappedInstances[service->shared_from_this()] = newInstance;
+
+    // Add service prior to adding children, as children may expect service to already be parented to DataModel
+    target->AddChild(newInstance);
+    target->services[service->GetClass()->className] = std::dynamic_pointer_cast<Service>(newInstance);
+
+    // Remap queued properties
+    for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[service->shared_from_this()]) {
+        ref.first->SetPropertyValue(ref.second, Data::InstanceRef(newInstance)).expect();
+    }
+
+    // Clone children
+    // for (std::shared_ptr<Instance> child : service->GetChildren()) {
+    //     std::optional<std::shared_ptr<Instance>> clonedChild = child->Clone(state);
+    //     if (clonedChild)
+    //         newInstance->AddChild(clonedChild.value());
+    // }
 }

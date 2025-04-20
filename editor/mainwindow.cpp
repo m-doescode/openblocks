@@ -274,6 +274,11 @@ void MainWindow::connectActionHandlers() {
         ui->actionRunSimulation->setEnabled(false);
         ui->actionPauseSimulation->setEnabled(true);
         ui->actionStopSimulation->setEnabled(true);
+
+        std::shared_ptr<DataModel> newModel = editModeDataModel->CloneModel();
+        gDataModel = newModel;
+        gDataModel->Init();
+        ui->explorerView->updateRoot(gDataModel);
     });
 
     connect(ui->actionPauseSimulation, &QAction::triggered, this, [&]() {
@@ -282,7 +287,6 @@ void MainWindow::connectActionHandlers() {
         runState = RUN_PAUSED;
         ui->actionRunSimulation->setEnabled(true);
         ui->actionPauseSimulation->setEnabled(false);
-        return;
     });
 
     connect(ui->actionStopSimulation, &QAction::triggered, this, [&]() {
@@ -292,7 +296,11 @@ void MainWindow::connectActionHandlers() {
         ui->actionRunSimulation->setEnabled(true);
         ui->actionPauseSimulation->setEnabled(false);
         ui->actionStopSimulation->setEnabled(false);
-        return;
+
+        // GC: Check to make sure gDataModel gets properly garbage collected prior to this
+        gDataModel = editModeDataModel;
+        gDataModel->Init();
+        ui->explorerView->updateRoot(gDataModel);
     });
 
     ui->actionRunSimulation->setEnabled(true);
