@@ -2,13 +2,9 @@
 
 #include "error/instance.h"
 #include "error/result.h"
-#include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/base/refstate.h"
-#include "objects/meta.h"
-#include "panic.h"
 #include <memory>
-#include <variant>
 
 class Workspace;
 
@@ -32,22 +28,6 @@ public:
 
     static inline std::shared_ptr<DataModel> New() { return std::make_shared<DataModel>(); };
     virtual const InstanceType* GetClass() override;
-
-    // Inserts a service if it doesn't already exist
-    fallible<ServiceAlreadyExists, NoSuchService> InsertService(std::string name) {
-        if (services.count(name) != 0)
-            return fallible<ServiceAlreadyExists, NoSuchService>(ServiceAlreadyExists(name));
-
-        if (!INSTANCE_MAP[name] || (INSTANCE_MAP[name]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
-            Logger::fatalErrorf("Attempt to create instance of unknown type %s", name);
-            panic();
-        }
-
-        services[name] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[name]->constructor());
-        AddChild(std::dynamic_pointer_cast<Instance>(services[name]));
-
-        return {};
-    }
 
     result<std::shared_ptr<Service>, NoSuchService> GetService(std::string className);
     result<std::optional<std::shared_ptr<Service>>, NoSuchService> FindService(std::string className);
