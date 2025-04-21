@@ -11,6 +11,8 @@
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
 
+#define PI 3.14159
+
 static Data::CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
@@ -271,7 +273,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     
     // Snap the angle
     if (snappingFactor() > 0)
-        angle = roundf(angle * 4 / std::numbers::pi / snappingFactor()) / 4 * std::numbers::pi * snappingFactor();
+        angle = roundf(angle * 4 / PI / snappingFactor()) / 4 * PI * snappingFactor();
 
     // Checks if the rotation axis is facing towards, or away from the camera
     // If it pointing away from the camera, then we need to invert the angle change

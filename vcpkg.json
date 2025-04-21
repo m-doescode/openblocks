@@ -5,6 +5,13 @@
     "glm",
     { "name": "pugixml", "version>=": "1.15" },
     "sdl2",
-    "stb"
+    "stb",
+    "reactphysics3d"
+  ],
+  "overrides": [
+    { 
+      "name": "sdl2", 
+      "version": "2.32.4"
+    }
   ]
 }
