@@ -22,9 +22,6 @@ The project will be built using VCPKG and MSVC
 * Qt 6.8.3 or higher, with MSVC toolchain
 * CMake
 * Git (for cloning the repo, optional)
-* ReactPhysics3D prebuilt library
-
-You will have to build and install ReactPhysics3D yourself. Check the [build instructions on ReactPhysics3D](https://www.reactphysics3d.com/documentation/index.html#building) for help
 
 To start, clone the repository:
 
