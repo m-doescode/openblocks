@@ -177,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     snap->c1 = part0->cframe;
 
     // gWorkspace()->AddChild(snap);
-    gDataModel->GetService<JointsService>()->AddChild(snap);
+    gWorkspace()->AddChild(snap);
     snap->UpdateProperty("Part0");
     snap->UpdateProperty("Part1");
 }
