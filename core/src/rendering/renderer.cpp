@@ -131,7 +131,7 @@ void renderParts() {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (part->transparency > 0.00001) {
-            float distance = glm::length(glm::vec3(Data::Vector3(camera.cameraPos) - part->position()));
+            float distance = glm::length(glm::vec3(Vector3(camera.cameraPos) - part->position()));
             sorted[distance] = part;
         } else {
             glm::mat4 model = part->cframe;
@@ -264,7 +264,7 @@ void renderHandles() {
     identityShader->set("aColor", glm::vec3(0.f, 1.f, 1.f));
     
     for (auto face : HandleFace::Faces) {
-        Data::CFrame cframe = editorToolHandles->GetCFrameOfHandle(face);
+        CFrame cframe = editorToolHandles->GetCFrameOfHandle(face);
         glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
 
         if (screenPos.z < 0) continue;
@@ -310,7 +310,7 @@ void renderAABB() {
     for (InstanceRef inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
-        glm::mat4 model = Data::CFrame::IDENTITY + part->cframe.Position();
+        glm::mat4 model = CFrame::IDENTITY + part->cframe.Position();
         printf("AABB is supposedly (%f, %f, %f)\n", part->GetAABB().X(), part->GetAABB().Y(), part->GetAABB().Z());
         model = glm::scale(model, (glm::vec3)part->GetAABB());
         ghostShader->set("model", model);
@@ -436,7 +436,7 @@ void renderRotationArcs() {
 
     for (HandleFace face : HandleFace::Faces) {
         if (glm::any(glm::lessThan(face.normal, glm::vec3(0)))) continue;
-        glm::mat4 model = part->cframe * Data::CFrame(glm::vec3(0), face.normal, glm::vec3(0, 1.01, 0.1));
+        glm::mat4 model = part->cframe * CFrame(glm::vec3(0), face.normal, glm::vec3(0, 1.01, 0.1));
         handleShader->set("model", model);
 
         float radius = glm::max(part->size.x, part->size.y, part->size.z) / 2.f + 2.f;

@@ -35,3 +35,5 @@ namespace Data {
         inline float B() const { return b; }
     };
 }
+
+using Data::Color3;

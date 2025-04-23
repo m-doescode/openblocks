@@ -32,7 +32,7 @@ Data::CFrame::CFrame(glm::vec3 translation, glm::mat3 rotation)
     , rotation(rotation) {
 }
 
-Data::CFrame::CFrame(Data::Vector3 position, glm::quat quat)
+Data::CFrame::CFrame(Vector3 position, glm::quat quat)
     : translation(position)
     , rotation(quat) {
 }
@@ -40,17 +40,17 @@ Data::CFrame::CFrame(Data::Vector3 position, glm::quat quat)
 Data::CFrame::CFrame(const rp::Transform& transform) : Data::CFrame::CFrame(rpToGlm(transform.getPosition()), rpToGlm(transform.getOrientation())) {
 }
 
-glm::mat3 lookAt(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up) {
+glm::mat3 lookAt(Vector3 position, Vector3 lookAt, Vector3 up) {
     // https://github.com/sgorsten/linalg/issues/29#issuecomment-743989030
-	Data::Vector3 f = (lookAt - position).Unit(); // Forward/Look
-	Data::Vector3 u = up.Unit(); // Up
-	Data::Vector3 s = f.Cross(u).Unit(); // Right
+	Vector3 f = (lookAt - position).Unit(); // Forward/Look
+	Vector3 u = up.Unit(); // Up
+	Vector3 s = f.Cross(u).Unit(); // Right
 	u = s.Cross(f).Unit();
 
 	return { s, u, -f };
 }
 
-Data::CFrame::CFrame(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up)
+Data::CFrame::CFrame(Vector3 position, Vector3 lookAt, Vector3 up)
     : translation(position)
     , rotation(::lookAt(position, lookAt, up)) {
 }
@@ -61,7 +61,7 @@ const Data::TypeInfo Data::CFrame::TYPE = {
     .deserializer = &Data::CFrame::Deserialize,
 };
 
-const Data::TypeInfo& Data::CFrame::GetType() const { return Data::Vector3::TYPE; };
+const Data::TypeInfo& Data::CFrame::GetType() const { return Vector3::TYPE; };
 
 const Data::String Data::CFrame::ToString() const {
     return std::to_string(X()) + ", " + std::to_string(Y()) + ", " + std::to_string(Z());
@@ -76,17 +76,17 @@ Data::CFrame::operator rp::Transform() const {
     return rp::Transform(glmToRp(translation), glmToRp(rotation));
 }
 
-Data::Vector3 Data::CFrame::ToEulerAnglesXYZ() {
+Vector3 Data::CFrame::ToEulerAnglesXYZ() {
     float x;
     float y;
     float z;
     glm::extractEulerAngleXYZ(glm::mat4(this->rotation), x, y, z);
-    return Data::Vector3(x, y, z);
+    return Vector3(x, y, z);
 }
 
-Data::CFrame Data::CFrame::FromEulerAnglesXYZ(Data::Vector3 vector) {
+Data::CFrame Data::CFrame::FromEulerAnglesXYZ(Vector3 vector) {
     glm::mat3 mat = glm::eulerAngleXYZ(vector.X(), vector.Y(), vector.Z());
-    return Data::CFrame((glm::vec3)Data::Vector3::ZERO, mat);
+    return Data::CFrame((glm::vec3)Vector3::ZERO, mat);
 }
 
 Data::CFrame Data::CFrame::Inverse() const {
@@ -100,15 +100,15 @@ Data::CFrame Data::CFrame::operator *(Data::CFrame otherFrame) const {
     return CFrame { this->translation + this->rotation * otherFrame.translation, this->rotation * otherFrame.rotation };
 }
 
-Data::Vector3 Data::CFrame::operator *(Data::Vector3 vector) const {
+Vector3 Data::CFrame::operator *(Vector3 vector) const {
     return this->translation + this->rotation * vector;
 }
 
-Data::CFrame Data::CFrame::operator +(Data::Vector3 vector) const {
+Data::CFrame Data::CFrame::operator +(Vector3 vector) const {
     return CFrame { this->translation + glm::vec3(vector), this->rotation };
 }
 
-Data::CFrame Data::CFrame::operator -(Data::Vector3 vector) const {
+Data::CFrame Data::CFrame::operator -(Vector3 vector) const {
     return *this + -vector;
 }
 

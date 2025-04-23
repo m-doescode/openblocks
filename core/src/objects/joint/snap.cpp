@@ -38,7 +38,7 @@ void Snap::buildJoint() {
 
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
-    Data::CFrame newFrame = part0.lock()->cframe * (c1.Inverse() * c0);
+    CFrame newFrame = part0.lock()->cframe * (c1.Inverse() * c0);
     part1.lock()->cframe = newFrame;
     workspace->SyncPartPhysics(part1.lock());
 

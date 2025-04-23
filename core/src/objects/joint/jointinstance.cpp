@@ -36,13 +36,13 @@ JointInstance::JointInstance(const InstanceType* type): Instance(type) {
                 .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
             }}, { "C0", {
                 .backingField = &c0,
-                .type = &Data::CFrame::TYPE,
-                .codec = fieldCodecOf<Data::CFrame>(),
+                .type = &CFrame::TYPE,
+                .codec = fieldCodecOf<CFrame>(),
                 .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
             }}, { "C1", {
                 .backingField = &c1,
-                .type = &Data::CFrame::TYPE,
-                .codec = fieldCodecOf<Data::CFrame>(),
+                .type = &CFrame::TYPE,
+                .codec = fieldCodecOf<CFrame>(),
                 .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
             }}, 
         }

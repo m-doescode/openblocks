@@ -23,8 +23,8 @@ namespace Data {
         CFrame();
         CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
         CFrame(const rp::Transform&);
-        CFrame(Data::Vector3 position, glm::quat quat);
-        CFrame(Data::Vector3 position, Data::Vector3 lookAt, Data::Vector3 up = Data::Vector3(0, 1, 0));
+        CFrame(Vector3 position, glm::quat quat);
+        CFrame(Vector3 position, Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
         ~CFrame();
 
         static const CFrame IDENTITY;
@@ -53,12 +53,14 @@ namespace Data {
         inline Vector3 LookVector() { return -glm::column(rotation, 2); }
 
         Vector3 ToEulerAnglesXYZ();
-        static CFrame FromEulerAnglesXYZ(Data::Vector3);
+        static CFrame FromEulerAnglesXYZ(Vector3);
 
         // Operators
         Data::CFrame operator *(Data::CFrame) const;
-        Data::Vector3 operator *(Data::Vector3) const;
-        Data::CFrame operator +(Data::Vector3) const;
-        Data::CFrame operator -(Data::Vector3) const;
+        Vector3 operator *(Vector3) const;
+        Data::CFrame operator +(Vector3) const;
+        Data::CFrame operator -(Vector3) const;
     };
 }
+
+using Data::CFrame;

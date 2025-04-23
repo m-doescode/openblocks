@@ -14,7 +14,7 @@
 
 #define PI 3.14159
 
-static Data::CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
+static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
@@ -66,7 +66,7 @@ void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
 }
 
 
-static Data::Vector3 orthoVecs[6] {
+static Vector3 orthoVecs[6] {
     {1, 0, 0},
     {-1, 0, 0},
     {0, 1, 0},
@@ -77,12 +77,12 @@ static Data::Vector3 orthoVecs[6] {
 
 // Snaps CFrame to the neareest 90 degree angle
 // https://gamedev.stackexchange.com/a/183342
-Data::CFrame snapCFrame(Data::CFrame frame) {
-    Data::Vector3 closestVec1{0, 0, 0};
+CFrame snapCFrame(CFrame frame) {
+    Vector3 closestVec1{0, 0, 0};
     float closest1 = 0.f;
 
     // Primary vector
-    for (Data::Vector3 vec : orthoVecs) {
+    for (Vector3 vec : orthoVecs) {
         float closeness = glm::dot((glm::vec3)frame.LookVector(), (glm::vec3)vec);
         if (closeness > closest1) {
             closest1 = closeness;
@@ -90,11 +90,11 @@ Data::CFrame snapCFrame(Data::CFrame frame) {
         }
     }
 
-    Data::Vector3 closestVec2{0, 0, 0};
+    Vector3 closestVec2{0, 0, 0};
     float closest2 = 0.f;
 
     // Second vector
-    for (Data::Vector3 vec : orthoVecs) {
+    for (Vector3 vec : orthoVecs) {
         // Guard against accidental linear dependency
         if (vec == closestVec1) continue;
 
@@ -105,16 +105,16 @@ Data::CFrame snapCFrame(Data::CFrame frame) {
         }
     }
 
-    // Data::Vector3 thirdVec = closestVec1.Cross(closestVec2);
-    return Data::CFrame(frame.Position(), frame.Position() + closestVec1, closestVec2);
+    // Vector3 thirdVec = closestVec1.Cross(closestVec2);
+    return CFrame(frame.Position(), frame.Position() + closestVec1, closestVec2);
 }
 
 bool isMouseDragging = false;
 std::weak_ptr<Part> draggingObject;
 std::optional<HandleFace> draggingHandle;
-Data::Vector3 initialHitPos;
-Data::Vector3 initialHitNormal;
-Data::CFrame initialFrame;
+Vector3 initialHitPos;
+Vector3 initialHitNormal;
+CFrame initialFrame;
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     if (!isMouseDragging || draggingObject.expired() || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
 
@@ -127,32 +127,32 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     
     if (!rayHit) return;
 
-    Data::CFrame targetFrame = partFromBody(rayHit->body)->cframe;
-    Data::Vector3 surfaceNormal = targetFrame.Inverse().Rotation() * rayHit->worldNormal;
-    Data::Vector3 inverseSurfaceNormal = Data::Vector3::ONE - surfaceNormal.Abs();
+    CFrame targetFrame = partFromBody(rayHit->body)->cframe;
+    Vector3 surfaceNormal = targetFrame.Inverse().Rotation() * rayHit->worldNormal;
+    Vector3 inverseSurfaceNormal = Vector3::ONE - surfaceNormal.Abs();
     glm::vec3 partSize = partFromBody(rayHit->body)->size;
-    Data::Vector3 tFormedHitPos = targetFrame * ((targetFrame.Inverse() * initialHitPos) * inverseSurfaceNormal);
-    Data::Vector3 tFormedInitialPos = targetFrame * ((targetFrame.Inverse() * initialFrame.Position()) * inverseSurfaceNormal);
-    Data::Vector3 vec = rayHit->worldPoint + (tFormedInitialPos - tFormedHitPos);
+    Vector3 tFormedHitPos = targetFrame * ((targetFrame.Inverse() * initialHitPos) * inverseSurfaceNormal);
+    Vector3 tFormedInitialPos = targetFrame * ((targetFrame.Inverse() * initialFrame.Position()) * inverseSurfaceNormal);
+    Vector3 vec = rayHit->worldPoint + (tFormedInitialPos - tFormedHitPos);
     // The part being dragged's frame local to the hit target's frame, but without its position component
     // To find a world vector local to the new frame, use newFrame, not localFrame, as localFrame is localFrame is local to targetFrame in itself
-    Data::CFrame localFrame = (targetFrame.Inverse() * (draggingObject.lock()->cframe.Rotation() + vec));
+    CFrame localFrame = (targetFrame.Inverse() * (draggingObject.lock()->cframe.Rotation() + vec));
 
     // Snap axis
     localFrame = snapCFrame(localFrame);
 
     // Snap to studs
-    Data::Vector3 draggingPartSize = draggingObject.lock()->size;
-    glm::vec3 inverseNormalPartSize = (Data::Vector3)(partSize - glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
+    Vector3 draggingPartSize = draggingObject.lock()->size;
+    glm::vec3 inverseNormalPartSize = (Vector3)(partSize - glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
     if (snappingFactor() > 0)
         localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
                                            + localFrame.Position() * surfaceNormal.Abs();
 
-    Data::CFrame newFrame = targetFrame * localFrame;
+    CFrame newFrame = targetFrame * localFrame;
 
     // Unsink the object
     // Get the normal of the surface relative to the part's frame, and get the size along that vector
-    Data::Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * draggingObject.lock()->size / 2);
+    Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * draggingObject.lock()->size / 2);
 
     draggingObject.lock()->cframe = newFrame + unsinkOffset;
 
@@ -179,10 +179,10 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
-    Data::CFrame handleCFrame = editorToolHandles->GetCFrameOfHandle(draggingHandle.value());
+    CFrame handleCFrame = editorToolHandles->GetCFrameOfHandle(draggingHandle.value());
     
     // Current frame. Identity frame if worldMode == true, selected object's frame if worldMode == false
-    Data::CFrame frame = editorToolHandles->worldMode ? Data::CFrame::IDENTITY + part->position() : part->cframe.Rotation();
+    CFrame frame = editorToolHandles->worldMode ? CFrame::IDENTITY + part->position() : part->cframe.Rotation();
 
     // Segment from axis stretching -4096 to +4096 rel to handle's position 
     glm::vec3 axisSegment0 = handleCFrame.Position() + (-handleCFrame.LookVector() * 4096.0f);
@@ -203,7 +203,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 diff = centerPoint - (glm::vec3)part->position();
     if (snappingFactor()) diff = frame.Rotation() * (glm::round(glm::vec3(frame.Inverse().Rotation() * diff) / snappingFactor()) * snappingFactor());
 
-    Data::Vector3 oldSize = part->size;
+    Vector3 oldSize = part->size;
 
     switch (mainWindow()->selectedTool) {
         case TOOL_MOVE: {
@@ -249,7 +249,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     part->UpdateProperty("Position");
     part->UpdateProperty("Size");
     sendPropertyUpdatedSignal(part, "Position", part->position());
-    sendPropertyUpdatedSignal(part, "Size", Data::Vector3(part->size));
+    sendPropertyUpdatedSignal(part, "Size", Vector3(part->size));
 }
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
@@ -288,7 +288,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 
     glm::vec3 angles = glm::abs(draggingHandle->normal) * sign * glm::vec3(angle);
 
-    part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
+    part->cframe = initialFrame * CFrame::FromEulerAnglesXYZ(-angles);
 
     gWorkspace()->SyncPartPhysics(part);
     part->UpdateProperty("Rotation");
@@ -377,7 +377,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         
         // Handle surface tool
         if (mainWindow()->selectedTool >= TOOL_SMOOTH) {
-            Data::Vector3 localNormal = part->cframe.Inverse().Rotation() * rayHit->worldNormal;
+            Vector3 localNormal = part->cframe.Inverse().Rotation() * rayHit->worldNormal;
             NormalId face = faceFromNormal(localNormal);
             SurfaceType surface = SurfaceType(mainWindow()->selectedTool - TOOL_SMOOTH);
 

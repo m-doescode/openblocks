@@ -14,8 +14,6 @@
 #include <memory>
 #include <optional>
 
-using Data::Vector3;
-
 // template <typename T, typename U>
 // constexpr FieldCodec fieldCodecOf() {
 //     return FieldCodec {
@@ -31,11 +29,11 @@ using Data::Vector3;
 constexpr FieldCodec cframePositionCodec() {
     return FieldCodec {
         .write = [](Data::Variant source, void* destination) {
-            Data::CFrame* cframe = static_cast<Data::CFrame*>(destination);
+            CFrame* cframe = static_cast<CFrame*>(destination);
             *cframe = cframe->Rotation() + source.get<Vector3>();
         },
         .read = [](void* source) -> Data::Variant {
-            return static_cast<Data::CFrame*>(source)->Position();
+            return static_cast<CFrame*>(source)->Position();
         },
     };
 }
@@ -43,11 +41,11 @@ constexpr FieldCodec cframePositionCodec() {
 constexpr FieldCodec cframeRotationCodec() {
     return FieldCodec {
         .write = [](Data::Variant source, void* destination) {
-            Data::CFrame* cframe = static_cast<Data::CFrame*>(destination);
-            *cframe = Data::CFrame::FromEulerAnglesXYZ(source.get<Vector3>()) + cframe->Position();
+            CFrame* cframe = static_cast<CFrame*>(destination);
+            *cframe = CFrame::FromEulerAnglesXYZ(source.get<Vector3>()) + cframe->Position();
         },
         .read = [](void* source) -> Data::Variant {
-            return static_cast<Data::CFrame*>(source)->ToEulerAnglesXYZ();
+            return static_cast<CFrame*>(source)->ToEulerAnglesXYZ();
         },
     };
 }
@@ -63,10 +61,10 @@ const InstanceType* Part::GetClass() {
     return &TYPE;
 }
 
-Part::Part(): Part(PartConstructParams { .color = Data::Color3(0.639216f, 0.635294f, 0.647059f) }) {
+Part::Part(): Part(PartConstructParams { .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
-Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame::FromEulerAnglesXYZ((Data::Vector3)params.rotation) + params.position),
+Part::Part(PartConstructParams params): Instance(&TYPE), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
                                         size(params.size), color(params.color), anchored(params.anchored), locked(params.locked) {                      
     this->memberMap = std::make_unique<MemberMap>(MemberMap {
         .super = std::move(this->memberMap),
@@ -97,12 +95,12 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame::Fr
             }}, { "Velocity", {
                 .backingField = &velocity,
                 .type = &Vector3::TYPE,
-                .codec = fieldCodecOf<Data::Vector3>(),
+                .codec = fieldCodecOf<Vector3>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
             }}, { "CFrame", {
                 .backingField = &cframe,
-                .type = &Data::CFrame::TYPE,
-                .codec = fieldCodecOf<Data::CFrame>(),
+                .type = &CFrame::TYPE,
+                .codec = fieldCodecOf<CFrame>(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
             }}, { "Size", {
                 .backingField = &size,
@@ -112,8 +110,8 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame::Fr
                 .category = PROP_CATEGORY_PART,
             }}, { "Color", {
                 .backingField = &color,
-                .type = &Data::Color3::TYPE,
-                .codec = fieldCodecOf<Data::Color3>(),
+                .type = &Color3::TYPE,
+                .codec = fieldCodecOf<Color3>(),
                 .category = PROP_CATEGORY_APPEARENCE,
             }}, { "Transparency", {
                 .backingField = &transparency,
@@ -191,7 +189,7 @@ void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std
 void Part::onUpdated(std::string property) {
     // Reset velocity
     if (property != "Velocity")
-        velocity = Data::Vector3::ZERO;
+        velocity = Vector3::ZERO;
 
     if (workspace())
         workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
@@ -221,7 +219,7 @@ Vector3 Part::GetAABB() {
     Vector3 min(0, 0, 0);
     Vector3 max(0, 0, 0);
     for (Vector3 vert : verts) {
-        Vector3 worldVert = this->cframe.Rotation() * ((Data::Vector3)this->size * vert);
+        Vector3 worldVert = this->cframe.Rotation() * ((Vector3)this->size * vert);
         expandMaxExtents(&min, &max, worldVert);
     }
 
@@ -240,7 +238,7 @@ void Part::BreakJoints() {
     }
 }
 
-static Data::Vector3 FACES[6] = {
+static Vector3 FACES[6] = {
     {1, 0, 0},
     {0, 1, 0},
     {0, 0, 1},
@@ -314,15 +312,15 @@ void Part::MakeJoints() {
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> otherPart = obj->CastTo<Part>().expect();
 
-        for (Data::Vector3 myFace : FACES) {
-            Data::Vector3 myWorldNormal = cframe.Rotation() * myFace;
-            Data::Vector3 validUp = cframe.Rotation() * Data::Vector3(1,1,1).Unit(); // If myFace == (0, 1, 0), then (0, 1, 0) would produce NaN as up, so we fudge the up so that it works
-            Data::CFrame surfaceFrame(cframe.Position(), cframe * (myFace * size), validUp);
+        for (Vector3 myFace : FACES) {
+            Vector3 myWorldNormal = cframe.Rotation() * myFace;
+            Vector3 validUp = cframe.Rotation() * Vector3(1,1,1).Unit(); // If myFace == (0, 1, 0), then (0, 1, 0) would produce NaN as up, so we fudge the up so that it works
+            CFrame surfaceFrame(cframe.Position(), cframe * (myFace * size), validUp);
 
-            for (Data::Vector3 otherFace : FACES) {
-                Data::Vector3 otherWorldNormal = otherPart->cframe.Rotation() * otherFace;
-                Data::Vector3 otherSurfaceCenter = otherPart->cframe * (otherFace * otherPart->size);
-                Data::Vector3 surfacePointLocalToMyFrame = surfaceFrame.Inverse() * otherSurfaceCenter;
+            for (Vector3 otherFace : FACES) {
+                Vector3 otherWorldNormal = otherPart->cframe.Rotation() * otherFace;
+                Vector3 otherSurfaceCenter = otherPart->cframe * (otherFace * otherPart->size);
+                Vector3 surfacePointLocalToMyFrame = surfaceFrame.Inverse() * otherSurfaceCenter;
 
                 float dot = myWorldNormal.Dot(otherWorldNormal);
                 if (dot > -0.99) continue; // Surface is pointing opposite to ours

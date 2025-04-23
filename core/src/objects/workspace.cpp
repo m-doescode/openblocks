@@ -112,7 +112,7 @@ void Workspace::PhysicsStep(float deltaTime) {
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         const rp::Transform& transform = part->rigidBody->getTransform();
-        part->cframe = Data::CFrame(transform);
+        part->cframe = CFrame(transform);
         part->velocity = part->rigidBody->getLinearVelocity();
     }
 }

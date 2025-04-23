@@ -18,6 +18,6 @@ enum SurfaceType {
     SurfaceUniversal = 5,
 };
 
-namespace Data { class Vector3; }
-NormalId faceFromNormal(Data::Vector3);
-Data::Vector3 normalFromFace(NormalId);
+namespace Data { class Vector3; } using Data::Vector3;
+NormalId faceFromNormal(Vector3);
+Vector3 normalFromFace(NormalId);

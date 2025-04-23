@@ -25,8 +25,8 @@ public:
 
     std::weak_ptr<Part> part0;
     std::weak_ptr<Part> part1;
-    Data::CFrame c0;
-    Data::CFrame c1;
+    CFrame c0;
+    CFrame c1;
 
     JointInstance(const InstanceType*);
     ~JointInstance();

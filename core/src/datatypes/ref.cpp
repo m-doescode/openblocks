@@ -29,6 +29,6 @@ void Data::InstanceRef::Serialize(pugi::xml_node node) const {
     // node.text().set(this->ToHex());
 }
 
-// Data::Variant Data::Color3::Deserialize(pugi::xml_node node) {
+// Data::Variant Color3::Deserialize(pugi::xml_node node) {
 //     return Color3::FromHex(node.text().get());
 // }

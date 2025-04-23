@@ -19,7 +19,7 @@ struct PartConstructParams {
     glm::vec3 position;
     glm::vec3 rotation;
     glm::vec3 size;
-    Data::Color3 color;
+    Color3 color;
     
     bool anchored = false;
     bool locked = false;
@@ -49,10 +49,10 @@ protected:
 public:
     const static InstanceType TYPE;
 
-    Data::Vector3 velocity;
-    Data::CFrame cframe;
+    Vector3 velocity;
+    CFrame cframe;
     glm::vec3 size;
-    Data::Color3 color;
+    Color3 color;
     float transparency = 0.f;
     bool selected = false;
     
@@ -76,11 +76,11 @@ public:
     static inline InstanceRef CreateGeneric() { return std::make_shared<Part>(); };
     virtual const InstanceType* GetClass() override;
 
-    inline Data::Vector3 position() { return cframe.Position(); }
+    inline Vector3 position() { return cframe.Position(); }
 
     void MakeJoints();
     void BreakJoints();
 
     // Calculate size of axis-aligned bounding box
-    Data::Vector3 GetAABB();
+    Vector3 GetAABB();
 };

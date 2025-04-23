@@ -51,8 +51,8 @@ public:
         Data::Variant currentValue = inst->GetPropertyValue(propertyName).expect();
 
         if (isComposite) {
-            if (meta.type == &Data::Vector3::TYPE) {
-                Data::Vector3 vector = currentValue.get<Data::Vector3>();
+            if (meta.type == &Vector3::TYPE) {
+                Vector3 vector = currentValue.get<Vector3>();
                 float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
 
                 QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
@@ -85,10 +85,10 @@ public:
             lineEdit->setText(QString::fromStdString(currentValue.get<Data::String>()));
 
             return lineEdit;
-        } else if (meta.type == &Data::Color3::TYPE) {
+        } else if (meta.type == &Color3::TYPE) {
             QColorDialog* colorDialog = new QColorDialog(parent->window());
 
-            Data::Color3 color = currentValue.get<Data::Color3>();
+            Color3 color = currentValue.get<Color3>();
             colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
 
             return colorDialog;
@@ -117,8 +117,8 @@ public:
         Data::Variant currentValue = inst->GetPropertyValue(propertyName).expect();
         
         if (isComposite) {
-            if (meta.type == &Data::Vector3::TYPE) {
-                Data::Vector3 vector = currentValue.get<Data::Vector3>();
+            if (meta.type == &Vector3::TYPE) {
+                Vector3 vector = currentValue.get<Vector3>();
                 float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
 
                 QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
@@ -142,10 +142,10 @@ public:
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             lineEdit->setText(QString::fromStdString((std::string)currentValue.get<Data::String>()));
-        } else if (meta.type == &Data::Color3::TYPE) {
+        } else if (meta.type == &Color3::TYPE) {
             QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
 
-            Data::Color3 color = currentValue.get<Data::Color3>();
+            Color3 color = currentValue.get<Color3>();
             colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
         } else if (meta.type->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
@@ -168,17 +168,17 @@ public:
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
         if (isComposite) {
-            if (meta.type == &Data::Vector3::TYPE) {
+            if (meta.type == &Vector3::TYPE) {
                 QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
                 float value = spinBox->value();
 
-                Data::Vector3 prev = inst->GetPropertyValue(propertyName).expect().get<Data::Vector3>();
-                Data::Vector3 newVector = componentName == "X" ? Data::Vector3(value, prev.Y(), prev.Z())
-                : componentName == "Y" ? Data::Vector3(prev.X(), value, prev.Z())
-                : componentName == "Z" ? Data::Vector3(prev.X(), prev.Y(), value) : prev;
+                Vector3 prev = inst->GetPropertyValue(propertyName).expect().get<Vector3>();
+                Vector3 newVector = componentName == "X" ? Vector3(value, prev.Y(), prev.Z())
+                : componentName == "Y" ? Vector3(prev.X(), value, prev.Z())
+                : componentName == "Z" ? Vector3(prev.X(), prev.Y(), value) : prev;
 
                 inst->SetPropertyValue(propertyName, newVector).expect();
-                view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Data::Vector3::TYPE, newVector);
+                view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Vector3::TYPE, newVector);
                 return;
             }
 
@@ -200,11 +200,11 @@ public:
 
             inst->SetPropertyValue(propertyName, Data::String(lineEdit->text().toStdString())).expect();
             model->setData(index, lineEdit->text());
-        } else if (meta.type == &Data::Color3::TYPE) {
+        } else if (meta.type == &Color3::TYPE) {
             QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
 
             QColor color = colorDialog->currentColor();
-            Data::Color3 color3(color.redF(), color.greenF(), color.blueF());
+            Color3 color3(color.redF(), color.greenF(), color.blueF());
             inst->SetPropertyValue(propertyName, color3).expect();
             model->setData(index, QString::fromStdString(color3.ToString()), Qt::DisplayRole);
             model->setData(index, color, Qt::DecorationRole);
@@ -296,7 +296,7 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         PropertyMeta meta = inst->GetPropertyMeta(property).expect();
         Data::Variant currentValue = inst->GetPropertyValue(property).expect();
 
-        // if (meta.type == &Data::CFrame::TYPE) continue;
+        // if (meta.type == &CFrame::TYPE) continue;
 
         QTreeWidgetItem* item = new QTreeWidgetItem;
         item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
@@ -304,21 +304,21 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         
         if (meta.type == &Data::Bool::TYPE) {
             item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
-        } else if (meta.type == &Data::Color3::TYPE) {
-            Data::Color3 color = currentValue.get<Data::Color3>();
+        } else if (meta.type == &Color3::TYPE) {
+            Color3 color = currentValue.get<Color3>();
             item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-        } else if (meta.type == &Data::Vector3::TYPE) {
-            Data::Vector3 vector = currentValue.get<Data::Vector3>();
+        } else if (meta.type == &Vector3::TYPE) {
+            Vector3 vector = currentValue.get<Vector3>();
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-        } else if (meta.type == &Data::CFrame::TYPE) {
-            Data::Vector3 vector = currentValue.get<Data::CFrame>().Position();
+        } else if (meta.type == &CFrame::TYPE) {
+            Vector3 vector = currentValue.get<CFrame>().Position();
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
 
-        if (meta.type != &Data::Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
+        if (meta.type != &Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
             item->setDisabled(true);
         }
 
@@ -351,11 +351,11 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
 }
 
 void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo* type, Data::Variant value) {
-    if (type == &Data::Vector3::TYPE) {
+    if (type == &Vector3::TYPE) {
         // https://forum.qt.io/post/266837
         foreach(auto i, item->takeChildren()) delete i;
 
-        Data::Vector3 vector = value.get<Data::Vector3>();
+        Vector3 vector = value.get<Vector3>();
         item->setData(1, Qt::DisplayRole, QString::fromStdString(value.ToString()));
 
         QTreeWidgetItem* xItem = new QTreeWidgetItem;
@@ -385,7 +385,7 @@ void PropertiesView::onPropertyUpdated(InstanceRef inst, std::string property, D
     PropertyMeta meta = inst->GetPropertyMeta(property).expect();
     Data::Variant currentValue = inst->GetPropertyValue(property).expect();
     
-    if (meta.type == &Data::CFrame::TYPE) return;
+    if (meta.type == &CFrame::TYPE) return;
 
     for (int categoryItemIdx = 0; categoryItemIdx < topLevelItemCount(); categoryItemIdx++) {
         QTreeWidgetItem* categoryItem = topLevelItem(categoryItemIdx);
@@ -396,18 +396,18 @@ void PropertiesView::onPropertyUpdated(InstanceRef inst, std::string property, D
 
             if (meta.type == &Data::Bool::TYPE) {
                 item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
-            } else if (meta.type == &Data::Color3::TYPE) {
-                Data::Color3 color = currentValue.get<Data::Color3>();
+            } else if (meta.type == &Color3::TYPE) {
+                Color3 color = currentValue.get<Color3>();
                 item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-            } else if (meta.type == &Data::Vector3::TYPE) {
-                Data::Vector3 vector = currentValue.get<Data::Vector3>();
+            } else if (meta.type == &Vector3::TYPE) {
+                Vector3 vector = currentValue.get<Vector3>();
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
             } else {
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
             }
 
-            if (meta.type != &Data::Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
+            if (meta.type != &Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
                 item->setDisabled(true);
             }
 
