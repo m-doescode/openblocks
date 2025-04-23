@@ -1,6 +1,7 @@
 #include "explorerview.h"
 #include "common.h"
 #include "../ui_mainwindow.h"
+#include "mainwindow.h"
 #include "objects/base/instance.h"
 #include "objects/meta.h"
 #include <memory>

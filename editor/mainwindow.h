@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "logger.h"
+#include "placedocument.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
 #include <QMainWindow>
@@ -48,10 +49,9 @@ public:
 
     Ui::MainWindow *ui;
 private:
-    QBasicTimer timer;
+    PlaceDocument* placeDocument;
 
     void updateToolbars();
-    void timerEvent(QTimerEvent*) override;
     void closeEvent(QCloseEvent* evt) override;
     void handleLog(Logger::LogLevel, std::string);
 

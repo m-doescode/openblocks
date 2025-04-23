@@ -3,6 +3,7 @@
 #include "objects/jointsservice.h"
 #include "objects/part.h"
 #include "objects/joint/snap.h"
+#include "objects/script.h"
 #include "objects/workspace.h"
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
@@ -13,4 +14,5 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Snap", &Snap::TYPE },
     { "JointInstance", &JointInstance::TYPE },
     { "JointsService", &JointsService::TYPE },
+    { "Script", &Script::TYPE },
 };

@@ -5,6 +5,7 @@
 #include <qsoundeffect.h>
 #include <string>
 #include "mainglwidget.h"
+#include "mainwindow.h"
 #include "common.h"
 #include "math_helper.h"
 #include "objects/base/instance.h"

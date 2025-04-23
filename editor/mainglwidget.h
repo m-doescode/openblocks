@@ -1,7 +1,6 @@
 #ifndef MAINGLWIDGET_H
 #define MAINGLWIDGET_H
 
-#include "mainwindow.h"
 #include "objects/part.h"
 #include "qevent.h"
 #include <QOpenGLWidget>
@@ -9,6 +8,7 @@
 #include <memory>
 
 class HandleFace;
+class MainWindow;
 
 class MainGLWidget : public QOpenGLWidget {
 public:

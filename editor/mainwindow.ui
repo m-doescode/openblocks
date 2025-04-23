@@ -31,7 +31,20 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="MainGLWidget" name="mainWidget"/>
+     <widget class="QMdiArea" name="mdiArea">
+      <property name="viewMode">
+       <enum>QMdiArea::ViewMode::TabbedView</enum>
+      </property>
+      <property name="documentMode">
+       <bool>true</bool>
+      </property>
+      <property name="tabsClosable">
+       <bool>true</bool>
+      </property>
+      <property name="tabsMovable">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -721,11 +734,6 @@
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>MainGLWidget</class>
-   <extends>QOpenGLWidget</extends>
-   <header>mainglwidget.h</header>
-  </customwidget>
   <customwidget>
    <class>ExplorerView</class>
    <extends>QTreeView</extends>

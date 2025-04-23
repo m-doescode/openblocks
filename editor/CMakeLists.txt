@@ -30,6 +30,8 @@ set(PROJECT_SOURCES
         panes/explorermodel.cpp
         panes/propertiesview.h
         panes/propertiesview.cpp
+        placedocument.cpp
+        placedocument.h
         ${TS_FILES}
 )
 

@@ -2,8 +2,10 @@
 #include "./ui_mainwindow.h"
 #include "common.h"
 #include "logger.h"
+#include "objects/datamodel.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/snap.h"
+#include "placedocument.h"
 #include <map>
 #include <memory>
 #include <qclipboard.h>
@@ -12,18 +14,11 @@
 #include <qmimedata.h>
 #include <qstylefactory.h>
 #include <qstylehints.h>
+#include <qmdisubwindow.h>
 
 #ifdef _NDEBUG
 #define NDEBUG
 #endif
-
-enum RunState {
-    RUN_STOPPED,
-    RUN_RUNNING,
-    RUN_PAUSED
-};
-
-RunState runState = RUN_STOPPED;
 
 bool worldSpaceTransforms = false;
 
@@ -63,7 +58,6 @@ MainWindow::MainWindow(QWidget *parent)
     gDataModel->Init();
 
     ui->setupUi(this);
-    timer.start(33, this);
     setMouseTracking(true);
 
     // https://stackoverflow.com/a/78854851/16255372
@@ -138,48 +132,11 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     // ui->explorerView->Init(ui);
-
-    // Baseplate
-    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-        .position = glm::vec3(0, -5, 0),
-        .rotation = glm::vec3(0),
-        .size = glm::vec3(512, 1.2, 512),
-        .color = glm::vec3(0.388235, 0.372549, 0.384314),
-        .anchored = true,
-        .locked = true,
-    }));
-    ui->mainWidget->lastPart->name = "Baseplate";
-    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-
-    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-        .position = glm::vec3(0),
-        .rotation = glm::vec3(-2.6415927, 1.1415926, 2.57075),
-        .size = glm::vec3(4, 1.2, 2),
-        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    }));
-    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-    auto part0 = ui->mainWidget->lastPart;
-
-    gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
-        .position = glm::vec3(1.7610925, 0.48568499, -0.82623518),
-        // .rotation = glm::vec3(0.5, 2, 1),
-        .rotation = glm::vec3(-2.6415927, 1.1415926, -2.141639),
-        .size = glm::vec3(4, 1.2, 2),
-        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    }));
-    gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
-    auto part1 = ui->mainWidget->lastPart;
-
-    auto snap = Snap::New();
-    snap->part0 = part0;
-    snap->part1 = part1;
-    snap->c0 = part1->cframe;
-    snap->c1 = part0->cframe;
-
-    // gWorkspace()->AddChild(snap);
-    gWorkspace()->AddChild(snap);
-    snap->UpdateProperty("Part0");
-    snap->UpdateProperty("Part1");
+    placeDocument = new PlaceDocument(this);
+    ui->mdiArea->addSubWindow(placeDocument);
+    ui->mdiArea->currentSubWindow()->showMaximized();
+    ui->mdiArea->findChild<QTabBar*>()->setExpanding(false);
+    placeDocument->init();
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
@@ -215,22 +172,6 @@ void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {
         ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 0, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
 }
 
-static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
-void MainWindow::timerEvent(QTimerEvent* evt) {
-    if (evt->timerId() != timer.timerId()) {
-        QWidget::timerEvent(evt);
-        return;
-    }
-
-    float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
-    lastTime = std::chrono::steady_clock::now();
-
-    if (runState == RUN_RUNNING)
-        gWorkspace()->PhysicsStep(deltaTime);
-    ui->mainWidget->update();
-    ui->mainWidget->updateCycle();
-}
-
 void MainWindow::connectActionHandlers() {
     // Explorer View
 
@@ -263,46 +204,23 @@ void MainWindow::connectActionHandlers() {
     ui->actionToggleEditSounds->setChecked(true);
 
     connect(ui->actionRunSimulation, &QAction::triggered, this, [&]() {
-        if (runState == RUN_RUNNING) return;
+        RunState prevState = placeDocument->runState();
+        placeDocument->setRunState(RUN_RUNNING);
 
-        if (runState == RUN_PAUSED) {
-            runState = RUN_RUNNING;
-            ui->actionRunSimulation->setEnabled(false);
-            ui->actionPauseSimulation->setEnabled(true);
-            return;
-        }
-
-        runState = RUN_RUNNING;
-        ui->actionRunSimulation->setEnabled(false);
-        ui->actionPauseSimulation->setEnabled(true);
-        ui->actionStopSimulation->setEnabled(true);
-
-        std::shared_ptr<DataModel> newModel = editModeDataModel->CloneModel();
-        gDataModel = newModel;
-        gDataModel->Init();
-        ui->explorerView->updateRoot(gDataModel);
+        if (prevState == RUN_STOPPED)
+            ui->explorerView->updateRoot(gDataModel);
+        updateToolbars();
     });
 
     connect(ui->actionPauseSimulation, &QAction::triggered, this, [&]() {
-        if (runState != RUN_RUNNING) return;
-
-        runState = RUN_PAUSED;
-        ui->actionRunSimulation->setEnabled(true);
-        ui->actionPauseSimulation->setEnabled(false);
+        placeDocument->setRunState(RUN_PAUSED);
+        updateToolbars();
     });
 
     connect(ui->actionStopSimulation, &QAction::triggered, this, [&]() {
-        if (runState == RUN_STOPPED) return;
-
-        runState = RUN_STOPPED;
-        ui->actionRunSimulation->setEnabled(true);
-        ui->actionPauseSimulation->setEnabled(false);
-        ui->actionStopSimulation->setEnabled(false);
-
-        // GC: Check to make sure gDataModel gets properly garbage collected prior to this
-        gDataModel = editModeDataModel;
-        gDataModel->Init();
+        placeDocument->setRunState(RUN_STOPPED);
         ui->explorerView->updateRoot(gDataModel);
+        updateToolbars();
     });
 
     ui->actionRunSimulation->setEnabled(true);
@@ -347,14 +265,15 @@ void MainWindow::connectActionHandlers() {
         // be deleted before their parent DataModel is. So it expects rigidBody to not be null, and tries
         // to destroy it, causing a segfault since it's already been destroyed. This is important for the later code.
         // TL;DR: This stinks and I need to fix it.)
-        ui->mainWidget->lastPart = Part::New();
+        placeDocument->placeWidget->lastPart = Part::New();
 
-        gDataModel = DataModel::New();
+        editModeDataModel = DataModel::New();
+        gDataModel = editModeDataModel;
         gDataModel->Init();
         ui->explorerView->updateRoot(gDataModel);
 
         // Baseplate
-        gWorkspace()->AddChild(ui->mainWidget->lastPart = Part::New({
+        gWorkspace()->AddChild(placeDocument->placeWidget->lastPart = Part::New({
             .position = glm::vec3(0, -5, 0),
             .rotation = glm::vec3(0),
             .size = glm::vec3(512, 1.2, 512),
@@ -362,8 +281,8 @@ void MainWindow::connectActionHandlers() {
             .anchored = true,
             .locked = true,
         }));
-        ui->mainWidget->lastPart->name = "Baseplate";
-        gWorkspace()->SyncPartPhysics(ui->mainWidget->lastPart);
+        placeDocument->placeWidget->lastPart->name = "Baseplate";
+        gWorkspace()->SyncPartPhysics(placeDocument->placeWidget->lastPart);
     });
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
@@ -397,10 +316,8 @@ void MainWindow::connectActionHandlers() {
         ui->explorerView->updateRoot(newModel);
 
         // Reset running state
-        runState = RUN_STOPPED;
-        ui->actionRunSimulation->setEnabled(true);
-        ui->actionPauseSimulation->setEnabled(false);
-        ui->actionStopSimulation->setEnabled(false);
+        placeDocument->setRunState(RUN_STOPPED);
+        updateToolbars();
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {
@@ -539,6 +456,10 @@ void MainWindow::updateToolbars() {
     : selectedTool == TOOL_SCALE ? HandlesType::ScaleHandles
     : selectedTool == TOOL_ROTATE ? HandlesType::RotateHandles
     : HandlesType::ScaleHandles;
+
+    ui->actionRunSimulation->setEnabled(placeDocument->runState() != RUN_RUNNING);
+    ui->actionPauseSimulation->setEnabled(placeDocument->runState() == RUN_RUNNING);
+    ui->actionStopSimulation->setEnabled(placeDocument->runState() != RUN_STOPPED);
 }
 
 std::optional<std::string> MainWindow::openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title) {
