@@ -7,7 +7,8 @@
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
 #include "objects/jointsservice.h"
-#include "objects/snap.h"
+#include "objects/joint/jointinstance.h"
+#include "objects/joint/snap.h"
 #include "rendering/surface.h"
 #include <memory>
 #include <optional>
@@ -227,12 +228,12 @@ Vector3 Part::GetAABB() {
 }
 
 void Part::BreakJoints() {
-    for (std::weak_ptr<Snap> joint : primaryJoints) {
+    for (std::weak_ptr<JointInstance> joint : primaryJoints) {
         if (joint.expired()) continue;
         joint.lock()->Destroy();
     }
 
-    for (std::weak_ptr<Snap> joint : secondaryJoints) {
+    for (std::weak_ptr<JointInstance> joint : secondaryJoints) {
         if (joint.expired()) continue;
         joint.lock()->Destroy();
     }
@@ -335,7 +336,7 @@ void Part::MakeJoints() {
     }
 }
 
-void Part::trackJoint(std::shared_ptr<Snap> joint) {
+void Part::trackJoint(std::shared_ptr<JointInstance> joint) {
     if (!joint->part0.expired() && joint->part0.lock() == shared_from_this()) {
         for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {
             // Clean expired refs
@@ -369,7 +370,7 @@ void Part::trackJoint(std::shared_ptr<Snap> joint) {
     }
 }
 
-void Part::untrackJoint(std::shared_ptr<Snap> joint) {
+void Part::untrackJoint(std::shared_ptr<JointInstance> joint) {
     for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {
         // Clean expired refs
         if (it->expired() || it->lock() == joint) {

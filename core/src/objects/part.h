@@ -29,17 +29,17 @@ class Snap;
 class Part : public Instance {
 protected:
     // Joints where this part is Part0
-    std::vector<std::weak_ptr<Snap>> primaryJoints;
+    std::vector<std::weak_ptr<JointInstance>> primaryJoints;
     // Joints where this part is Part1
-    std::vector<std::weak_ptr<Snap>> secondaryJoints;
+    std::vector<std::weak_ptr<JointInstance>> secondaryJoints;
 
-    void trackJoint(std::shared_ptr<Snap>);
-    void untrackJoint(std::shared_ptr<Snap>);
+    void trackJoint(std::shared_ptr<JointInstance>);
+    void untrackJoint(std::shared_ptr<JointInstance>);
 
     SurfaceType surfaceFromFace(NormalId);
     bool checkJointContinuinty(std::shared_ptr<Part>);
 
-    friend Snap;
+    friend JointInstance;
 
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);

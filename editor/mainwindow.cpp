@@ -3,7 +3,7 @@
 #include "common.h"
 #include "logger.h"
 #include "objects/jointsservice.h"
-#include "objects/snap.h"
+#include "objects/joint/snap.h"
 #include <map>
 #include <memory>
 #include <qclipboard.h>

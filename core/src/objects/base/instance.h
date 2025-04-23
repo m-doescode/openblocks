@@ -41,7 +41,7 @@ struct InstanceType {
 typedef std::pair<std::shared_ptr<Instance>, std::string> _RefStatePropertyCell;
 
 class DescendantsIterator;
-class Snap;
+class JointInstance;
 
 // Base class for all instances in the data model
                  // Note: enable_shared_from_this HAS to be public or else its field will not be populated
@@ -60,7 +60,7 @@ private:
     bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
     void updateAncestry(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
 
-    friend Snap; // This isn't ideal, but oh well
+    friend JointInstance; // This isn't ideal, but oh well
 protected:
     bool parentLocked = false;
     std::unique_ptr<MemberMap> memberMap;
@@ -92,6 +92,9 @@ public:
     bool IsParentLocked();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
     void Destroy();
+    // Determines whether this object is an instance of, or an instance of a subclass of the sepcified type's class name
+    bool IsA(std::string className);
+    template <typename T> bool IsA() { return IsA(T::TYPE.className); }
     
     DescendantsIterator GetDescendantsStart();
     DescendantsIterator GetDescendantsEnd();

@@ -148,6 +148,12 @@ void Instance::Destroy() {
     parentLocked = true;
 }
 
+bool Instance::IsA(std::string className) {
+    const InstanceType* cur = GetClass();
+    while (cur && cur->className != className) { cur = cur->super; }
+    return cur != nullptr;
+}
+
 static std::shared_ptr<Instance> DUMMY_INSTANCE;
 DescendantsIterator Instance::GetDescendantsStart() {
     return DescendantsIterator(GetChildren().size() > 0 ? GetChildren()[0] : DUMMY_INSTANCE);

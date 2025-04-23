@@ -1,0 +1,25 @@
+#pragma once
+
+#include "objects/base/instance.h"
+#include "objects/joint/jointinstance.h"
+#include <memory>
+#include <optional>
+
+class Part;
+class Workspace;
+
+class Snap : public JointInstance {
+    rp::FixedJoint* joint = nullptr;
+
+    virtual void buildJoint() override;
+    virtual void breakJoint() override;
+public:
+    const static InstanceType TYPE;
+
+    Snap();
+    ~Snap();
+
+    static inline std::shared_ptr<Snap> New() { return std::make_shared<Snap>(); };
+    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Snap>(); };
+    virtual const InstanceType* GetClass() override;
+};

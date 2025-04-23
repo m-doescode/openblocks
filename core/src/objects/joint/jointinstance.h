@@ -7,20 +7,19 @@
 class Part;
 class Workspace;
 
-class Snap : public Instance {
-    rp::FixedJoint* joint = nullptr;
-
+class JointInstance : public Instance {
     std::weak_ptr<Part> oldPart0;
     std::weak_ptr<Part> oldPart1;
-
+protected:
     // The workspace the joint was created in, if it exists
     std::weak_ptr<Workspace> jointWorkspace;
-protected:
+
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>>, std::optional<std::shared_ptr<Instance>>) override;
 
+    std::optional<std::shared_ptr<Workspace>> workspaceOfPart(std::shared_ptr<Part>);
     void onUpdated(std::string property);
-    void buildJoint();
-    void breakJoint();
+    virtual void buildJoint() = 0;
+    virtual void breakJoint() = 0;
 public:
     const static InstanceType TYPE;
 
@@ -29,10 +28,8 @@ public:
     Data::CFrame c0;
     Data::CFrame c1;
 
-    Snap();
-    ~Snap();
+    JointInstance(const InstanceType*);
+    ~JointInstance();
 
-    static inline std::shared_ptr<Snap> New() { return std::make_shared<Snap>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Snap>(); };
     virtual const InstanceType* GetClass() override;
 };

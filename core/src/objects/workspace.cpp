@@ -1,7 +1,7 @@
 #include "workspace.h"
 #include "objects/base/instance.h"
 #include "objects/jointsservice.h"
-#include "objects/snap.h"
+#include "objects/joint/jointinstance.h"
 #include "physics/util.h"
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
@@ -45,8 +45,8 @@ void Workspace::InitService() {
     // Sync all parts
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
         InstanceRef obj = *it;
-        if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
+        if (!obj->IsA<Part>()) continue;
+        std::shared_ptr<Part> part = obj->CastTo<Part>().expect();
         this->SyncPartPhysics(part);
         part->MakeJoints();
     }
@@ -54,14 +54,14 @@ void Workspace::InitService() {
     // Activate all joints
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
         InstanceRef obj = *it;
-        if (obj->GetClass()->className != "Snap") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
-        std::shared_ptr<Snap> joint = std::dynamic_pointer_cast<Snap>(obj);
+        if (!obj->IsA<JointInstance>()) continue;
+        std::shared_ptr<JointInstance> joint = obj->CastTo<JointInstance>().expect();
         joint->UpdateProperty("Part0");
     }
 
     for (auto obj : dataModel().value()->GetService<JointsService>()->GetChildren()) {
-        if (obj->GetClass()->className != "Snap") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
-        std::shared_ptr<Snap> joint = std::dynamic_pointer_cast<Snap>(obj);
+        if (!obj->IsA<JointInstance>()) continue;
+        std::shared_ptr<JointInstance> joint = obj->CastTo<JointInstance>().expect();
         joint->UpdateProperty("Part0");
     }
 }
