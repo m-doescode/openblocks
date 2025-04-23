@@ -1,6 +1,10 @@
 #include "explorerview.h"
 #include "common.h"
 #include "../ui_mainwindow.h"
+#include "objects/base/instance.h"
+#include "objects/meta.h"
+#include <memory>
+#include <qaction.h>
 
 #define M_mainWindow dynamic_cast<MainWindow*>(window())
 
@@ -75,6 +79,24 @@ void ExplorerView::buildContextMenu() {
     contextMenu.addSeparator();
     contextMenu.addAction(M_mainWindow->ui->actionSaveModel);
     contextMenu.addAction(M_mainWindow->ui->actionInsertModel);
+
+    // Insert Object menu
+
+    QMenu* insertObjectMenu = new QMenu("Insert Object");
+    contextMenu.addMenu(insertObjectMenu);
+
+    for (const auto& [_, type] : INSTANCE_MAP) {
+        if (type->flags & INSTANCE_NOTCREATABLE || !type->constructor) continue;
+
+        QAction* instAction = new QAction(model.iconOf(type), QString::fromStdString(type->className));
+        insertObjectMenu->addAction(instAction);
+        connect(instAction, &QAction::triggered, this, [&]() {
+            if (getSelection().size() == 0 || getSelection()[0].expired()) return;
+            std::shared_ptr<Instance> instParent = getSelection()[0].lock();
+            std::shared_ptr<Instance> newInst = type->constructor();
+            newInst->SetParent(instParent);
+        });
+    }
 }
 
 void ExplorerView::updateRoot(InstanceRef newRoot) {

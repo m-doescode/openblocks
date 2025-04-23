@@ -1,11 +1,12 @@
 #include "explorermodel.h"
 #include "common.h"
+#include <qicon.h>
 #include <qmimedata.h>
 #include <QWidget>
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
 
-std::map<std::string, QImage> instanceIconCache;
+std::map<std::string, QIcon> instanceIconCache;
 
 ExplorerModel::ExplorerModel(InstanceRef dataRoot, QWidget *parent)
     : QAbstractItemModel(parent)
@@ -136,13 +137,13 @@ Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
         : Qt::NoItemFlags | Qt::ItemIsDropEnabled;
 }
 
-QImage ExplorerModel::iconOf(const InstanceType* type) const {
+QIcon ExplorerModel::iconOf(const InstanceType* type) const {
     if (instanceIconCache.count(type->className)) return instanceIconCache[type->className];
 
     const InstanceType* currentClass = type;
     while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
 
-    QImage icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
+    QIcon icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
     instanceIconCache[type->className] = icon;
     return icon;
 }

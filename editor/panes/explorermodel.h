@@ -31,12 +31,13 @@ public:
     Qt::DropActions supportedDropActions() const override;
     InstanceRef fromIndex(const QModelIndex index) const;
     QModelIndex ObjectToIndex(InstanceRef item);
+    
+    QIcon iconOf(const InstanceType* type) const;
 
     void updateRoot(InstanceRef newRoot);
 private:
     InstanceRef rootItem;
     QModelIndex toIndex(InstanceRef item);
-    QImage iconOf(const InstanceType* type) const;
 };
 
 // #endif
