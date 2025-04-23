@@ -6,6 +6,7 @@
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
+#include "objects/snap.h"
 #include <memory>
 #include <optional>
 
@@ -172,12 +173,18 @@ void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std
     if (workspace())
         workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
 
+    // Destroy joints
+    if (!workspace()) BreakJoints();
+
     // TODO: Sleeping bodies that touch this one also need to be updated
 }
 
 void Part::onUpdated(std::string property) {
     if (workspace())
         workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
+
+    // When position/rotation/size is manually edited, break all joints, they don't apply anymore
+    BreakJoints();
 }
 
 // Expands provided extents to fit point
@@ -206,4 +213,72 @@ Vector3 Part::GetAABB() {
     }
 
     return (min - max).Abs() / 2;
+}
+
+void Part::BreakJoints() {
+    for (std::weak_ptr<Snap> joint : primaryJoints) {
+        if (joint.expired()) continue;
+        joint.lock()->Destroy();
+    }
+
+    for (std::weak_ptr<Snap> joint : secondaryJoints) {
+        if (joint.expired()) continue;
+        joint.lock()->Destroy();
+    }
+}
+
+void Part::trackJoint(std::shared_ptr<Snap> joint) {
+    if (!joint->part0.expired() && joint->part0.lock() == shared_from_this()) {
+        for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {
+            // Clean expired refs
+            if (it->expired()) {
+                primaryJoints.erase(it);
+                continue;
+            }
+
+            // If the joint is already tracked, skip
+            if (it->lock() == joint)
+                return;
+            it++;
+        }
+
+        primaryJoints.push_back(joint);
+    } else if (!joint->part1.expired() && joint->part1.lock() == shared_from_this()) {
+        for (auto it = secondaryJoints.begin(); it != secondaryJoints.end();) {
+            // Clean expired refs
+            if (it->expired()) {
+                secondaryJoints.erase(it);
+                continue;
+            }
+
+            // If the joint is already tracked, skip
+            if (it->lock() == joint)
+                return;
+            it++;
+        }
+
+        secondaryJoints.push_back(joint);
+    }
+}
+
+void Part::untrackJoint(std::shared_ptr<Snap> joint) {
+    for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {
+        // Clean expired refs
+        if (it->expired() || it->lock() == joint) {
+            primaryJoints.erase(it);
+            continue;
+        }
+
+        it++;
+    }
+
+    for (auto it = secondaryJoints.begin(); it != secondaryJoints.end();) {
+        // Clean expired refs
+        if (it->expired() || it->lock() == joint) {
+            secondaryJoints.erase(it);
+            continue;
+        }
+
+        it++;
+    }
 }

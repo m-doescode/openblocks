@@ -91,6 +91,7 @@ public:
     std::optional<std::shared_ptr<Instance>> GetParent();
     bool IsParentLocked();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
+    void Destroy();
     
     DescendantsIterator GetDescendantsStart();
     DescendantsIterator GetDescendantsEnd();

@@ -9,6 +9,7 @@
 #include "objects/base/instance.h"
 #include "rendering/surface.h"
 #include <reactphysics3d/reactphysics3d.h>
+#include <vector>
 
 namespace rp = reactphysics3d;
 
@@ -23,8 +24,20 @@ struct PartConstructParams {
     bool locked = false;
 };
 
+class Snap;
+
 class Part : public Instance {
 protected:
+    // Joints where this part is Part0
+    std::vector<std::weak_ptr<Snap>> primaryJoints;
+    // Joints where this part is Part1
+    std::vector<std::weak_ptr<Snap>> secondaryJoints;
+
+    void trackJoint(std::shared_ptr<Snap>);
+    void untrackJoint(std::shared_ptr<Snap>);
+
+    friend Snap;
+
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
 public:
@@ -57,6 +70,9 @@ public:
     virtual const InstanceType* GetClass() override;
 
     inline Data::Vector3 position() { return cframe.Position(); }
+
+    void MakeJoints();
+    void BreakJoints();
 
     // Calculate size of axis-aligned bounding box
     Data::Vector3 GetAABB();

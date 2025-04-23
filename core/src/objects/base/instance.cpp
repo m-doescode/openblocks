@@ -17,6 +17,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "ptr_helpers.h"
 
 // Static so that this variable name is "local" to this source file
 const InstanceType Instance::TYPE = {
@@ -53,17 +54,6 @@ Instance::Instance(const InstanceType* type) {
 }
 
 Instance::~Instance () {
-}
-
-template <typename T>
-bool operator ==(std::optional<std::weak_ptr<T>> a, std::optional<std::weak_ptr<T>> b) {
-    return (!a.has_value() || a.value().expired()) && (!b.has_value() || b.value().expired())
-    || (a.has_value() && !a.value().expired()) && (b.has_value() && !b.value().expired()) && a.value().lock() == b.value().lock();
-}
-
-template <typename T>
-bool operator ==(std::weak_ptr<T> a, std::weak_ptr<T> b) {
-    return a.expired() && b.expired() || (!a.expired() && !b.expired() && a.lock() == b.lock());
 }
 
 template <typename T>
@@ -149,6 +139,13 @@ std::optional<std::shared_ptr<Workspace>> Instance::workspace() {
 std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
     if (parent.expired()) return std::nullopt;
     return parent.lock();
+}
+
+void Instance::Destroy() {
+    if (parentLocked) return;
+    // TODO: Implement proper distruction stuff
+    SetParent(std::nullopt);
+    parentLocked = true;
 }
 
 static std::shared_ptr<Instance> DUMMY_INSTANCE;

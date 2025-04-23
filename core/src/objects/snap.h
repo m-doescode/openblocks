@@ -10,6 +10,9 @@ class Workspace;
 class Snap : public Instance {
     rp::FixedJoint* joint = nullptr;
 
+    std::weak_ptr<Part> oldPart0;
+    std::weak_ptr<Part> oldPart1;
+
     // The workspace the joint was created in, if it exists
     std::weak_ptr<Workspace> jointWorkspace;
 protected:
