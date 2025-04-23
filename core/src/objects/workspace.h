@@ -25,6 +25,7 @@ enum FilterResult {
 
 class Part;
 class Snap;
+class Weld;
 
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
 
@@ -34,6 +35,7 @@ class Workspace : public Service {
 
     friend Part;
     friend Snap;
+    friend Weld;
 protected:
     void InitService() override;
     bool initialized = false;

@@ -4,7 +4,7 @@
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-class Snap : public JointInstance {
+class Weld : public JointInstance {
     rp::FixedJoint* joint = nullptr;
 
     virtual void buildJoint() override;
@@ -12,10 +12,10 @@ class Snap : public JointInstance {
 public:
     const static InstanceType TYPE;
 
-    Snap();
-    ~Snap();
+    Weld();
+    ~Weld();
 
-    static inline std::shared_ptr<Snap> New() { return std::make_shared<Snap>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Snap>(); };
+    static inline std::shared_ptr<Weld> New() { return std::make_shared<Weld>(); };
+    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Weld>(); };
     virtual const InstanceType* GetClass() override;
 };

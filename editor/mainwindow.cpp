@@ -395,6 +395,12 @@ void MainWindow::connectActionHandlers() {
         gDataModel = newModel;
         newModel->Init();
         ui->explorerView->updateRoot(newModel);
+
+        // Reset running state
+        runState = RUN_STOPPED;
+        ui->actionRunSimulation->setEnabled(true);
+        ui->actionPauseSimulation->setEnabled(false);
+        ui->actionStopSimulation->setEnabled(false);
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {

@@ -8,6 +8,7 @@
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
 #include "rendering/surface.h"
+#include <optional>
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>
 
@@ -37,7 +38,9 @@ protected:
     void untrackJoint(std::shared_ptr<JointInstance>);
 
     SurfaceType surfaceFromFace(NormalId);
-    bool checkJointContinuinty(std::shared_ptr<Part>);
+    bool checkJointContinuity(std::shared_ptr<Part>);
+    bool checkJointContinuityUp(std::shared_ptr<Part>);
+    bool checkJointContinuityDown(std::shared_ptr<Part>);
 
     friend JointInstance;
 

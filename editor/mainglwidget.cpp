@@ -3,6 +3,7 @@
 #include <glm/vector_relational.hpp>
 #include <qnamespace.h>
 #include <qsoundeffect.h>
+#include <string>
 #include "mainglwidget.h"
 #include "common.h"
 #include "math_helper.h"
@@ -445,6 +446,7 @@ void MainGLWidget::updateCycle() {
 
 }
 
+int partId = 1;
 void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     if (evt->key() == Qt::Key_W) moveZ = 1;
     else if (evt->key() == Qt::Key_S) moveZ = -1;
@@ -460,6 +462,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
         gWorkspace()->SyncPartPhysics(lastPart);
+        lastPart->name = "Part" + std::to_string(partId++);
     }
 
     if (evt->key() == Qt::Key_U)

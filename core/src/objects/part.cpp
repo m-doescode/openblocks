@@ -6,6 +6,7 @@
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
+#include "objects/joint/weld.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/joint/snap.h"
@@ -260,24 +261,39 @@ SurfaceType Part::surfaceFromFace(NormalId face) {
     return SurfaceSmooth; // Unreachable
 }
 
-bool Part::checkJointContinuinty(std::shared_ptr<Part> otherPart) {
+bool Part::checkJointContinuity(std::shared_ptr<Part> otherPart) {
     // Make sure that the two parts don't depend on one another
 
-    if (shared<Part>() == otherPart) return false;
+    return checkJointContinuityUp(otherPart) && checkJointContinuityDown(otherPart);
+}
 
+bool Part::checkJointContinuityDown(std::shared_ptr<Part> otherPart) {
+    if (shared<Part>() == otherPart) return false;
     for (auto joint : primaryJoints) {
         if (joint.expired() || joint.lock()->part1.expired()) continue;
-        if (!joint.lock()->part1.lock()->checkJointContinuinty(otherPart))
+        if (!joint.lock()->part1.lock()->checkJointContinuityDown(otherPart))
             return false;
     }
+    return true;
+}
 
+bool Part::checkJointContinuityUp(std::shared_ptr<Part> otherPart) {
+    if (shared<Part>() == otherPart) return false;
     for (auto joint : secondaryJoints) {
         if (joint.expired() || joint.lock()->part0.expired()) continue;
-        if (!joint.lock()->part0.lock()->checkJointContinuinty(otherPart))
+        if (!joint.lock()->part0.lock()->checkJointContinuityUp(otherPart))
             return false;
     }
-
     return true;
+}
+
+std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType a, SurfaceType b) {
+    if (a == SurfaceWeld || b == SurfaceWeld || a == SurfaceGlue || b == SurfaceGlue) return Weld::New();
+    if ((a == SurfaceStuds && (b == SurfaceInlets || b == SurfaceUniversal))
+    || (a == SurfaceInlets && (b == SurfaceStuds || b == SurfaceUniversal))
+    || (a == SurfaceUniversal && (b == SurfaceStuds || b == SurfaceInlets || b == SurfaceUniversal)))
+        return Snap::New();
+    return std::nullopt;
 }
 
 void Part::MakeJoints() {
@@ -311,26 +327,22 @@ void Part::MakeJoints() {
                 float dot = myWorldNormal.Dot(otherWorldNormal);
                 if (dot > -0.99) continue; // Surface is pointing opposite to ours
                 if (abs(surfacePointLocalToMyFrame.Z()) > 0.05) continue; // Surfaces are within 0.05 studs of one another
-                if (!checkJointContinuinty(otherPart)) continue;
+                if (!checkJointContinuity(otherPart)) continue;
 
                 SurfaceType mySurface = surfaceFromFace(faceFromNormal(myFace));
                 SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
 
-                if (mySurface == SurfaceSmooth) continue; // We're not responsible for any joints
-                else if (mySurface == SurfaceWeld || mySurface == SurfaceGlue
-                || (mySurface == SurfaceStuds && (otherSurface == SurfaceInlets || otherSurface == SurfaceUniversal))
-                || (mySurface == SurfaceInlets && (otherSurface == SurfaceStuds || otherSurface == SurfaceUniversal))
-                || (mySurface == SurfaceUniversal && (otherSurface == SurfaceStuds || otherSurface == SurfaceInlets || otherSurface == SurfaceUniversal))) { // Always make a weld no matter what the other surface is
-                    std::shared_ptr<Snap> joint = Snap::New();
-                    joint->part0 = shared<Part>();
-                    joint->part1 = otherPart->shared<Part>();
-                    joint->c1 = cframe;
-                    joint->c0 = otherPart->cframe;
-                    dataModel().value()->GetService<JointsService>()->AddChild(joint);
-                    joint->UpdateProperty("Part0");
+                auto joint_ = makeJointFromSurfaces(mySurface, otherSurface);
+                if (!joint_) continue;
+                std::shared_ptr<JointInstance> joint = joint_.value();
+                joint->part0 = shared<Part>();
+                joint->part1 = otherPart->shared<Part>();
+                joint->c1 = cframe;
+                joint->c0 = otherPart->cframe;
+                dataModel().value()->GetService<JointsService>()->AddChild(joint);
+                joint->UpdateProperty("Part0");
 
-                    Logger::debugf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());
-                }
+                Logger::debugf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());
             }
         }
     }
