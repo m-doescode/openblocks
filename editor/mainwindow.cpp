@@ -178,6 +178,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // gWorkspace()->AddChild(snap);
     gDataModel->GetService<JointsService>()->AddChild(snap);
+    snap->UpdateProperty("Part0");
+    snap->UpdateProperty("Part1");
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {

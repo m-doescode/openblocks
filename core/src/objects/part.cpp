@@ -90,6 +90,11 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(Data::CFrame::Fr
                 .codec = cframeRotationCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
                 .flags = PropertyFlags::PROP_NOSAVE
+            }}, { "Velocity", {
+                .backingField = &velocity,
+                .type = &Vector3::TYPE,
+                .codec = fieldCodecOf<Data::Vector3>(),
+                .updateCallback = memberFunctionOf(&Part::onUpdated, this),
             }}, { "CFrame", {
                 .backingField = &cframe,
                 .type = &Data::CFrame::TYPE,
@@ -180,6 +185,10 @@ void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std
 }
 
 void Part::onUpdated(std::string property) {
+    // Reset velocity
+    if (property != "Velocity")
+        velocity = Data::Vector3::ZERO;
+
     if (workspace())
         workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
 

@@ -157,6 +157,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
 
     gWorkspace()->SyncPartPhysics(draggingObject.lock());
+    draggingObject.lock()->UpdateProperty("Position");
     sendPropertyUpdatedSignal(draggingObject.lock(), "Position", draggingObject.lock()->position());
 }
 
@@ -244,6 +245,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
         playSound("./assets/excluded/switch.wav");
 
     gWorkspace()->SyncPartPhysics(part);
+    part->UpdateProperty("Position");
+    part->UpdateProperty("Size");
     sendPropertyUpdatedSignal(part, "Position", part->position());
     sendPropertyUpdatedSignal(part, "Size", Data::Vector3(part->size));
 }
@@ -287,6 +290,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     part->cframe = initialFrame * Data::CFrame::FromEulerAnglesXYZ(-angles);
 
     gWorkspace()->SyncPartPhysics(part);
+    part->UpdateProperty("Rotation");
     sendPropertyUpdatedSignal(part, "Rotation", part->cframe.ToEulerAnglesXYZ());
 }
 

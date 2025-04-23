@@ -94,6 +94,7 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
     part->rigidBody->updateMassFromColliders();
     part->rigidBody->updateLocalInertiaTensorFromColliders();
 
+    part->rigidBody->setLinearVelocity(part->velocity);
     // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
 
     part->rigidBody->setUserData(&*part);
@@ -111,6 +112,7 @@ void Workspace::PhysicsStep(float deltaTime) {
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         const rp::Transform& transform = part->rigidBody->getTransform();
         part->cframe = Data::CFrame(transform);
+        part->velocity = part->rigidBody->getLinearVelocity();
     }
 }
 

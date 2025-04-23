@@ -43,6 +43,7 @@ protected:
 public:
     const static InstanceType TYPE;
 
+    Data::Vector3 velocity;
     Data::CFrame cframe;
     glm::vec3 size;
     Data::Color3 color;
