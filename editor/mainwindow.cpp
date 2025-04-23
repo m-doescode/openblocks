@@ -368,18 +368,18 @@ void MainWindow::connectActionHandlers() {
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
         std::optional<std::string> path;
-        if (!gDataModel->HasFile())
-            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
-        if (!gDataModel->HasFile() && (!path || path == "")) return;
+        if (!editModeDataModel->HasFile())
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + editModeDataModel->name));
+        if (!editModeDataModel->HasFile() && (!path || path == "")) return;
 
-        gDataModel->SaveToFile(path);
+        editModeDataModel->SaveToFile(path);
     });
 
     connect(ui->actionSaveAs, &QAction::triggered, this, [&]() {
-        std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save as " + gDataModel->name));
+        std::optional<std::string> path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save as " + editModeDataModel->name));
         if (!path || path == "") return;
 
-        gDataModel->SaveToFile(path);
+        editModeDataModel->SaveToFile(path);
     });
 
     connect(ui->actionOpen, &QAction::triggered, this, [&]() {
@@ -391,6 +391,7 @@ void MainWindow::connectActionHandlers() {
         
         // simulationInit();
         std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path.value());
+        editModeDataModel = newModel;
         gDataModel = newModel;
         newModel->Init();
         ui->explorerView->updateRoot(newModel);

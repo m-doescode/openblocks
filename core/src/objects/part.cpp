@@ -259,6 +259,26 @@ SurfaceType Part::surfaceFromFace(NormalId face) {
     return SurfaceSmooth; // Unreachable
 }
 
+bool Part::checkJointContinuinty(std::shared_ptr<Part> otherPart) {
+    // Make sure that the two parts don't depend on one another
+
+    if (shared<Part>() == otherPart) return false;
+
+    for (auto joint : primaryJoints) {
+        if (joint.expired() || joint.lock()->part1.expired()) continue;
+        if (!joint.lock()->part1.lock()->checkJointContinuinty(otherPart))
+            return false;
+    }
+
+    for (auto joint : secondaryJoints) {
+        if (joint.expired() || joint.lock()->part0.expired()) continue;
+        if (!joint.lock()->part0.lock()->checkJointContinuinty(otherPart))
+            return false;
+    }
+
+    return true;
+}
+
 void Part::MakeJoints() {
     // Algorithm: Find nearby parts
     // Make sure parts are not dependant on each other (via primary/secondaryJoints)
@@ -290,6 +310,7 @@ void Part::MakeJoints() {
                 float dot = myWorldNormal.Dot(otherWorldNormal);
                 if (dot > -0.99) continue; // Surface is pointing opposite to ours
                 if (abs(surfacePointLocalToMyFrame.Z()) > 0.05) continue; // Surfaces are within 0.05 studs of one another
+                if (!checkJointContinuinty(otherPart)) continue;
 
                 SurfaceType mySurface = surfaceFromFace(faceFromNormal(myFace));
                 SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
@@ -307,7 +328,7 @@ void Part::MakeJoints() {
                     dataModel().value()->GetService<JointsService>()->AddChild(joint);
                     joint->UpdateProperty("Part0");
 
-                    printf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());
+                    Logger::debugf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());
                 }
             }
         }

@@ -37,6 +37,7 @@ protected:
     void untrackJoint(std::shared_ptr<Snap>);
 
     SurfaceType surfaceFromFace(NormalId);
+    bool checkJointContinuinty(std::shared_ptr<Part>);
 
     friend Snap;
 
