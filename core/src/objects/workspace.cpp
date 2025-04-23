@@ -48,6 +48,7 @@ void Workspace::InitService() {
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         this->SyncPartPhysics(part);
+        part->MakeJoints();
     }
 
     // Activate all joints

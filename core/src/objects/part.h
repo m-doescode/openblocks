@@ -36,6 +36,8 @@ protected:
     void trackJoint(std::shared_ptr<Snap>);
     void untrackJoint(std::shared_ptr<Snap>);
 
+    SurfaceType surfaceFromFace(NormalId);
+
     friend Snap;
 
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;

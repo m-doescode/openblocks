@@ -112,7 +112,7 @@ public:
     result<std::shared_ptr<T>, InstanceCastError> CastTo() {
         // TODO: Too lazy to implement a manual check
         std::shared_ptr<T> result = std::dynamic_pointer_cast<T>(shared_from_this());
-        if (result != nullptr)
+        if (result == nullptr)
             return InstanceCastError(GetClass()->className, T::TYPE.className);
         return result;
     }

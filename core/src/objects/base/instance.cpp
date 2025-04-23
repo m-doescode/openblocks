@@ -382,6 +382,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefState<_RefStatePrope
             }
         } else {
             Data::Variant value = GetPropertyValue(property).expect();
+            // printf("property: %s, value: %s\n", property.c_str(), std::string(value.ToString()).c_str());
             newInstance->SetPropertyValue(property, value).expect();
         }
     }

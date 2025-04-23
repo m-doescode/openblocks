@@ -6,7 +6,9 @@
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
+#include "objects/jointsservice.h"
 #include "objects/snap.h"
+#include "rendering/surface.h"
 #include <memory>
 #include <optional>
 
@@ -233,6 +235,82 @@ void Part::BreakJoints() {
     for (std::weak_ptr<Snap> joint : secondaryJoints) {
         if (joint.expired()) continue;
         joint.lock()->Destroy();
+    }
+}
+
+static Data::Vector3 FACES[6] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1},
+    {-1, 0, 0},
+    {0, -1, 0},
+    {0, 0, -1},
+};
+
+SurfaceType Part::surfaceFromFace(NormalId face) {
+    switch (face) {
+        case Top: return topSurface;
+        case Bottom: return bottomSurface;
+        case Right: return rightSurface;
+        case Left: return leftSurface;
+        case Front: return frontSurface;
+        case Back: return backSurface;
+    }
+    return SurfaceSmooth; // Unreachable
+}
+
+void Part::MakeJoints() {
+    // Algorithm: Find nearby parts
+    // Make sure parts are not dependant on each other (via primary/secondaryJoints)
+    // Find matching surfaces (surface normal dot product < -0.999)
+    // Get surface cframe of this part
+    // Transform surface center of other part to local via surface cframe of this part
+    // Make sure z of transformed center is not greater than 0.05
+
+    if (!workspace()) return;
+
+    // TEMPORARY
+    // TODO: Use more efficient algorithm to *actually* find nearby parts)
+    for (auto it = workspace().value()->GetDescendantsStart(); it != workspace().value()->GetDescendantsEnd(); it++) {
+        InstanceRef obj = *it;
+        if (obj == shared_from_this()) continue; // Skip ourselves
+        if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
+        std::shared_ptr<Part> otherPart = obj->CastTo<Part>().expect();
+
+        for (Data::Vector3 myFace : FACES) {
+            Data::Vector3 myWorldNormal = cframe.Rotation() * myFace;
+            Data::Vector3 validUp = cframe.Rotation() * Data::Vector3(1,1,1).Unit(); // If myFace == (0, 1, 0), then (0, 1, 0) would produce NaN as up, so we fudge the up so that it works
+            Data::CFrame surfaceFrame(cframe.Position(), cframe * (myFace * size), validUp);
+
+            for (Data::Vector3 otherFace : FACES) {
+                Data::Vector3 otherWorldNormal = otherPart->cframe.Rotation() * otherFace;
+                Data::Vector3 otherSurfaceCenter = otherPart->cframe * (otherFace * otherPart->size);
+                Data::Vector3 surfacePointLocalToMyFrame = surfaceFrame.Inverse() * otherSurfaceCenter;
+
+                float dot = myWorldNormal.Dot(otherWorldNormal);
+                if (dot > -0.99) continue; // Surface is pointing opposite to ours
+                if (abs(surfacePointLocalToMyFrame.Z()) > 0.05) continue; // Surfaces are within 0.05 studs of one another
+
+                SurfaceType mySurface = surfaceFromFace(faceFromNormal(myFace));
+                SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
+
+                if (mySurface == SurfaceSmooth) continue; // We're not responsible for any joints
+                else if (mySurface == SurfaceWeld || mySurface == SurfaceGlue
+                || (mySurface == SurfaceStuds && (otherSurface == SurfaceInlets || otherSurface == SurfaceUniversal))
+                || (mySurface == SurfaceInlets && (otherSurface == SurfaceStuds || otherSurface == SurfaceUniversal))
+                || (mySurface == SurfaceUniversal && (otherSurface == SurfaceStuds || otherSurface == SurfaceInlets || otherSurface == SurfaceUniversal))) { // Always make a weld no matter what the other surface is
+                    std::shared_ptr<Snap> joint = Snap::New();
+                    joint->part0 = shared<Part>();
+                    joint->part1 = otherPart->shared<Part>();
+                    joint->c1 = cframe;
+                    joint->c0 = otherPart->cframe;
+                    dataModel().value()->GetService<JointsService>()->AddChild(joint);
+                    joint->UpdateProperty("Part0");
+
+                    printf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());
+                }
+            }
+        }
     }
 }
 
