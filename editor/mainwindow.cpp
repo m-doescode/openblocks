@@ -39,17 +39,19 @@ inline bool isDarkMode() {
 
 QtMessageHandler defaultMessageHandler = nullptr;
 
-std::map<QtMsgType, Logger::LogLevel> QT_MESSAGE_TYPE_TO_LOG_LEVEL = {
-    { QtMsgType::QtInfoMsg, Logger::LogLevel::INFO },  
-    { QtMsgType::QtSystemMsg, Logger::LogLevel::INFO }, 
-    { QtMsgType::QtDebugMsg, Logger::LogLevel::DEBUG }, 
-    { QtMsgType::QtWarningMsg, Logger::LogLevel::WARNING }, 
-    { QtMsgType::QtCriticalMsg, Logger::LogLevel::ERROR }, 
-    { QtMsgType::QtFatalMsg, Logger::LogLevel::FATAL_ERROR }, 
-};
+// std::map<QtMsgType, Logger::LogLevel> QT_MESSAGE_TYPE_TO_LOG_LEVEL = {
+//     { QtMsgType::QtInfoMsg, Logger::LogLevel::INFO },  
+//     { QtMsgType::QtSystemMsg, Logger::LogLevel::INFO }, 
+//     { QtMsgType::QtDebugMsg, Logger::LogLevel::DEBUG }, 
+//     { QtMsgType::QtWarningMsg, Logger::LogLevel::WARNING }, 
+//     { QtMsgType::QtCriticalMsg, Logger::LogLevel::ERROR }, 
+//     { QtMsgType::QtFatalMsg, Logger::LogLevel::FATAL_ERROR }, 
+// };
 
 void logQtMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-    Logger::log("[Qt] " + msg.toStdString(), QT_MESSAGE_TYPE_TO_LOG_LEVEL[type]);
+    // Logger::log("[Qt] " + msg.toStdString(), QT_MESSAGE_TYPE_TO_LOG_LEVEL[type]);
+    Logger::LogLevel logLevel = type == QtMsgType::QtFatalMsg ? Logger::LogLevel::FATAL_ERROR : Logger::LogLevel::DEBUG;
+    Logger::log("[Qt] " + msg.toStdString(), logLevel);
 
     // if (defaultMessageHandler) defaultMessageHandler(type, context, msg);
 }

@@ -36,7 +36,7 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     scintilla->setCaretForegroundColor(palette().text().color());
     scintilla->setFont(font);
 
-    scintilla->setLexer();
+    scintilla->setText(QString::fromStdString(script->source));
 
     connect(scintilla, &QsciScintilla::textChanged, [this]() {
         // this-> is important here, as otherwise it will refer to the

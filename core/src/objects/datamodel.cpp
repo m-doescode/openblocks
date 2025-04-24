@@ -138,6 +138,7 @@ result<std::shared_ptr<Service>, NoSuchService> DataModel::GetService(std::strin
 
     services[className] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[className]->constructor());
     AddChild(std::dynamic_pointer_cast<Instance>(services[className]));
+    services[className]->InitService();
 
     return std::dynamic_pointer_cast<Service>(services[className]);
 }

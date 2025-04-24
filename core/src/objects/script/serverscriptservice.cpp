@@ -23,7 +23,7 @@ void ServerScriptService::InitService() {
     initialized = true;
 }
 
-void Service::OnRun() {
+void ServerScriptService::OnRun() {
     auto workspace = dataModel().value()->GetService<Workspace>();
     for (auto it = workspace->GetDescendantsStart(); it != workspace->GetDescendantsEnd(); it++) {
         if (!it->IsA<Script>()) continue;

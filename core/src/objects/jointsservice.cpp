@@ -24,7 +24,7 @@ void JointsService::InitService() {
     initialized = true;
 
     // Clear children before any new joints are added
-    for (std::shared_ptr<Instance> inst : dataModel().value()->GetService<JointsService>()->GetChildren()) {
+    for (std::shared_ptr<Instance> inst : GetChildren()) {
         inst->Destroy();
     }
 }

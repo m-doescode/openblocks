@@ -1,6 +1,10 @@
 #include "script.h"
+#include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
+#include "objects/script/scriptcontext.h"
+#include <luajit-2.1/lauxlib.h>
+#include <luajit-2.1/lua.h>
 
 const InstanceType Script::TYPE = {
     .super = &Instance::TYPE,
@@ -25,13 +29,22 @@ Script::Script(): Instance(&TYPE) {
             }},
         }
     });
+
+    source = "print \"Hello, world!\"";
 }
 
 Script::~Script() {
 }
 
 void Script::Run() {
-    
+    lua_State* L = dataModel().value()->GetService<ScriptContext>()->state;
+
+    luaL_loadstring(L, source.c_str());
+    int status = lua_pcall(L, 0, LUA_MULTRET, 0);
+    if (status != 0) {
+        Logger::error(lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
 }
 
 void Script::Stop() {
