@@ -12,6 +12,7 @@ public:
     ~ExplorerView() override;
 
     void keyPressEvent(QKeyEvent*) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     // void dropEvent(QDropEvent*) override;
 
     void buildContextMenu();

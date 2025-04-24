@@ -24,6 +24,5 @@ public:
     void setRunState(RunState);
   
     void closeEvent(QCloseEvent *closeEvent) override;
-    void keyPressEvent(QKeyEvent *keyEvent) override;
     void init();
 };

@@ -13,7 +13,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Multimedia LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Multimedia LinguistTools)
-
+find_package(QScintilla)
 
 set(TS_FILES editor_en_US.ts)
 
@@ -30,8 +30,10 @@ set(PROJECT_SOURCES
         panes/explorermodel.cpp
         panes/propertiesview.h
         panes/propertiesview.cpp
-        placedocument.cpp
         placedocument.h
+        placedocument.cpp
+        script/scriptdocument.h
+        script/scriptdocument.cpp
         ${TS_FILES}
 )
 
@@ -63,8 +65,8 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_include_directories(editor PUBLIC "../core/src" "../include")
-target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
+target_include_directories(editor PUBLIC "../core/src" "../include" ${QSCINTILLA_INCLUDE_DIR})
+target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia ${QSCINTILLA_LIBRARY})
 
 # Qt6 does not include QOpenGLWidgets as part of Widgets base anymore, so
 # we have to include it manually

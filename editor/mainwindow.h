@@ -7,6 +7,7 @@
 #include "qcoreevent.h"
 #include <QMainWindow>
 #include <QLineEdit>
+#include <memory>
 #include <qfiledialog.h>
 
 enum SelectedTool {
@@ -29,6 +30,8 @@ enum GridSnappingMode {
     SNAP_OFF,
 };
 
+class Script;
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -46,6 +49,8 @@ public:
     SelectedTool selectedTool;
     GridSnappingMode snappingMode;
     bool editSoundEffects = true;
+
+    void openScriptDocument(std::shared_ptr<Script>);
 
     Ui::MainWindow *ui;
 private:

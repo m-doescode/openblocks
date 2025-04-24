@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "objects/base/instance.h"
 #include "objects/meta.h"
+#include "objects/script.h"
 #include <memory>
 #include <qaction.h>
 
@@ -68,6 +69,15 @@ void ExplorerView::keyPressEvent(QKeyEvent* event) {
         M_mainWindow->ui->actionDelete->trigger();
         break;
     }
+}
+
+void ExplorerView::mouseDoubleClickEvent(QMouseEvent *event) {
+    QModelIndex index = indexAt(event->pos());
+    std::shared_ptr<Instance> inst = model.fromIndex(index);
+    if (!inst->IsA<Script>()) return;
+
+    MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
+    mainWnd->openScriptDocument(inst->CastTo<Script>().expect());
 }
 
 void ExplorerView::buildContextMenu() {

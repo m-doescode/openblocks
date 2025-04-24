@@ -5,13 +5,16 @@
 #include "objects/datamodel.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/snap.h"
+#include "objects/script.h"
 #include "placedocument.h"
+#include "script/scriptdocument.h"
 #include <map>
 #include <memory>
 #include <qclipboard.h>
 #include <qglobal.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
+#include <qnamespace.h>
 #include <qstylefactory.h>
 #include <qstylehints.h>
 #include <qmdisubwindow.h>
@@ -133,10 +136,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ui->explorerView->Init(ui);
     placeDocument = new PlaceDocument(this);
+    placeDocument->setAttribute(Qt::WA_DeleteOnClose, true);
     ui->mdiArea->addSubWindow(placeDocument);
     ui->mdiArea->currentSubWindow()->showMaximized();
     ui->mdiArea->findChild<QTabBar*>()->setExpanding(false);
     placeDocument->init();
+
+    ui->mdiArea->setTabsClosable(true);
+
+    auto script = Script::New();
+    gWorkspace()->AddChild(script);
+    // ui->mdiArea->addSubWindow(new ScriptDocument(script));
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
@@ -472,6 +482,14 @@ std::optional<std::string> MainWindow::openFileDialog(QString filter, QString de
         return std::nullopt;
 
     return dialog.selectedFiles().front().toStdString();
+}
+
+void MainWindow::openScriptDocument(std::shared_ptr<Script> script) {
+    ScriptDocument* doc = new ScriptDocument(script);
+    doc->setAttribute(Qt::WA_DeleteOnClose, true);
+    ui->mdiArea->addSubWindow(doc);
+    ui->mdiArea->setActiveSubWindow(doc);
+    doc->showMaximized();
 }
 
 MainWindow::~MainWindow()

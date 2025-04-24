@@ -14,6 +14,7 @@ PlaceDocument::PlaceDocument(QWidget* parent):
     QMdiSubWindow(parent) {
     placeWidget = new MainGLWidget;
     setWidget(placeWidget);
+    setWindowTitle("Place");
 
     _runState = RUN_STOPPED;
 }
@@ -47,10 +48,6 @@ void PlaceDocument::setRunState(RunState newState) {
 void PlaceDocument::closeEvent(QCloseEvent *closeEvent) {
     // Placeholder
     closeEvent->ignore();
-}
-
-void PlaceDocument::keyPressEvent(QKeyEvent *keyEvent) {
-    printf("Getting\n");
 }
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
