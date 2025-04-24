@@ -24,7 +24,7 @@ public:
     std::optional<std::string> currentFile;
 
     DataModel();
-    void Init();
+    void Init(bool runMode = false);
 
     static inline std::shared_ptr<DataModel> New() { return std::make_shared<DataModel>(); };
     virtual const InstanceType* GetClass() override;

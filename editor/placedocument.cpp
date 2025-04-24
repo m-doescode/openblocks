@@ -33,7 +33,7 @@ void PlaceDocument::setRunState(RunState newState) {
 
         std::shared_ptr<DataModel> newModel = editModeDataModel->CloneModel();
         gDataModel = newModel;
-        gDataModel->Init();
+        gDataModel->Init(true);
     } else if (newState == RUN_PAUSED && _runState == RUN_RUNNING) {
         _runState = RUN_PAUSED;
     } else if (newState == RUN_STOPPED) {
@@ -41,7 +41,6 @@ void PlaceDocument::setRunState(RunState newState) {
 
         // GC: Check to make sure gDataModel gets properly garbage collected prior to this
         gDataModel = editModeDataModel;
-        gDataModel->Init();
     }
 }
 

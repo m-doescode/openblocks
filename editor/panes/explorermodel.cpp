@@ -1,5 +1,7 @@
 #include "explorermodel.h"
 #include "common.h"
+#include "objects/base/instance.h"
+#include "objects/base/member.h"
 #include <qicon.h>
 #include <qmimedata.h>
 #include <QWidget>
@@ -43,7 +45,7 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
         ? static_cast<Instance*>(parent.internalPointer())
         : rootItem.get();
 
-    if (parentItem->GetChildren().size() >= row)
+    if (parentItem->GetChildren().size() >= row && !(parentItem->GetChildren()[row]->GetClass()->flags & INSTANCE_HIDDEN))
         return createIndex(row, column, parentItem->GetChildren()[row].get());
     return {};
 }

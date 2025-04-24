@@ -18,3 +18,6 @@ void Service::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent
 
 void Service::InitService() {
 }
+
+void Service::OnRun() {
+}

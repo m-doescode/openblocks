@@ -4,6 +4,7 @@
 #include "objects/base/refstate.h"
 #include "objects/base/service.h"
 #include "objects/meta.h"
+#include "objects/script/serverscriptservice.h"
 #include "workspace.h"
 #include "logger.h"
 #include "panic.h"
@@ -27,16 +28,19 @@ DataModel::DataModel()
     this->name = "Place";
 }
 
-void DataModel::Init() {
+void DataModel::Init(bool runMode) {
     // Create the workspace if it doesn't exist
     if (this->services.count("Workspace") == 0) {
         this->services["Workspace"] = std::make_shared<Workspace>();
         AddChild(this->services["Workspace"]);
     }
+
+    GetService<ServerScriptService>();
     
     // Init all services
     for (auto [_, service] : this->services) {
         service->InitService();
+        if (runMode) service->OnRun();
     }
 }
 
@@ -128,7 +132,7 @@ result<std::shared_ptr<Service>, NoSuchService> DataModel::GetService(std::strin
     if (services.count(className) != 0)
         return std::dynamic_pointer_cast<Service>(services[className]);
     
-    if (!INSTANCE_MAP[className] || (INSTANCE_MAP[className]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
+    if (!INSTANCE_MAP[className] || ~(INSTANCE_MAP[className]->flags & (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) == 0) {
         return NoSuchService(className);
     }
 

@@ -25,9 +25,11 @@ class Workspace;
 
 typedef int InstanceFlags;
 // This instance should only be instantiated in special circumstances (i.e. by DataModel) and should be creatable directly via any API 
-const InstanceFlags INSTANCE_NOTCREATABLE = (InstanceFlags)0x1;
+const InstanceFlags INSTANCE_NOTCREATABLE = (InstanceFlags)1<<0;
 // This instance is a service
-const InstanceFlags INSTANCE_SERVICE = (InstanceFlags)0x2;
+const InstanceFlags INSTANCE_SERVICE = (InstanceFlags)1<<1;
+// This instance should be hidden from the explorer
+const InstanceFlags INSTANCE_HIDDEN = (InstanceFlags)1<<2;
 
 // Struct describing information about an instance
 struct InstanceType {

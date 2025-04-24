@@ -29,3 +29,11 @@ Script::Script(): Instance(&TYPE) {
 
 Script::~Script() {
 }
+
+void Script::Run() {
+    
+}
+
+void Script::Stop() {
+    // TODO:
+}

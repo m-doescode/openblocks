@@ -8,6 +8,7 @@ class Service : public Instance {
 protected:
     Service(const InstanceType* type);
     virtual void InitService();
+    virtual void OnRun();
 
     void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) override;
 

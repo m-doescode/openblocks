@@ -4,15 +4,23 @@
 #include "objects/part.h"
 #include "objects/joint/snap.h"
 #include "objects/script.h"
+#include "objects/script/scriptcontext.h"
+#include "objects/script/serverscriptservice.h"
 #include "objects/workspace.h"
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Instance", &Instance::TYPE },
-    { "Part", &Part::TYPE },
-    { "Workspace", &Workspace::TYPE },
     { "DataModel", &DataModel::TYPE },
+
+    { "Part", &Part::TYPE },
     { "Snap", &Snap::TYPE },
     { "JointInstance", &JointInstance::TYPE },
-    { "JointsService", &JointsService::TYPE },
     { "Script", &Script::TYPE },
+
+    // Services
+
+    { "Workspace", &Workspace::TYPE },
+    { "JointsService", &JointsService::TYPE },
+    { "ScriptContext", &ScriptContext::TYPE },
+    { "ServerScriptService", &ServerScriptService::TYPE },
 };
