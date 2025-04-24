@@ -4,6 +4,8 @@
 #include <Qsci/qscilexer.h>
 #include <qboxlayout.h>
 #include <qfont.h>
+#include <qdebug.h>
+#include <qglobal.h>
 #include <qlayout.h>
 #include "objects/script.h"
 
@@ -35,6 +37,12 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     scintilla->setFont(font);
 
     scintilla->setLexer();
+
+    connect(scintilla, &QsciScintilla::textChanged, [this]() {
+        // this-> is important here, as otherwise it will refer to the
+        // parameter passed in, which will get gc'ed eventually
+        this->script->source = scintilla->text().toStdString();
+    });
 }
 
 ScriptDocument::~ScriptDocument() {

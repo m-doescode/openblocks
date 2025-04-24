@@ -1,6 +1,7 @@
 #include "panes/propertiesview.h"
 #include "common.h"
 #include "datatypes/base.h"
+#include "objects/base/member.h"
 
 #include <QColorDialog>
 #include <QLineEdit>
@@ -296,7 +297,7 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         PropertyMeta meta = inst->GetPropertyMeta(property).expect();
         Data::Variant currentValue = inst->GetPropertyValue(property).expect();
 
-        // if (meta.type == &CFrame::TYPE) continue;
+        if (meta.type == &CFrame::TYPE || meta.flags & PROP_HIDDEN) continue;
 
         QTreeWidgetItem* item = new QTreeWidgetItem;
         item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
@@ -311,9 +312,9 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
         } else if (meta.type == &Vector3::TYPE) {
             Vector3 vector = currentValue.get<Vector3>();
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-        } else if (meta.type == &CFrame::TYPE) {
-            Vector3 vector = currentValue.get<CFrame>().Position();
-            item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
+        // } else if (meta.type == &CFrame::TYPE) {
+        //     Vector3 vector = currentValue.get<CFrame>().Position();
+        //     item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
