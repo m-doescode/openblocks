@@ -21,4 +21,3 @@ For build instructions, see [BUILD.md](./BUILD.md)
 ### Assets
 
 * Skybox by Jauhn Dabz
-* Icons by Mark James

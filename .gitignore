@@ -1,6 +1,7 @@
 /bin/
 /lib/
 /build/
+/autogen/build
 
 # Qt
 /*.pro.user*
