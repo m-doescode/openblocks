@@ -39,6 +39,9 @@ Script::~Script() {
 void Script::Run() {
     lua_State* L = dataModel().value()->GetService<ScriptContext>()->state;
 
+    // Initialize script globals
+    
+
     luaL_loadstring(L, source.c_str());
     int status = lua_pcall(L, 0, LUA_MULTRET, 0);
     if (status != 0) {
