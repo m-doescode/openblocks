@@ -17,6 +17,12 @@ void Data::Variant::Serialize(pugi::xml_node node) const {
     }, this->wrapped);
 }
 
+void Data::Variant::PushLuaValue(lua_State* state) const {
+    return std::visit([&](auto&& it) {
+        return it.PushLuaValue(state);
+    }, this->wrapped);
+}
+
 Data::Variant Data::Variant::Deserialize(pugi::xml_node node) {
     if (Data::TYPE_MAP.count(node.name()) == 0) {
         Logger::fatalErrorf("Unknown type for instance: '%s'", node.name());

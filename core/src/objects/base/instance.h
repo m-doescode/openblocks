@@ -102,6 +102,7 @@ public:
     DescendantsIterator GetDescendantsEnd();
     // Utility functions
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
+    std::optional<std::shared_ptr<Instance>> FindFirstChild(std::string);
 
     // Properties
     result<Data::Variant, MemberNotFound> GetPropertyValue(std::string name);

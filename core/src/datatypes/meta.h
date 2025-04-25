@@ -37,6 +37,7 @@ namespace Data {
         Data::String ToString() const;
         
         void Serialize(pugi::xml_node node) const;
+        void PushLuaValue(lua_State* state) const;
         static Data::Variant Deserialize(pugi::xml_node node);
     };
 

@@ -154,6 +154,14 @@ bool Instance::IsA(std::string className) {
     return cur != nullptr;
 }
 
+std::optional<std::shared_ptr<Instance>> Instance::FindFirstChild(std::string name) {
+    for (auto child : children) {
+        if (child->name == name)
+            return child;
+    }
+    return std::nullopt;
+}
+
 static std::shared_ptr<Instance> DUMMY_INSTANCE;
 DescendantsIterator Instance::GetDescendantsStart() {
     return DescendantsIterator(GetChildren().size() > 0 ? GetChildren()[0] : DUMMY_INSTANCE);
