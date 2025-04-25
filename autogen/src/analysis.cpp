@@ -143,6 +143,20 @@ void processField(CXCursor cur, ClassAnalysis* state) {
 
     anly.name = result["name"];
     anly.fieldName = fieldName;
+    anly.category = result["category"];
+    anly.onUpdateCallback = result["on_update"];
+    
+    if (result.count("hidden"))
+        anly.flags = anly.flags | PropertyFlags::PropertyFlag_Hidden;
+    if (result.count("no_save"))
+        anly.flags = anly.flags | PropertyFlags::PropertyFlag_NoSave;
+    if (result.count("unit_float"))
+        anly.flags = anly.flags | PropertyFlags::PropertyFlag_UnitFloat;
+    if (result.count("readonly"))
+        anly.flags = anly.flags | PropertyFlags::PropertyFlag_Readonly;
+
+    CXType type = clang_getCursorType(cur);
+    anly.backingFieldType = x_clang_toString(clang_getTypeSpelling(type)).c_str();
 
     state->properties.push_back(anly);
 }

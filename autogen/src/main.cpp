@@ -40,27 +40,28 @@ int main(int argc, char** argv) {
 
     analyzeClasses("../core/src/objects/part.h", argv[1], &state);
 
-    for (auto& [_, clazz] : state.classes) {
-        printf("Class: %s\n", clazz.name.c_str());
-        if (clazz.baseClass != "")
-            printf("==> Base class: %s\n", clazz.baseClass.c_str());
-        if (clazz.explorerIcon != "")
-            printf("==> Explorer icon: %s\n", clazz.explorerIcon.c_str());
-        printf("==> Flags (%x): ", clazz.flags);
-        if (clazz.flags & ClassFlag_Service)
-            printf("INSTANCE_SERVICE ");
-        if (clazz.flags & ClassFlag_NotCreatable)
-            printf("INSTANCE_NOT_CREATABLE ");
-        if (clazz.flags & ClassFlag_Hidden)
-            printf("INSTANCE_HIDDEN");
-        printf("\n");
 
-        if (!clazz.properties.empty())
-            printf("==> Properties:\n");
-        for (auto prop : clazz.properties) {
-            printf("====> %s (%s)\n", prop.name.c_str(), prop.fieldName.c_str());
-        }
-    }
+    // for (auto& [_, clazz] : state.classes) {
+    //     printf("Class: %s\n", clazz.name.c_str());
+    //     if (clazz.baseClass != "")
+    //         printf("==> Base class: %s\n", clazz.baseClass.c_str());
+    //     if (clazz.explorerIcon != "")
+    //         printf("==> Explorer icon: %s\n", clazz.explorerIcon.c_str());
+    //     printf("==> Flags (%x): ", clazz.flags);
+    //     if (clazz.flags & ClassFlag_Service)
+    //         printf("INSTANCE_SERVICE ");
+    //     if (clazz.flags & ClassFlag_NotCreatable)
+    //         printf("INSTANCE_NOT_CREATABLE ");
+    //     if (clazz.flags & ClassFlag_Hidden)
+    //         printf("INSTANCE_HIDDEN");
+    //     printf("\n");
+
+    //     if (!clazz.properties.empty())
+    //         printf("==> Properties:\n");
+    //     for (auto prop : clazz.properties) {
+    //         printf("====> %s (%s) (%s)\n", prop.name.c_str(), prop.fieldName.c_str(), prop.backingFieldType.c_str());
+    //     }
+    // }
 
     // First-pass: Analyze type hierarchy
     // for (std::string path : headerFiles) {
