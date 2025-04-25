@@ -17,8 +17,8 @@
             "request": "launch",
             "name": "Debug Autogen",
             "program": "${workspaceFolder}/autogen/build/autogen",
-            "args": ["core/src", "core/src/objects", "autogen/build/generated"],
-            "cwd": "${workspaceFolder}",
+            "args": ["../core/src", "../core/src/objects", "build/generated"],
+            "cwd": "${workspaceFolder}/autogen",
         }
     ]
 }

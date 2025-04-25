@@ -11,6 +11,7 @@
 #include <optional>
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>
+#include "annotation.h"
 
 namespace rp = reactphysics3d;
 
@@ -27,7 +28,7 @@ struct PartConstructParams {
 
 class Snap;
 
-class Part : public Instance {
+class INSTANCE Part : public Instance {
 protected:
     // Joints where this part is Part0
     std::vector<std::weak_ptr<JointInstance>> primaryJoints;
@@ -51,8 +52,11 @@ public:
 
     Vector3 velocity;
     CFrame cframe;
+    [[ def_prop(name="Size") ]]
     glm::vec3 size;
+    [[ def_prop(name="Color") ]]
     Color3 color;
+    [[ def_prop(name="Transparency") ]]
     float transparency = 0.f;
     bool selected = false;
     
