@@ -4,6 +4,8 @@
 #include <functional>
 #include <optional>
 #include <pugixml.hpp>
+#include "error/result.h"
+#include "error/data.h"
 
 extern "C" { typedef struct lua_State lua_State; }
 
@@ -22,17 +24,20 @@ public: \
     \
     static Data::Variant Deserialize(pugi::xml_node node); \
     static std::optional<Data::Variant> FromString(std::string); \
+    static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx); \
 };
 
 namespace Data {
     class Variant;
     typedef std::function<Data::Variant(pugi::xml_node)> Deserializer;
     typedef std::function<std::optional<Data::Variant>(std::string)> FromString;
+    typedef std::function<result<Data::Variant, LuaCastError>(lua_State*, int idx)> FromLuaValue;
 
     struct TypeInfo {
         std::string name;
         Deserializer deserializer;
         FromString fromString;
+        FromLuaValue fromLuaValue;
     };
 
     class String;
@@ -57,6 +62,7 @@ namespace Data {
         virtual void PushLuaValue(lua_State*) const override;
 
         static Data::Variant Deserialize(pugi::xml_node node);
+        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
     };
 
     DEF_WRAPPER_CLASS(Bool, bool)

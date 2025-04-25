@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "error/data.h"
 #include <memory>
 
 class Instance;
@@ -21,6 +22,7 @@ namespace Data {
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node node) const override;
         virtual void PushLuaValue(lua_State*) const override;
-        // static Data::Variant Deserialize(pugi::xml_node node);
+        static Data::Variant Deserialize(pugi::xml_node node);
+        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
     };
 }

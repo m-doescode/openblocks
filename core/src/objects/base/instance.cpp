@@ -48,6 +48,7 @@ Instance::Instance(const InstanceType* type) {
         .super = std::nullopt,
         .members = {
             { "Name", { .backingField = &name, .type = &Data::String::TYPE, .codec = fieldCodecOf<Data::String, std::string>() } },
+            { "Parent", { .backingField = &parent, .type = &Data::InstanceRef::TYPE, .codec = fieldCodecOf<Data::InstanceRef, std::weak_ptr<Instance>>() } },
             { "ClassName", { .backingField = const_cast<InstanceType*>(type), .type = &Data::String::TYPE, .codec = classNameCodec(), .flags = (PropertyFlags)(PROP_READONLY | PROP_NOSAVE) } },
         }
     });
@@ -202,6 +203,14 @@ result<Data::Variant, MemberNotFound> Instance::GetPropertyValue(std::string nam
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Data::Variant value) {
+    // Handle special case: Parent
+    if (name == "Parent") {
+        Data::InstanceRef ref = value.get<Data::InstanceRef>();
+        std::weak_ptr<Instance> inst = ref;
+        SetParent(inst.expired() ? std::nullopt : std::make_optional(inst.lock()));
+        return {};
+    }
+
     auto meta_ = GetPropertyMeta(name);
     if (!meta_) return MemberNotFound(GetClass()->className, name);
     auto meta = meta_.expect();

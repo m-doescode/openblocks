@@ -52,6 +52,13 @@ public:
         }, error().value());
     }
 
+    std::optional<std::string> errorMessage() {
+        if (isSuccess()) return std::nullopt;
+        return std::visit([&](auto&& it) {
+            return it.message();
+        }, error().value());
+    }
+
     // Equivalent to .success
     operator std::optional<T_Result>() { return success(); }
     operator bool() { return isSuccess(); }

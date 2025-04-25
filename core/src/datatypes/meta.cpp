@@ -1,6 +1,7 @@
 #include "meta.h"
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
+#include "datatypes/ref.h"
 #include "logger.h"
 #include "panic.h"
 #include <variant>
@@ -25,7 +26,7 @@ void Data::Variant::PushLuaValue(lua_State* state) const {
 
 Data::Variant Data::Variant::Deserialize(pugi::xml_node node) {
     if (Data::TYPE_MAP.count(node.name()) == 0) {
-        Logger::fatalErrorf("Unknown type for instance: '%s'", node.name());
+        Logger::fatalErrorf("Unknown type for property: '%s'", node.name());
         panic();
     }
 
@@ -42,4 +43,5 @@ std::map<std::string, const Data::TypeInfo*> Data::TYPE_MAP = {
     { "Vector3", &Data::Vector3::TYPE },
     { "CoordinateFrame", &Data::CFrame::TYPE },
     { "Color3", &Data::Color3::TYPE },
+    { "Ref", &Data::InstanceRef::TYPE },
 };

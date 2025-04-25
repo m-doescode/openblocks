@@ -7,6 +7,7 @@
 #include "objects/script.h"
 #include <memory>
 #include <qaction.h>
+#include <qtreeview.h>
 
 #define M_mainWindow dynamic_cast<MainWindow*>(window())
 
@@ -74,10 +75,11 @@ void ExplorerView::keyPressEvent(QKeyEvent* event) {
 void ExplorerView::mouseDoubleClickEvent(QMouseEvent *event) {
     QModelIndex index = indexAt(event->pos());
     std::shared_ptr<Instance> inst = model.fromIndex(index);
-    if (!inst->IsA<Script>()) return;
+    if (!inst->IsA<Script>()) return QTreeView::mouseDoubleClickEvent(event);
 
     MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
     mainWnd->openScriptDocument(inst->CastTo<Script>().expect());
+    QTreeView::mouseDoubleClickEvent(event);
 }
 
 void ExplorerView::buildContextMenu() {
