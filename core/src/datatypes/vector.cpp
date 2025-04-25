@@ -2,6 +2,7 @@
 #include <glm/ext/quaternion_geometric.hpp>
 #include <string>
 #include "meta.h" // IWYU pragma: keep
+#include "panic.h"
 
 Data::Vector3::Vector3() : vector(glm::vec3(0, 0, 0)) {};
 Data::Vector3::Vector3(const glm::vec3& src) : vector(src) {};
@@ -100,4 +101,9 @@ std::optional<Data::Variant> Data::Vector3::FromString(std::string string) {
     }
 
     return Data::Vector3(components[0], components[1], components[2]);
+}
+
+void Data::Vector3::PushLuaValue(lua_State* L) const {
+    // TODO:
+    panic();
 }

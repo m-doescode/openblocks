@@ -32,3 +32,8 @@ void Data::InstanceRef::Serialize(pugi::xml_node node) const {
 // Data::Variant Color3::Deserialize(pugi::xml_node node) {
 //     return Color3::FromHex(node.text().get());
 // }
+
+void Data::InstanceRef::PushLuaValue(lua_State* L) const {
+    // TODO:
+    panic();
+}

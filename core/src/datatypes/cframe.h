@@ -35,6 +35,7 @@ namespace Data {
 
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node parent) const override;
+        virtual void PushLuaValue(lua_State*) const override;
         static Data::Variant Deserialize(pugi::xml_node node);
 
         operator glm::mat4() const;

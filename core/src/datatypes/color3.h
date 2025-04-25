@@ -26,6 +26,7 @@ namespace Data {
         virtual const Data::String ToString() const override;
         std::string ToHex() const;
         virtual void Serialize(pugi::xml_node node) const override;
+        virtual void PushLuaValue(lua_State*) const override;
         static Data::Variant Deserialize(pugi::xml_node node);
 
         operator glm::vec3() const;

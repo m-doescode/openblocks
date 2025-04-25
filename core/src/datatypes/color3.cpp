@@ -1,5 +1,6 @@
 #include "color3.h"
 #include "meta.h" // IWYU pragma: keep
+#include "panic.h"
 
 Data::Color3::Color3(float r, float g, float b) : r(std::clamp(r, 0.f, 1.f)), g(std::clamp(g, 0.f, 1.f)), b(std::clamp(b, 0.f, 1.f)) {};
 Data::Color3::Color3(const glm::vec3& vec) : r(std::clamp(vec.x, 0.f, 1.f)), g(std::clamp(vec.y, 0.f, 1.f)), b(std::clamp(vec.z, 0.f, 1.f)) {};
@@ -44,4 +45,10 @@ void Data::Color3::Serialize(pugi::xml_node node) const {
 
 Data::Variant Data::Color3::Deserialize(pugi::xml_node node) {
     return Color3::FromHex(node.text().get());
+}
+
+
+void Data::Color3::PushLuaValue(lua_State* L) const {
+    // TODO:
+    panic();
 }

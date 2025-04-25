@@ -146,3 +146,8 @@ Data::Variant Data::CFrame::Deserialize(pugi::xml_node node) {
         node.child("R22").text().as_float()
     );
 }
+
+void Data::CFrame::PushLuaValue(lua_State* L) const {
+    // TODO:
+    panic();
+}

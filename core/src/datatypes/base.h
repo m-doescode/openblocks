@@ -5,6 +5,8 @@
 #include <optional>
 #include <pugixml.hpp>
 
+extern "C" { typedef struct lua_State lua_State; }
+
 #define DEF_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) class CLASS_NAME : public Data::Base { \
     const WRAPPED_TYPE value; \
 public: \
@@ -16,6 +18,8 @@ public: \
     \
     virtual const Data::String ToString() const override; \
     virtual void Serialize(pugi::xml_node node) const override; \
+    virtual void PushLuaValue(lua_State*) const override; \
+    \
     static Data::Variant Deserialize(pugi::xml_node node); \
     static std::optional<Data::Variant> FromString(std::string); \
 };
@@ -38,6 +42,7 @@ namespace Data {
         virtual const TypeInfo& GetType() const = 0;
         virtual const Data::String ToString() const = 0;
         virtual void Serialize(pugi::xml_node node) const = 0;
+        virtual void PushLuaValue(lua_State*) const = 0;
     };
 
     class Null : Base {
@@ -49,6 +54,8 @@ namespace Data {
 
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node node) const override;
+        virtual void PushLuaValue(lua_State*) const override;
+
         static Data::Variant Deserialize(pugi::xml_node node);
     };
 
