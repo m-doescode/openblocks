@@ -80,7 +80,8 @@ bool findInstanceAnnotation(CXCursor cur) {
         if (kind != CXCursor_AnnotateAttr) return CXChildVisit_Continue;
 
         std::string annString = x_clang_toString(clang_getCursorDisplayName(cur));
-        if (annString == "OB::INSTANCE") found = true;
+        // if (annString == "OB::INSTANCE") found = true;
+        if (annString == "OB::def_inst") found = true;
 
         return CXChildVisit_Break;
     });
@@ -154,6 +155,19 @@ void processClass(CXCursor cur, AnalysisState* state, std::string className) {
 
     anly.name = className;
     anly.baseClass = baseClass;
+
+    // Add misc flags and options
+    auto instanceDef = findAnnotation(cur, "OB::def_inst");
+    auto result = parseAnnotationString(instanceDef.value());
+
+    if (result.count("service"))
+        anly.flags = anly.flags | ClassFlag_Service | ClassFlag_NotCreatable;
+    if (result.count("not_creatable"))
+        anly.flags = anly.flags | ClassFlag_NotCreatable;
+    if (result.count("hidden"))
+        anly.flags = anly.flags | ClassFlag_Hidden;
+
+    anly.explorerIcon = result["explorer_icon"];
     
     // Find annotated fields
     x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {

@@ -28,7 +28,7 @@ struct PartConstructParams {
 
 class Snap;
 
-class INSTANCE Part : public Instance {
+class [[ def_inst(explorer_icon="part") ]] Part : public Instance {
 protected:
     // Joints where this part is Part0
     std::vector<std::weak_ptr<JointInstance>> primaryJoints;
@@ -51,24 +51,33 @@ public:
     const static InstanceType TYPE;
 
     Vector3 velocity;
+    [[ def_prop(name="cframe"), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
     CFrame cframe;
-    [[ def_prop(name="Size") ]]
+    [[ def_prop(name="Size", category=PART) ]]
     glm::vec3 size;
-    [[ def_prop(name="Color") ]]
+    [[ def_prop(name="Color", category=APPEARANCE) ]]
     Color3 color;
-    [[ def_prop(name="Transparency") ]]
+    [[ def_prop(name="Transparency", category=APPEARANCE) ]]
     float transparency = 0.f;
     bool selected = false;
     
+    [[ def_prop(name="Anchored", category=BEHAVIOR) ]]
     bool anchored = false;
+    [[ def_prop(name="Locked", category=BEHAVIOR) ]]
     bool locked = false;
     rp::RigidBody* rigidBody = nullptr;
 
+    [[ def_prop(name="TopSurface", category=SURFACE) ]]
     SurfaceType topSurface = SurfaceType::SurfaceStuds;
+    [[ def_prop(name="BottomSurface", category=SURFACE) ]]
     SurfaceType bottomSurface = SurfaceType::SurfaceInlets;
+    [[ def_prop(name="LeftSurface", category=SURFACE) ]]
     SurfaceType leftSurface = SurfaceType::SurfaceSmooth;
+    [[ def_prop(name="RightSurface", category=SURFACE) ]]
     SurfaceType rightSurface = SurfaceType::SurfaceSmooth;
+    [[ def_prop(name="FrontSurface", category=SURFACE) ]]
     SurfaceType frontSurface = SurfaceType::SurfaceSmooth;
+    [[ def_prop(name="BackSurface", category=SURFACE) ]]
     SurfaceType backSurface = SurfaceType::SurfaceSmooth;
     
     Part();
