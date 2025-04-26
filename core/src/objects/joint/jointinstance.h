@@ -8,7 +8,7 @@
 class Part;
 class Workspace;
 
-class INSTANCE_SERVICE() JointInstance : public Instance {
+class INSTANCE_WITH(abstract) JointInstance : public Instance {
     AUTOGEN_PREAMBLE
 
     std::weak_ptr<Part> oldPart0;
