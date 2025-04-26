@@ -14,7 +14,7 @@ Data::InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance)
 Data::InstanceRef::~InstanceRef() = default;
 
 const Data::TypeInfo Data::InstanceRef::TYPE = {
-    .name = "Instance",
+    .name = "Ref",
     .deserializer = &Data::InstanceRef::Deserialize,
     .fromLuaValue = &Data::InstanceRef::FromLuaValue,
 };
