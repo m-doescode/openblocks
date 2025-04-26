@@ -49,8 +49,6 @@ protected:
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
 public:
-    const static InstanceType TYPE;
-
     [[ def_prop(name="Velocity", on_update=onUpdated) ]]
     Vector3 velocity;
     [[ def_prop(name="CFrame", on_update=onUpdated), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
@@ -89,7 +87,6 @@ public:
     static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
     static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
     static inline InstanceRef Create() { return std::make_shared<Part>(); };
-    virtual const InstanceType* GetClass() override;
 
     inline Vector3 position() { return cframe.Position(); }
 

@@ -13,12 +13,9 @@ class INSTANCE Snap : public JointInstance {
     virtual void buildJoint() override;
     virtual void breakJoint() override;
 public:
-    const static InstanceType TYPE;
-
     Snap();
     ~Snap();
 
     static inline std::shared_ptr<Snap> New() { return std::make_shared<Snap>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Snap>(); };
-    virtual const InstanceType* GetClass() override;
 };

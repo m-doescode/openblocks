@@ -28,4 +28,7 @@ result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name) o
 fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value) override; \
 result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name) override; \
 std::vector<std::string> InternalGetProperties() override; \
+public: \
+const static InstanceType TYPE; \
+virtual const InstanceType* GetClass() override; \
 private:

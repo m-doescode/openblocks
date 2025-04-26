@@ -19,8 +19,6 @@ private:
     void DeserializeService(pugi::xml_node node);
     static void cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service>, RefState<_RefStatePropertyCell>);
 public:
-    const static InstanceType TYPE;
-
     std::map<std::string, std::shared_ptr<Service>> services;
 
     std::optional<std::string> currentFile;
@@ -29,7 +27,6 @@ public:
     void Init(bool runMode = false);
 
     static inline std::shared_ptr<DataModel> New() { return std::make_shared<DataModel>(); };
-    virtual const InstanceType* GetClass() override;
 
     result<std::shared_ptr<Service>, NoSuchService> GetService(std::string className);
     result<std::optional<std::shared_ptr<Service>>, NoSuchService> FindService(std::string className);

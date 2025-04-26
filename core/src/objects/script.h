@@ -7,8 +7,6 @@
 class INSTANCE_WITH(explorer_icon="script") Script : public Instance {
     AUTOGEN_PREAMBLE
 public:
-    const static InstanceType TYPE;
-
     Script();
     ~Script();
 
@@ -19,5 +17,4 @@ public:
 
     static inline std::shared_ptr<Script> New() { return std::make_shared<Script>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Script>(); };
-    virtual const InstanceType* GetClass() override;
 };

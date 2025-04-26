@@ -11,13 +11,10 @@ protected:
     bool initialized = false;
 
 public:
-    const static InstanceType TYPE;
-
     ScriptContext();
     ~ScriptContext();
 
     lua_State* state;
 
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<ScriptContext>(); };
-    virtual const InstanceType* GetClass() override;
 };

@@ -29,7 +29,6 @@ protected:
     virtual void buildJoint() = 0;
     virtual void breakJoint() = 0;
 public:
-    const static InstanceType TYPE;
 
     [[ def_prop(name="Part0", on_update=onUpdated) ]]
     std::weak_ptr<Part> part0;
@@ -42,6 +41,4 @@ public:
 
     JointInstance(const InstanceType*);
     ~JointInstance();
-
-    virtual const InstanceType* GetClass() override;
 };

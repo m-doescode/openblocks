@@ -44,19 +44,15 @@ protected:
     bool initialized = false;
 
 public:
-    const static InstanceType TYPE;
-
     Workspace();
     ~Workspace();
 
     // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Workspace>(); };
-    virtual const InstanceType* GetClass() override;
 
     void SyncPartPhysics(std::shared_ptr<Part> part);
     void DestroyRigidBody(rp::RigidBody* rigidBody);
 
     void PhysicsStep(float deltaTime);
     std::optional<const RaycastResult> CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter = std::nullopt, unsigned short categoryMaskBits = 0xFFFF);
-
 };

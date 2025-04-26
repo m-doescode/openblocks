@@ -13,12 +13,9 @@ class INSTANCE Weld : public JointInstance {
     virtual void buildJoint() override;
     virtual void breakJoint() override;
 public:
-    const static InstanceType TYPE;
-
     Weld();
     ~Weld();
 
     static inline std::shared_ptr<Weld> New() { return std::make_shared<Weld>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Weld>(); };
-    virtual const InstanceType* GetClass() override;
 };

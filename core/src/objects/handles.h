@@ -34,8 +34,6 @@ enum HandlesType {
 class INSTANCE_WITH(abstract) Handles : public Instance {
     AUTOGEN_PREAMBLE
 public:
-    const static InstanceType TYPE;
-
     bool nixAxes = false; // XYZ -> ZXY, used with rotation
     bool active;
     std::weak_ptr<Part> adornee;
@@ -54,5 +52,4 @@ public:
     std::optional<HandleFace> RaycastHandle(rp3d::Ray ray);
 
     static inline std::shared_ptr<Handles> New() { return std::make_shared<Handles>(); };
-    virtual const InstanceType* GetClass() override;
 };
