@@ -1,11 +1,12 @@
 #pragma once
 
+#include "objects/annotation.h"
 #include "objects/base/service.h"
 
 // Container class for server scripts
 // Also handles/manages running server scripts on run
-class ServerScriptService : public Service {
-private:
+class INSTANCE_SERVICE() ServerScriptService : public Service {
+    AUTOGEN_PREAMBLE
 protected:
     void InitService() override;
     void OnRun() override;

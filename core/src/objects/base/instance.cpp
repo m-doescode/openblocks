@@ -43,15 +43,6 @@ constexpr FieldCodec classNameCodec() {
 
 Instance::Instance(const InstanceType* type) {
     this->name = type->className;
-
-    this->memberMap = std::make_unique<MemberMap>( MemberMap {
-        .super = std::nullopt,
-        .members = {
-            { "Name", { .backingField = &name, .type = &Data::String::TYPE, .codec = fieldCodecOf<Data::String, std::string>() } },
-            { "Parent", { .backingField = &parent, .type = &Data::InstanceRef::TYPE, .codec = fieldCodecOf<Data::InstanceRef, std::weak_ptr<Instance>>() } },
-            { "ClassName", { .backingField = const_cast<InstanceType*>(type), .type = &Data::String::TYPE, .codec = classNameCodec(), .flags = (PropertyFlags)(PROP_READONLY | PROP_NOSAVE) } },
-        }
-    });
 }
 
 Instance::~Instance () {
@@ -195,83 +186,66 @@ void Instance::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
 // Properties
 
 result<Data::Variant, MemberNotFound> Instance::GetPropertyValue(std::string name) {
-    auto meta_ = GetPropertyMeta(name);
-    if (!meta_) return MemberNotFound(GetClass()->className, name);
-    auto meta = meta_.expect();
-
-    return meta.codec.read(meta.backingField);
+    return InternalGetPropertyValue(name);
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Data::Variant value) {
-    // Handle special case: Parent
-    if (name == "Parent") {
-        Data::InstanceRef ref = value.get<Data::InstanceRef>();
-        std::weak_ptr<Instance> inst = ref;
-        SetParent(inst.expired() ? std::nullopt : std::make_optional(inst.lock()));
-        return {};
-    }
-
-    if (InternalSetPropertyValue(name, value).isSuccess())
-        return {};
-
-    auto meta_ = GetPropertyMeta(name);
-    if (!meta_) return MemberNotFound(GetClass()->className, name);
-    auto meta = meta_.expect();
-    if (meta.flags & PROP_READONLY) AssignToReadOnlyMember(GetClass()->className, name);
-
-    meta.codec.write(value, meta.backingField);
-    if (meta.updateCallback) meta.updateCallback.value()(name);
-    sendPropertyUpdatedSignal(shared_from_this(), name, value);
-
-    return {};
+    auto result = InternalSetPropertyValue(name, value);
+    if (result.isSuccess()) sendPropertyUpdatedSignal(shared_from_this(), name, value);
+    return result;
 }
 
 result<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name) {
-    MemberMap* current = &*memberMap;
-    while (true) {
-        // We look for the property in current member map
-        auto it = current->members.find(name);
-
-        // It is found, return it
-        if (it != current->members.end())
-            return it->second;
-
-        // It is not found, If there are no other maps to search, return null
-        if (!current->super.has_value())
-            return MemberNotFound(GetClass()->className, name);
-
-        // Search in the parent
-        current = current->super->get();
-    }
+    return InternalGetPropertyMeta(name);
 }
 
 
-result<Data::Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string name) { return MemberNotFound(GetClass()->className, name); }
-fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Data::Variant value) { return MemberNotFound(GetClass()->className, name); }
+result<Data::Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string name) {
+    if (name == "Name") {
+        return Data::Variant(Data::String(this->name));
+    } else if (name == "Parent") {
+        return Data::Variant(Data::InstanceRef(this->parent));
+    } else if (name == "ClassName") {
+        return Data::Variant(Data::String(GetClass()->className));
+    }
+    return MemberNotFound(GetClass()->className, name);
+}
+
+fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Data::Variant value) {
+    if (name == "Name") {
+        this->name = (std::string)value.get<Data::String>();
+    } else if (name == "Parent") {
+        std::weak_ptr<Instance> ref = value.get<Data::InstanceRef>();
+        SetParent(ref.expired() ? std::nullopt : std::make_optional(ref.lock()));
+    } else if (name == "ClassName") {
+        return AssignToReadOnlyMember(GetClass()->className, name);
+    }
+    return MemberNotFound(GetClass()->className, name);
+}
+
+std::vector<std::string> Instance::InternalGetProperties() {
+    std::vector<std::string> members;
+    members.push_back("Name");
+    members.push_back("Parent");
+    members.push_back("ClassName");
+    return members;
+}
+
 result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) { return MemberNotFound(GetClass()->className, name); }
 
 void Instance::UpdateProperty(std::string name) {
-    PropertyMeta meta = GetPropertyMeta(name).expect();
-    if (!meta.updateCallback) return; // Nothing to update, exit.
-    meta.updateCallback.value()(name);
+    // TODO: temporary workaround because I'm too lazy to implement this in autogen
+    InternalSetPropertyValue(name, InternalGetPropertyValue(name).expect()).expect();
+
+    // PropertyMeta meta = GetPropertyMeta(name).expect();
+    // if (!meta.updateCallback) return; // Nothing to update, exit.
+    // meta.updateCallback.value()(name);
 }
 
 std::vector<std::string> Instance::GetProperties() {
     if (cachedMemberList.has_value()) return cachedMemberList.value();
 
-    std::vector<std::string> memberList;
-
-    MemberMap* current = &*memberMap;
-    do {
-        for (auto const& [key, _] : current->members) {
-            // Don't add it if it's already in the list
-            if (std::find(memberList.begin(), memberList.end(), key) == memberList.end())
-                memberList.push_back(key);
-        }
-        if (!current->super.has_value())
-            break;
-        current = &*current->super.value();
-    } while (true);
+    std::vector<std::string> memberList = InternalGetProperties();
 
     cachedMemberList = memberList;
     return memberList;

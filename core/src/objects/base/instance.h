@@ -65,7 +65,6 @@ private:
     friend JointInstance; // This isn't ideal, but oh well
 protected:
     bool parentLocked = false;
-    std::unique_ptr<MemberMap> memberMap;
 
     Instance(const InstanceType*);
     virtual ~Instance();
@@ -73,6 +72,7 @@ protected:
     virtual result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name);
     virtual fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value);
     virtual result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name);
+    virtual std::vector<std::string> InternalGetProperties();
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
     virtual void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);

@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "datatypes/cframe.h"
+#include "objects/annotation.h"
 #include "objects/base/service.h"
 #include "objects/part.h"
 #include <array>
@@ -30,7 +31,8 @@ enum HandlesType {
     RotateHandles,
 };
 
-class Handles : public Instance {
+class INSTANCE_WITH(abstract) Handles : public Instance {
+    AUTOGEN_PREAMBLE
 public:
     const static InstanceType TYPE;
 

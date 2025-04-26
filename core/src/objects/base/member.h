@@ -67,8 +67,3 @@ struct PropertyMeta {
 };
 
 typedef std::variant<PropertyMeta> MemberMeta;
-
-struct MemberMap {
-    std::optional<std::unique_ptr<MemberMap>> super;
-    std::map<std::string, PropertyMeta> members;
-};

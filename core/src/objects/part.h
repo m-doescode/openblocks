@@ -28,7 +28,7 @@ struct PartConstructParams {
 
 class Snap;
 
-class [[ def_inst(explorer_icon="part") ]] Part : public Instance {
+class INSTANCE_WITH(explorer_icon="part") Part : public Instance {
     AUTOGEN_PREAMBLE
 protected:
     // Joints where this part is Part0
@@ -51,10 +51,11 @@ protected:
 public:
     const static InstanceType TYPE;
 
+    [[ def_prop(name="Velocity", on_update=onUpdated) ]]
     Vector3 velocity;
-    [[ def_prop(name="CFrame"), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
+    [[ def_prop(name="CFrame", on_update=onUpdated), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
     CFrame cframe;
-    [[ def_prop(name="Size", category=PART) ]]
+    [[ def_prop(name="Size", category=PART, on_update=onUpdated) ]]
     glm::vec3 size;
     [[ def_prop(name="Color", category=APPEARANCE) ]]
     Color3 color;
@@ -62,7 +63,7 @@ public:
     float transparency = 0.f;
     bool selected = false;
     
-    [[ def_prop(name="Anchored", category=BEHAVIOR) ]]
+    [[ def_prop(name="Anchored", category=BEHAVIOR, on_update=onUpdated) ]]
     bool anchored = false;
     [[ def_prop(name="Locked", category=BEHAVIOR) ]]
     bool locked = false;
@@ -87,7 +88,7 @@ public:
 
     static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
     static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
-    static inline InstanceRef CreateGeneric() { return std::make_shared<Part>(); };
+    static inline InstanceRef Create() { return std::make_shared<Part>(); };
     virtual const InstanceType* GetClass() override;
 
     inline Vector3 position() { return cframe.Position(); }

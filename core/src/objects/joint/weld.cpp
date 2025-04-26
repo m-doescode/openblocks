@@ -10,16 +10,6 @@
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 
-const InstanceType Weld::TYPE = {
-    .super = &JointInstance::TYPE,
-    .className = "Weld",
-    .constructor = &Weld::Create,
-};
-
-const InstanceType* Weld::GetClass() {
-    return &TYPE;
-}
-
 Weld::Weld(): JointInstance(&TYPE) {
 }
 

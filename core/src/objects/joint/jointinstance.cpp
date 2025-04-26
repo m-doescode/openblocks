@@ -11,42 +11,7 @@
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include "ptr_helpers.h"
 
-const InstanceType JointInstance::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "JointInstance",
-};
-
-const InstanceType* JointInstance::GetClass() {
-    return &TYPE;
-}
-
 JointInstance::JointInstance(const InstanceType* type): Instance(type) {
-    this->memberMap = std::make_unique<MemberMap>(MemberMap {
-        .super = std::move(this->memberMap),
-        .members = {
-            { "Part0", {
-                .backingField = &part0,
-                .type = &Data::InstanceRef::TYPE,
-                .codec = fieldCodecOf<Data::InstanceRef, std::weak_ptr<Instance>>(),
-                .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
-            }}, { "Part1", {
-                .backingField = &part1,
-                .type = &Data::InstanceRef::TYPE,
-                .codec = fieldCodecOf<Data::InstanceRef, std::weak_ptr<Instance>>(),
-                .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
-            }}, { "C0", {
-                .backingField = &c0,
-                .type = &CFrame::TYPE,
-                .codec = fieldCodecOf<CFrame>(),
-                .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
-            }}, { "C1", {
-                .backingField = &c1,
-                .type = &CFrame::TYPE,
-                .codec = fieldCodecOf<CFrame>(),
-                .updateCallback = memberFunctionOf(&JointInstance::onUpdated, this),
-            }}, 
-        }
-    });
 }
 
 JointInstance::~JointInstance() {

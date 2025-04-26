@@ -1,10 +1,13 @@
 #pragma once
 
+#include "objects/annotation.h"
 #include "objects/base/instance.h"
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-class Weld : public JointInstance {
+class INSTANCE Weld : public JointInstance {
+    AUTOGEN_PREAMBLE
+
     rp::FixedJoint* joint = nullptr;
 
     virtual void buildJoint() override;

@@ -2,6 +2,7 @@
 
 #include "error/instance.h"
 #include "error/result.h"
+#include "objects/annotation.h"
 #include "objects/base/instance.h"
 #include "objects/base/refstate.h"
 #include <memory>
@@ -12,7 +13,8 @@ class DataModel;
 class Service;
 
 // The root instance to all objects in the hierarchy
-class DataModel : public Instance {
+class INSTANCE_WITH(abstract) DataModel : public Instance {
+    AUTOGEN_PREAMBLE
 private:
     void DeserializeService(pugi::xml_node node);
     static void cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service>, RefState<_RefStatePropertyCell>);

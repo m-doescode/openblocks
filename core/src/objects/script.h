@@ -1,15 +1,18 @@
 #pragma once
 
+#include "objects/annotation.h"
 #include "objects/base/instance.h"
 #include <memory>
 
-class Script : public Instance {
+class INSTANCE_WITH(explorer_icon="script") Script : public Instance {
+    AUTOGEN_PREAMBLE
 public:
     const static InstanceType TYPE;
 
     Script();
     ~Script();
 
+    [[ def_prop(name="Source", hidden) ]]
     std::string source;
     void Run();
     void Stop();

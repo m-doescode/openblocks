@@ -20,7 +20,7 @@ add_custom_target(build_autogen ALL
     COMMAND "${CMAKE_BINARY_DIR}/autogen/autogen" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/src/objects" "${CMAKE_BINARY_DIR}/generated"
 )
 
-file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h" "${CMAKE_BINARY_DIR}/generated/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h" "${CMAKE_BINARY_DIR}/generated/__all__.cpp")
 add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_libraries(openblocks ${GLEW_LIBRARIES} ${LUAJIT_LIBRARIES} OpenGL::GL ReactPhysics3D::ReactPhysics3D pugixml::pugixml)

@@ -16,17 +16,6 @@ std::string unsafe_globals[] = {
     "loadfile", "loadstring", "load", "dofile", "getfenv", "setfenv"
 };
 
-const InstanceType ScriptContext::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "ScriptContext",
-    .constructor = &ScriptContext::Create,
-    .flags = INSTANCE_NOTCREATABLE | INSTANCE_SERVICE | INSTANCE_HIDDEN,
-};
-
-const InstanceType* ScriptContext::GetClass() {
-    return &TYPE;
-}
-
 ScriptContext::ScriptContext(): Service(&TYPE) {
 }
 

@@ -24,7 +24,8 @@ std::map<std::string, std::string> parseAnnotationString(std::string src) {
 
     int i = 0;
     for (; i < src.length(); i++) {
-        if (src[i] == ' ' && (stage != 2 || !quoted)) continue; // Ignore spaces if not in stage 2 and quoted 
+        if (src[i] == ' ' && (stage != 2 || !quoted)) continue; // Ignore spaces if not in stage 2 and quoted
+        if (src[i] == ',' && stage == 0) continue; // Let empty commas slip by
         if (stage < 2 && (src[i] >= 'a' && src[i] <= 'z' || src[i] >= 'A' && src[i] <= 'Z' || src[i] >= '0' && src[i] <= '9' || src[i] == '_')) {
             currentIdent += src[i];
             stage = 1;
@@ -227,6 +228,8 @@ void processClass(CXCursor cur, AnalysisState* state, std::string className, std
         anly.flags = anly.flags | ClassFlag_NotCreatable;
     if (result.count("hidden"))
         anly.flags = anly.flags | ClassFlag_Hidden;
+
+    anly.abstract = result.count("abstract") > 0;
 
     anly.explorerIcon = result["explorer_icon"];
     

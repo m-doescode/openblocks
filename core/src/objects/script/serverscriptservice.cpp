@@ -2,17 +2,6 @@
 #include "objects/script.h"
 #include "objects/workspace.h"
 
-const InstanceType ServerScriptService::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "ServerScriptService",
-    .constructor = &ServerScriptService::Create,
-    .flags = INSTANCE_NOTCREATABLE | INSTANCE_SERVICE,
-};
-
-const InstanceType* ServerScriptService::GetClass() {
-    return &TYPE;
-}
-
 ServerScriptService::ServerScriptService(): Service(&TYPE) {
 }
 

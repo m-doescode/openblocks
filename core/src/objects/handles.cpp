@@ -23,17 +23,6 @@ static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 
 static rp3d::PhysicsCommon common;
 static rp3d::PhysicsWorld* world = common.createPhysicsWorld();
 
-const InstanceType Handles::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "Handles",
-    // .constructor = &Workspace::Create,
-    // .explorerIcon = "",
-};
-
-const InstanceType* Handles::GetClass() {
-    return &TYPE;
-}
-
 Handles::Handles(): Instance(&TYPE) {
 }
 

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "objects/annotation.h"
 #include "objects/base/service.h"
 
-class JointsService : public Service {
+class INSTANCE_SERVICE() JointsService : public Service {
+    AUTOGEN_PREAMBLE
 private:
     std::optional<std::shared_ptr<Workspace>> jointWorkspace();
 protected:

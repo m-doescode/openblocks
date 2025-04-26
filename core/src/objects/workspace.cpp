@@ -5,18 +5,6 @@
 #include "physics/util.h"
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
-const InstanceType Workspace::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "Workspace",
-    .constructor = &Workspace::Create,
-    .explorerIcon = "workspace",
-    .flags = INSTANCE_NOTCREATABLE | INSTANCE_SERVICE,
-};
-
-const InstanceType* Workspace::GetClass() {
-    return &TYPE;
-}
-
 rp::PhysicsCommon* Workspace::physicsCommon = new rp::PhysicsCommon;
 
 Workspace::Workspace(): Service(&TYPE) {

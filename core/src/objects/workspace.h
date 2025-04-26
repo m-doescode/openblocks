@@ -1,5 +1,6 @@
 #pragma once
 
+#include "objects/annotation.h"
 #include "objects/base/service.h"
 #include <memory>
 #include <reactphysics3d/body/RigidBody.h>
@@ -29,7 +30,9 @@ class Weld;
 
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
 
-class Workspace : public Service {
+class INSTANCE_SERVICE(explorer_icon="workspace") Workspace : public Service {
+    AUTOGEN_PREAMBLE
+    
     rp::PhysicsWorld* physicsWorld = nullptr;
     static rp::PhysicsCommon* physicsCommon; 
 

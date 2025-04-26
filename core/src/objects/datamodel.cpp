@@ -13,16 +13,6 @@
 #include <memory>
 #include <optional>
 
-const InstanceType DataModel::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "DataModel",
-    .constructor = nullptr,
-};
-
-const InstanceType* DataModel::GetClass() {
-    return &TYPE;
-}
-
 DataModel::DataModel()
     : Instance(&TYPE) {
     this->name = "Place";

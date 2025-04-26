@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
     }
 
     printf("[AUTOGEN] Generating cpp files...\n");
+    fs::create_directories(argv[3]); // Make sure generated dir exists before we try writing to it
     for (auto& [_, clazz] : state.classes) {
         fs::path outPath = fs::path(argv[3]) / ("class_" + clazz.name + ".cpp");
         std::ofstream outStream(outPath);
@@ -78,6 +79,20 @@ int main(int argc, char** argv) {
         writeCodeForClass(outStream, clazz);
         outStream.close();
     }
+
+    // // Write __all__.cpp file
+    // fs::path outPath = fs::path(argv[3]) / "__all__.cpp";
+    // std::ofstream outStream(outPath);
+
+    // // TODO: replace these with just direct filenames that can be converted by
+    // // CMake itself
+    // for (auto& [_, clazz] : state.classes) {
+    //     std::string includeName = "class_" + clazz.name + ".cpp";
+
+    //     outStream << "#include \"" << includeName << "\"\n";
+    // }
+
+    // outStream.close();
 
 
     flushCaches(argv[3]);

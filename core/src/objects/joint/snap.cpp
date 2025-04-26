@@ -10,16 +10,6 @@
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 
-const InstanceType Snap::TYPE = {
-    .super = &JointInstance::TYPE,
-    .className = "Snap",
-    .constructor = &Snap::Create,
-};
-
-const InstanceType* Snap::GetClass() {
-    return &TYPE;
-}
-
 Snap::Snap(): JointInstance(&TYPE) {
 }
 

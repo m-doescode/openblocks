@@ -46,6 +46,7 @@ struct ClassAnalysis {
     std::string name;
     std::string baseClass;
     std::string headerPath;
+    bool abstract = false;
     std::vector<PropertyAnalysis> properties;
     ClassFlags flags = (ClassFlags)0;
     std::string explorerIcon;

@@ -1,10 +1,11 @@
 #pragma once
 
+#include "objects/annotation.h"
 #include "objects/base/service.h"
 #include "lua.h"
 
-class ScriptContext : public Service {
-private:
+class INSTANCE_SERVICE() ScriptContext : public Service {
+    AUTOGEN_PREAMBLE
 protected:
     void InitService() override;
     bool initialized = false;

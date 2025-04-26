@@ -2,18 +2,6 @@
 #include "workspace.h"
 #include <memory>
 
-const InstanceType JointsService::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "JointsService",
-    .constructor = &JointsService::Create,
-    .flags = INSTANCE_NOTCREATABLE | INSTANCE_SERVICE | INSTANCE_HIDDEN,
-};
-
-const InstanceType* JointsService::GetClass() {
-    return &TYPE;
-}
-
-
 JointsService::JointsService(): Service(&TYPE) {
 }
 
