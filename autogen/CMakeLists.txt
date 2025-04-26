@@ -4,7 +4,6 @@ find_package(Clang REQUIRED)
 add_executable(autogen
     src/main.cpp
     src/util.cpp
-    src/cache.cpp
     src/analysis.cpp
     src/codegen.cpp
 )

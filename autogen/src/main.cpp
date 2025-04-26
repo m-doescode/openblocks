@@ -5,11 +5,8 @@
 #include <clang-c/Index.h>
 #include <cstdio>
 #include <fstream>
-#include <string>
-#include <vector>
 #include <filesystem>
 #include "analysis.h"
-#include "cache.h"
 #include "codegen.h"
 
 namespace fs = std::filesystem;
@@ -31,9 +28,6 @@ int main(int argc, char** argv) {
     analyzeClasses(srcPath, srcRoot, &state);
 
     fs::create_directories(outPath.parent_path()); // Make sure generated dir exists before we try writing to it
-
-    if (state.classes.empty())
-        return 0;
 
     printf("[AUTOGEN] Generating file %s...\n", relpath.c_str());
     std::ofstream outStream(outPath);

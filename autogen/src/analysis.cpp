@@ -282,6 +282,9 @@ bool analyzeClasses(std::string path, std::string srcRoot, AnalysisState* state)
         CXCursorKind kind = clang_getCursorKind(cur);
         if (kind != CXCursor_ClassDecl) return CXChildVisit_Continue;
 
+        CXSourceLocation loc = clang_getCursorLocation(cur);
+        if (!clang_Location_isFromMainFile(loc)) return CXChildVisit_Continue; // This class is not from this header. Skip
+
         std::string className = x_clang_toString(clang_getCursorDisplayName(cur));
         // Forward-decls can slip through the cracks, this prevents that, but also allows us to filter non-instance classes in the src/objects directory
         if (!findInstanceAnnotation(cur)) return CXChildVisit_Continue; // Class is not "primary" declaration/is not instance, skip

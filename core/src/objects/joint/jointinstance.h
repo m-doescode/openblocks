@@ -5,6 +5,11 @@
 #include <memory>
 #include <optional>
 
+//this is necessary ebcause we use std::weak_ptr<Part> without including it in this file
+#ifdef __AUTOGEN_EXTRA_INCLUDES__
+#include "../part.h"
+#endif
+
 class Part;
 class Workspace;
 
