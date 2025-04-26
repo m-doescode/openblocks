@@ -17,13 +17,20 @@ enum PropertyFlags {
     PropertyFlag_Readonly = 1 << 3,
 };
 
+enum CFrameMember {
+    CFrameMember_None, // Not part of CFrame
+    CFrameMember_Position,
+    CFrameMember_Rotation
+};
+
 struct PropertyAnalysis {
     std::string name;
     std::string fieldName;
+    CFrameMember cframeMember = CFrameMember_None; // for cframe_position_prop etc.
     std::string backingFieldType;
     std::string onUpdateCallback;
     std::string category;
-    PropertyFlags flags;
+    PropertyFlags flags = (PropertyFlags)0;
 };
 
 // https://stackoverflow.com/a/1448478/16255372

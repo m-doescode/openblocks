@@ -52,7 +52,7 @@ public:
     const static InstanceType TYPE;
 
     Vector3 velocity;
-    [[ def_prop(name="cframe"), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
+    [[ def_prop(name="CFrame"), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
     CFrame cframe;
     [[ def_prop(name="Size", category=PART) ]]
     glm::vec3 size;

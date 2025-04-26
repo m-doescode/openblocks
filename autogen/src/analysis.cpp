@@ -163,6 +163,40 @@ void processField(CXCursor cur, ClassAnalysis* state) {
     anly.backingFieldType = x_clang_toString(clang_getTypeSpelling(type)).c_str();
 
     state->properties.push_back(anly);
+
+    // For cframe, add member fields
+
+    std::optional<std::string> cframePositionDef = findAnnotation(cur, "OB::cframe_position_prop");
+    if (cframePositionDef) {
+        auto cframePosition = parseAnnotationString(cframePositionDef.value());
+
+        PropertyAnalysis cframeProp;
+        cframeProp.backingFieldType = anly.backingFieldType;
+        cframeProp.fieldName = anly.fieldName;
+        cframeProp.name = cframePosition["name"];
+        cframeProp.category = anly.category;
+        cframeProp.cframeMember = CFrameMember_Position;
+        cframeProp.onUpdateCallback = anly.onUpdateCallback;
+        cframeProp.flags = PropertyFlag_NoSave;
+
+        state->properties.push_back(cframeProp);
+    };
+
+    std::optional<std::string> cframeRotationDef = findAnnotation(cur, "OB::cframe_rotation_prop");
+    if (cframeRotationDef) {
+        auto cframeRotation = parseAnnotationString(cframeRotationDef.value());
+
+        PropertyAnalysis cframeProp;
+        cframeProp.backingFieldType = anly.backingFieldType;
+        cframeProp.fieldName = anly.fieldName;
+        cframeProp.name = cframeRotation["name"];
+        cframeProp.category = anly.category;
+        cframeProp.cframeMember = CFrameMember_Rotation;
+        cframeProp.onUpdateCallback = anly.onUpdateCallback;
+        cframeProp.flags = PropertyFlag_NoSave;
+
+        state->properties.push_back(cframeProp);
+    };
 }
 
 void processClass(CXCursor cur, AnalysisState* state, std::string className, std::string srcRoot) {

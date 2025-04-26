@@ -245,6 +245,11 @@ result<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name)
     }
 }
 
+
+result<Data::Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string name) { return MemberNotFound(GetClass()->className, name); }
+fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Data::Variant value) { return MemberNotFound(GetClass()->className, name); }
+result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) { return MemberNotFound(GetClass()->className, name); }
+
 void Instance::UpdateProperty(std::string name) {
     PropertyMeta meta = GetPropertyMeta(name).expect();
     if (!meta.updateCallback) return; // Nothing to update, exit.
@@ -282,7 +287,7 @@ void Instance::Serialize(pugi::xml_node parent) {
     pugi::xml_node propertiesNode = node.append_child("Properties");
     for (std::string name : GetProperties()) {
         PropertyMeta meta = GetPropertyMeta(name).expect("Meta of declared property is missing");
-        if (meta.flags & (PropertyFlags::PROP_NOSAVE | PropertyFlags::PROP_READONLY)) continue; // This property should not be serialized. Skip...
+        if (meta.flags & (PROP_NOSAVE | PROP_READONLY)) continue; // This property should not be serialized. Skip...
 
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
         propertyNode.append_attribute("name").set_value(name);

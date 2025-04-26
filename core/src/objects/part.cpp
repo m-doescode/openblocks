@@ -74,13 +74,13 @@ Part::Part(PartConstructParams params): Instance(&TYPE), cframe(CFrame::FromEule
                 .type = &Vector3::TYPE,
                 .codec = cframePositionCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
-                .flags = PropertyFlags::PROP_NOSAVE
+                .flags = PROP_NOSAVE
             }}, { "Rotation", {
                 .backingField = &cframe,
                 .type = &Vector3::TYPE,
                 .codec = cframeRotationCodec(),
                 .updateCallback = memberFunctionOf(&Part::onUpdated, this),
-                .flags = PropertyFlags::PROP_NOSAVE
+                .flags = PROP_NOSAVE
             }}, { "Velocity", {
                 .backingField = &velocity,
                 .type = &Vector3::TYPE,
