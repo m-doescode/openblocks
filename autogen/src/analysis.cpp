@@ -1,9 +1,13 @@
 #include "analysis.h"
 #include "util.h"
+#include <clang-c/CXFile.h>
+#include <clang-c/CXSourceLocation.h>
 #include <clang-c/Index.h>
 #include <cstdio>
 #include <optional>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 
 // Very simple parser
 // Example format:
@@ -161,14 +165,23 @@ void processField(CXCursor cur, ClassAnalysis* state) {
     state->properties.push_back(anly);
 }
 
-void processClass(CXCursor cur, AnalysisState* state, std::string className) {
+void processClass(CXCursor cur, AnalysisState* state, std::string className, std::string srcRoot) {
     ClassAnalysis anly;
 
     // Find base class
     std::string baseClass = findBaseClass(cur);
 
+    // Find header file
+    CXSourceLocation loc = clang_getCursorLocation(cur);
+    CXFile file;
+    unsigned line, column, off;
+    clang_getFileLocation(loc, &file, &line, &column, &off);
+    std::string headerName = x_clang_toString(clang_getFileName(file));
+    fs::path headerPath = fs::relative(headerName, srcRoot);
+
     anly.name = className;
     anly.baseClass = baseClass;
+    anly.headerPath = headerPath;
 
     // Add misc flags and options
     auto instanceDef = findAnnotation(cur, "OB::def_inst");
@@ -237,7 +250,7 @@ bool analyzeClasses(std::string path, std::string srcRoot, AnalysisState* state)
         if (!findInstanceAnnotation(cur)) return CXChildVisit_Continue; // Class is not "primary" declaration/is not instance, skip
         if (state->classes.count(className) > 0) return CXChildVisit_Continue; // Class has already been analyzed, skip...
 
-        processClass(cur, state, className);
+        processClass(cur, state, className, srcRoot);
 
         return CXChildVisit_Continue;
     });

@@ -6,6 +6,7 @@ add_executable(autogen
     src/util.cpp
     src/cache.cpp
     src/analysis.cpp
+    src/codegen.cpp
 )
 
 set_target_properties(autogen PROPERTIES OUTPUT_NAME "autogen")

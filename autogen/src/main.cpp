@@ -4,11 +4,13 @@
 #include <clang-c/CXString.h>
 #include <clang-c/Index.h>
 #include <cstdio>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <filesystem>
 #include "analysis.h"
 #include "cache.h"
+#include "codegen.h"
 
 namespace fs = std::filesystem;
 
@@ -40,6 +42,14 @@ int main(int argc, char** argv) {
 
     analyzeClasses("../core/src/objects/part.h", argv[1], &state);
 
+    printf("[AUTOGEN] Generating cpp files...\n");
+    for (auto& [_, clazz] : state.classes) {
+        fs::path outPath = fs::path(argv[3]) / ("class_" + clazz.name + ".cpp");
+        std::ofstream outStream(outPath);
+
+        writeCodeForClass(outStream, clazz);
+        outStream.close();
+    }
 
     // for (auto& [_, clazz] : state.classes) {
     //     printf("Class: %s\n", clazz.name.c_str());

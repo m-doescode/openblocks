@@ -38,6 +38,7 @@ inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b) {
 struct ClassAnalysis {
     std::string name;
     std::string baseClass;
+    std::string headerPath;
     std::vector<PropertyAnalysis> properties;
     ClassFlags flags = (ClassFlags)0;
     std::string explorerIcon;
