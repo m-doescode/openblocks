@@ -5,11 +5,11 @@
 #include <variant>
 
 std::map<std::string, std::string> CATEGORY_STR = {
-    { "appearance", "PROP_CATEGORY_APPEARENCE" },
-    { "data", "PROP_CATEGORY_DATA" },
-    { "behavior", "PROP_CATEGORY_BEHAVIOR" },
-    { "part", "PROP_CATEGORY_PART" },
-    { "surface", "PROP_CATEGORY_SURFACE" },
+    { "APPEARANCE", "PROP_CATEGORY_APPEARENCE" },
+    { "DATA", "PROP_CATEGORY_DATA" },
+    { "BEHAVIOR", "PROP_CATEGORY_BEHAVIOR" },
+    { "PART", "PROP_CATEGORY_PART" },
+    { "SURFACE", "PROP_CATEGORY_SURFACE" },
 };
 
 std::map<std::string, std::string> MAPPED_TYPE = {
@@ -91,9 +91,17 @@ void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
         out << "\n    }";
         first = false;
     }
-    
-    out << "\n    return " << state.baseClass << "::InternalSetPropertyValue(name, value);";
-    // out << "\n    return MemberNotFound(\"" << state.name << "\", name);";
+
+    // If it's empty, just return the parent's impl
+    if (state.properties.empty()) {
+        out << "\n    return " << state.baseClass << "::InternalSetPropertyValue(name, value);";
+    } else {
+        // Otherwise, add else and return
+        out << "else {";
+        out << "\n        return " << state.baseClass << "::InternalSetPropertyValue(name, value);";
+        out << "\n    }";
+        out << "\n    return {};";
+    }
 
     out << "\n};\n\n";
 }

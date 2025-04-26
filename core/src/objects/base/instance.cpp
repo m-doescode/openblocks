@@ -211,6 +211,17 @@ result<Data::Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::st
     return MemberNotFound(GetClass()->className, name);
 }
 
+result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) {
+    if (name == "Name") {
+        return PropertyMeta { &Data::String::TYPE };
+    } else if (name == "Parent") {
+        return PropertyMeta { &Data::InstanceRef::TYPE,  };
+    } else if (name == "ClassName") {
+        return PropertyMeta { &Data::String::TYPE, PROP_NOSAVE | PROP_READONLY };
+    }
+    return MemberNotFound(GetClass()->className, name);
+}
+
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Data::Variant value) {
     if (name == "Name") {
         this->name = (std::string)value.get<Data::String>();
@@ -219,8 +230,10 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyVa
         SetParent(ref.expired() ? std::nullopt : std::make_optional(ref.lock()));
     } else if (name == "ClassName") {
         return AssignToReadOnlyMember(GetClass()->className, name);
+    } else {
+        return MemberNotFound(GetClass()->className, name);
     }
-    return MemberNotFound(GetClass()->className, name);
+    return {};
 }
 
 std::vector<std::string> Instance::InternalGetProperties() {
@@ -230,8 +243,6 @@ std::vector<std::string> Instance::InternalGetProperties() {
     members.push_back("ClassName");
     return members;
 }
-
-result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) { return MemberNotFound(GetClass()->className, name); }
 
 void Instance::UpdateProperty(std::string name) {
     // TODO: temporary workaround because I'm too lazy to implement this in autogen

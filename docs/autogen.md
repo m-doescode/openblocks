@@ -75,7 +75,7 @@ Here are its parameters:
 - `hidden` - Flag, marks the property as hidden from the editor.
 - `no_save` - Flag, the property should not be deserialized nor serialized
 - `readonly` - Flag, the property cannot be assigned to
-- `category` - Option, the category the property will appear in in the editor. Accepted values are: `data` (default), `apparance`, `part`, `behavior`, `surface`
+- `category` - Option, the category the property will appear in in the editor. Accepted values are: `DATA` (default), `APPEARANCE`, `PART`, `BEHAVIOR`, `SURFACE`
 - `on_update` - Option, callback to call after the property has been assigned to. Should accept a std::string containing the property name and return void
 
 The type of the property, and conversion to and from it and the datatype system is automatically inferred. `std::string` is interpreted as `Data::String`, and `std::weak_ptr<T>` is also converted to/from `Data::InstanceRef`. In the future, if weird edge-case types are introduced, the code generator may need to be extended. See [Extending Autogen](#extending-autogen)
