@@ -29,6 +29,7 @@ struct PartConstructParams {
 class Snap;
 
 class [[ def_inst(explorer_icon="part") ]] Part : public Instance {
+    AUTOGEN_PREAMBLE
 protected:
     // Joints where this part is Part0
     std::vector<std::weak_ptr<JointInstance>> primaryJoints;

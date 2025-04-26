@@ -211,13 +211,13 @@ void processClass(CXCursor cur, AnalysisState* state, std::string className, std
 
 // https://clang.llvm.org/docs/LibClang.html
 bool analyzeClasses(std::string path, std::string srcRoot, AnalysisState* state) {
-    const char* cargs[] = { "-x", "c++", "-I", srcRoot.c_str(), 0 };
+    const char* cargs[] = { "-x", "c++", "-I", srcRoot.c_str(), "-D__AUTOGEN__", 0 };
     // THANK YOU SO MUCH THIS STACKOVERFLOW ANSWER IS SO HELPFUL
     // https://stackoverflow.com/a/59206378/16255372
     CXIndex index = clang_createIndex(0, 0);
     CXTranslationUnit unit = clang_parseTranslationUnit(
         index,
-        path.c_str(), cargs, 4,
+        path.c_str(), cargs, 5,
         nullptr, 0,
         CXTranslationUnit_None);
 

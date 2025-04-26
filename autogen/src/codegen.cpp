@@ -1,5 +1,54 @@
 #include "codegen.h"
 #include "analysis.h"
+#include <map>
+#include <string>
+#include <variant>
+
+std::map<std::string, std::string> MAPPED_TYPE = {
+    { "bool", "Data::Bool" },
+    { "int", "Data::Int" },
+    { "float", "Data::Float" },
+    { "std::string", "Data::String" },
+    { "std::weak_ptr<Instance>", "Data::InstanceRef" },
+    { "glm::vec3", "Vector3" },
+};
+
+std::map<std::string, std::monostate> ENUM_TYPES = {
+    { "SurfaceType", std::monostate() }
+};
+
+std::string castFromVariant(std::string valueStr, std::string fieldType) {
+    // Manual exception for now, enums will get their own system eventually
+    if (fieldType == "SurfaceType") {
+        return "(SurfaceType)(int)" + valueStr + ".get<Data::Int>()";
+    }
+
+    std::string mappedType = MAPPED_TYPE[fieldType];
+    return valueStr + ".get<" + (!mappedType.empty() ? mappedType : fieldType) + ">()";
+}
+
+void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
+    out << "fallible<MemberNotFound, AssignToReadOnlyMember> " << state.name << "::InternalSetPropertyValue(std::string name, Data::Variant value) {";
+
+    out << "\n    ";
+    bool first = true;
+    for (auto& prop : state.properties) {
+        out << (first ? "" : " else ") << "if (name == \"" << prop.name << "\") {";
+
+        if (prop.flags & PropertyFlag_Readonly) {
+            out << "\n        return AssignToReadOnlyMember(\"" << state.name << "\", name)";
+        } else {
+            out << "\n        this->" << prop.fieldName << " = " << castFromVariant("value", prop.backingFieldType) << ";";
+        }
+
+        out << "\n    }";
+        first = false;
+    }
+    
+    out << "\n    return MemberNotFound(\"" << state.name << "\", name);";
+
+    out << "\n};\n\n";
+}
 
 void writeCodeForClass(std::ofstream& out, ClassAnalysis& state) {
     std::string strFlags;
@@ -24,4 +73,6 @@ void writeCodeForClass(std::ofstream& out, ClassAnalysis& state) {
     out << "const InstanceType* " << state.name << "::GetClass() {\n"
         << "    return &TYPE;\n"
         << "};\n\n";
+
+    writePropertySetHandler(out, state);
 }

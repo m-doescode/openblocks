@@ -40,17 +40,7 @@ int main(int argc, char** argv) {
 
     AnalysisState state;
 
-    analyzeClasses("../core/src/objects/part.h", argv[1], &state);
-
-    printf("[AUTOGEN] Generating cpp files...\n");
-    for (auto& [_, clazz] : state.classes) {
-        fs::path outPath = fs::path(argv[3]) / ("class_" + clazz.name + ".cpp");
-        std::ofstream outStream(outPath);
-
-        writeCodeForClass(outStream, clazz);
-        outStream.close();
-    }
-
+    // analyzeClasses("../core/src/objects/part.h", argv[1], &state);
     // for (auto& [_, clazz] : state.classes) {
     //     printf("Class: %s\n", clazz.name.c_str());
     //     if (clazz.baseClass != "")
@@ -74,11 +64,21 @@ int main(int argc, char** argv) {
     // }
 
     // First-pass: Analyze type hierarchy
-    // for (std::string path : headerFiles) {
-    //     fs::path relpath = fs::relative(path, argv[1]);
-    //     printf("[AUTOGEN] Processing file %s...\n", relpath.c_str());
-    //     analyzeClasses(path, argv[1], &state);
-    // }
+    for (std::string path : headerFiles) {
+        fs::path relpath = fs::relative(path, argv[1]);
+        printf("[AUTOGEN] Processing file %s...\n", relpath.c_str());
+        analyzeClasses(path, argv[1], &state);
+    }
+
+    printf("[AUTOGEN] Generating cpp files...\n");
+    for (auto& [_, clazz] : state.classes) {
+        fs::path outPath = fs::path(argv[3]) / ("class_" + clazz.name + ".cpp");
+        std::ofstream outStream(outPath);
+
+        writeCodeForClass(outStream, clazz);
+        outStream.close();
+    }
+
 
     flushCaches(argv[3]);
 }

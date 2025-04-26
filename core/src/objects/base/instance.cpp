@@ -211,6 +211,9 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std:
         return {};
     }
 
+    if (InternalSetPropertyValue(name, value).isSuccess())
+        return {};
+
     auto meta_ = GetPropertyMeta(name);
     if (!meta_) return MemberNotFound(GetClass()->className, name);
     auto meta = meta_.expect();

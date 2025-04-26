@@ -70,6 +70,10 @@ protected:
     Instance(const InstanceType*);
     virtual ~Instance();
 
+    virtual result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name);
+    virtual fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value);
+    virtual result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name);
+
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
     virtual void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
     virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace);

@@ -50,17 +50,6 @@ constexpr FieldCodec cframeRotationCodec() {
     };
 }
 
-const InstanceType Part::TYPE = {
-    .super = &Instance::TYPE,
-    .className = "Part",
-    .constructor = &Part::CreateGeneric,
-    .explorerIcon = "part",
-};
-
-const InstanceType* Part::GetClass() {
-    return &TYPE;
-}
-
 Part::Part(): Part(PartConstructParams { .size = glm::vec3(2, 1.2, 4), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
