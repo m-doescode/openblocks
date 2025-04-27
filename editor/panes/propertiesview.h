@@ -11,6 +11,7 @@ namespace Data { class Variant; };
 class PropertiesView : public QTreeWidget {
     Q_DECLARE_PRIVATE(QTreeView)
 
+    bool ignorePropertyUpdates = false;
     InstanceRefWeak currentInstance;
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);

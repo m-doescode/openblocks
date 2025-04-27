@@ -9,7 +9,6 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QTime>
-#include <chrono>
 #include <functional>
 #include <qnamespace.h>
 #include <qtreewidget.h>
@@ -340,6 +339,8 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
 }
 
 void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
+    // Necessary because otherwise this will catch setCheckState from onPropertyUpdated
+    if (ignorePropertyUpdates) return;
     if (!item->parent() || (item->parent() && item->parent()->parent()) || currentInstance.expired()) return;
     InstanceRef inst = currentInstance.lock();
 
@@ -396,7 +397,10 @@ void PropertiesView::onPropertyUpdated(InstanceRef inst, std::string property, D
             if (item->data(0, Qt::DisplayRole).toString().toStdString() != property) continue;
 
             if (meta.type == &Data::Bool::TYPE) {
+                // This is done because otherwise propertyChanged will catch this change erroneously
+                ignorePropertyUpdates = true;
                 item->setCheckState(1, (bool)currentValue.get<Data::Bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+                ignorePropertyUpdates = false;
             } else if (meta.type == &Color3::TYPE) {
                 Color3 color = currentValue.get<Color3>();
                 item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
