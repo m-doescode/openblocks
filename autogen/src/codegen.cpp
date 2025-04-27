@@ -84,9 +84,9 @@ void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
                 << "\n        this->" << prop.fieldName << " = ref.expired() ? std::weak_ptr<" << subtype << ">() : std::dynamic_pointer_cast<" << subtype << ">(ref.lock());";
         } else {
             out << "\n        this->" << prop.fieldName << " = " << castFromVariant("value", prop.backingFieldType) << ";";
-            if (!prop.onUpdateCallback.empty())
-                out << "\n        " << prop.onUpdateCallback << "(name);";
         }
+        if (!prop.onUpdateCallback.empty())
+            out << "\n        " << prop.onUpdateCallback << "(name);";
 
         out << "\n    }";
         first = false;
