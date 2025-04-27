@@ -24,10 +24,11 @@
 
 #define AUTOGEN_PREAMBLE \
 protected: \
-result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name) override; \
-fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value) override; \
-result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name) override; \
-std::vector<std::string> InternalGetProperties() override; \
+virtual result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name) override; \
+virtual fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value) override; \
+virtual result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name) override; \
+virtual void InternalUpdateProperty(std::string name) override; \
+virtual std::vector<std::string> InternalGetProperties() override; \
 public: \
 const static InstanceType TYPE; \
 virtual const InstanceType* GetClass() override; \

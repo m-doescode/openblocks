@@ -85,8 +85,6 @@ void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
         } else {
             out << "\n        this->" << prop.fieldName << " = " << castFromVariant("value", prop.backingFieldType) << ";";
         }
-        if (!prop.onUpdateCallback.empty())
-            out << "\n        " << prop.onUpdateCallback << "(name);";
 
         out << "\n    }";
         first = false;
@@ -102,6 +100,26 @@ void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
         out << "\n    }";
         out << "\n    return {};";
     }
+
+    out << "\n};\n\n";
+}
+
+void writePropertyUpdateHandler(std::ofstream& out, ClassAnalysis state) {
+    out << "void " << state.name << "::InternalUpdateProperty(std::string name) {";
+
+    out << "\n    ";
+    bool first = true;
+    for (auto& prop : state.properties) {
+        if (prop.onUpdateCallback.empty()) continue;
+        out << (first ? "" : " else ") << "if (name == \"" << prop.name << "\") {";
+
+        out << "\n        " << prop.onUpdateCallback << "(name);";
+
+        out << "\n    }";
+        first = false;
+    }
+
+    out << "\n    " << state.baseClass << "::InternalUpdateProperty(name);";
 
     out << "\n};\n\n";
 }
@@ -224,5 +242,6 @@ void writeCodeForClass(std::ofstream& out, ClassAnalysis& state) {
     writePropertySetHandler(out, state);
     writePropertyGetHandler(out, state);
     writePropertyMetaHandler(out, state);
+    writePropertyUpdateHandler(out, state);
     writePropertiesList(out, state);
 }

@@ -72,6 +72,7 @@ protected:
     virtual result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name);
     virtual fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value);
     virtual result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name);
+    virtual void InternalUpdateProperty(std::string name);
     virtual std::vector<std::string> InternalGetProperties();
 
     virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
@@ -110,7 +111,7 @@ public:
 
     // Properties
     result<Data::Variant, MemberNotFound> GetPropertyValue(std::string name);
-    fallible<MemberNotFound, AssignToReadOnlyMember> SetPropertyValue(std::string name, Data::Variant value);
+    fallible<MemberNotFound, AssignToReadOnlyMember> SetPropertyValue(std::string name, Data::Variant value, bool sendUpdateEvent = true);
     result<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
     // Manually trigger the update of a property. Useful internally when setting properties directly
     void UpdateProperty(std::string name);

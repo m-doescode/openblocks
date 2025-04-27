@@ -189,9 +189,12 @@ result<Data::Variant, MemberNotFound> Instance::GetPropertyValue(std::string nam
     return InternalGetPropertyValue(name);
 }
 
-fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Data::Variant value) {
+fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Data::Variant value, bool sendUpdateEvent) {
     auto result = InternalSetPropertyValue(name, value);
-    if (result.isSuccess()) sendPropertyUpdatedSignal(shared_from_this(), name, value);
+    if (result.isSuccess() && sendUpdateEvent) {
+        InternalUpdateProperty(name);
+        sendPropertyUpdatedSignal(shared_from_this(), name, value);
+    }
     return result;
 }
 
@@ -236,6 +239,9 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyVa
     return {};
 }
 
+void Instance::InternalUpdateProperty(std::string name) {
+}
+
 std::vector<std::string> Instance::InternalGetProperties() {
     std::vector<std::string> members;
     members.push_back("Name");
@@ -245,12 +251,7 @@ std::vector<std::string> Instance::InternalGetProperties() {
 }
 
 void Instance::UpdateProperty(std::string name) {
-    // TODO: temporary workaround because I'm too lazy to implement this in autogen
-    InternalSetPropertyValue(name, InternalGetPropertyValue(name).expect()).expect();
-
-    // PropertyMeta meta = GetPropertyMeta(name).expect();
-    // if (!meta.updateCallback) return; // Nothing to update, exit.
-    // meta.updateCallback.value()(name);
+    InternalUpdateProperty(name);
 }
 
 std::vector<std::string> Instance::GetProperties() {
