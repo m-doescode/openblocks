@@ -172,7 +172,7 @@ void processField(CXCursor cur, ClassAnalysis* state) {
         auto cframePosition = parseAnnotationString(cframePositionDef.value());
 
         PropertyAnalysis cframeProp;
-        cframeProp.backingFieldType = anly.backingFieldType;
+        cframeProp.backingFieldType = "Vector3";
         cframeProp.fieldName = anly.fieldName;
         cframeProp.name = cframePosition["name"];
         cframeProp.category = anly.category;
@@ -188,7 +188,7 @@ void processField(CXCursor cur, ClassAnalysis* state) {
         auto cframeRotation = parseAnnotationString(cframeRotationDef.value());
 
         PropertyAnalysis cframeProp;
-        cframeProp.backingFieldType = anly.backingFieldType;
+        cframeProp.backingFieldType = "Vector3";
         cframeProp.fieldName = anly.fieldName;
         cframeProp.name = cframeRotation["name"];
         cframeProp.category = anly.category;
