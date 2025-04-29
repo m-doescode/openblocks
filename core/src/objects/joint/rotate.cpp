@@ -2,6 +2,7 @@
 #include "objects/jointsservice.h"
 #include "objects/part.h"
 #include "objects/workspace.h"
+#include "rendering/renderer.h"
 #include <reactphysics3d/constraint/HingeJoint.h>
 
 Rotate::Rotate(): JointInstance(&TYPE) {
@@ -9,6 +10,7 @@ Rotate::Rotate(): JointInstance(&TYPE) {
 
 Rotate::~Rotate() {
 }
+static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 void Rotate::buildJoint() {
     // Only if both parts are set, are not the same part, are part of a workspace, and are part of the same workspace, we build the joint
@@ -22,19 +24,18 @@ void Rotate::buildJoint() {
 
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
-    CFrame newFrame = part0.lock()->cframe * (c1.Inverse() * c0);
+    CFrame newFrame = part0.lock()->cframe * (c0 * c1.Inverse());
     part1.lock()->cframe = newFrame;
     workspace->SyncPartPhysics(part1.lock());
-
-    rp::HingeJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position(), (part0.lock()->cframe * c0).LookVector().Unit().Abs());
+    // Do NOT use Abs() in this scenario. For some reason that breaks it
+    rp::HingeJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, newFrame.Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
     this->joint = dynamic_cast<rp::HingeJoint*>(workspace->physicsWorld->createJoint(jointInfo));
     jointWorkspace = workspace;
 
-    part1.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b10);
-    part1.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
-    part0.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b01);
-    part0.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b01);
-    printf("Bits set\n");
+    // part1.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b10);
+    // part1.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
+    // part0.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b01);
+    // part0.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b01);
 }
 
 // !!! REMINDER: This has to be called manually when parts are destroyed/removed from the workspace, or joints will linger
