@@ -213,16 +213,17 @@ void Part::MakeJoints() {
         for (Vector3 myFace : FACES) {
             Vector3 myWorldNormal = cframe.Rotation() * myFace;
             Vector3 validUp = cframe.Rotation() * Vector3(1,1,1).Unit(); // If myFace == (0, 1, 0), then (0, 1, 0) would produce NaN as up, so we fudge the up so that it works
-            CFrame surfaceFrame(cframe.Position(), cframe * (myFace * size), validUp);
-            Vector3 mySurfaceCenter = cframe * (myFace * size);
+            CFrame surfaceFrame = CFrame::pointToward(cframe * (myFace * size / 2.f), cframe.Rotation() * myFace);
+            Vector3 mySurfaceCenter = cframe * (myFace * size / 2.f);
 
             for (Vector3 otherFace : FACES) {
                 Vector3 otherWorldNormal = otherPart->cframe.Rotation() * otherFace;
-                Vector3 otherSurfaceCenter = otherPart->cframe * (otherFace * otherPart->size);
+                Vector3 otherSurfaceCenter = otherPart->cframe * (otherFace * otherPart->size / 2.f);
                 Vector3 surfacePointLocalToMyFrame = surfaceFrame.Inverse() * otherSurfaceCenter;
 
                 float dot = myWorldNormal.Dot(otherWorldNormal);
                 if (dot > -0.99) continue; // Surface is pointing opposite to ours
+
                 if (abs(surfacePointLocalToMyFrame.Z()) > 0.05) continue; // Surfaces are within 0.05 studs of one another
                 if (!checkJointContinuity(otherPart)) continue;
 
@@ -243,7 +244,6 @@ void Part::MakeJoints() {
                 CFrame contactPoint = CFrame::pointToward(mySurfaceCenter, -myWorldNormal);
                 CFrame contact0 = cframe.Inverse() * contactPoint;
                 CFrame contact1 = otherPart->cframe.Inverse() * contactPoint;
-                addDebugRenderCFrame(contactPoint);
 
                 auto joint_ = makeJointFromSurfaces(mySurface, otherSurface);
                 if (!joint_) continue;
