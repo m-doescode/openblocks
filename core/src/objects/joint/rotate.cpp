@@ -1,22 +1,16 @@
-#include "weld.h"
-
-#include "datatypes/cframe.h"
-#include "objects/datamodel.h"
-#include "objects/joint/jointinstance.h"
+#include "rotate.h"
 #include "objects/jointsservice.h"
 #include "objects/part.h"
 #include "objects/workspace.h"
-#include <memory>
-#include <reactphysics3d/constraint/FixedJoint.h>
-#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/constraint/HingeJoint.h>
 
-Weld::Weld(): JointInstance(&TYPE) {
+Rotate::Rotate(): JointInstance(&TYPE) {
 }
 
-Weld::~Weld() {
+Rotate::~Rotate() {
 }
 
-void Weld::buildJoint() {
+void Rotate::buildJoint() {
     // Only if both parts are set, are not the same part, are part of a workspace, and are part of the same workspace, we build the joint
     if (part0.expired() || part1.expired() || part0.lock() == part1.lock() || !workspaceOfPart(part0.lock()) || workspaceOfPart(part0.lock()) != workspaceOfPart(part1.lock())) return;
 
@@ -28,19 +22,23 @@ void Weld::buildJoint() {
 
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
-    CFrame newFrame = part0.lock()->cframe * (c0 * c1.Inverse());
+    CFrame newFrame = part0.lock()->cframe * (c1.Inverse() * c0);
     part1.lock()->cframe = newFrame;
     workspace->SyncPartPhysics(part1.lock());
 
-    // printf("c1.Rotation: ");
-    // printVec(c1.ToEulerAnglesXYZ());
-    rp::FixedJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position());
-    this->joint = dynamic_cast<rp::FixedJoint*>(workspace->physicsWorld->createJoint(jointInfo));
+    rp::HingeJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position(), (part0.lock()->cframe * c0).LookVector().Unit().Abs());
+    this->joint = dynamic_cast<rp::HingeJoint*>(workspace->physicsWorld->createJoint(jointInfo));
     jointWorkspace = workspace;
+
+    part1.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b10);
+    part1.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
+    part0.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b01);
+    part0.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b01);
+    printf("Bits set\n");
 }
 
 // !!! REMINDER: This has to be called manually when parts are destroyed/removed from the workspace, or joints will linger
-void Weld::breakJoint() {
+void Rotate::breakJoint() {
     // If the joint doesn't exist, or its workspace expired (not our problem anymore), then no need to do anything
     if (!this->joint || jointWorkspace.expired() || !jointWorkspace.lock()->physicsWorld) return;
 

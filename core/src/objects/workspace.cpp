@@ -86,6 +86,7 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
     part->rigidBody->setLinearVelocity(part->velocity);
     // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
 
+    printf("Bits unset\n");
     part->rigidBody->setUserData(&*part);
 }
 

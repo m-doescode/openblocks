@@ -2,6 +2,7 @@
 #include "common.h"
 #include "mainglwidget.h"
 #include "objects/joint/snap.h"
+#include "rendering/surface.h"
 #include <cstdio>
 #include <memory>
 #include <qboxlayout.h>
@@ -49,8 +50,10 @@ void PlaceDocument::closeEvent(QCloseEvent *closeEvent) {
     closeEvent->ignore();
 }
 
+std::shared_ptr<Part> shit;
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
 void PlaceDocument::timerEvent(QTimerEvent* evt) {
+    // printf("Is anchored: %d\n", shit->anchored);
     if (evt->timerId() != timer.timerId()) {
         QWidget::timerEvent(evt);
         return;
@@ -65,10 +68,11 @@ void PlaceDocument::timerEvent(QTimerEvent* evt) {
     placeWidget->updateCycle();
 }
 
-std::shared_ptr<Part> lastPart;
+
 void PlaceDocument::init() {
     timer.start(33, this);
 
+    std::shared_ptr<Part> lastPart;
     // Baseplate
     gWorkspace()->AddChild(lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),
@@ -100,13 +104,26 @@ void PlaceDocument::init() {
     gWorkspace()->SyncPartPhysics(lastPart);
     auto part1 = lastPart;
 
-    auto snap = Snap::New();
-    snap->part0 = part0;
-    snap->part1 = part1;
-    snap->c0 = part1->cframe;
-    snap->c1 = part0->cframe;
+    printf("How many times is this called\n");
+    lastPart = Part::New();
+    shit = part1;
 
-    gWorkspace()->AddChild(snap);
-    snap->UpdateProperty("Part0");
-    snap->UpdateProperty("Part1");
+    part0->anchored = true;
+    part0->UpdateProperty("Anchored");
+
+    // auto snap = Snap::New();
+    // snap->part0 = part0;
+    // snap->part1 = part1;
+    // snap->c0 = part1->cframe;
+    // snap->c1 = part0->cframe;
+
+    // gWorkspace()->AddChild(snap);
+    // snap->UpdateProperty("Part0");
+    // snap->UpdateProperty("Part1");
+
+    // part0->backSurface = SurfaceWeld;
+    // part1->frontSurface = SurfaceWeld;
+
+    part0->backSurface = SurfaceHinge;
+    // part1->frontSurface = SurfaceHinge;
 }

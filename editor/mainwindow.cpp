@@ -146,8 +146,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->mdiArea->setTabsClosable(true);
 
-    auto script = Script::New();
-    gWorkspace()->AddChild(script);
+    // auto script = Script::New();
+    // gWorkspace()->AddChild(script);
     // ui->mdiArea->addSubWindow(new ScriptDocument(script));
 }
 

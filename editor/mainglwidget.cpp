@@ -5,6 +5,7 @@
 #include <qsoundeffect.h>
 #include <string>
 #include "mainglwidget.h"
+#include "logger.h"
 #include "mainwindow.h"
 #include "common.h"
 #include "math_helper.h"
@@ -475,6 +476,9 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
 
     if (evt->key() == Qt::Key_C && getSelection().size() > 0 && !getSelection()[0].expired())
         getSelection()[0].lock()->Clone().value()->SetParent(gWorkspace());
+
+    if (evt->key() == Qt::Key_H && getSelection().size() > 0 && !getSelection()[0].expired())
+        Logger::infof("Object at: 0x%x\n", getSelection()[0].lock().get());
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {

@@ -348,7 +348,7 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
     if (meta.type == &Data::Bool::TYPE) {
-        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1))).expect();
+        inst->SetPropertyValue(propertyName, Data::Bool(item->checkState(1) == Qt::Checked)).expect();
     }
 }
 

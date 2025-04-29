@@ -11,6 +11,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
+#include <vector>
 
 #include "datatypes/cframe.h"
 #include "objects/handles.h"
@@ -453,12 +454,60 @@ void renderRotationArcs() {
     }
 }
 
+std::vector<CFrame> DEBUG_CFRAMES;
+
+void renderDebugCFrames() {
+    glDepthMask(GL_TRUE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW); // This is right... Probably.....
+    
+    // Use shader
+    handleShader->use();
+
+    // view/projection transformations
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 view = camera.getLookAt();
+    handleShader->set("projection", projection);
+    handleShader->set("view", view);
+    handleShader->set("sunLight", DirLight {
+        .direction = glm::vec3(-0.2f, -1.0f, -0.3f),
+        .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
+        .diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
+        .specular = glm::vec3(1.0f, 1.0f, 1.0f),
+    });
+    handleShader->set("numPointLights", 0);
+
+    // Pass in the camera position
+    handleShader->set("viewPos", camera.cameraPos);
+
+    for (CFrame frame : DEBUG_CFRAMES) {
+        glm::mat4 model = frame;
+        model = glm::scale(model, glm::vec3(0.5, 0.5, 1.5));
+        handleShader->set("model", model);
+        handleShader->set("material", Material {
+            .diffuse = glm::vec3(0.0f, 0.0f, 1.0f),
+            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+            .shininess = 16.0f,
+        });
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        handleShader->set("normalMatrix", normalMatrix);
+
+        ARROW_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, ARROW_MESH->vertexCount);
+    }
+}
+
+void addDebugRenderCFrame(CFrame frame) {
+    DEBUG_CFRAMES.push_back(frame);
+}
+
 void render(GLFWwindow* window) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderSkyBox();
     renderHandles();
+    renderDebugCFrames();
     renderParts();
     renderOutlines();
     renderRotationArcs();

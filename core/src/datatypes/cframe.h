@@ -27,6 +27,9 @@ namespace Data {
         CFrame(Vector3 position, Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
         ~CFrame();
 
+        // Same as CFrame(position, position + toward), but makes sure that up and toward are not linearly dependant
+        static CFrame pointToward(Vector3 position, Vector3 toward);
+
         static const CFrame IDENTITY;
         static const CFrame YToZ;
 

@@ -67,6 +67,10 @@ const Data::String Data::CFrame::ToString() const {
     return std::to_string(X()) + ", " + std::to_string(Y()) + ", " + std::to_string(Z());
 }
 
+Data::CFrame Data::CFrame::pointToward(Vector3 position, Vector3 toward) {
+    return Data::CFrame(position, position + toward, (abs(glm::dot((glm::vec3)toward, glm::vec3(0, 1, 0))) > 0.999) ? glm::vec3(0, 0, 1) : glm::vec3(0, 1, 0));
+}
+
 Data::CFrame::operator glm::mat4() const {
     // Always make sure to translate the position first, then rotate. Matrices work backwards
     return glm::translate(glm::mat4(1.0f), this->translation) * glm::mat4(this->rotation);

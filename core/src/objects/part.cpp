@@ -6,10 +6,12 @@
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
+#include "objects/joint/rotate.h"
 #include "objects/joint/weld.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/joint/snap.h"
+#include "rendering/renderer.h"
 #include "rendering/surface.h"
 #include <memory>
 #include <optional>
@@ -185,6 +187,8 @@ std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType 
     || (a == SurfaceInlets && (b == SurfaceStuds || b == SurfaceUniversal))
     || (a == SurfaceUniversal && (b == SurfaceStuds || b == SurfaceInlets || b == SurfaceUniversal)))
         return Snap::New();
+    if (a == SurfaceHinge)
+        return Rotate::New();
     return std::nullopt;
 }
 
@@ -210,6 +214,7 @@ void Part::MakeJoints() {
             Vector3 myWorldNormal = cframe.Rotation() * myFace;
             Vector3 validUp = cframe.Rotation() * Vector3(1,1,1).Unit(); // If myFace == (0, 1, 0), then (0, 1, 0) would produce NaN as up, so we fudge the up so that it works
             CFrame surfaceFrame(cframe.Position(), cframe * (myFace * size), validUp);
+            Vector3 mySurfaceCenter = cframe * (myFace * size);
 
             for (Vector3 otherFace : FACES) {
                 Vector3 otherWorldNormal = otherPart->cframe.Rotation() * otherFace;
@@ -224,13 +229,29 @@ void Part::MakeJoints() {
                 SurfaceType mySurface = surfaceFromFace(faceFromNormal(myFace));
                 SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
 
+                // Create contacts
+                // Contact always occurs at the center of Part0's surface (even if that point does not overlap both surfaces)
+                // Contact 0 is Part0's contact relative to Part0. It should point *opposite* the direction of its surface normal
+                // Contact 1 is Part1's contact relative to Part1. It should point directly toward the direction of its surface normal
+
+                // My additional notes:
+                // Contact == Part0.CFrame * C0 == Part1.CFrame * C1
+                // C1 == Part1.CFrame:Inverse() * Part0.CFrame * C0
+                // Part1.CFrame == Part0.CFrame * C0 * C1:Inverse()
+                // C0 == Part0.CFrame:Inverse() * Contact
+
+                CFrame contactPoint = CFrame::pointToward(mySurfaceCenter, -myWorldNormal);
+                CFrame contact0 = cframe.Inverse() * contactPoint;
+                CFrame contact1 = otherPart->cframe.Inverse() * contactPoint;
+                addDebugRenderCFrame(contactPoint);
+
                 auto joint_ = makeJointFromSurfaces(mySurface, otherSurface);
                 if (!joint_) continue;
                 std::shared_ptr<JointInstance> joint = joint_.value();
                 joint->part0 = shared<Part>();
                 joint->part1 = otherPart->shared<Part>();
-                joint->c1 = cframe;
-                joint->c0 = otherPart->cframe;
+                joint->c0 = contact0;
+                joint->c1 = contact1;
                 dataModel().value()->GetService<JointsService>()->AddChild(joint);
                 joint->UpdateProperty("Part0");
 
