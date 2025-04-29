@@ -53,7 +53,6 @@ void PlaceDocument::closeEvent(QCloseEvent *closeEvent) {
 std::shared_ptr<Part> shit;
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
 void PlaceDocument::timerEvent(QTimerEvent* evt) {
-    // printf("Is anchored: %d\n", shit->anchored);
     if (evt->timerId() != timer.timerId()) {
         QWidget::timerEvent(evt);
         return;
@@ -104,7 +103,6 @@ void PlaceDocument::init() {
     gWorkspace()->SyncPartPhysics(lastPart);
     auto part1 = lastPart;
 
-    printf("How many times is this called\n");
     lastPart = Part::New();
     shit = part1;
 

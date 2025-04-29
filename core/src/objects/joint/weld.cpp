@@ -32,8 +32,6 @@ void Weld::buildJoint() {
     part1.lock()->cframe = newFrame;
     workspace->SyncPartPhysics(part1.lock());
 
-    // printf("c1.Rotation: ");
-    // printVec(c1.ToEulerAnglesXYZ());
     rp::FixedJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position());
     this->joint = dynamic_cast<rp::FixedJoint*>(workspace->physicsWorld->createJoint(jointInfo));
     jointWorkspace = workspace;

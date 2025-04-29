@@ -292,7 +292,6 @@ result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node) {
         return NoSuchInstance(className);
     }
     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
-    // printf("What are you? A %s sandwich\n", className.c_str());
     InstanceRef object = INSTANCE_MAP[className]->constructor();
     object->GetChildren();
 
@@ -399,7 +398,6 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefState<_RefStatePrope
             }
         } else {
             Data::Variant value = GetPropertyValue(property).expect();
-            // printf("property: %s, value: %s\n", property.c_str(), std::string(value.ToString()).c_str());
             newInstance->SetPropertyValue(property, value).expect();
         }
     }
