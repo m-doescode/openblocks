@@ -43,7 +43,7 @@ protected:
     bool checkJointContinuity(std::shared_ptr<Part>);
     bool checkJointContinuityUp(std::shared_ptr<Part>);
     bool checkJointContinuityDown(std::shared_ptr<Part>);
-    bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart); 
+    bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart); 
 
     friend JointInstance;
 

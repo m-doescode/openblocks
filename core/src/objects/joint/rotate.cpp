@@ -28,7 +28,7 @@ void Rotate::buildJoint() {
     part1.lock()->cframe = newFrame;
     workspace->SyncPartPhysics(part1.lock());
     // Do NOT use Abs() in this scenario. For some reason that breaks it
-    rp::HingeJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, newFrame.Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
+    rp::HingeJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (part0.lock()->cframe * c0).Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
     this->joint = dynamic_cast<rp::HingeJoint*>(workspace->physicsWorld->createJoint(jointInfo));
     jointWorkspace = workspace;
 

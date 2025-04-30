@@ -183,8 +183,7 @@ bool Part::checkJointContinuityUp(std::shared_ptr<Part> otherPart) {
     return true;
 }
 
-bool Part::checkSurfacesTouching(CFrame surfaceFrame, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart) {
-    // Vector3 otherPartCenterToMine = surfaceFrame.Inverse() * otherPart->cframe.Position();
+bool Part::checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart) {
     Vector3 farCorner0 = surfaceFrame.Inverse() * otherPart->cframe * (Vector3::ONE * (otherPart->size / 2.f));
     Vector3 farCorner1 = surfaceFrame.Inverse() * otherPart->cframe * (-Vector3::ONE * (otherPart->size / 2.f));
     
@@ -251,11 +250,14 @@ void Part::MakeJoints() {
                 if (dot > -0.99) continue; // Surface is pointing opposite to ours
 
                 if (abs(surfacePointLocalToMyFrame.Z()) > 0.05) continue; // Surfaces are within 0.05 studs of one another
-                if (!checkSurfacesTouching(surfaceFrame, myFace, otherFace, otherPart)) continue; // Surface do not overlap
+                if (!checkSurfacesTouching(surfaceFrame, size, myFace, otherFace, otherPart)) continue; // Surface do not overlap
                 if (!checkJointContinuity(otherPart)) continue;
 
                 SurfaceType mySurface = surfaceFromFace(faceFromNormal(myFace));
                 SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
+
+                // If it is a hinge, only attach if actually touching the "hinge"
+                if (mySurface == SurfaceHinge && !checkSurfacesTouching(surfaceFrame, Vector3(0.4, 0.4, 0.4), myFace, otherFace, otherPart)) continue;
 
                 // Create contacts
                 // Contact always occurs at the center of Part0's surface (even if that point does not overlap both surfaces)
