@@ -81,6 +81,8 @@ public:
     [[ def_prop(name="BackSurface", category=SURFACE) ]]
     SurfaceType backSurface = SurfaceType::SurfaceSmooth;
     
+    inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
+
     Part();
     Part(PartConstructParams params);
     ~Part() override;

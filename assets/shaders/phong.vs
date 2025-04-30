@@ -46,5 +46,5 @@ void main()
             aNormal == vec3(0, 0, 1) ? FaceBack : -1;
 
     vSurfaceZ = surfaces[vFace];
-    // if (surfaces[vFace] > SurfaceUniversal) vSurfaceZ = 0;
+    if (surfaces[vFace] > SurfaceUniversal) vSurfaceZ = 0;
 }

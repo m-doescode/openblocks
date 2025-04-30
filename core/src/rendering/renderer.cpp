@@ -11,9 +11,11 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "datatypes/cframe.h"
+#include "datatypes/color3.h"
 #include "objects/handles.h"
 #include "rendering/torus.h"
 #include "shader.h"
@@ -188,6 +190,58 @@ void renderParts() {
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
+    }
+}
+
+static Vector3 FACES[6] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1},
+    {-1, 0, 0},
+    {0, -1, 0},
+    {0, 0, -1},
+};
+
+void renderSurfaceExtras() {
+    glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Use shader
+    ghostShader->use();
+
+    // view/projection transformations
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 view = camera.getLookAt();
+    ghostShader->set("projection", projection);
+    ghostShader->set("view", view);
+    ghostShader->set("color", glm::vec3(0.87f, 0.87f, 0.0f));
+
+    // Pass in the camera position
+    ghostShader->set("viewPos", camera.cameraPos);
+
+    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+        InstanceRef inst = *it;
+        if (!inst->IsA("Part")) continue;
+        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        for (int i = 0; i < 6; i++) {
+            NormalId face = (NormalId)i;
+            SurfaceType type = part->GetSurfaceFromFace(face);
+            if (type <= SurfaceType::SurfaceUniversal) continue;
+
+            Vector3 surfaceCenter = part->cframe * (normalFromFace(face) * part->size / 2.f);
+
+            glm::mat4 model = CFrame::pointToward(surfaceCenter, part->cframe.Rotation() * normalFromFace(face));
+            model = glm::scale(model, glm::vec3(0.4,0.4,0.4));
+            ghostShader->set("model", model);
+            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+    
+            CYLINDER_MESH->bind();
+            glDrawArrays(GL_TRIANGLES, 0, CYLINDER_MESH->vertexCount);
+        }
     }
 }
 
@@ -454,7 +508,7 @@ void renderRotationArcs() {
     }
 }
 
-std::vector<CFrame> DEBUG_CFRAMES;
+std::vector<std::pair<CFrame, Color3>> DEBUG_CFRAMES;
 
 void renderDebugCFrames() {
     glDepthMask(GL_TRUE);
@@ -480,12 +534,12 @@ void renderDebugCFrames() {
     // Pass in the camera position
     handleShader->set("viewPos", camera.cameraPos);
 
-    for (CFrame frame : DEBUG_CFRAMES) {
+    for (auto& [frame, color] : DEBUG_CFRAMES) {
         glm::mat4 model = frame;
         model = glm::scale(model, glm::vec3(0.5, 0.5, 1.5));
         handleShader->set("model", model);
         handleShader->set("material", Material {
-            .diffuse = glm::vec3(0.0f, 0.0f, 1.0f),
+            .diffuse = color,
             .specular = glm::vec3(0.5f, 0.5f, 0.5f),
             .shininess = 16.0f,
         });
@@ -498,7 +552,11 @@ void renderDebugCFrames() {
 }
 
 void addDebugRenderCFrame(CFrame frame) {
-    DEBUG_CFRAMES.push_back(frame);
+    addDebugRenderCFrame(frame, Color3(0, 0, 1));
+}
+
+void addDebugRenderCFrame(CFrame frame, Color3 color) {
+    DEBUG_CFRAMES.push_back(std::make_pair(frame, color));
 }
 
 void render(GLFWwindow* window) {
@@ -509,6 +567,7 @@ void render(GLFWwindow* window) {
     renderHandles();
     renderDebugCFrames();
     renderParts();
+    renderSurfaceExtras();
     renderOutlines();
     renderRotationArcs();
     if (wireframeRendering)
