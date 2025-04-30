@@ -31,7 +31,7 @@ enum HandlesType {
     RotateHandles,
 };
 
-class INSTANCE_WITH(abstract) Handles : public Instance {
+class DEF_INST_(abstract) Handles : public Instance {
     AUTOGEN_PREAMBLE
 public:
     bool nixAxes = false; // XYZ -> ZXY, used with rotation

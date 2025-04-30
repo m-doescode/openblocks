@@ -13,7 +13,7 @@ class DataModel;
 class Service;
 
 // The root instance to all objects in the hierarchy
-class INSTANCE_WITH(abstract) DataModel : public Instance {
+class DEF_INST_(abstract) DataModel : public Instance {
     AUTOGEN_PREAMBLE
 private:
     void DeserializeService(pugi::xml_node node);

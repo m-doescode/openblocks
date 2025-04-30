@@ -4,7 +4,7 @@
 #include "objects/base/service.h"
 #include "lua.h"
 
-class INSTANCE_SERVICE() ScriptContext : public Service {
+class DEF_INST_SERVICE ScriptContext : public Service {
     AUTOGEN_PREAMBLE
 protected:
     void InitService() override;

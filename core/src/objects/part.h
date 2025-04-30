@@ -28,7 +28,7 @@ struct PartConstructParams {
 
 class Snap;
 
-class INSTANCE_WITH(explorer_icon="part") Part : public Instance {
+class DEF_INST_(explorer_icon="part") Part : public Instance {
     AUTOGEN_PREAMBLE
 protected:
     // Joints where this part is Part0
@@ -50,36 +50,33 @@ protected:
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
 public:
-    [[ def_prop(name="Velocity", on_update=onUpdated) ]]
-    Vector3 velocity;
+    DEF_PROP_CATEGORY(DATA)
+    DEF_PROP_(on_update=onUpdated) Vector3 velocity;
     [[ def_prop(name="CFrame", on_update=onUpdated), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
     CFrame cframe;
-    [[ def_prop(name="Size", category=PART, on_update=onUpdated) ]]
-    glm::vec3 size;
-    [[ def_prop(name="Color", category=APPEARANCE) ]]
-    Color3 color;
-    [[ def_prop(name="Transparency", category=APPEARANCE) ]]
-    float transparency = 0.f;
+
+    DEF_PROP_CATEGORY(PART)
+    DEF_PROP_(on_update=onUpdated) glm::vec3 size;
+
+    DEF_PROP_CATEGORY(APPEARANCE)
+    DEF_PROP Color3 color;
+    DEF_PROP float transparency = 0.f;
     bool selected = false;
     
-    [[ def_prop(name="Anchored", category=BEHAVIOR, on_update=onUpdated) ]]
-    bool anchored = false;
-    [[ def_prop(name="Locked", category=BEHAVIOR) ]]
-    bool locked = false;
-    rp::RigidBody* rigidBody = nullptr;
+    DEF_PROP_CATEGORY(BEHAVIOR)
+    DEF_PROP bool anchored = false;
+    DEF_PROP bool locked = false;
 
-    [[ def_prop(name="TopSurface", category=SURFACE) ]]
-    SurfaceType topSurface = SurfaceType::SurfaceStuds;
-    [[ def_prop(name="BottomSurface", category=SURFACE) ]]
-    SurfaceType bottomSurface = SurfaceType::SurfaceInlets;
-    [[ def_prop(name="LeftSurface", category=SURFACE) ]]
-    SurfaceType leftSurface = SurfaceType::SurfaceSmooth;
-    [[ def_prop(name="RightSurface", category=SURFACE) ]]
-    SurfaceType rightSurface = SurfaceType::SurfaceSmooth;
-    [[ def_prop(name="FrontSurface", category=SURFACE) ]]
-    SurfaceType frontSurface = SurfaceType::SurfaceSmooth;
-    [[ def_prop(name="BackSurface", category=SURFACE) ]]
-    SurfaceType backSurface = SurfaceType::SurfaceSmooth;
+    DEF_PROP_CATEGORY(SURFACE)
+    DEF_PROP SurfaceType topSurface = SurfaceType::SurfaceStuds;
+    DEF_PROP SurfaceType bottomSurface = SurfaceType::SurfaceInlets;
+    DEF_PROP SurfaceType leftSurface = SurfaceType::SurfaceSmooth;
+    DEF_PROP SurfaceType rightSurface = SurfaceType::SurfaceSmooth;
+    DEF_PROP SurfaceType frontSurface = SurfaceType::SurfaceSmooth;
+    DEF_PROP SurfaceType backSurface = SurfaceType::SurfaceSmooth;
+
+
+    rp::RigidBody* rigidBody = nullptr;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
 

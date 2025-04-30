@@ -14,7 +14,7 @@
 class Part;
 class Workspace;
 
-class INSTANCE_WITH(abstract) JointInstance : public Instance {
+class DEF_INST_ABSTRACT JointInstance : public Instance {
     AUTOGEN_PREAMBLE
 
     std::weak_ptr<Part> oldPart0;
@@ -31,14 +31,10 @@ protected:
     virtual void breakJoint() = 0;
 public:
 
-    [[ def_prop(name="Part0", on_update=onUpdated) ]]
-    std::weak_ptr<Part> part0;
-    [[ def_prop(name="Part1", on_update=onUpdated) ]]
-    std::weak_ptr<Part> part1;
-    [[ def_prop(name="C0", on_update=onUpdated) ]]
-    CFrame c0;
-    [[ def_prop(name="C1", on_update=onUpdated) ]]
-    CFrame c1;
+    DEF_PROP_(on_update=onUpdated) std::weak_ptr<Part> part0;
+    DEF_PROP_(on_update=onUpdated) std::weak_ptr<Part> part1;
+    DEF_PROP_(on_update=onUpdated) CFrame c0;
+    DEF_PROP_(on_update=onUpdated) CFrame c1;
 
     JointInstance(const InstanceType*);
     ~JointInstance();

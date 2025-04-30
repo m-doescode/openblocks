@@ -5,7 +5,7 @@
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-class INSTANCE Snap : public JointInstance {
+class DEF_INST Snap : public JointInstance {
     AUTOGEN_PREAMBLE
 
     rp::FixedJoint* joint = nullptr;

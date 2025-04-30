@@ -31,7 +31,7 @@ class Rotate;
 
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
 
-class INSTANCE_SERVICE(explorer_icon="workspace") Workspace : public Service {
+class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     AUTOGEN_PREAMBLE
     
     rp::PhysicsWorld* physicsWorld = nullptr;

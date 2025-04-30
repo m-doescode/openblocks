@@ -4,7 +4,7 @@
 #include "objects/base/instance.h"
 #include <memory>
 
-class INSTANCE_WITH(explorer_icon="script") Script : public Instance {
+class DEF_INST_(explorer_icon="script") Script : public Instance {
     AUTOGEN_PREAMBLE
 public:
     Script();

@@ -3,7 +3,7 @@
 #include "objects/annotation.h"
 #include "objects/base/service.h"
 
-class INSTANCE_SERVICE() JointsService : public Service {
+class DEF_INST_SERVICE JointsService : public Service {
     AUTOGEN_PREAMBLE
 private:
     std::optional<std::shared_ptr<Workspace>> jointWorkspace();

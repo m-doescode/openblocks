@@ -137,9 +137,16 @@ std::string findBaseClass(CXCursor cur) {
     return baseClass;
 }
 
+std::string currentCategory = "";
 void processField(CXCursor cur, ClassAnalysis* state) {
     std::optional<std::string> propertyDef = findAnnotation(cur, "OB::def_prop");
     if (!propertyDef) return;
+
+    // Update current category
+    std::optional<std::string> categoryDef = findAnnotation(cur, "OB::def_prop_category");
+    if (categoryDef) {
+        currentCategory = parseAnnotationString(categoryDef.value())["category"];
+    }
 
     PropertyAnalysis anly;
 
@@ -150,6 +157,15 @@ void processField(CXCursor cur, ClassAnalysis* state) {
     anly.fieldName = fieldName;
     anly.category = result["category"];
     anly.onUpdateCallback = result["on_update"];
+
+    if (anly.category == "")
+        anly.category = currentCategory;
+
+    // if name field is not provided, use fieldName instead, but capitalize the first character
+    if (anly.name == "") {
+        anly.name = fieldName;
+        anly.name[0] = std::toupper(anly.name[0]);
+    }
     
     if (result.count("hidden"))
         anly.flags = anly.flags | PropertyFlags::PropertyFlag_Hidden;
@@ -234,6 +250,7 @@ void processClass(CXCursor cur, AnalysisState* state, std::string className, std
     anly.explorerIcon = result["explorer_icon"];
     
     // Find annotated fields
+    currentCategory = "";
     x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {
         CXCursorKind kind = clang_getCursorKind(cur);
         if (kind != CXCursor_FieldDecl) return CXChildVisit_Continue;

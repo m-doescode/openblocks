@@ -5,7 +5,7 @@
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-class INSTANCE Weld : public JointInstance {
+class DEF_INST Weld : public JointInstance {
     AUTOGEN_PREAMBLE
 
     rp::FixedJoint* joint = nullptr;
