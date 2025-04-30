@@ -62,6 +62,14 @@ bool Data::Vector3::operator ==(Data::Vector3 other) const {
     return this->X() == other.X() && this->Y() == other.Y() && this->Z() == other.Z();
 }
 
+bool Data::Vector3::operator <(Data::Vector3 other) const {
+    return X() < other.X() && Y() < other.Y() && Z() < other.Z();
+}
+
+bool Data::Vector3::operator >(Data::Vector3 other) const {
+    return X() > other.X() && Y() > other.Y() && Z() > other.Z();
+}
+
 Data::Vector3 Data::Vector3::Cross(Data::Vector3 other) const {
     return glm::cross(this->vector, other.vector);
 }

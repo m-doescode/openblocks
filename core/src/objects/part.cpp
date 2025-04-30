@@ -13,6 +13,8 @@
 #include "objects/joint/snap.h"
 #include "rendering/renderer.h"
 #include "rendering/surface.h"
+#include <cstdio>
+#include <glm/common.hpp>
 #include <memory>
 #include <optional>
 
@@ -181,6 +183,30 @@ bool Part::checkJointContinuityUp(std::shared_ptr<Part> otherPart) {
     return true;
 }
 
+bool Part::checkSurfacesTouching(CFrame surfaceFrame, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart) {
+    // Vector3 otherPartCenterToMine = surfaceFrame.Inverse() * otherPart->cframe.Position();
+    Vector3 farCorner0 = surfaceFrame.Inverse() * otherPart->cframe * (Vector3::ONE * (otherPart->size / 2.f));
+    Vector3 farCorner1 = surfaceFrame.Inverse() * otherPart->cframe * (-Vector3::ONE * (otherPart->size / 2.f));
+    
+    Vector3 myFarCorner0 = Vector3::ONE * (size / 2.f);
+    Vector3 myFarCorner1 = -Vector3::ONE * (size / 2.f);
+
+    // https://stackoverflow.com/a/306332/16255372
+    float myTop = glm::max(myFarCorner0.X(), myFarCorner1.X());
+    float myBot = glm::min(myFarCorner0.X(), myFarCorner1.X());
+    float myRight = glm::max(myFarCorner0.Y(), myFarCorner1.Y());
+    float myLeft = glm::min(myFarCorner0.Y(), myFarCorner1.Y());
+    float otherTop = glm::max(farCorner0.X(), farCorner1.X());
+    float otherBot = glm::min(farCorner0.X(), farCorner1.X());
+    float otherRight = glm::max(farCorner0.Y(), farCorner1.Y());
+    float otherLeft = glm::min(farCorner0.Y(), farCorner1.Y());
+
+    bool horizOverlap = myLeft < otherRight && myRight > otherLeft;
+    bool vertOverlap = myBot < otherTop && myTop > otherBot;
+
+    return horizOverlap && vertOverlap;
+}
+
 std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType a, SurfaceType b) {
     if (a == SurfaceWeld || b == SurfaceWeld || a == SurfaceGlue || b == SurfaceGlue) return Weld::New();
     if ((a == SurfaceStuds && (b == SurfaceInlets || b == SurfaceUniversal))
@@ -225,6 +251,7 @@ void Part::MakeJoints() {
                 if (dot > -0.99) continue; // Surface is pointing opposite to ours
 
                 if (abs(surfacePointLocalToMyFrame.Z()) > 0.05) continue; // Surfaces are within 0.05 studs of one another
+                if (!checkSurfacesTouching(surfaceFrame, myFace, otherFace, otherPart)) continue; // Surface do not overlap
                 if (!checkJointContinuity(otherPart)) continue;
 
                 SurfaceType mySurface = surfaceFromFace(faceFromNormal(myFace));
