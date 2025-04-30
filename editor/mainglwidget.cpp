@@ -244,7 +244,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
         Logger::error("Invalid tool was set to be handled by handleLinearTransform\n");
     }
 
-    if (mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
+    if (snappingFactor() != 0 && mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
         playSound("./assets/excluded/switch.wav");
 
     gWorkspace()->SyncPartPhysics(part);
