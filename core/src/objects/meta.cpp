@@ -1,5 +1,8 @@
 #include "meta.h"
 #include "objects/joint/jointinstance.h"
+#include "objects/joint/rotate.h"
+#include "objects/joint/rotatev.h"
+#include "objects/joint/weld.h"
 #include "objects/jointsservice.h"
 #include "objects/part.h"
 #include "objects/joint/snap.h"
@@ -14,6 +17,9 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
 
     { "Part", &Part::TYPE },
     { "Snap", &Snap::TYPE },
+    { "Weld", &Weld::TYPE },
+    { "Rotate", &Rotate::TYPE },
+    { "RotateV", &RotateV::TYPE },
     { "JointInstance", &JointInstance::TYPE },
     { "Script", &Script::TYPE },
 

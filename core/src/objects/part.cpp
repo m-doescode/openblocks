@@ -7,6 +7,7 @@
 #include "datatypes/vector.h"
 #include "objects/base/member.h"
 #include "objects/joint/rotate.h"
+#include "objects/joint/rotatev.h"
 #include "objects/joint/weld.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/jointinstance.h"
@@ -214,6 +215,8 @@ std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType 
         return Snap::New();
     if (a == SurfaceHinge)
         return Rotate::New();
+    if (a == SurfaceMotor)
+        return RotateV::New();
     return std::nullopt;
 }
 
@@ -257,7 +260,7 @@ void Part::MakeJoints() {
                 SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
 
                 // If it is a hinge, only attach if actually touching the "hinge"
-                if (mySurface == SurfaceHinge && !checkSurfacesTouching(surfaceFrame, Vector3(0.4, 0.4, 0.4), myFace, otherFace, otherPart)) continue;
+                if ((mySurface == SurfaceHinge || mySurface == SurfaceMotor) && !checkSurfacesTouching(surfaceFrame, Vector3(0.4, 0.4, 0.4), myFace, otherFace, otherPart)) continue;
 
                 // Create contacts
                 // Contact always occurs at the center of Part0's surface (even if that point does not overlap both surfaces)

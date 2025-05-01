@@ -26,7 +26,7 @@ struct PartConstructParams {
     bool locked = false;
 };
 
-class Snap;
+class Workspace;
 
 class DEF_INST_(explorer_icon="part") Part : public Instance {
     AUTOGEN_PREAMBLE
@@ -46,6 +46,7 @@ protected:
     bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart); 
 
     friend JointInstance;
+    friend Workspace;
 
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);

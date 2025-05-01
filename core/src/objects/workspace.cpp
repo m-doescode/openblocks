@@ -3,6 +3,7 @@
 #include "objects/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "physics/util.h"
+#include <memory>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
 rp::PhysicsCommon* Workspace::physicsCommon = new rp::PhysicsCommon;
@@ -102,6 +103,15 @@ void Workspace::PhysicsStep(float deltaTime) {
         const rp::Transform& transform = part->rigidBody->getTransform();
         part->cframe = CFrame(transform);
         part->velocity = part->rigidBody->getLinearVelocity();
+
+        part->rigidBody->enableGravity(true);
+        for (auto& joint : part->secondaryJoints) {
+            if (joint.expired() || !joint.lock()->IsA("RotateV")) continue;
+            
+            std::shared_ptr<JointInstance> motor = joint.lock()->CastTo<JointInstance>().expect();
+            part->rigidBody->enableGravity(false);
+            part->rigidBody->setAngularVelocity((motor->part0.lock()->cframe * motor->c0).LookVector() * 10.f);
+        }
     }
 }
 

@@ -17,6 +17,7 @@ enum SurfaceType {
     SurfaceInlets = 4,
     SurfaceUniversal = 5,
     SurfaceHinge = 6,
+    SurfaceMotor = 7,
 };
 
 namespace Data { class Vector3; } using Data::Vector3;

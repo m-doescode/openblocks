@@ -28,6 +28,7 @@ class Part;
 class Snap;
 class Weld;
 class Rotate;
+class RotateV;
 
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
 
@@ -41,6 +42,7 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     friend Snap;
     friend Weld;
     friend Rotate;
+    friend RotateV;
 protected:
     void InitService() override;
     bool initialized = false;

@@ -122,6 +122,7 @@ void PlaceDocument::init() {
     // part0->backSurface = SurfaceWeld;
     // part1->frontSurface = SurfaceWeld;
 
-    part0->backSurface = SurfaceHinge;
+    // part0->backSurface = SurfaceHinge;
+    part0->backSurface = SurfaceMotor;
     // part1->frontSurface = SurfaceHinge;
 }
