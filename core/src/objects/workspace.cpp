@@ -1,4 +1,5 @@
 #include "workspace.h"
+#include "datatypes/vector.h"
 #include "objects/base/instance.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/jointinstance.h"
@@ -104,13 +105,14 @@ void Workspace::PhysicsStep(float deltaTime) {
         part->cframe = CFrame(transform);
         part->velocity = part->rigidBody->getLinearVelocity();
 
-        part->rigidBody->enableGravity(true);
+        // part->rigidBody->enableGravity(true);
         for (auto& joint : part->secondaryJoints) {
             if (joint.expired() || !joint.lock()->IsA("RotateV")) continue;
-            
+                        
             std::shared_ptr<JointInstance> motor = joint.lock()->CastTo<JointInstance>().expect();
-            part->rigidBody->enableGravity(false);
-            part->rigidBody->setAngularVelocity((motor->part0.lock()->cframe * motor->c0).LookVector() * 10.f);
+            float rate = motor->part0.lock()->GetSurfaceParamB(motor->c0.LookVector().Unit()) * 30;
+            // part->rigidBody->enableGravity(false);
+            part->rigidBody->setAngularVelocity(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate);
         }
     }
 }

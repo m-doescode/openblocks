@@ -10,6 +10,7 @@ std::map<std::string, std::string> CATEGORY_STR = {
     { "BEHAVIOR", "PROP_CATEGORY_BEHAVIOR" },
     { "PART", "PROP_CATEGORY_PART" },
     { "SURFACE", "PROP_CATEGORY_SURFACE" },
+    { "SURFACE_INPUT", "PROP_CATEGORY_SURFACE_INPUT" },
 };
 
 std::map<std::string, std::string> MAPPED_TYPE = {

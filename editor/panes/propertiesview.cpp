@@ -249,7 +249,8 @@ QStringList PROPERTY_CATEGORY_NAMES {
     "Data",
     "Behavior",
     "Part",
-    "Surface"
+    "Surface",
+    "Surface Inputs",
 };
 
 QModelIndex PropertiesView::indexAt(const QPoint &point) const {
@@ -330,6 +331,9 @@ void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
 
     // Remove child-less categories
     for (int i = 0; i <= PROPERTY_CATEGORY_MAX; i++) {
+        if (i == PROP_CATEGORY_SURFACE_INPUT)
+            propertyCategories[(PropertyCategory)i]->setExpanded(false);
+
         if (propertyCategories[(PropertyCategory)i]->childCount() > 0) continue;
         int idx = indexOfTopLevelItem(propertyCategories[(PropertyCategory)i]);
         delete takeTopLevelItem(idx);

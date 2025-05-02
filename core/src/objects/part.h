@@ -65,7 +65,7 @@ public:
     bool selected = false;
     
     DEF_PROP_CATEGORY(BEHAVIOR)
-    DEF_PROP bool anchored = false;
+    DEF_PROP_(on_update=onUpdated) bool anchored = false;
     DEF_PROP bool locked = false;
 
     DEF_PROP_CATEGORY(SURFACE)
@@ -76,10 +76,27 @@ public:
     DEF_PROP SurfaceType frontSurface = SurfaceType::SurfaceSmooth;
     DEF_PROP SurfaceType backSurface = SurfaceType::SurfaceSmooth;
 
+    DEF_PROP_CATEGORY(SURFACE_INPUT)
+    DEF_PROP float topParamA = -0.5;
+    DEF_PROP float bottomParamA = -0.5;
+    DEF_PROP float leftParamA = -0.5;
+    DEF_PROP float rightParamA = -0.5;
+    DEF_PROP float frontParamA = -0.5;
+    DEF_PROP float backParamA = -0.5;
+
+    DEF_PROP float topParamB = 0.5;
+    DEF_PROP float bottomParamB = 0.5;
+    DEF_PROP float leftParamB = 0.5;
+    DEF_PROP float rightParamB = 0.5;
+    DEF_PROP float frontParamB = 0.5;
+    DEF_PROP float backParamB = 0.5;
+
 
     rp::RigidBody* rigidBody = nullptr;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
+    float GetSurfaceParamA(Vector3 face);
+    float GetSurfaceParamB(Vector3 face);
 
     Part();
     Part(PartConstructParams params);

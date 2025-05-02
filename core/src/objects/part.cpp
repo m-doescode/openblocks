@@ -94,7 +94,8 @@ void Part::onUpdated(std::string property) {
         workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
 
     // When position/rotation/size is manually edited, break all joints, they don't apply anymore
-    BreakJoints();
+    if (property != "Anchored")
+        BreakJoints();
 }
 
 // Expands provided extents to fit point
@@ -156,6 +157,32 @@ SurfaceType Part::surfaceFromFace(NormalId face) {
         case Back: return backSurface;
     }
     return SurfaceSmooth; // Unreachable
+}
+
+float Part::GetSurfaceParamA(Vector3 face) {
+    // printVec(face);
+    // printf("Enum: %d\n", faceFromNormal(face));
+    switch (faceFromNormal(face)) {
+        case Top: return topParamA;
+        case Bottom: return bottomParamA;
+        case Right: return rightParamA;
+        case Left: return leftParamA;
+        case Front: return frontParamA;
+        case Back: return backParamA;
+    }
+    return 0; // Unreachable
+}
+
+float Part::GetSurfaceParamB(Vector3 face) {
+    switch (faceFromNormal(face)) {
+        case Top: return topParamB;
+        case Bottom: return bottomParamB;
+        case Right: return rightParamB;
+        case Left: return leftParamB;
+        case Front: return frontParamB;
+        case Back: return backParamB;
+    }
+    return 0; // Unreachable
 }
 
 bool Part::checkJointContinuity(std::shared_ptr<Part> otherPart) {
