@@ -14,6 +14,7 @@ include_directories(${Stb_INCLUDE_DIR})
 # PkgConfig packages
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LUAJIT REQUIRED luajit)
+link_directories(${LUAJIT_LIBRARY_DIRS})
 
 # Run autogen
 file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/objects/*.h" "src/datatypes/*.h" "src/enum/*.h")
@@ -42,8 +43,9 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 list(APPEND SOURCES ${AUTOGEN_OUTS})
 add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
+target_link_directories(openblocks PUBLIC ${LUAJIT_LIBRARY_DIRS})
 target_link_libraries(openblocks ${GLEW_LIBRARIES} ${LUAJIT_LIBRARIES} OpenGL::GL ReactPhysics3D::ReactPhysics3D pugixml::pugixml)
-target_include_directories(openblocks PUBLIC "src" "../include" ${LUAJIT_INCLUDE_DIR})
+target_include_directories(openblocks PUBLIC "src" "../include" ${LUAJIT_INCLUDE_DIRS})
 add_dependencies(openblocks autogen_build autogen)
 
 # Windows-specific dependencies

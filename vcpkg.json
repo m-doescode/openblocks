@@ -6,7 +6,9 @@
     { "name": "pugixml", "version>=": "1.15" },
     "sdl2",
     "stb",
-    "reactphysics3d"
+    "reactphysics3d",
+    "pkgconf",
+    "luajit"
   ],
   "overrides": [
     { 
