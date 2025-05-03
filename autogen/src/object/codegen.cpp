@@ -4,7 +4,9 @@
 #include <string>
 #include <variant>
 
-std::map<std::string, std::string> CATEGORY_STR = {
+using namespace object;
+
+static std::map<std::string, std::string> CATEGORY_STR = {
     { "APPEARANCE", "PROP_CATEGORY_APPEARENCE" },
     { "DATA", "PROP_CATEGORY_DATA" },
     { "BEHAVIOR", "PROP_CATEGORY_BEHAVIOR" },
@@ -13,7 +15,7 @@ std::map<std::string, std::string> CATEGORY_STR = {
     { "SURFACE_INPUT", "PROP_CATEGORY_SURFACE_INPUT" },
 };
 
-std::map<std::string, std::string> MAPPED_TYPE = {
+static std::map<std::string, std::string> MAPPED_TYPE = {
     { "bool", "Data::Bool" },
     { "int", "Data::Int" },
     { "float", "Data::Float" },
@@ -21,11 +23,11 @@ std::map<std::string, std::string> MAPPED_TYPE = {
     { "glm::vec3", "Vector3" },
 };
 
-std::map<std::string, std::monostate> ENUM_TYPES = {
+static std::map<std::string, std::monostate> ENUM_TYPES = {
     { "SurfaceType", std::monostate() }
 };
 
-std::string parseWeakPtr(std::string weakPtrType) {
+static std::string parseWeakPtr(std::string weakPtrType) {
     if (!weakPtrType.starts_with("std::weak_ptr")) return "";
 
     int pos0 = weakPtrType.find("<");
@@ -35,7 +37,7 @@ std::string parseWeakPtr(std::string weakPtrType) {
     return subtype;
 }
 
-std::string castFromVariant(std::string valueStr, std::string fieldType) {
+static std::string castFromVariant(std::string valueStr, std::string fieldType) {
     // Manual exception for now, enums will get their own system eventually
     if (fieldType == "SurfaceType") {
         return "(SurfaceType)(int)" + valueStr + ".get<Data::Int>()";
@@ -45,7 +47,7 @@ std::string castFromVariant(std::string valueStr, std::string fieldType) {
     return valueStr + ".get<" + (!mappedType.empty() ? mappedType : fieldType) + ">()";
 }
 
-std::string castToVariant(std::string valueStr, std::string fieldType) {
+static std::string castToVariant(std::string valueStr, std::string fieldType) {
     // Manual exception for now, enums will get their own system eventually
     if (fieldType == "SurfaceType") {
         return "Data::Int((int)" + valueStr + ")";
@@ -64,7 +66,7 @@ std::string castToVariant(std::string valueStr, std::string fieldType) {
     return valueStr;
 }
 
-void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
+static void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
     out << "fallible<MemberNotFound, AssignToReadOnlyMember> " << state.name << "::InternalSetPropertyValue(std::string name, Data::Variant value) {";
 
     out << "\n    ";
@@ -105,7 +107,7 @@ void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
     out << "\n};\n\n";
 }
 
-void writePropertyUpdateHandler(std::ofstream& out, ClassAnalysis state) {
+static void writePropertyUpdateHandler(std::ofstream& out, ClassAnalysis state) {
     out << "void " << state.name << "::InternalUpdateProperty(std::string name) {";
 
     out << "\n    ";
@@ -125,7 +127,7 @@ void writePropertyUpdateHandler(std::ofstream& out, ClassAnalysis state) {
     out << "\n};\n\n";
 }
 
-void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
+static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
     out << "result<Data::Variant, MemberNotFound> " << state.name << "::InternalGetPropertyValue(std::string name) {";
 
     out << "\n    ";
@@ -151,7 +153,7 @@ void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
     out << "\n};\n\n";
 }
 
-void writePropertiesList(std::ofstream& out, ClassAnalysis state) {
+static void writePropertiesList(std::ofstream& out, ClassAnalysis state) {
     out << "std::vector<std::string> " << state.name << "::InternalGetProperties() {\n";
     out << "    std::vector<std::string> properties = " << state.baseClass << "::InternalGetProperties();\n";
 
@@ -164,7 +166,7 @@ void writePropertiesList(std::ofstream& out, ClassAnalysis state) {
     out << "};\n\n";
 }
 
-void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
+static void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
     out << "result<PropertyMeta, MemberNotFound> " << state.name << "::InternalGetPropertyMeta(std::string name) {";
 
     out << "\n    ";
@@ -204,7 +206,7 @@ void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
     out << "\n};\n\n";
 }
 
-void writeCodeForClass(std::ofstream& out, ClassAnalysis& state) {
+void object::writeCodeForClass(std::ofstream& out, ClassAnalysis& state) {
     std::string strFlags;
     if (state.flags & ClassFlag_NotCreatable)
         strFlags += " | INSTANCE_NOTCREATABLE";

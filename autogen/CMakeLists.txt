@@ -4,8 +4,8 @@ find_package(Clang REQUIRED)
 add_executable(autogen
     src/main.cpp
     src/util.cpp
-    src/analysis.cpp
-    src/codegen.cpp
+    src/object/analysis.cpp
+    src/object/codegen.cpp
 )
 
 set_target_properties(autogen PROPERTIES OUTPUT_NAME "autogen")

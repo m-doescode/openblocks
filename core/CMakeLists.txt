@@ -16,18 +16,18 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LUAJIT REQUIRED luajit)
 
 # Run autogen
-file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src/objects" "src/objects/*.h")
+file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/objects/*.h" "src/datatypes/*.h")
 
 # https://cmake.org/cmake/help/book/mastering-cmake/chapter/Custom%20Commands.html
 foreach (SRC ${AUTOGEN_SOURCES})
     string(REGEX REPLACE "[.]h$" ".cpp" OUT_SRC_NAME ${SRC})
-    set(SRC_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/objects/${SRC}")
+    set(SRC_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/${SRC}")
     set(OUT_PATH "${CMAKE_BINARY_DIR}/generated/${OUT_SRC_NAME}")
 
     add_custom_command(
         OUTPUT "${OUT_PATH}"
         DEPENDS "${SRC_PATH}"
-        COMMAND "${CMAKE_BINARY_DIR}/autogen/autogen" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SRC_PATH}" "${OUT_PATH}"
+        COMMAND "${CMAKE_BINARY_DIR}/autogen/autogen" "object" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SRC_PATH}" "${OUT_PATH}"
     )
 
     list(APPEND AUTOGEN_OUTS "${OUT_PATH}")

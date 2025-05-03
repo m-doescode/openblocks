@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace object {
+
 enum ClassFlags {
     ClassFlag_NotCreatable = 1<<0,
     ClassFlag_Service = 1<<1,
@@ -57,3 +59,5 @@ struct AnalysisState {
 };
 
 bool analyzeClasses(std::string path, std::string srcRoot, AnalysisState* state);
+
+}
