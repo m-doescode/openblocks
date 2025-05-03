@@ -3,12 +3,8 @@
 #include "common.h"
 #include "logger.h"
 #include "objects/datamodel.h"
-#include "objects/jointsservice.h"
-#include "objects/joint/snap.h"
-#include "objects/script.h"
 #include "placedocument.h"
 #include "script/scriptdocument.h"
-#include <map>
 #include <memory>
 #include <qclipboard.h>
 #include <qglobal.h>
@@ -145,10 +141,6 @@ MainWindow::MainWindow(QWidget *parent)
     placeDocument->init();
 
     ui->mdiArea->setTabsClosable(true);
-
-    // auto script = Script::New();
-    // gWorkspace()->AddChild(script);
-    // ui->mdiArea->addSubWindow(new ScriptDocument(script));
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {

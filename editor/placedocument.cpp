@@ -1,7 +1,9 @@
 #include "placedocument.h"
 #include "common.h"
 #include "mainglwidget.h"
+#include "mainwindow.h"
 #include "objects/joint/snap.h"
+#include "objects/script.h"
 #include "rendering/surface.h"
 #include <cstdio>
 #include <memory>
@@ -125,4 +127,9 @@ void PlaceDocument::init() {
     // part0->backSurface = SurfaceHinge;
     part0->backSurface = SurfaceMotor;
     // part1->frontSurface = SurfaceHinge;
+
+    std::shared_ptr<Script> script = Script::New();
+    gWorkspace()->AddChild(script);
+    MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
+    mainWnd->openScriptDocument(script);
 }
