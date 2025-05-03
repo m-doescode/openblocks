@@ -11,7 +11,7 @@
 namespace rp = reactphysics3d;
 
 namespace Data {
-    class CFrame : Base {
+    class DEF_DATA CFrame : Base {
         glm::vec3 translation;
         glm::mat3 rotation;
     
@@ -20,17 +20,17 @@ namespace Data {
         // CFrame(float x, float y, float z);
         // CFrame(const glm::vec3&);
         // CFrame(const rp::Vector3&);
-        CFrame();
-        CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
+        DEF_DATA_CTOR CFrame();
+        DEF_DATA_CTOR CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
+        DEF_DATA_CTOR CFrame(Vector3 , Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
         CFrame(const rp::Transform&);
         CFrame(Vector3 position, glm::quat quat);
-        CFrame(Vector3 position, Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
         ~CFrame();
 
         // Same as CFrame(position, position + toward), but makes sure that up and toward are not linearly dependant
         static CFrame pointToward(Vector3 position, Vector3 toward);
 
-        static const CFrame IDENTITY;
+        DEF_DATA_PROP static const CFrame IDENTITY;
         static const CFrame YToZ;
 
         virtual const TypeInfo& GetType() const override;
@@ -45,25 +45,25 @@ namespace Data {
         operator rp::Transform() const;
 
         //inline static CFrame identity() { }
-        inline Vector3 Position() const { return translation; }
-        inline CFrame Rotation() const { return CFrame { glm::vec3(0, 0, 0), rotation }; }
-        CFrame Inverse() const;
-        inline float X() const { return translation.x; }
-        inline float Y() const { return translation.y; }
-        inline float Z() const { return translation.z; }
+        DEF_DATA_METHOD inline Vector3 Position() const { return translation; }
+        DEF_DATA_METHOD inline CFrame Rotation() const { return CFrame { glm::vec3(0, 0, 0), rotation }; }
+        DEF_DATA_METHOD CFrame Inverse() const;
+        DEF_DATA_PROP inline float X() const { return translation.x; }
+        DEF_DATA_PROP inline float Y() const { return translation.y; }
+        DEF_DATA_PROP inline float Z() const { return translation.z; }
 
-        inline Vector3 RightVector() { return glm::column(rotation, 0); }
-        inline Vector3 UpVector() { return glm::column(rotation, 1); }
-        inline Vector3 LookVector() { return -glm::column(rotation, 2); }
+        DEF_DATA_PROP inline Vector3 RightVector() { return glm::column(rotation, 0); }
+        DEF_DATA_PROP inline Vector3 UpVector() { return glm::column(rotation, 1); }
+        DEF_DATA_PROP inline Vector3 LookVector() { return -glm::column(rotation, 2); }
 
-        Vector3 ToEulerAnglesXYZ();
-        static CFrame FromEulerAnglesXYZ(Vector3);
+        DEF_DATA_METHOD Vector3 ToEulerAnglesXYZ();
+        DEF_DATA_METHOD static CFrame FromEulerAnglesXYZ(Vector3);
 
         // Operators
-        Data::CFrame operator *(Data::CFrame) const;
-        Vector3 operator *(Vector3) const;
-        Data::CFrame operator +(Vector3) const;
-        Data::CFrame operator -(Vector3) const;
+        DEF_DATA_OP Data::CFrame operator *(Data::CFrame) const;
+        DEF_DATA_OP Vector3 operator *(Vector3) const;
+        DEF_DATA_OP Data::CFrame operator +(Vector3) const;
+        DEF_DATA_OP Data::CFrame operator -(Vector3) const;
     };
 }
 
