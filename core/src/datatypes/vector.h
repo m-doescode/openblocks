@@ -30,7 +30,8 @@ namespace Data {
 
         static Data::Variant Deserialize(pugi::xml_node node);
         static std::optional<Data::Variant> FromString(std::string);
-
+        
+        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
         virtual void PushLuaValue(lua_State*) const override;
         static void PushLuaLibrary(lua_State*);
 

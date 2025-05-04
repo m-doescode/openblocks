@@ -15,7 +15,7 @@ static void processMethod(CXCursor cur, ClassAnalysis* state) {
     MethodAnalysis anly;
 
     auto result = parseAnnotationString(propertyDef.value());
-    std::string symbolName = x_clang_toString(clang_getCursorDisplayName(cur));
+    std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
     CXType retType = clang_getCursorResultType(cur);
     
     anly.name = result["name"];
@@ -59,7 +59,7 @@ static void processProperty(CXCursor cur, ClassAnalysis* state) {
     PropertyAnalysis anly;
 
     auto result = parseAnnotationString(propertyDef.value());
-    std::string symbolName = x_clang_toString(clang_getCursorDisplayName(cur));
+    std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
     CXType retType = clang_getCursorResultType(cur);
     
     anly.name = result["name"];
