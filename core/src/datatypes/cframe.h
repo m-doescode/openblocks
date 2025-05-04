@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "datatypes/annotation.h"
 #include "datatypes/vector.h"
 #include <glm/ext/quaternion_float.hpp>
 #include <glm/gtc/matrix_access.hpp>
@@ -11,7 +12,9 @@
 namespace rp = reactphysics3d;
 
 namespace Data {
-    class DEF_DATA CFrame : public Base {
+    class DEF_DATA_(name="CoordinateFrame") CFrame : public Base {
+        AUTOGEN_PREAMBLE_DATA
+
         glm::vec3 translation;
         glm::mat3 rotation;
     
@@ -33,22 +36,18 @@ namespace Data {
         DEF_DATA_PROP static const CFrame IDENTITY;
         static const CFrame YToZ;
 
-        virtual const TypeInfo& GetType() const override;
-        static const TypeInfo TYPE;
-
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node parent) const override;
         static Data::Variant Deserialize(pugi::xml_node node);
 
-        virtual void PushLuaValue(lua_State*) const override;
         static void PushLuaLibrary(lua_State*);
 
         operator glm::mat4() const;
         operator rp::Transform() const;
 
         //inline static CFrame identity() { }
-        DEF_DATA_METHOD inline Vector3 Position() const { return translation; }
-        DEF_DATA_METHOD inline CFrame Rotation() const { return CFrame { glm::vec3(0, 0, 0), rotation }; }
+        DEF_DATA_PROP inline Vector3 Position() const { return translation; }
+        DEF_DATA_PROP inline CFrame Rotation() const { return CFrame { glm::vec3(0, 0, 0), rotation }; }
         DEF_DATA_METHOD CFrame Inverse() const;
         DEF_DATA_PROP inline float X() const { return translation.x; }
         DEF_DATA_PROP inline float Y() const { return translation.y; }

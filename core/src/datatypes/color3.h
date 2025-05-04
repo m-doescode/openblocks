@@ -8,6 +8,8 @@
 
 namespace Data {
     class DEF_DATA Color3 : public Base {
+        AUTOGEN_PREAMBLE_DATA
+
         float r;
         float g;
         float b;
@@ -19,15 +21,11 @@ namespace Data {
 
         DEF_DATA_METHOD static Color3 FromHex(std::string hex);
 
-        virtual const TypeInfo& GetType() const override;
-        static const TypeInfo TYPE;
-
         virtual const Data::String ToString() const override;
         DEF_DATA_METHOD std::string ToHex() const;
         virtual void Serialize(pugi::xml_node node) const override;
         static Data::Variant Deserialize(pugi::xml_node node);
 
-        virtual void PushLuaValue(lua_State*) const override;
         static void PushLuaLibrary(lua_State*);
 
         operator glm::vec3() const;

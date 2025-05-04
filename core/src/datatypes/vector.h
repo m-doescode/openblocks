@@ -9,7 +9,8 @@
 namespace rp = reactphysics3d;
 
 namespace Data {
-    class DEF_DATA Vector3 : public Base {
+    class DEF_DATA_(from_string) Vector3 : public Base {
+        AUTOGEN_PREAMBLE_DATA
         glm::vec3 vector;
     
     public:
@@ -18,9 +19,6 @@ namespace Data {
         DEF_DATA_CTOR Vector3(const glm::vec3&);
         DEF_DATA_CTOR Vector3(const rp::Vector3&);
         ~Vector3();
-
-        virtual const TypeInfo& GetType() const override;
-        static const TypeInfo TYPE;
 
         DEF_DATA_PROP static Data::Vector3 ZERO;
         DEF_DATA_PROP static Data::Vector3 ONE;
@@ -31,8 +29,6 @@ namespace Data {
         static Data::Variant Deserialize(pugi::xml_node node);
         static std::optional<Data::Variant> FromString(std::string);
         
-        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
-        virtual void PushLuaValue(lua_State*) const override;
         static void PushLuaLibrary(lua_State*);
 
         operator glm::vec3() const;

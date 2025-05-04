@@ -56,12 +56,6 @@ Data::CFrame::CFrame(Vector3 position, Vector3 lookAt, Vector3 up)
 }
 
 Data::CFrame::~CFrame() = default;
-const Data::TypeInfo Data::CFrame::TYPE = {
-    .name = "CoordinateFrame",
-    .deserializer = &Data::CFrame::Deserialize,
-};
-
-const Data::TypeInfo& Data::CFrame::GetType() const { return Vector3::TYPE; };
 
 const Data::String Data::CFrame::ToString() const {
     return std::to_string(X()) + ", " + std::to_string(Y()) + ", " + std::to_string(Z());
@@ -149,9 +143,4 @@ Data::Variant Data::CFrame::Deserialize(pugi::xml_node node) {
         node.child("R21").text().as_float(),
         node.child("R22").text().as_float()
     );
-}
-
-void Data::CFrame::PushLuaValue(lua_State* L) const {
-    // TODO:
-    panic();
 }

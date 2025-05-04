@@ -6,12 +6,6 @@ Data::Color3::Color3(float r, float g, float b) : r(std::clamp(r, 0.f, 1.f)), g(
 Data::Color3::Color3(const glm::vec3& vec) : r(std::clamp(vec.x, 0.f, 1.f)), g(std::clamp(vec.y, 0.f, 1.f)), b(std::clamp(vec.z, 0.f, 1.f)) {};
 
 Data::Color3::~Color3() = default;
-const Data::TypeInfo Data::Color3::TYPE = {
-    .name = "Color3",
-    .deserializer = &Data::Color3::Deserialize,
-};
-
-const Data::TypeInfo& Data::Color3::GetType() const { return Data::Color3::TYPE; };
 
 const Data::String Data::Color3::ToString() const {
     return std::to_string(int(r*256)) + ", " + std::to_string(int(g*256)) + ", " + std::to_string(int(b*256));
@@ -45,10 +39,4 @@ void Data::Color3::Serialize(pugi::xml_node node) const {
 
 Data::Variant Data::Color3::Deserialize(pugi::xml_node node) {
     return Color3::FromHex(node.text().get());
-}
-
-
-void Data::Color3::PushLuaValue(lua_State* L) const {
-    // TODO:
-    panic();
 }

@@ -130,9 +130,11 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 
     out <<  "static int data_gc(lua_State*);\n"
             "static int data_index(lua_State*);\n"
+            "static int data_tostring(lua_State*);\n"
             "static const struct luaL_Reg metatable [] = {\n"
             "    {\"__gc\", data_gc},\n"
             "    {\"__index\", data_index},\n"
+            "    {\"__tostring\", data_tostring},\n"
             "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
@@ -152,6 +154,14 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
            "    lua_setmetatable(L, n+1);\n"
            "}\n\n";
     
+
+    out <<  "result<Data::Variant, LuaCastError> Data::" << state.name << "::FromLuaValue(lua_State* L, int idx) {\n"
+            "    " << fqn << "* userdata = (" << fqn << "*) luaL_testudata(L, idx, \"" << getMtName(state.name) << "\");\n"
+            "    if (userdata == nullptr)\n"
+            "        return LuaCastError(lua_typename(L, idx), \"" << state.name << "\");\n"
+            "    return Data::Variant(*userdata);\n"
+            "}\n\n";
+
     // Indexing methods and properties
 
     out <<  "static int data_index(lua_State* L) {\n"
@@ -206,6 +216,14 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
             "    return luaL_error(L, \"%s is not a valid member of %s\\n\", key.c_str(), \"" << state.name << "\");\n"
             "}\n\n";
 
+    // ToString
+
+    out <<  "\nint data_tostring(lua_State* L) {\n"
+    "    auto this_ = (" << fqn << "*)lua_touserdata(L, 1);\n"
+    "    lua_pushstring(L, std::string(this_->ToString()).c_str());\n"
+    "    return 1;\n"
+    "}\n\n";
+
     // Destructor
 
     out <<  "\nint data_gc(lua_State* L) {\n"
@@ -215,7 +233,6 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
             "}\n\n";
 }
 
-
 void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAnalysis& state) {
     std::string fqn = "Data::" + state.name;
 
@@ -224,9 +241,10 @@ void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAn
     out << "#include \"datatypes/meta.h\"\n";
     out << "#include \"lua.h\"\n\n";
     out << "const Data::TypeInfo " << fqn << "::TYPE = {\n"
-        << "    .name = \"" << fqn << "\",\n"
-        << "    .deserializer = &" << fqn << "::Deserialize,\n"
-        << "    .fromLuaValue = &" << fqn << "::FromLuaValue,\n"
+        << "    .name = \"" << state.serializedName << "\",\n"
+        << "    .deserializer = &" << fqn << "::Deserialize,\n";
+    if (state.hasFromString) out << "    .fromString = &" << fqn << "::FromString,\n";
+    out << "    .fromLuaValue = &" << fqn << "::FromLuaValue,\n"
         << "};\n\n";
 
     out << "const Data::TypeInfo& " << fqn << "::GetType() const {\n"

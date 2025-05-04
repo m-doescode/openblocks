@@ -18,6 +18,7 @@
 
 // Helper macros
 #define DEF_DATA [[ def_data() ]] // Data declaration
+#define DEF_DATA_(...) [[ def_data(__VA_ARGS__) ]]
 #define DEF_DATA_PROP [[ def_data_prop() ]] // Property. Getter or field
 #define DEF_DATA_METHOD [[ def_data_method() ]] // Method
 #define DEF_DATA_CTOR [[ def_data_ctor() ]] // Constructor (i.e. .new)
@@ -28,4 +29,5 @@ public: \
 virtual const TypeInfo& GetType() const override; \
 static const TypeInfo TYPE; \
 virtual void PushLuaValue(lua_State*) const override; \
+static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx); \
 private:

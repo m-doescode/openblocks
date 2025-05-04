@@ -33,7 +33,9 @@ struct MethodAnalysis {
 
 struct ClassAnalysis {
     std::string name;
+    std::string serializedName;
     std::string headerPath;
+    bool hasFromString = false;
     std::vector<PropertyAnalysis> properties;
     std::vector<MethodAnalysis> methods;
     std::vector<PropertyAnalysis> staticProperties;

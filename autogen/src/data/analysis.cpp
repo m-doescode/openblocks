@@ -83,7 +83,15 @@ static void processProperty(CXCursor cur, ClassAnalysis* state) {
 static void processClass(CXCursor cur, AnalysisState* state, std::string className, std::string srcRoot) {
     ClassAnalysis anly;
 
+    std::string propertyDef = findAnnotation(cur, "OB::def_data").value();
+    auto result = parseAnnotationString(propertyDef);
+
     anly.name = className;
+    anly.serializedName = result["name"];
+    anly.hasFromString = result.count("from_string") > 0;
+
+    if (anly.serializedName == "")
+        anly.serializedName = className;
     
     x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {
         CXCursorKind kind = clang_getCursorKind(cur);
