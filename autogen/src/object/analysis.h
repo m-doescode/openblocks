@@ -1,5 +1,6 @@
 #pragma once
 
+#include <clang-c/Index.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -58,6 +59,6 @@ struct AnalysisState {
     std::map<std::string, ClassAnalysis> classes;
 };
 
-bool analyzeClasses(std::string path, std::string srcRoot, AnalysisState* state);
+bool analyzeClasses(CXCursor cursor, std::string srcRoot, AnalysisState* state);
 
 }

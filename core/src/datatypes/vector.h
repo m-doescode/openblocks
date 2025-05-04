@@ -9,7 +9,7 @@
 namespace rp = reactphysics3d;
 
 namespace Data {
-    class DEF_DATA Vector3 : Base {
+    class DEF_DATA Vector3 : public Base {
         glm::vec3 vector;
     
     public:
@@ -27,10 +27,12 @@ namespace Data {
 
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node node) const override;
-        virtual void PushLuaValue(lua_State*) const override;
 
         static Data::Variant Deserialize(pugi::xml_node node);
         static std::optional<Data::Variant> FromString(std::string);
+
+        virtual void PushLuaValue(lua_State*) const override;
+        static void PushLuaLibrary(lua_State*);
 
         operator glm::vec3() const;
         operator rp::Vector3() const;

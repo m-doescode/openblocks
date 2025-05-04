@@ -11,7 +11,7 @@
 namespace rp = reactphysics3d;
 
 namespace Data {
-    class DEF_DATA CFrame : Base {
+    class DEF_DATA CFrame : public Base {
         glm::vec3 translation;
         glm::mat3 rotation;
     
@@ -38,8 +38,10 @@ namespace Data {
 
         virtual const Data::String ToString() const override;
         virtual void Serialize(pugi::xml_node parent) const override;
-        virtual void PushLuaValue(lua_State*) const override;
         static Data::Variant Deserialize(pugi::xml_node node);
+
+        virtual void PushLuaValue(lua_State*) const override;
+        static void PushLuaLibrary(lua_State*);
 
         operator glm::mat4() const;
         operator rp::Transform() const;

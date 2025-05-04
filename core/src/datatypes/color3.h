@@ -7,7 +7,7 @@
 #include <reactphysics3d/reactphysics3d.h>
 
 namespace Data {
-    class DEF_DATA Color3 : Base {
+    class DEF_DATA Color3 : public Base {
         float r;
         float g;
         float b;
@@ -25,8 +25,10 @@ namespace Data {
         virtual const Data::String ToString() const override;
         DEF_DATA_METHOD std::string ToHex() const;
         virtual void Serialize(pugi::xml_node node) const override;
-        virtual void PushLuaValue(lua_State*) const override;
         static Data::Variant Deserialize(pugi::xml_node node);
+
+        virtual void PushLuaValue(lua_State*) const override;
+        static void PushLuaLibrary(lua_State*);
 
         operator glm::vec3() const;
 

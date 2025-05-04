@@ -10,7 +10,7 @@
 extern "C" { typedef struct lua_State lua_State; }
 
 #define DEF_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) class CLASS_NAME : public Data::Base { \
-    const WRAPPED_TYPE value; \
+    WRAPPED_TYPE value; \
 public: \
     CLASS_NAME(WRAPPED_TYPE); \
     ~CLASS_NAME(); \

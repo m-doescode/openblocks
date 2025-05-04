@@ -7,7 +7,7 @@
 class Instance;
 
 namespace Data {
-    class InstanceRef : Base {
+    class InstanceRef : public Base {
         std::weak_ptr<Instance> ref;
     public:
         InstanceRef();

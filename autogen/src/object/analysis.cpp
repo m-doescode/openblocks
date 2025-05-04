@@ -167,36 +167,7 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
 }
 
 // https://clang.llvm.org/docs/LibClang.html
-bool object::analyzeClasses(std::string path, std::string srcRoot, AnalysisState* state) {
-    const char* cargs[] = { "-x", "c++", "-I", srcRoot.c_str(), "-D__AUTOGEN__", 0 };
-    // THANK YOU SO MUCH THIS STACKOVERFLOW ANSWER IS SO HELPFUL
-    // https://stackoverflow.com/a/59206378/16255372
-    CXIndex index = clang_createIndex(0, 0);
-    CXTranslationUnit unit = clang_parseTranslationUnit(
-        index,
-        path.c_str(), cargs, 5,
-        nullptr, 0,
-        CXTranslationUnit_None);
-
-    if (!unit) {
-        fprintf(stderr, "Failed to parse file\n");
-        return 1;
-    }
-
-    // Print errors
-    int ndiags = clang_getNumDiagnostics(unit);
-    for (int i = 0; i < ndiags; i++) {
-        CXDiagnostic diag = clang_getDiagnostic(unit, i);
-        CXString str = clang_formatDiagnostic(diag, 0);
-        fprintf(stderr, "diag: %s\n", clang_getCString(str));
-
-        clang_disposeString(str);
-        clang_disposeDiagnostic(diag);
-    }
-
-    CXCursor cursor = clang_getTranslationUnitCursor(unit);
-
-    bool flag = false;
+bool object::analyzeClasses(CXCursor cursor, std::string srcRoot, AnalysisState* state) {
     // Search for classes
     x_clang_visitChildren(cursor, [&](CXCursor cur, CXCursor parent) {
         CXCursorKind kind = clang_getCursorKind(cur);
