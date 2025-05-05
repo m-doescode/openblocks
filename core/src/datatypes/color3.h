@@ -16,7 +16,7 @@ namespace Data {
     
     public:
         DEF_DATA_CTOR Color3(float r, float g, float b);
-        DEF_DATA_CTOR Color3(const glm::vec3&);
+        Color3(const glm::vec3&);
         ~Color3();
 
         DEF_DATA_METHOD static Color3 FromHex(std::string hex);

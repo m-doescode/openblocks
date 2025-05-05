@@ -23,6 +23,13 @@ static std::map<std::string, std::string> LUA_CHECK_FUNCS = {
     { "std::string", "luaL_checkstring" },
 };
 
+static std::map<std::string, std::string> LUA_TEST_FUNCS = {
+    { "bool", "lua_isboolean" },
+    { "int", "lua_isinteger" },
+    { "float", "lua_isnumber" },
+    { "std::string", "lua_isstring" },
+};
+
 static std::string getLuaMethodFqn(std::string className, std::string methodName) {
     return "__lua_impl__" + className + "__" + methodName;
 }
@@ -35,13 +42,29 @@ static std::string getMtName(std::string type) {
 
 static void writeLuaGetArgument(std::ofstream& out, std::string type, int narg, bool member) {
     std::string varname = "arg" + std::to_string(narg);
+    narg += 1; // Arguments start at 1
 
     std::string checkFunc = LUA_CHECK_FUNCS[type];
     if (checkFunc != "") {
-        out << "    " << type << " " << varname << " = " << checkFunc << "(L, " << std::to_string(member ? narg + 1 : narg) << ");\n";
+        out << "        " << type << " " << varname << " = " << checkFunc << "(L, " << std::to_string(member ? narg + 1: narg) << ");\n";
     } else {
         std::string udataname = getMtName(type);
-        out << "    " << type << " " << varname << " = *(" << type << "*)luaL_checkudata(L, " << std::to_string(member ? narg + 1 : narg) << ", \"" << udataname << "\");\n";
+        out << "        " << type << " " << varname << " = *(" << type << "*)luaL_checkudata(L, " << std::to_string(member ? narg + 1 : narg) << ", \"" << udataname << "\");\n";
+    }
+}
+
+// Returns an expression which tests that the given argument by index matches a certain type
+static void writeLuaTestArgument(std::ofstream& out, std::string type, int narg, bool member) {
+    std::string varname = "arg" + std::to_string(narg);
+    narg += 1; // Arguments start at 1
+
+    std::string testFunc = LUA_TEST_FUNCS[type];
+    if (testFunc != "") {
+        // Arguments start at 1
+        out << testFunc << "(L, " << std::to_string(member ? narg + 1 : narg) << ")";
+    } else {
+        std::string udataname = getMtName(type);
+        out << "luaL_testudata(L, " << std::to_string(member ? narg + 1 : narg) << ", \"" << udataname << "\")";
     }
 }
 
@@ -65,93 +88,144 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
         out <<  "static int " << methodFqn << "(lua_State* L) {\n"
                 "    auto this__ = (Data::Base*)lua_touserdata(L, 1);\n"
                 "    if (&this__->GetType() != &" << fqn << "::TYPE) return luaL_typerror(L, 0, \"" << state.name << "\");\n"
-                "    " << fqn << "* this_ = (" << fqn << "*)this__;\n\n";
+                "    " << fqn << "* this_ = (" << fqn << "*)this__;\n\n"
+                "    int n = lua_gettop(L);\n";
+        out <<  "    ";
                 
-        // Currently overloads are not supported
+        // Support multiple overloads of the same function
+        bool first = true;
+        for (MethodAnalysis methodImpl : methodImpls) {
+            if (!first) out << " else ";
+            first = false;
 
-        for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
-            writeLuaGetArgument(out, methodImpls[0].parameters[i].type, i, true);
-        }
+            // Check to see if the arguments possibly match this implementation's parameter types
+            out << "if (";
 
-        // Store result
-        if (methodImpls[0].returnType != "void")
-            out << "    " << methodImpls[0].returnType << " result = ";
-        else
-            out << "    ";
+            // Check number of arguments
+            out << "n == " << std::to_string(methodImpl.parameters.size() + 1); // Account for first argument as 'this'
 
-        // Call function
-        out << "this_->" << methodImpls[0].functionName << "(";
+            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+                out << " && ";
+                writeLuaTestArgument(out, methodImpl.parameters[i].type, i, true);
+            }
 
-        for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
-            std::string varname = "arg" + std::to_string(i);
-            if (i != 0) out << ", ";
-            out << varname;
-        }
+            out << ") {\n"; // End if condition, start if body
 
-        out << ");\n";
+            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+                writeLuaGetArgument(out, methodImpl.parameters[i].type, i, true);
+            }
 
-        // Return result
-        if (methodImpls[0].returnType != "void") {
-            std::string mappedType = MAPPED_TYPE[methodImpls[0].returnType];
-            if (mappedType == "")
-                out << "    result.PushLuaValue(L);\n";
+            // Store result
+            if (methodImpl.returnType != "void")
+                out << "        " << methodImpl.returnType << " result = ";
             else
-                out << "    " << mappedType << "(result).PushLuaValue(L);\n";
+                out << "        ";
+
+            // Call function
+            out << "this_->" << methodImpl.functionName << "(";
+
+            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+                std::string varname = "arg" + std::to_string(i);
+                if (i != 0) out << ", ";
+                out << varname;
+            }
+
+            out << ");\n"; // End function call
+
+            // Return result
+            if (methodImpl.returnType != "void") {
+                std::string mappedType = MAPPED_TYPE[methodImpl.returnType];
+                if (mappedType == "")
+                    out << "        result.PushLuaValue(L);\n";
+                else
+                    out << "        " << mappedType << "(result).PushLuaValue(L);\n";
+            }
+
+            if (methodImpl.returnType == "void")
+                out << "        return 0;\n";
+            else
+                out << "        return 1;\n";
+
+            out << "    }";
         }
 
-        if (methodImpls[0].returnType == "void")
-            out << "    return 0;\n";
-        else
-            out << "    return 1;\n";
+        // No function implementation matched
+        out << "\n\n    return luaL_error(L, \"No definition of function '%s' in %s matches these argument types\", \"" << name << "\", \"" << state.name << "\");\n";
 
-        out << "}\n\n";
+        out << "}\n\n"; // End function
     }
 
     for (auto& [name, methodImpls] : staticMethods) {
         std::string methodFqn = getLuaMethodFqn(state.name, name);
-        out <<  "static int " << methodFqn << "(lua_State* L) {\n";
-                
-        // Currently overloads are not supported
+        out <<  "static int " << methodFqn << "(lua_State* L) {\n"
+                "    int n = lua_gettop(L);\n";
+        out <<  "    ";
+        
+        // Support multiple overloads of the same function
+        bool first = true;
+        for (MethodAnalysis methodImpl : methodImpls) {
+            if (!first) out << " else ";
+            first = false;
 
-        for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
-            writeLuaGetArgument(out, methodImpls[0].parameters[i].type, i, false);
-        }
+            // Check to see if the arguments possibly match this implementation's parameter types
+            out << "if (";
 
-        // Store result
-        if (methodImpls[0].returnType != "void")
-            out << "    " << methodImpls[0].returnType << " result = ";
-        else
-            out << "    ";
+            // Check number of arguments
+            out << "n == " << std::to_string(methodImpl.parameters.size());
 
-        // Call function
-        if (methodImpls[0].functionName == "__ctor")
-            out << fqn << "(";
-        else
-            out << fqn << "::" << methodImpls[0].functionName << "(";
+            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+                out << " && ";
+                writeLuaTestArgument(out, methodImpl.parameters[i].type, i, false);
+            }
 
-        for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
-            std::string varname = "arg" + std::to_string(i);
-            if (i != 0) out << ", ";
-            out << varname;
-        }
+            out << ") {\n"; // End if condition, start if body
 
-        out << ");\n";
+            // Get the arguments
+            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+                writeLuaGetArgument(out, methodImpl.parameters[i].type, i, false);
+            }
 
-        // Return result
-        if (methodImpls[0].returnType != "void") {
-            std::string mappedType = MAPPED_TYPE[methodImpls[0].returnType];
-            if (mappedType == "")
-                out << "    result.PushLuaValue(L);\n";
+            // Store result
+            if (methodImpl.returnType != "void")
+                out << "        " << methodImpl.returnType << " result = ";
             else
-                out << "    " << mappedType << "(result).PushLuaValue(L);\n";
+                out << "        ";
+
+            // Call function
+            if (methodImpl.functionName == "__ctor")
+                out << fqn << "(";
+            else
+                out << fqn << "::" << methodImpl.functionName << "(";
+
+            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+                std::string varname = "arg" + std::to_string(i);
+                if (i != 0) out << ", ";
+                out << varname;
+            }
+
+            out << ");\n"; // End function call
+
+            // Return result
+            if (methodImpl.returnType != "void") {
+                std::string mappedType = MAPPED_TYPE[methodImpl.returnType];
+                if (mappedType == "")
+                    out << "        result.PushLuaValue(L);\n";
+                else
+                    out << "        " << mappedType << "(result).PushLuaValue(L);\n";
+            }
+
+            if (methodImpl.returnType == "void")
+                out << "        return 0;\n";
+            else
+                out << "        return 1;\n";
+
+            out << "    }";
         }
 
-        if (methodImpls[0].returnType == "void")
-            out << "    return 0;\n";
-        else
-            out << "    return 1;\n";
+        // No function implementation matched
+        out << "\n\n    return luaL_error(L, \"No definition of function '%s' in %s matches these argument types\", \"" << name << "\", \"" << state.name << "\");\n";
 
-        out << "}\n\n";
+        out << "}\n\n"; // End function
     }
 }
 

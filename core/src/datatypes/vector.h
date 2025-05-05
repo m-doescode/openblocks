@@ -16,8 +16,8 @@ namespace Data {
     public:
         DEF_DATA_CTOR Vector3();
         DEF_DATA_CTOR Vector3(float x, float y, float z);
-        DEF_DATA_CTOR Vector3(const glm::vec3&);
-        DEF_DATA_CTOR Vector3(const rp::Vector3&);
+        Vector3(const glm::vec3&);
+        Vector3(const rp::Vector3&);
         ~Vector3();
 
         DEF_DATA_PROP static Data::Vector3 ZERO;
