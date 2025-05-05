@@ -27,43 +27,21 @@ static std::string getLuaMethodFqn(std::string className, std::string methodName
     return "__lua_impl__" + className + "__" + methodName;
 }
 
-static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
-    out << "static int lib_gc(lua_State*);"
-        << "static int lib_index(lua_State*);"
-        << "static int lib_newindex(lua_State*);"
-        << "static const struct luaL_Reg metatable [] = {"
-        << "    {\"__index\", lib_index},"
-        << "    {\"__newindex\", lib_newindex},"
-        << "    {NULL, NULL} /* end of array */"
-        << "};";
-
-    // Create push function
-    out << "void Data::" << state.name << "::PushLuaLibrary(lua_State* L) {\n";
-    
-    out << "    int n = lua_gettop(L);\n"
-        << "    lua_newuserdata(L, 0);\n"
-        << "    luaL_newmetatable(L, \"__mt_" << state.name << "\");\n"
-        << "    luaL_register(L, NULL, library_metatable);\n"
-        << "    lua_setmetatable(L, n+1);\n";
-
-    out << "}\n";
-}
-
 static std::string getMtName(std::string type) {
     if (type.starts_with("Data::"))
         return "__mt_" + type.substr(6);
     return "__mt_" + type;
 }
 
-static void writeLuaGetArgument(std::ofstream& out, std::string type, int narg) {
+static void writeLuaGetArgument(std::ofstream& out, std::string type, int narg, bool member) {
     std::string varname = "arg" + std::to_string(narg);
 
     std::string checkFunc = LUA_CHECK_FUNCS[type];
     if (checkFunc != "") {
-        out << "    " << type << " " << varname << " = " << checkFunc << "(L, " << std::to_string(narg) << ");\n";
+        out << "    " << type << " " << varname << " = " << checkFunc << "(L, " << std::to_string(member ? narg + 1 : narg) << ");\n";
     } else {
         std::string udataname = getMtName(type);
-        out << "    " << type << " " << varname << " = *(" << type << "*)luaL_checkudata(L, " << std::to_string(narg) << ", \"" << udataname << "\");\n";
+        out << "    " << type << " " << varname << " = *(" << type << "*)luaL_checkudata(L, " << std::to_string(member ? narg + 1 : narg) << ", \"" << udataname << "\");\n";
     }
 }
 
@@ -72,9 +50,14 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 
     // Collect all method names to account for overloaded functions
     std::map<std::string, std::vector<MethodAnalysis>> methods;
+    std::map<std::string, std::vector<MethodAnalysis>> staticMethods;
 
     for (MethodAnalysis method : state.methods) {
         methods[method.name].push_back(method);
+    }
+    
+    for (MethodAnalysis method : state.staticMethods) {
+        staticMethods[method.name].push_back(method);
     }
 
     for (auto& [name, methodImpls] : methods) {
@@ -87,7 +70,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
         // Currently overloads are not supported
 
         for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
-            writeLuaGetArgument(out, methodImpls[0].parameters[i].type, i);
+            writeLuaGetArgument(out, methodImpls[0].parameters[i].type, i, true);
         }
 
         // Store result
@@ -98,6 +81,51 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 
         // Call function
         out << "this_->" << methodImpls[0].functionName << "(";
+
+        for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
+            std::string varname = "arg" + std::to_string(i);
+            if (i != 0) out << ", ";
+            out << varname;
+        }
+
+        out << ");\n";
+
+        // Return result
+        if (methodImpls[0].returnType != "void") {
+            std::string mappedType = MAPPED_TYPE[methodImpls[0].returnType];
+            if (mappedType == "")
+                out << "    result.PushLuaValue(L);\n";
+            else
+                out << "    " << mappedType << "(result).PushLuaValue(L);\n";
+        }
+
+        if (methodImpls[0].returnType == "void")
+            out << "    return 0;\n";
+        else
+            out << "    return 1;\n";
+
+        out << "}\n\n";
+    }
+
+    for (auto& [name, methodImpls] : staticMethods) {
+        std::string methodFqn = getLuaMethodFqn(state.name, name);
+        out <<  "static int " << methodFqn << "(lua_State* L) {\n"
+                "    \n";
+                
+        // Currently overloads are not supported
+
+        for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
+            writeLuaGetArgument(out, methodImpls[0].parameters[i].type, i, false);
+        }
+
+        // Store result
+        if (methodImpls[0].returnType != "void")
+            out << "    " << methodImpls[0].returnType << " result = ";
+        else
+            out << "    ";
+
+        // Call function
+        out << fqn << "::" << methodImpls[0].functionName << "(";
 
         for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
             std::string varname = "arg" + std::to_string(i);
@@ -233,6 +261,80 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
             "}\n\n";
 }
 
+static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
+    std::string fqn = "Data::" + state.name;
+
+    out <<  "static int lib_index(lua_State*);\n"
+            "static const struct luaL_Reg lib_metatable [] = {\n"
+            "    {\"__index\", lib_index},\n"
+            "    {NULL, NULL} /* end of array */\n"
+            "};\n\n";
+
+    out << "void Data::" << state.name << "::PushLuaLibrary(lua_State* L) {\n"
+           "    lua_getglobal(L, \"_G\");\n"
+           "    lua_pushstring(L, \"" << state.name << "\");\n"
+           "\n"
+           "    lua_newuserdata(L, 0);\n"
+           "\n"
+           "    // Create the library's metatable\n"
+           "    luaL_newmetatable(L, \"__mt_lib_" << state.name << "\");\n"
+           "    luaL_register(L, NULL, lib_metatable);\n"
+           "    lua_setmetatable(L, -2);\n"
+           "\n"
+           "    lua_rawset(L, -3);\n"
+           "    lua_pop(L, 1);\n"
+           "}\n\n";
+    
+    // Indexing methods and properties
+
+    out <<  "static int lib_index(lua_State* L) {\n"
+            "    std::string key(lua_tostring(L, 2));\n"
+            "    lua_pop(L, 2);\n"
+            "\n";
+
+    out << "    ";
+
+    bool first = true;
+    for (PropertyAnalysis prop : state.staticProperties) {
+        if (!first) out << " else ";
+        first = false;
+
+        out << "if (key == \"" << prop.name << "\") {\n";
+
+        std::string type = MAPPED_TYPE[prop.valueType];
+        if (type == "") type = prop.valueType;
+
+        std::string valueExpr;
+        if (prop.backingType == PropertyBackingType::Field)
+            valueExpr = fqn + "::" + prop.backingSymbol;
+        else if (prop.backingType == PropertyBackingType::Method)
+            valueExpr = fqn + "::" + prop.backingSymbol + "()";
+
+        out << "        " << type << "(" << valueExpr << ").PushLuaValue(L);\n";
+        out << "        return 1;\n";
+
+        out << "    }";
+    }
+
+    std::map<std::string, bool> accountedMethods;
+    for (MethodAnalysis method : state.staticMethods) {
+        if (accountedMethods[method.name]) continue;
+        if (!first) out << " else ";
+        first = false;
+        accountedMethods[method.name] = true;
+
+        out << "if (key == \"" << method.name << "\") {\n";
+        out << "        lua_pushcfunction(L, " << getLuaMethodFqn(state.name, method.name) << ");\n";
+        out << "        return 1;\n";
+
+        out << "    }";
+    }
+
+    out << "\n\n"
+            "    return luaL_error(L, \"%s is not a valid member of %s\\n\", key.c_str(), \"" << state.name << "\");\n"
+            "}\n\n";
+}
+
 void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAnalysis& state) {
     std::string fqn = "Data::" + state.name;
 
@@ -251,7 +353,7 @@ void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAn
         << "    return TYPE;\n"
         << "};\n\n";
 
-    // writeLuaLibraryGenerator(out, state);
     writeLuaMethodImpls(out, state);
     writeLuaValueGenerator(out, state);
+    writeLuaLibraryGenerator(out, state);
 }

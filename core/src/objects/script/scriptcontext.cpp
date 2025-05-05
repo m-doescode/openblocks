@@ -1,5 +1,7 @@
 #include "scriptcontext.h"
+#include "datatypes/cframe.h"
 #include "datatypes/meta.h"
+#include "datatypes/vector.h"
 #include "logger.h"
 #include <cstdint>
 #include <luajit-2.1/lauxlib.h>
@@ -40,6 +42,10 @@ void ScriptContext::InitService() {
     // luaopen_package(state);
     // luaopen_debug(state);
     luaopen_bit(state);
+
+    Data::Vector3::PushLuaLibrary(state);
+    Data::CFrame::PushLuaLibrary(state);
+    Data::Color3::PushLuaLibrary(state);
 
     // TODO: custom os library
 

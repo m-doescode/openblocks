@@ -1,5 +1,6 @@
 #include "analysis.h"
 #include "../util.h"
+#include <cctype>
 #include <clang-c/CXFile.h>
 #include <clang-c/CXSourceLocation.h>
 #include <clang-c/Index.h>
@@ -7,6 +8,34 @@
 #include <optional>
 
 using namespace data;
+
+static std::string toStaticName(std::string orig) {
+    bool isSnakeCase = orig.find('_') == -1;
+
+    std::string newName = "";
+    int wordStart = 0;
+    for (char c : orig) {
+        if (c == '_') {
+            wordStart = 1;
+            continue;
+        }
+
+        if (wordStart == 1)
+            newName += std::toupper(c);
+        else if (wordStart == 0)
+            newName += std::tolower(c);
+        else if (wordStart == 2)
+            newName += c;
+
+        if (c >= 'a' && c <= 'z')
+            wordStart = 2;
+        else
+            wordStart = 0;
+    }
+
+    newName[0] = std::tolower(newName[0]);
+    return newName;
+}
 
 static void processMethod(CXCursor cur, ClassAnalysis* state) {
     std::optional<std::string> propertyDef = findAnnotation(cur, "OB::def_data_method");
@@ -17,6 +46,8 @@ static void processMethod(CXCursor cur, ClassAnalysis* state) {
     auto result = parseAnnotationString(propertyDef.value());
     std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
     CXType retType = clang_getCursorResultType(cur);
+
+    bool isStatic = clang_CXXMethod_isStatic(cur);
     
     anly.name = result["name"];
     anly.functionName = symbolName;
@@ -25,7 +56,10 @@ static void processMethod(CXCursor cur, ClassAnalysis* state) {
     // if name field is not provided, use fieldName instead, but capitalize the first character
     if (anly.name == "") {
         anly.name = symbolName;
-        anly.name[0] = std::toupper(anly.name[0]);
+        if (!isStatic)
+            anly.name[0] = std::toupper(anly.name[0]);
+        else
+            anly.name[0] = std::tolower(anly.name[0]);
     }
 
     // Populate parameter list
@@ -61,6 +95,8 @@ static void processProperty(CXCursor cur, ClassAnalysis* state) {
     auto result = parseAnnotationString(propertyDef.value());
     std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
     CXType retType = clang_getCursorResultType(cur);
+
+    bool isStatic = clang_getCursorKind(cur) == CXCursor_VarDecl || clang_CXXMethod_isStatic(cur);
     
     anly.name = result["name"];
     anly.backingSymbol = symbolName;
@@ -70,11 +106,14 @@ static void processProperty(CXCursor cur, ClassAnalysis* state) {
     // if name field is not provided, use fieldName instead, but capitalize the first character
     if (anly.name == "") {
         anly.name = symbolName;
-        anly.name[0] = std::toupper(anly.name[0]);
+        if (!isStatic)
+            anly.name[0] = std::toupper(anly.name[0]);
+        else
+            anly.name = toStaticName(anly.name);
     }
 
-    // If it's a static method, push it into the library instead
-    if (clang_CXXMethod_isStatic(cur))
+    // If it's a static property, push it into the library instead
+    if (isStatic)
         state->staticProperties.push_back(anly);
     else
         state->properties.push_back(anly);
@@ -96,7 +135,7 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
     x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {
         CXCursorKind kind = clang_getCursorKind(cur);
         
-        if (kind == CXCursor_CXXMethod || kind == CXCursor_FieldDecl) {
+        if (kind == CXCursor_CXXMethod || kind == CXCursor_FieldDecl || kind == CXCursor_VarDecl) {
             processProperty(cur, &anly);
         }
 
