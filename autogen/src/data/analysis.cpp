@@ -37,6 +37,45 @@ static std::string toStaticName(std::string orig) {
     return newName;
 }
 
+// Constructors are stored the same way as static functions, but with the name "new"
+static void processConstructor(CXCursor cur, ClassAnalysis* state) {
+    std::optional<std::string> propertyDef = findAnnotation(cur, "OB::def_data_ctor");
+    if (!propertyDef) return;
+
+    MethodAnalysis anly;
+
+    auto result = parseAnnotationString(propertyDef.value());
+    std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
+    CXType retType = clang_getCursorResultType(cur);
+    
+    anly.name = result["name"];
+    anly.functionName = "__ctor";
+    anly.returnType = state->name;
+
+    // if name field is not provided, use new
+    if (anly.name == "") {
+        anly.name = "new";
+    }
+
+    // Populate parameter list
+    // https://stackoverflow.com/a/45867090/16255372
+    
+    for (int i = 0; i < clang_Cursor_getNumArguments(cur); i++) {
+        CXCursor paramCur = clang_Cursor_getArgument(cur, i);
+
+        std::string paramName = x_clang_toString(clang_getCursorDisplayName(paramCur));
+        std::string paramType = x_clang_toString(clang_getTypeSpelling(clang_getCursorType(paramCur)));
+
+        MethodParameter param;
+        param.name = paramName;
+        param.type = paramType;
+
+        anly.parameters.push_back(param);
+    }
+
+    state->staticMethods.push_back(anly);
+}
+
 static void processMethod(CXCursor cur, ClassAnalysis* state) {
     std::optional<std::string> propertyDef = findAnnotation(cur, "OB::def_data_method");
     if (!propertyDef) return;
@@ -134,6 +173,10 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
     
     x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {
         CXCursorKind kind = clang_getCursorKind(cur);
+
+        if (kind == CXCursor_Constructor) {
+            processConstructor(cur, &anly);
+        }
         
         if (kind == CXCursor_CXXMethod || kind == CXCursor_FieldDecl || kind == CXCursor_VarDecl) {
             processProperty(cur, &anly);

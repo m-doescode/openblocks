@@ -109,8 +109,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 
     for (auto& [name, methodImpls] : staticMethods) {
         std::string methodFqn = getLuaMethodFqn(state.name, name);
-        out <<  "static int " << methodFqn << "(lua_State* L) {\n"
-                "    \n";
+        out <<  "static int " << methodFqn << "(lua_State* L) {\n";
                 
         // Currently overloads are not supported
 
@@ -125,7 +124,10 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
             out << "    ";
 
         // Call function
-        out << fqn << "::" << methodImpls[0].functionName << "(";
+        if (methodImpls[0].functionName == "__ctor")
+            out << fqn << "(";
+        else
+            out << fqn << "::" << methodImpls[0].functionName << "(";
 
         for (int i = 0; i < methodImpls[0].parameters.size(); i++) {
             std::string varname = "arg" + std::to_string(i);
