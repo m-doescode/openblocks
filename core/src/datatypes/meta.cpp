@@ -4,6 +4,7 @@
 #include "datatypes/ref.h"
 #include "logger.h"
 #include "panic.h"
+#include <pugixml.hpp>
 #include <variant>
 
 Data::String Data::Variant::ToString() const {

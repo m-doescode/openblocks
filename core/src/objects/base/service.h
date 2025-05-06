@@ -2,8 +2,11 @@
 
 // Services are top-level singletons and belong to a specific DataModel
 // They serve one specific task and can be accessed using game:GetService
-#include "objects/datamodel.h"
+#include "objects/base/instance.h"
 #include <memory>
+
+class DataModel;
+
 class Service : public Instance {
 protected:
     Service(const InstanceType* type);

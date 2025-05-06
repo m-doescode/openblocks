@@ -1,6 +1,7 @@
 #include "serverscriptservice.h"
 #include "objects/script.h"
 #include "objects/workspace.h"
+#include "objects/datamodel.h"
 
 ServerScriptService::ServerScriptService(): Service(&TYPE) {
 }

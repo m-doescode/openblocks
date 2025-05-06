@@ -2,9 +2,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <glm/ext/quaternion_geometric.hpp>
+#include <iomanip>
+#include <reactphysics3d/mathematics/Vector3.h>
 #include <string>
+#include <pugixml.hpp>
 #include "datatypes/base.h"
-#include "meta.h" // IWYU pragma: keep
+#include "datatypes/meta.h"
+#include <sstream>
+
+namespace rp = reactphysics3d;
 
 Data::Vector3::Vector3() : vector(glm::vec3(0, 0, 0)) {};
 Data::Vector3::Vector3(const glm::vec3& src) : vector(src) {};

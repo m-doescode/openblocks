@@ -4,6 +4,8 @@
 #include "objects/base/member.h"
 #include "objects/script/scriptcontext.h"
 #include "objects/workspace.h"
+#include "objects/datamodel.h"
+#include "datatypes/ref.h"
 #include "lua.h"
 
 Script::Script(): Instance(&TYPE) {

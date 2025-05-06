@@ -10,7 +10,6 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include <pugixml.hpp>
 
 #include "error/instance.h"
 #include "error/result.h"
@@ -22,6 +21,8 @@ typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 
 class DataModel;
 class Workspace;
+
+namespace pugi { class xml_node; };
 
 typedef int InstanceFlags;
 // This instance should only be instantiated in special circumstances (i.e. by DataModel) and should be creatable directly via any API 

@@ -1,48 +1,10 @@
 #pragma once
 
-#include "../../datatypes/base.h"
-#include "datatypes/meta.h"
-#include <functional>
-#include <map>
-#include <memory>
-#include <optional>
+#include "datatypes/base.h"
 #include <variant>
 
 class Instance;
 
-struct FieldCodec {
-    void (*write)(Data::Variant source, void* destination);
-    Data::Variant (*read)(void* source);
-};
-
-template <typename T, typename U>
-constexpr FieldCodec fieldCodecOf() {
-    return FieldCodec {
-        .write = [](Data::Variant source, void* destination) {
-            *(U*)destination = (U)source.get<T>();
-        },
-        .read = [](void* source) -> Data::Variant {
-            return T(*(U*)source);
-        },
-    };
-}
-
-template <typename T>
-constexpr FieldCodec fieldCodecOf() {
-    return FieldCodec {
-        .write = [](Data::Variant source, void* destination) {
-            *(T*)destination = source.get<T>();
-        },
-        .read = [](void* source) -> Data::Variant {
-            return *(T*)source;
-        },
-    };
-}
-
-template <typename T>
-std::function<void(std::string name)> memberFunctionOf(void(T::*func)(std::string), T* obj) {
-    return std::bind(func, obj, std::placeholders::_1);
-}
 
 typedef int PropertyFlags;
 const PropertyFlags PROP_HIDDEN = 1 << 0; // Hidden from the editor

@@ -6,10 +6,8 @@
 #include <glm/ext/quaternion_float.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/matrix.hpp>
-#include <reactphysics3d/mathematics/Transform.h>
-#include <reactphysics3d/reactphysics3d.h>
 
-namespace rp = reactphysics3d;
+namespace reactphysics3d { class Transform; };
 
 namespace Data {
     class DEF_DATA_(name="CoordinateFrame") CFrame : public Base {
@@ -26,7 +24,7 @@ namespace Data {
         DEF_DATA_CTOR CFrame();
         DEF_DATA_CTOR CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
         DEF_DATA_CTOR CFrame(Vector3 , Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
-        CFrame(const rp::Transform&);
+        CFrame(const reactphysics3d::Transform&);
         CFrame(Vector3 position, glm::quat quat);
         ~CFrame();
 
@@ -43,7 +41,7 @@ namespace Data {
         static void PushLuaLibrary(lua_State*);
 
         operator glm::mat4() const;
-        operator rp::Transform() const;
+        operator reactphysics3d::Transform() const;
 
         //inline static CFrame identity() { }
         DEF_DATA_PROP inline Vector3 Position() const { return translation; }

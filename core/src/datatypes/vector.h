@@ -2,11 +2,10 @@
 
 #include "base.h"
 #include "datatypes/annotation.h"
-#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float3.hpp>
-#include <reactphysics3d/reactphysics3d.h>
+#include <glm/geometric.hpp>
 
-namespace rp = reactphysics3d;
+namespace reactphysics3d { class Vector3; };
 
 namespace Data {
     class DEF_DATA_(from_string) Vector3 : public Base {
@@ -17,7 +16,7 @@ namespace Data {
         DEF_DATA_CTOR Vector3();
         DEF_DATA_CTOR Vector3(float x, float y, float z);
         Vector3(const glm::vec3&);
-        Vector3(const rp::Vector3&);
+        Vector3(const reactphysics3d::Vector3&);
         ~Vector3();
 
         DEF_DATA_PROP static Data::Vector3 ZERO;
@@ -32,7 +31,7 @@ namespace Data {
         static void PushLuaLibrary(lua_State*);
 
         operator glm::vec3() const;
-        operator rp::Vector3() const;
+        operator reactphysics3d::Vector3() const;
 
         DEF_DATA_PROP inline float X() const { return vector.x; }
         DEF_DATA_PROP inline float Y() const { return vector.y; }

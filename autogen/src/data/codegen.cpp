@@ -417,6 +417,7 @@ void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAn
     out << "#define __AUTOGEN_EXTRA_INCLUDES__\n";
     out << "#include \"" << headerPath << "\"\n\n";
     out << "#include \"datatypes/meta.h\"\n";
+    out << "#include <pugixml.hpp>\n";
     out << "#include \"lua.h\"\n\n";
     out << "const Data::TypeInfo " << fqn << "::TYPE = {\n"
         << "    .name = \"" << state.serializedName << "\",\n"

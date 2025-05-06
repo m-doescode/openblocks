@@ -3,6 +3,7 @@
 #include "objects/base/instance.h"
 #include "objects/jointsservice.h"
 #include "objects/joint/jointinstance.h"
+#include "objects/datamodel.h"
 #include "physics/util.h"
 #include <memory>
 #include <reactphysics3d/engine/PhysicsCommon.h>

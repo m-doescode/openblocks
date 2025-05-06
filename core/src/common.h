@@ -2,6 +2,7 @@
 #include "objects/base/instance.h"
 #include "objects/handles.h"
 #include "objects/workspace.h"
+#include "objects/datamodel.h"
 #include "camera.h"
 #include <functional>
 #include <memory>

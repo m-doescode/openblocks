@@ -19,42 +19,6 @@
 #include <memory>
 #include <optional>
 
-// template <typename T, typename U>
-// constexpr FieldCodec fieldCodecOf() {
-//     return FieldCodec {
-//         .write = [](Data::Variant source, void* destination) {
-//             *(U*)destination = (U)source.get<T>();
-//         },
-//         .read = [](void* source) -> Data::Variant {
-//             return T(*(U*)source);
-//         },
-//     };
-// }
-
-constexpr FieldCodec cframePositionCodec() {
-    return FieldCodec {
-        .write = [](Data::Variant source, void* destination) {
-            CFrame* cframe = static_cast<CFrame*>(destination);
-            *cframe = cframe->Rotation() + source.get<Vector3>();
-        },
-        .read = [](void* source) -> Data::Variant {
-            return static_cast<CFrame*>(source)->Position();
-        },
-    };
-}
-
-constexpr FieldCodec cframeRotationCodec() {
-    return FieldCodec {
-        .write = [](Data::Variant source, void* destination) {
-            CFrame* cframe = static_cast<CFrame*>(destination);
-            *cframe = CFrame::FromEulerAnglesXYZ(source.get<Vector3>()) + cframe->Position();
-        },
-        .read = [](void* source) -> Data::Variant {
-            return static_cast<CFrame*>(source)->ToEulerAnglesXYZ();
-        },
-    };
-}
-
 Part::Part(): Part(PartConstructParams { .size = glm::vec3(2, 1.2, 4), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 

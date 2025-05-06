@@ -14,6 +14,7 @@
 #include <qstylefactory.h>
 #include <qstylehints.h>
 #include <qmdisubwindow.h>
+#include <pugixml.hpp>
 
 #ifdef _NDEBUG
 #define NDEBUG

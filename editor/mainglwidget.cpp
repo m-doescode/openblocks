@@ -13,6 +13,7 @@
 #include "physics/util.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
+#include "datatypes/meta.h"
 
 #define PI 3.14159
 

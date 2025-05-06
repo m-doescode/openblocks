@@ -1,4 +1,5 @@
 #include "service.h"
+#include "objects/datamodel.h"
 #include "logger.h"
 #include "panic.h"
 #include <memory>

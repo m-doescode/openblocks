@@ -10,6 +10,7 @@
 #include "objects/script/scriptcontext.h"
 #include "objects/script/serverscriptservice.h"
 #include "objects/workspace.h"
+#include "objects/datamodel.h"
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Instance", &Instance::TYPE },

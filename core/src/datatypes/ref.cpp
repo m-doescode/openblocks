@@ -8,6 +8,7 @@
 #include "objects/base/instance.h"
 #include "lua.h"
 #include "objects/base/member.h"
+#include <pugixml.hpp>
 
 Data::InstanceRef::InstanceRef() {};
 Data::InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};

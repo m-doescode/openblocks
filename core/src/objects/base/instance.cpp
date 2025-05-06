@@ -6,6 +6,7 @@
 #include "error/instance.h"
 #include "objects/base/member.h"
 #include "objects/base/refstate.h"
+#include "objects/datamodel.h"
 #include "objects/meta.h"
 #include "logger.h"
 #include "panic.h"
@@ -17,6 +18,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <pugixml.hpp>
 #include "ptr_helpers.h"
 
 // Static so that this variable name is "local" to this source file
@@ -31,15 +33,6 @@ const InstanceType Instance::TYPE = {
 // InstanceType* Instance::GetClass() {
 //     return &TYPE_;
 // }
-
-constexpr FieldCodec classNameCodec() {
-    return FieldCodec {
-        .write = nullptr,
-        .read = [](void* source) -> Data::Variant {
-            return Data::String(((const InstanceType*)source)->className);
-        },
-    };
-}
 
 Instance::Instance(const InstanceType* type) {
     this->name = type->className;

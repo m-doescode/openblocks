@@ -2,9 +2,7 @@
 
 #include "base.h"
 #include "datatypes/annotation.h"
-#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float3.hpp>
-#include <reactphysics3d/reactphysics3d.h>
 
 namespace Data {
     class DEF_DATA Color3 : public Base {

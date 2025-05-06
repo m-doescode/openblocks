@@ -223,6 +223,7 @@ void object::writeCodeForClass(std::ofstream& out, std::string headerPath, Class
 
     out << "#define __AUTOGEN_EXTRA_INCLUDES__\n";
     out << "#include \"" << state.headerPath << "\"\n\n";
+    out << "#include \"datatypes/meta.h\"\n\n";
     out << "const InstanceType " << state.name << "::TYPE = {\n"
         << "    .super = &" << state.baseClass << "::TYPE,\n"
         << "    .className = \"" << state.name << "\",\n"

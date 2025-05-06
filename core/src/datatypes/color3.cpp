@@ -1,6 +1,8 @@
 #include "color3.h"
-#include "meta.h" // IWYU pragma: keep
-#include "panic.h"
+#include "datatypes/meta.h"
+#include <pugixml.hpp>
+#include <sstream>
+#include <iomanip>
 
 Data::Color3::Color3(float r, float g, float b) : r(std::clamp(r, 0.f, 1.f)), g(std::clamp(g, 0.f, 1.f)), b(std::clamp(b, 0.f, 1.f)) {};
 Data::Color3::Color3(const glm::vec3& vec) : r(std::clamp(vec.x, 0.f, 1.f)), g(std::clamp(vec.y, 0.f, 1.f)), b(std::clamp(vec.z, 0.f, 1.f)) {};

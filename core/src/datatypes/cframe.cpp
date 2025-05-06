@@ -6,6 +6,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/matrix.hpp>
 #include <reactphysics3d/mathematics/Transform.h>
+#include "datatypes/meta.h"
+#include <pugixml.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 // #include "meta.h" // IWYU pragma: keep

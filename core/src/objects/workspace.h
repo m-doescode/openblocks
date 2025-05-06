@@ -2,10 +2,13 @@
 
 #include "objects/annotation.h"
 #include "objects/base/service.h"
+#include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <reactphysics3d/body/RigidBody.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
+
+namespace rp = reactphysics3d;
 
 struct RaycastResult {
     rp::Vector3 worldPoint;

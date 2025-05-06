@@ -5,9 +5,11 @@
 #include "objects/base/service.h"
 #include "objects/meta.h"
 #include "objects/script/serverscriptservice.h"
+#include "datatypes/meta.h"
 #include "workspace.h"
 #include "logger.h"
 #include "panic.h"
+#include <pugixml.hpp>
 #include <cstdio>
 #include <fstream>
 #include <memory>

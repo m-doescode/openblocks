@@ -3,6 +3,7 @@
 #include "meta.h"
 #include <ios>
 #include <sstream>
+#include <pugixml.hpp>
 #include "lua.h"
 
 #define IMPL_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE, TYPE_NAME) Data::CLASS_NAME::CLASS_NAME(WRAPPED_TYPE in) : value(in) {} \

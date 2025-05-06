@@ -1,5 +1,7 @@
 // TEMPORARY COMMON DATA FOR DIFFERENT INTERNAL COMPONENTS
 
+#include "objects/datamodel.h"
+#include "datatypes/meta.h"
 #include "common.h"
 #include <memory>
 

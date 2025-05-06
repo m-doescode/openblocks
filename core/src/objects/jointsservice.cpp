@@ -1,5 +1,6 @@
 #include "jointsservice.h"
 #include "workspace.h"
+#include "datamodel.h"
 #include <memory>
 
 JointsService::JointsService(): Service(&TYPE) {

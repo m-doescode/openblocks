@@ -3,11 +3,12 @@
 #include <string>
 #include <functional>
 #include <optional>
-#include <pugixml.hpp>
 #include "error/result.h"
 #include "error/data.h"
 
 extern "C" { typedef struct lua_State lua_State; }
+
+namespace pugi { class xml_node; };
 
 #define DEF_WRAPPER_CLASS(CLASS_NAME, WRAPPED_TYPE) class CLASS_NAME : public Data::Base { \
     WRAPPED_TYPE value; \

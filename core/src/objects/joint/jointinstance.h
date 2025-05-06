@@ -4,7 +4,7 @@
 #include "../annotation.h"
 #include <memory>
 #include <optional>
-#include <reactphysics3d/engine/PhysicsWorld.h>
+#include "datatypes/cframe.h"
 
 //this is necessary ebcause we use std::weak_ptr<Part> without including it in this file
 #ifdef __AUTOGEN_EXTRA_INCLUDES__

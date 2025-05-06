@@ -1,6 +1,7 @@
 #include "panes/propertiesview.h"
 #include "common.h"
 #include "datatypes/base.h"
+#include "datatypes/meta.h"
 #include "objects/base/member.h"
 
 #include <QColorDialog>

@@ -5,10 +5,12 @@
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
+namespace reactphysics3d { class FixedJoint; }
+
 class DEF_INST Snap : public JointInstance {
     AUTOGEN_PREAMBLE
 
-    rp::FixedJoint* joint = nullptr;
+    reactphysics3d::FixedJoint* joint = nullptr;
 
     virtual void buildJoint() override;
     virtual void breakJoint() override;

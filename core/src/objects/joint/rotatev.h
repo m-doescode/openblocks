@@ -4,11 +4,12 @@
 #include "objects/base/instance.h"
 #include "objects/joint/jointinstance.h"
 #include <memory>
+namespace reactphysics3d { class HingeJoint; }
 
 class DEF_INST RotateV : public JointInstance {
     AUTOGEN_PREAMBLE
 
-    rp::HingeJoint* joint = nullptr;
+    reactphysics3d::HingeJoint* joint = nullptr;
 
     virtual void buildJoint() override;
     virtual void breakJoint() override;
