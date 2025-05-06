@@ -6,6 +6,8 @@
 
 class DEF_INST_(explorer_icon="script") Script : public Instance {
     AUTOGEN_PREAMBLE
+
+    lua_State* thread;
 public:
     Script();
     ~Script();
