@@ -58,6 +58,7 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     scintilla->setMarginsBackgroundColor(palette().window().color());
     scintilla->setCaretForegroundColor(palette().text().color());
     scintilla->setFont(font);
+    scintilla->setTabWidth(4);
 
     scintilla->setText(QString::fromStdString(script->source));
 

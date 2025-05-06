@@ -8,11 +8,11 @@
 #include "objects/datamodel.h"
 #include "datatypes/ref.h"
 #include "lua.h"
-#include <luajit-2.1/lauxlib.h>
-#include <luajit-2.1/lua.h>
+#include <algorithm>
 #include <memory>
 
 int script_wait(lua_State*);
+int script_delay(lua_State*);
 
 Script::Script(): Instance(&TYPE) {
     source = "print \"Hello, world!\"\nwait(1)print \"Wait success! :D\"";
@@ -33,18 +33,19 @@ void Script::Run() {
     // Initialize script globals
     lua_getglobal(Lt, "_G");
     
-    lua_pushstring(Lt, "game");
     Data::InstanceRef(dataModel().value()).PushLuaValue(Lt);
-    lua_rawset(Lt, -3);
+    lua_setfield(Lt, -2, "game");
 
-    lua_pushstring(Lt, "workspace");
     Data::InstanceRef(dataModel().value()->GetService<Workspace>()).PushLuaValue(Lt);
-    lua_rawset(Lt, -3);
+    lua_setfield(Lt, -2, "workspace");
 
-    lua_pushstring(Lt, "wait");
     lua_pushlightuserdata(Lt, scriptContext.get());
     lua_pushcclosure(Lt, script_wait, 1);
-    lua_rawset(Lt, -3);
+    lua_setfield(Lt, -2, "wait");
+
+    lua_pushlightuserdata(Lt, scriptContext.get());
+    lua_pushcclosure(Lt, script_delay, 1);
+    lua_setfield(Lt, -2, "delay");
 
     lua_pop(Lt, 1); // _G
 
@@ -66,10 +67,27 @@ void Script::Stop() {
 
 int script_wait(lua_State* L) {
     ScriptContext* scriptContext = (ScriptContext*)lua_touserdata(L, lua_upvalueindex(1));
-    float secs = luaL_checknumber(L, 1);
+    float secs = lua_gettop(L) == 0 ? 0.03 : std::max(luaL_checknumber(L, 1), 0.03);
 
     scriptContext->PushThreadSleep(L, secs);
+    lua_pop(L, 1); // pop secs
 
     // Yield
     return lua_yield(L, 0);
+}
+
+int script_delay(lua_State* L) {
+    ScriptContext* scriptContext = (ScriptContext*)lua_touserdata(L, lua_upvalueindex(1));
+    float secs = std::max(luaL_checknumber(L, 1), 0.03);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    lua_State* Lt = lua_newthread(L); // Create a new thread
+    lua_pop(L, 1); // pop the newly created thread so that xmove moves func instead of it into itself
+    lua_xmove(L, Lt, 1); // move func
+    lua_pop(L, 1); // pop secs
+
+    // Schedule next run
+    scriptContext->PushThreadSleep(Lt, secs);
+
+    return 0;
 }

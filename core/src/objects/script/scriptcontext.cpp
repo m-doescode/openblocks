@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <ctime>
 #include <chrono>
-#include <luajit-2.1/lua.h>
 #include "lua.h"
 
 static int g_print(lua_State*);
@@ -66,13 +65,9 @@ void ScriptContext::InitService() {
 
     lua_pop(state, 1); // _G
 
-    lua_getregistry(state);
-    
-    lua_pushstring(state, "__sleepingThreads");
+    lua_pushlightuserdata(state, &sleepingThreads);
     lua_newtable(state);
-    lua_rawset(state, -3);
-
-    lua_pop(state, -1); // registry
+    lua_settable(state, LUA_REGISTRYINDEX);
 }
 
 void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
@@ -88,16 +83,15 @@ void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
     // Add to registry so it doesn't get GC'd
 
     // https://stackoverflow.com/a/17138663/16255372
-    lua_getregistry(state); // registry
-    lua_pushstring(state, "__sleepingThreads");
-    lua_rawget(state, -2); // table
+    lua_pushlightuserdata(state, &sleepingThreads);
+    lua_gettable(state, LUA_REGISTRYINDEX);
 
     lua_pushthread(thread); // key
     lua_xmove(thread, state, 1);
     lua_pushboolean(state, true); // value
     lua_rawset(state, -3); // set
 
-    lua_pop(state, 2); // pop table and registry
+    lua_pop(state, 1); // pop sleepingThreads
 }
 
 void ScriptContext::RunSleepingThreads() {
@@ -109,20 +103,26 @@ void ScriptContext::RunSleepingThreads() {
             // Time args
             lua_pushnumber(sleep.thread, float(tu_clock_micros() - sleep.timeYieldedWhen) / 1'000'000);
             lua_pushnumber(sleep.thread, float(tu_clock_micros()) / 1'000'000);
-            lua_resume(sleep.thread, 2);
+            int status = lua_resume(sleep.thread, 2);
+            if (status > LUA_YIELD) {
+                Logger::error(lua_tostring(sleep.thread, -1));
+                lua_pop(sleep.thread, 1); // Pop return value
+            }
 
             // Remove thread
+            deleted = true;
             sleepingThreads.erase(sleepingThreads.begin() + i);
 
             // Erase from registry
-            lua_getregistry(state); // registry
-            lua_pushstring(state, "__sleepingThreads");
-            lua_rawget(state, -2); // table
+            lua_pushlightuserdata(state, &sleepingThreads);
+            lua_gettable(state, LUA_REGISTRYINDEX);
             
             lua_pushthread(sleep.thread); // key
             lua_xmove(sleep.thread, state, 1);
             lua_pushnil(state);
             lua_rawset(state, -3); // set
+
+            lua_pop(state, 1); // sleepingThreads
         }
 
         if (!deleted)
