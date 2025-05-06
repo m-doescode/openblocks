@@ -193,6 +193,8 @@ void MainWindow::connectActionHandlers() {
     connect(ui->actionToolStuds, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_STUDS : TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolInlets, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_INLETS : TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolUniversal, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_UNIVERSAL : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolHinge, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_HINGE : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolMotor, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_MOTOR : TOOL_SELECT; updateToolbars(); });
     ui->actionToolSelect->setChecked(true);
     selectedTool = TOOL_SELECT;
 
@@ -447,6 +449,8 @@ void MainWindow::updateToolbars() {
     ui->actionToolStuds->setChecked(selectedTool == TOOL_STUDS);
     ui->actionToolInlets->setChecked(selectedTool == TOOL_INLETS);
     ui->actionToolUniversal->setChecked(selectedTool == TOOL_UNIVERSAL);
+    ui->actionToolHinge->setChecked(selectedTool == TOOL_HINGE);
+    ui->actionToolMotor->setChecked(selectedTool == TOOL_MOTOR);
 
     ui->actionGridSnap1->setChecked(snappingMode == GridSnappingMode::SNAP_1_STUD);
     ui->actionGridSnap05->setChecked(snappingMode == GridSnappingMode::SNAP_05_STUDS);

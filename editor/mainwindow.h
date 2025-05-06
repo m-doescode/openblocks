@@ -22,6 +22,8 @@ enum SelectedTool {
     TOOL_STUDS,
     TOOL_INLETS,
     TOOL_UNIVERSAL,
+    TOOL_HINGE,
+    TOOL_MOTOR,
 };
 
 enum GridSnappingMode {

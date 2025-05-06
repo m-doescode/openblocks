@@ -111,7 +111,7 @@ void Workspace::PhysicsStep(float deltaTime) {
             if (joint.expired() || !joint.lock()->IsA("RotateV")) continue;
                         
             std::shared_ptr<JointInstance> motor = joint.lock()->CastTo<JointInstance>().expect();
-            float rate = motor->part0.lock()->GetSurfaceParamB(motor->c0.LookVector().Unit()) * 30;
+            float rate = motor->part0.lock()->GetSurfaceParamB(-motor->c0.LookVector().Unit()) * 30;
             // part->rigidBody->enableGravity(false);
             part->rigidBody->setAngularVelocity(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate);
         }

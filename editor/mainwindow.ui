@@ -221,6 +221,8 @@
    <addaction name="actionToolStuds"/>
    <addaction name="actionToolInlets"/>
    <addaction name="actionToolUniversal"/>
+   <addaction name="actionToolHinge"/>
+   <addaction name="actionToolMotor"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -668,6 +670,40 @@
    </property>
    <property name="toolTip">
     <string>Glue</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolHinge">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="surface-weld"/>
+   </property>
+   <property name="text">
+    <string>Hinge</string>
+   </property>
+   <property name="toolTip">
+    <string>Hinge</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolMotor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="surface-weld"/>
+   </property>
+   <property name="text">
+    <string>Motor</string>
+   </property>
+   <property name="toolTip">
+    <string>Motor</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
