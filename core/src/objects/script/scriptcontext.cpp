@@ -1,12 +1,14 @@
 #include "scriptcontext.h"
 #include "datatypes/cframe.h"
-#include "datatypes/meta.h"
+#include "datatypes/color3.h"
 #include "datatypes/vector.h"
 #include "logger.h"
+#include "timeutil.h"
 #include <cstdint>
-#include <luajit-2.1/lauxlib.h>
+#include <ctime>
+#include <chrono>
 #include <luajit-2.1/lua.h>
-#include <luajit-2.1/lualib.h>
+#include "lua.h"
 
 static int g_print(lua_State*);
 static int g_require(lua_State*);
@@ -62,8 +64,70 @@ void ScriptContext::InitService() {
         lua_rawset(state, -3);
     }
 
-    lua_pop(state, 1);
+    lua_pop(state, 1); // _G
 
+    lua_getregistry(state);
+    
+    lua_pushstring(state, "__sleepingThreads");
+    lua_newtable(state);
+    lua_rawset(state, -3);
+
+    lua_pop(state, -1); // registry
+}
+
+void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
+    // A thread is allowed to sleep multiple times at once, though this is a very edge-case scenario
+
+    SleepingThread sleep;
+    sleep.thread = thread;
+    sleep.timeYieldedWhen = tu_clock_micros();
+    sleep.targetTimeMicros = tu_clock_micros() + delay * 1'000'000;
+
+    sleepingThreads.push_back(sleep);
+
+    // Add to registry so it doesn't get GC'd
+
+    // https://stackoverflow.com/a/17138663/16255372
+    lua_getregistry(state); // registry
+    lua_pushstring(state, "__sleepingThreads");
+    lua_rawget(state, -2); // table
+
+    lua_pushthread(thread); // key
+    lua_xmove(thread, state, 1);
+    lua_pushboolean(state, true); // value
+    lua_rawset(state, -3); // set
+
+    lua_pop(state, 2); // pop table and registry
+}
+
+void ScriptContext::RunSleepingThreads() {
+    for (int i = 0; i < sleepingThreads.size();) {
+        bool deleted = false;
+
+        SleepingThread sleep = sleepingThreads[i];
+        if (tu_clock_micros() >= sleep.targetTimeMicros) {
+            // Time args
+            lua_pushnumber(sleep.thread, float(tu_clock_micros() - sleep.timeYieldedWhen) / 1'000'000);
+            lua_pushnumber(sleep.thread, float(tu_clock_micros()) / 1'000'000);
+            lua_resume(sleep.thread, 2);
+
+            // Remove thread
+            sleepingThreads.erase(sleepingThreads.begin() + i);
+
+            // Erase from registry
+            lua_getregistry(state); // registry
+            lua_pushstring(state, "__sleepingThreads");
+            lua_rawget(state, -2); // table
+            
+            lua_pushthread(sleep.thread); // key
+            lua_xmove(sleep.thread, state, 1);
+            lua_pushnil(state);
+            lua_rawset(state, -3); // set
+        }
+
+        if (!deleted)
+            i++;
+    }
 }
 
 // https://www.lua.org/source/5.1/lbaselib.c.html

@@ -1,4 +1,5 @@
 #include "script.h"
+#include "common.h"
 #include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
@@ -7,17 +8,23 @@
 #include "objects/datamodel.h"
 #include "datatypes/ref.h"
 #include "lua.h"
+#include <luajit-2.1/lauxlib.h>
 #include <luajit-2.1/lua.h>
+#include <memory>
+
+int script_wait(lua_State*);
 
 Script::Script(): Instance(&TYPE) {
-    source = "print \"Hello, world!\"";
+    source = "print \"Hello, world!\"\nwait(1)print \"Wait success! :D\"";
 }
 
 Script::~Script() {
 }
 
 void Script::Run() {
-    lua_State* L = dataModel().value()->GetService<ScriptContext>()->state;
+    std::shared_ptr<ScriptContext> scriptContext = dataModel().value()->GetService<ScriptContext>();
+
+    lua_State* L = scriptContext->state;
 
     // Create thread
     this->thread = lua_newthread(L);
@@ -32,6 +39,11 @@ void Script::Run() {
 
     lua_pushstring(Lt, "workspace");
     Data::InstanceRef(dataModel().value()->GetService<Workspace>()).PushLuaValue(Lt);
+    lua_rawset(Lt, -3);
+
+    lua_pushstring(Lt, "wait");
+    lua_pushlightuserdata(Lt, scriptContext.get());
+    lua_pushcclosure(Lt, script_wait, 1);
     lua_rawset(Lt, -3);
 
     lua_pop(Lt, 1); // _G
@@ -50,4 +62,14 @@ void Script::Run() {
 
 void Script::Stop() {
     // TODO:
+}
+
+int script_wait(lua_State* L) {
+    ScriptContext* scriptContext = (ScriptContext*)lua_touserdata(L, lua_upvalueindex(1));
+    float secs = luaL_checknumber(L, 1);
+
+    scriptContext->PushThreadSleep(L, secs);
+
+    // Yield
+    return lua_yield(L, 0);
 }

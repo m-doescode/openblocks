@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "objects/joint/snap.h"
 #include "objects/script.h"
+#include "objects/script/scriptcontext.h"
 #include "rendering/surface.h"
 #include <cstdio>
 #include <memory>
@@ -67,6 +68,7 @@ void PlaceDocument::timerEvent(QTimerEvent* evt) {
         gWorkspace()->PhysicsStep(deltaTime);
     placeWidget->repaint();
     placeWidget->updateCycle();
+    gDataModel->GetService<ScriptContext>()->RunSleepingThreads();
 }
 
 
