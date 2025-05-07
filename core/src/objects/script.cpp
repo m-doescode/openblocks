@@ -68,9 +68,9 @@ void Script::Stop() {
 int script_wait(lua_State* L) {
     ScriptContext* scriptContext = (ScriptContext*)lua_touserdata(L, lua_upvalueindex(1));
     float secs = lua_gettop(L) == 0 ? 0.03 : std::max(luaL_checknumber(L, 1), 0.03);
+    if (lua_gettop(L) > 0) lua_pop(L, 1); // pop secs
 
     scriptContext->PushThreadSleep(L, secs);
-    lua_pop(L, 1); // pop secs
 
     // Yield
     return lua_yield(L, 0);
