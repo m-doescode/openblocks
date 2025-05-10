@@ -5,6 +5,7 @@
 #include <glm/ext.hpp>
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
+#include "datatypes/signal.h"
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
 #include "rendering/surface.h"
@@ -91,6 +92,7 @@ public:
     DEF_PROP float frontParamB = 0.5;
     DEF_PROP float backParamB = 0.5;
 
+    SignalSource OnParentUpdated;
 
     rp::RigidBody* rigidBody = nullptr;
     

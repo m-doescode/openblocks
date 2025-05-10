@@ -8,7 +8,7 @@
 namespace reactphysics3d { class Vector3; };
 
 namespace Data {
-    class DEF_DATA_(from_string) Vector3 : public Base {
+    class DEF_DATA Vector3 : public Base {
         AUTOGEN_PREAMBLE_DATA
         glm::vec3 vector;
     

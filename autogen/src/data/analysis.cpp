@@ -158,6 +158,22 @@ static void processProperty(CXCursor cur, ClassAnalysis* state) {
         state->properties.push_back(anly);
 }
 
+static bool hasMethod(CXCursor cur, std::string methodName) {
+    bool found = false;
+    x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {
+        CXCursorKind kind = clang_getCursorKind(cur);
+        if (kind != CXCursor_CXXMethod) return CXChildVisit_Continue;
+        
+        if (x_clang_toString(clang_getCursorSpelling(cur)) == methodName) {
+            found = true;
+            return CXChildVisit_Break;
+        }
+
+        return CXChildVisit_Continue;
+    });
+    return found;
+}
+
 static void processClass(CXCursor cur, AnalysisState* state, std::string className, std::string srcRoot) {
     ClassAnalysis anly;
 
@@ -166,7 +182,8 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
 
     anly.name = className;
     anly.serializedName = result["name"];
-    anly.hasFromString = result.count("from_string") > 0;
+    anly.hasFromString = hasMethod(cur, "FromString");
+    anly.isSerializable = hasMethod(cur, "Serialize") && hasMethod(cur, "Deserialize");
 
     if (anly.serializedName == "")
         anly.serializedName = className;
