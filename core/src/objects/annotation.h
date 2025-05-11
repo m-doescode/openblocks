@@ -6,12 +6,14 @@
 #ifdef __AUTOGEN__
 #define def_inst(...) clang::annotate("OB::def_inst", #__VA_ARGS__)
 #define def_prop(...) clang::annotate("OB::def_prop", #__VA_ARGS__)
+#define def_signal(...) clang::annotate("OB::def_signal", #__VA_ARGS__)
 #define def_prop_category(...) clang::annotate("OB::def_prop_category", #__VA_ARGS__)
 #define cframe_position_prop(...) clang::annotate("OB::cframe_position_prop", #__VA_ARGS__)
 #define cframe_rotation_prop(...) clang::annotate("OB::cframe_rotation_prop", #__VA_ARGS__)
 #else
 #define def_inst(...)
 #define def_prop(...)
+#define def_signal(...)
 #define def_prop_category(...)
 #define cframe_position_prop(...)
 #define cframe_rotation_prop(...)
@@ -26,6 +28,8 @@
 #define DEF_INST_SERVICE_(...) [[ def_inst(__VA_ARGS__, service) ]]
 #define DEF_PROP [[ def_prop() ]]
 #define DEF_PROP_(...) [[ def_prop(__VA_ARGS__) ]]
+#define DEF_SIGNAL [[ def_signal() ]]
+#define DEF_SIGNAL_(...) [[ def_signal(__VA_ARGS__) ]]
 
 // Categories
 #define DEF_PROP_CATEGORY(CATEGORY) [[ def_prop_category(category=CATEGORY) ]]

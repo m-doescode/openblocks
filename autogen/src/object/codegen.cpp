@@ -146,6 +146,18 @@ static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
         out << "\n    }";
         first = false;
     }
+
+    // Handle signals
+    out << "\n    ";
+    first = true;
+    for (auto& signal : state.signals) {
+        out << (first ? "" : " else ") << "if (name == \"" << signal.name << "\") {";
+
+        out << "\n        return Data::Variant(Data::SignalRef(" << signal.sourceFieldName << "));";
+
+        out << "\n    }";
+        first = false;
+    }
     
     out << "\n    return " << state.baseClass << "::InternalGetPropertyValue(name);";
     // out << "\n    return MemberNotFound(\"" << state.name << "\", name);";
@@ -195,6 +207,23 @@ static void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
         if (category.empty()) category = "PROP_CATEGORY_DATA";
 
         out << "\n        return PropertyMeta { &" << type << "::TYPE, " << strFlags << ", " << category << " };";
+
+        out << "\n    }";
+        first = false;
+    }
+
+    // Handle signals
+    out << "\n    ";
+    first = true;
+    for (auto& signal : state.signals) {
+        out << (first ? "" : " else ") << "if (name == \"" << signal.name << "\") {";
+        
+        std::string strFlags;
+        strFlags += "PROP_READONLY";
+        strFlags += "| PROP_HIDDEN";
+        strFlags += "| PROP_NOSAVE";
+
+        out << "\n        return PropertyMeta { &SignalRef::TYPE, " << strFlags << " };";
 
         out << "\n    }";
         first = false;

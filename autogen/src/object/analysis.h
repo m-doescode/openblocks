@@ -36,6 +36,11 @@ struct PropertyAnalysis {
     PropertyFlags flags = (PropertyFlags)0;
 };
 
+struct SignalAnalysis {
+    std::string name;
+    std::string sourceFieldName;
+};
+
 // https://stackoverflow.com/a/1448478/16255372
 inline ClassFlags operator|(ClassFlags a, ClassFlags b) {
     return static_cast<ClassFlags>(static_cast<int>(a) | static_cast<int>(b));
@@ -51,6 +56,7 @@ struct ClassAnalysis {
     std::string headerPath;
     bool abstract = false;
     std::vector<PropertyAnalysis> properties;
+    std::vector<SignalAnalysis> signals;
     ClassFlags flags = (ClassFlags)0;
     std::string explorerIcon;
 };

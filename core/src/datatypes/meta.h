@@ -5,6 +5,7 @@
 #include "base.h"
 #include "datatypes/color3.h"
 #include "datatypes/ref.h"
+#include "datatypes/signal.h"
 #include "vector.h"
 #include "cframe.h"
 
@@ -26,7 +27,9 @@ namespace Data {
         Vector3,
         CFrame,
         Color3,
-        InstanceRef
+        InstanceRef,
+        SignalRef,
+        SignalConnectionRef
     > __VARIANT_TYPE;
 
     class Variant {

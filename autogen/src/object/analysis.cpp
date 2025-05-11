@@ -119,6 +119,27 @@ static void processField(CXCursor cur, ClassAnalysis* state) {
     };
 }
 
+static void processSignal(CXCursor cur, ClassAnalysis* state) {
+    std::optional<std::string> signalDef = findAnnotation(cur, "OB::def_signal");
+    if (!signalDef) return;
+
+    SignalAnalysis anly;
+
+    auto result = parseAnnotationString(signalDef.value());
+    std::string fieldName = x_clang_toString(clang_getCursorDisplayName(cur));
+
+    anly.name = result["name"];
+    anly.sourceFieldName = fieldName;
+
+    // if name field is not provided, use fieldName instead, but capitalize the first character
+    if (anly.name == "") {
+        anly.name = fieldName;
+        anly.name[0] = std::toupper(anly.name[0]);
+    }
+
+    state->signals.push_back(anly);
+}
+
 static void processClass(CXCursor cur, AnalysisState* state, std::string className, std::string srcRoot) {
     ClassAnalysis anly;
 
@@ -159,6 +180,7 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
         if (kind != CXCursor_FieldDecl) return CXChildVisit_Continue;
         
         processField(cur, &anly);
+        processSignal(cur, &anly);
 
         return CXChildVisit_Continue;
     });
