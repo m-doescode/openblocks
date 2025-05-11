@@ -60,6 +60,8 @@ void Part::onUpdated(std::string property) {
     // When position/rotation/size is manually edited, break all joints, they don't apply anymore
     if (property != "Anchored")
         BreakJoints();
+
+    OnParentUpdated->Fire();
 }
 
 // Expands provided extents to fit point

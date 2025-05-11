@@ -21,6 +21,8 @@ class SignalConnection : public std::enable_shared_from_this<SignalConnection> {
 protected:
     std::weak_ptr<Signal> parentSignal;
 
+    SignalConnection(std::weak_ptr<Signal> parent);
+
     virtual void Call(std::vector<Data::Variant>) = 0;
     friend Signal;
 public:
@@ -33,35 +35,40 @@ public:
 class CSignalConnection : public SignalConnection {
     std::function<void(std::vector<Data::Variant>)> function;
 
-    CSignalConnection(std::function<void(std::vector<Data::Variant>)>);
-
     friend Signal;
 protected:
     void Call(std::vector<Data::Variant>) override;
+public:
+    CSignalConnection(std::function<void(std::vector<Data::Variant>)>, std::weak_ptr<Signal> parent);
 };
 
 class LuaSignalConnection : public SignalConnection {
-    lua_State* thread;
-
-    LuaSignalConnection(lua_State*);
+    lua_State* state;
+    int function;
 
     friend Signal;
 protected:
     void Call(std::vector<Data::Variant>) override;
 public:
+    LuaSignalConnection(lua_State*, std::weak_ptr<Signal> parent);
+    LuaSignalConnection (const LuaSignalConnection&) = delete;
+    LuaSignalConnection& operator= (const LuaSignalConnection&) = delete;
     ~LuaSignalConnection();
 };
 
-class Signal {
+class Signal : public std::enable_shared_from_this<Signal> {
     std::vector<std::shared_ptr<SignalConnection>> connections;
 
     friend SignalConnection;
 public:
     Signal();
     virtual ~Signal();
+    Signal (const Signal&) = delete;
+    Signal& operator= (const Signal&) = delete;
 
     void DisconnectAll();
     void Fire(std::vector<Data::Variant> args);
+    void Fire();
     Data::SignalConnectionRef Connect(std::function<void(std::vector<Data::Variant>)> callback);
     Data::SignalConnectionRef Connect(lua_State*);
 };
