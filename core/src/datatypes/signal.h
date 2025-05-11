@@ -58,6 +58,7 @@ public:
 
 class Signal : public std::enable_shared_from_this<Signal> {
     std::vector<std::shared_ptr<SignalConnection>> connections;
+    std::vector<std::pair<int, lua_State*>> waitingThreads;
 
     friend SignalConnection;
 public:
@@ -71,6 +72,7 @@ public:
     void Fire();
     Data::SignalConnectionRef Connect(std::function<void(std::vector<Data::Variant>)> callback);
     Data::SignalConnectionRef Connect(lua_State*);
+    int Wait(lua_State*);
 };
 
 class SignalSource : public std::shared_ptr<Signal> {
