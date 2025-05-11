@@ -49,7 +49,7 @@ static void writeLuaGetArgument(std::ofstream& out, std::string type, int narg, 
         out << "        " << type << " " << varname << " = " << checkFunc << "(L, " << std::to_string(member ? narg + 1: narg) << ");\n";
     } else {
         std::string udataname = getMtName(type);
-        out << "        " << type << " " << varname << " = *(" << type << "*)luaL_checkudata(L, " << std::to_string(member ? narg + 1 : narg) << ", \"" << udataname << "\");\n";
+        out << "        " << type << " " << varname << " = **(" << type << "**)luaL_checkudata(L, " << std::to_string(member ? narg + 1 : narg) << ", \"" << udataname << "\");\n";
     }
 }
 
@@ -86,9 +86,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
     for (auto& [name, methodImpls] : methods) {
         std::string methodFqn = getLuaMethodFqn(state.name, name);
         out <<  "static int " << methodFqn << "(lua_State* L) {\n"
-                "    auto this__ = (Data::Base*)lua_touserdata(L, 1);\n"
-                "    if (&this__->GetType() != &" << fqn << "::TYPE) return luaL_typerror(L, 0, \"" << state.name << "\");\n"
-                "    " << fqn << "* this_ = (" << fqn << "*)this__;\n\n"
+                "    " << fqn << "* this_ = *(" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
                 "    int n = lua_gettop(L);\n";
         out <<  "    ";
                 
@@ -248,8 +246,8 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
         //    "    // I'm torn... should this be Data::Variant, or Data::Base?\n"
         //    "    // If I ever decouple typing from Data::Base, I'll switch it to variant,\n"
         //    "    // otherwise, it doesn't make much sense to represent it as one\n"
-           "    " << fqn << "* userdata = (" << fqn << "*)lua_newuserdata(L, sizeof(" << fqn << "));\n"
-           "    new(userdata) " << fqn <<  "(*this);\n"
+           "    " << fqn << "** userdata = (" << fqn << "**)lua_newuserdata(L, sizeof(" << fqn << "));\n"
+           "    *userdata = new " << fqn <<  "(*this);\n"
 
            "    // Create the library's metatable\n"
            "    luaL_newmetatable(L, \"__mt_" << state.name << "\");\n"
@@ -260,18 +258,16 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
     
 
     out <<  "result<Data::Variant, LuaCastError> Data::" << state.name << "::FromLuaValue(lua_State* L, int idx) {\n"
-            "    " << fqn << "* userdata = (" << fqn << "*) luaL_testudata(L, idx, \"" << getMtName(state.name) << "\");\n"
+            "    " << fqn << "** userdata = (" << fqn << "**) luaL_testudata(L, idx, \"" << getMtName(state.name) << "\");\n"
             "    if (userdata == nullptr)\n"
             "        return LuaCastError(lua_typename(L, idx), \"" << state.name << "\");\n"
-            "    return Data::Variant(*userdata);\n"
+            "    return Data::Variant(**userdata);\n"
             "}\n\n";
 
     // Indexing methods and properties
 
     out <<  "static int data_index(lua_State* L) {\n"
-            "    auto this__ = (Data::Base*)lua_touserdata(L, 1);\n"
-            "    if (&this__->GetType() != &" << fqn << "::TYPE) return luaL_typerror(L, 0, \"" << state.name << "\");\n"
-            "    " << fqn << "* this_ = (" << fqn << "*)this__;\n"
+            "    " << fqn << "* this_ = *(" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
             "\n"
             "    std::string key(lua_tostring(L, 2));\n"
             "    lua_pop(L, 2);\n"
@@ -323,7 +319,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
     // ToString
 
     out <<  "\nint data_tostring(lua_State* L) {\n"
-    "    auto this_ = (" << fqn << "*)lua_touserdata(L, 1);\n"
+    "    " << fqn << "* this_ = *(" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
     "    lua_pushstring(L, std::string(this_->ToString()).c_str());\n"
     "    return 1;\n"
     "}\n\n";
@@ -331,8 +327,8 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
     // Destructor
 
     out <<  "\nint data_gc(lua_State* L) {\n"
-            "    auto this_ = (" << fqn << "*)lua_touserdata(L, 1);\n"
-            "    delete this_;\n"
+            "    " << fqn << "** userdata = (" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
+            "    delete *userdata;\n"
             "    return 0;\n"
             "}\n\n";
 }
