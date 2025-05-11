@@ -84,6 +84,18 @@ SignalConnectionRef Signal::Connect(lua_State* state) {
     return SignalConnectionRef(conn);
 }
 
+SignalConnectionRef Signal::Once(std::function<void(std::vector<Data::Variant>)> callback) {
+    auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<CSignalConnection>(callback, weak_from_this()));
+    onceConnections.push_back(conn);
+    return SignalConnectionRef(conn);
+}
+
+SignalConnectionRef Signal::Once(lua_State* state) {
+    auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<LuaSignalConnection>(state, weak_from_this()));
+    onceConnections.push_back(conn);
+    return SignalConnectionRef(conn);
+}
+
 int __waitingThreads = 0;
 int Signal::Wait(lua_State* thread) {
     // If the table hasn't been constructed yet, make it
@@ -105,6 +117,13 @@ int Signal::Wait(lua_State* thread) {
 
 void Signal::Fire(std::vector<Data::Variant> args) {
     for (std::shared_ptr<SignalConnection> connection : connections) {
+        connection->Call(args);
+    }
+
+    // Call once connections
+    auto prevOnceConns = std::move(onceConnections);
+    onceConnections = std::vector<std::shared_ptr<SignalConnection>>();
+    for (std::shared_ptr<SignalConnection> connection : prevOnceConns) {
         connection->Call(args);
     }
 
@@ -139,23 +158,45 @@ void Signal::DisconnectAll() {
         connection->parentSignal = {};
     }
     connections.clear();
+
+    for (std::shared_ptr<SignalConnection> connection : onceConnections) {
+        connection->parentSignal = {};
+    }
+    onceConnections.clear();
+
+    for (auto& [threadId, thread] : waitingThreads) {
+        lua_rawgeti(thread, LUA_REGISTRYINDEX, __waitingThreads);
+        luaL_unref(thread, -1, threadId);
+        lua_pop(thread, 1);
+    }
+    waitingThreads.clear();
 }
 
 void SignalConnection::Disconnect() {
     if (!Connected()) return;
     auto signal = parentSignal.lock();
+
     for(auto it = signal->connections.begin(); it != signal->connections.end();) {
         if (*it == shared_from_this())
             it = signal->connections.erase(it);
         else
             it++;
     }
+
+    for(auto it = signal->onceConnections.begin(); it != signal->onceConnections.end();) {
+        if (*it == shared_from_this())
+            it = signal->onceConnections.erase(it);
+        else
+            it++;
+    }
+
     parentSignal = {};
 }
 
 //
 
 static int signal_Connect(lua_State*);
+static int signal_Once(lua_State*);
 static int signal_Wait(lua_State*);
 
 static int signal_gc(lua_State*);
@@ -228,6 +269,9 @@ static int signal_index(lua_State* L) {
     if (key == "Connect") {
         lua_pushcfunction(L, signal_Connect);
         return 1;
+    } else if (key == "Once") {
+        lua_pushcfunction(L, signal_Once);
+        return 1;
     } else if (key == "Wait") {
         lua_pushcfunction(L, signal_Wait);
         return 1;
@@ -253,6 +297,17 @@ static int signal_Connect(lua_State* L) {
     return 1;
 }
 
+static int signal_Once(lua_State* L) {
+    auto userdata = (std::weak_ptr<Signal>**)luaL_checkudata(L, 1, "__mt_signal");
+    std::shared_ptr<Signal> signal = (**userdata).lock();
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    SignalConnectionRef ref = signal->Once(L);
+    ref.PushLuaValue(L);
+
+    return 1;
+}
+
 static int signal_Wait(lua_State* L) {
     auto userdata = (std::weak_ptr<Signal>**)luaL_checkudata(L, 1, "__mt_signal");
     // TODO: Add expiry check here and everywhere else
@@ -262,6 +317,8 @@ static int signal_Wait(lua_State* L) {
 }
 
 //
+
+static int signalconnection_Disconnect(lua_State*);
 
 static int signalconnection_gc(lua_State*);
 static int signalconnection_index(lua_State*);
@@ -336,5 +393,19 @@ static int signalconnection_index(lua_State* L) {
     std::string key(lua_tostring(L, 2));
     lua_pop(L, 2);
 
+    if (key == "Disconnect") {
+        lua_pushcfunction(L, signalconnection_Disconnect);
+        return 1;
+    }
+
     return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), "SignalConnection");
+}
+
+static int signalconnection_Disconnect(lua_State* L) {
+    auto userdata = (std::weak_ptr<SignalConnection>**)luaL_checkudata(L, 1, "__mt_signalconnection");
+    std::shared_ptr<SignalConnection> signal = (**userdata).lock();
+
+    signal->Disconnect();
+
+    return 0;
 }
