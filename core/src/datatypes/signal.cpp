@@ -2,12 +2,10 @@
 #include "datatypes/base.h"
 #include "meta.h"
 #include "lua.h"
-#include <luajit-2.1/lauxlib.h>
-#include <luajit-2.1/lua.h>
 #include <pugixml.hpp>
 #include <memory>
 
-SignalSource::SignalSource() {}
+SignalSource::SignalSource() : std::shared_ptr<Signal>(std::make_shared<Signal>()) {}
 SignalSource::~SignalSource() = default;
 
 Signal::Signal() {}
@@ -16,16 +14,22 @@ Signal::~Signal() = default;
 SignalConnection::~SignalConnection() = default;
 
 // Only used for its address
-int __savedThreads;
+int __savedThreads = 0;
 LuaSignalConnection::LuaSignalConnection(lua_State* L) {
     // Create thread from function at top of stack
     thread = lua_newthread(L);
     lua_xmove(L, thread, 1);
-    
-    // Save thread so it doesn't get GC'd
-    lua_pushlightuserdata(thread, &__savedThreads);
-    lua_gettable(thread, LUA_REGISTRYINDEX);
 
+    // https://stackoverflow.com/a/31952046/16255372
+    // Create the table
+    if (__savedThreads == 0) {
+        lua_newtable(thread);
+        __savedThreads = luaL_ref(thread, LUA_REGISTRYINDEX);
+    }
+
+    // Save thread so it doesn't get GC'd
+    lua_rawgeti(thread, LUA_REGISTRYINDEX, __savedThreads);
+    
     lua_pushthread(thread); // key
     lua_pushboolean(thread, true); // value
     lua_rawset(thread, -3); // set
@@ -35,8 +39,7 @@ LuaSignalConnection::LuaSignalConnection(lua_State* L) {
 
 LuaSignalConnection::~LuaSignalConnection() {
     // Remove thread so that it can get properly GC'd
-    lua_pushlightuserdata(thread, &__savedThreads);
-    lua_gettable(thread, LUA_REGISTRYINDEX);
+    lua_rawgeti(thread, LUA_REGISTRYINDEX, __savedThreads);
 
     lua_pushthread(thread); // key
     lua_pushnil(thread); // value
@@ -69,12 +72,16 @@ void CSignalConnection::Call(std::vector<Data::Variant> args) {
 
 //
 
-void Signal::Connect(std::function<void(std::vector<Data::Variant>)> callback) {
-    connections.push_back(std::dynamic_pointer_cast<SignalConnection>(std::make_shared<CSignalConnection>(CSignalConnection(callback))));
+SignalConnectionRef Signal::Connect(std::function<void(std::vector<Data::Variant>)> callback) {
+    auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<CSignalConnection>(CSignalConnection(callback)));
+    connections.push_back(conn);
+    return SignalConnectionRef(conn);
 }
 
-void Signal::Connect(lua_State* state) {
-    connections.push_back(std::dynamic_pointer_cast<SignalConnection>(std::make_shared<LuaSignalConnection>(LuaSignalConnection(state))));
+SignalConnectionRef Signal::Connect(lua_State* state) {
+    auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<LuaSignalConnection>(LuaSignalConnection(state)));
+    connections.push_back(conn);
+    return SignalConnectionRef(conn);
 }
 
 void Signal::Fire(std::vector<Data::Variant> args) {
@@ -104,6 +111,8 @@ void SignalConnection::Disconnect() {
 
 //
 
+static int signal_Connect(lua_State*);
+
 static int signal_gc(lua_State*);
 static int signal_index(lua_State*);
 static int signal_tostring(lua_State*);
@@ -113,26 +122,6 @@ static const struct luaL_Reg signal_metatable [] = {
     {"__tostring", signal_tostring},
     {NULL, NULL} /* end of array */
 };
-
-
-static int signal_gc(lua_State* L) {
-    // Destroy the contained shared_ptr
-    auto userdata = (std::weak_ptr<Signal>*)luaL_checkudata(L, 1, "__mt_signal");
-    delete userdata;
-    lua_pop(L, 1);
-
-    return 0;
-}
-
-// __index(t,k)
-static int signal_index(lua_State* L) {
-    auto userdata = (std::weak_ptr<Signal>*)luaL_checkudata(L, 1, "__mt_signal");
-    std::weak_ptr<Signal> signal = *userdata;
-    std::string key(lua_tostring(L, 2));
-    lua_pop(L, 2);
-
-    return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), "Signal");
-}
 
 Data::SignalRef::SignalRef(std::weak_ptr<Signal> ref) : signal(ref) {}
 Data::SignalRef::~SignalRef() = default;
@@ -159,8 +148,8 @@ void Data::SignalRef::Serialize(pugi::xml_node node) const {
 void Data::SignalRef::PushLuaValue(lua_State* L) const {
     int n = lua_gettop(L);
 
-    auto userdata = (std::weak_ptr<Signal>*)lua_newuserdata(L, sizeof(void*));
-    new(userdata) std::weak_ptr(signal);
+    auto userdata = (std::weak_ptr<Signal>*)lua_newuserdata(L, sizeof(std::weak_ptr<Signal>));
+    new(userdata) std::weak_ptr<Signal>(signal);
 
     // Create the instance's metatable
     luaL_newmetatable(L, "__mt_signal");
@@ -175,9 +164,44 @@ result<Data::Variant, LuaCastError> Data::SignalRef::FromLuaValue(lua_State* L, 
     return Data::Variant(Data::SignalRef(*userdata));
 }
 
+static int signal_gc(lua_State* L) {
+    // Destroy the contained shared_ptr
+    auto userdata = (std::weak_ptr<Signal>*)luaL_checkudata(L, 1, "__mt_signal");
+    delete userdata;
+    lua_pop(L, 1);
+
+    return 0;
+}
+
+// __index(t,k)
+static int signal_index(lua_State* L) {
+    auto userdata = (std::weak_ptr<Signal>*)luaL_checkudata(L, 1, "__mt_signal");
+    std::weak_ptr<Signal> signal = *userdata;
+    std::string key(lua_tostring(L, 2));
+    lua_pop(L, 2);
+
+    if (key == "Connect") {
+        lua_pushcfunction(L, signal_Connect);
+        return 1;
+    }
+
+    return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), "Signal");
+}
+
 static int signal_tostring(lua_State* L) {
     lua_pop(L, 1);
     lua_pushstring(L, "Signal");
+    return 1;
+}
+
+static int signal_Connect(lua_State* L) {
+    auto userdata = (std::weak_ptr<Signal>*)luaL_checkudata(L, 1, "__mt_signal");
+    std::shared_ptr<Signal> signal = (*userdata).lock();
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    SignalConnectionRef ref = signal->Connect(L);
+    ref.PushLuaValue(L);
+
     return 1;
 }
 
@@ -238,8 +262,8 @@ void Data::SignalConnectionRef::Serialize(pugi::xml_node node) const {
 void Data::SignalConnectionRef::PushLuaValue(lua_State* L) const {
     int n = lua_gettop(L);
 
-    auto userdata = (std::weak_ptr<SignalConnection>*)lua_newuserdata(L, sizeof(void*));
-    new(userdata) std::weak_ptr(signalConnection);
+    auto userdata = (std::weak_ptr<SignalConnection>*)lua_newuserdata(L, sizeof(std::weak_ptr<SignalConnection>));
+    new(userdata) std::weak_ptr<SignalConnection>(signalConnection);
 
     // Create the instance's metatable
     luaL_newmetatable(L, "__mt_signalconnection");

@@ -15,6 +15,8 @@
 class Instance;
 class Signal;
 
+namespace Data { class SignalConnectionRef; }
+
 class SignalConnection : public std::enable_shared_from_this<SignalConnection> {
 protected:
     std::weak_ptr<Signal> parentSignal;
@@ -60,8 +62,8 @@ public:
 
     void DisconnectAll();
     void Fire(std::vector<Data::Variant> args);
-    void Connect(std::function<void(std::vector<Data::Variant>)> callback);
-    void Connect(lua_State*);
+    Data::SignalConnectionRef Connect(std::function<void(std::vector<Data::Variant>)> callback);
+    Data::SignalConnectionRef Connect(lua_State*);
 };
 
 class SignalSource : public std::shared_ptr<Signal> {

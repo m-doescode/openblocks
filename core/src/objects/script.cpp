@@ -15,7 +15,9 @@ int script_wait(lua_State*);
 int script_delay(lua_State*);
 
 Script::Script(): Instance(&TYPE) {
-    source = "print \"Hello, world!\"\nwait(1)print \"Wait success! :D\"";
+    source = "workspace.Part.OnParentUpdated:Connect(function()\n\
+	print(\"Yeux d'enfants\")\n\
+end)";
 }
 
 Script::~Script() {
