@@ -7,3 +7,5 @@ stb
 qt6
 reactphysics3d
 pugixml
+luajit
+qscintilla
