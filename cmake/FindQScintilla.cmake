@@ -40,6 +40,7 @@ PATHS
   ${VCPKG_INSTALLED_DIR}/x64-windows/lib
 )
 
+get_filename_component(QSCINTILLA_LIB_DIR ${QSCINTILLA_LIBRARY} DIRECTORY)
 list(TRANSFORM QSCINTILLA_LIBRARY_NAMES APPEND ".dll" OUTPUT_VARIABLE QSCINTILLA_DLL_NAMES)
 
 find_file(QSCINTILLA_DLLS
@@ -50,5 +51,6 @@ PATHS
   /usr/local/lib
   /usr/local/lib/qt${QT_VERSION_MAJOR}
   /usr/lib
+  ${QSCINTILLA_LIB_DIR}
   ${VCPKG_INSTALLED_DIR}/x64-windows/lib
 )
