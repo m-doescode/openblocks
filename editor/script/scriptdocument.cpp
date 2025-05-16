@@ -5,13 +5,16 @@
 #include <Qsci/qsciscintillabase.h>
 #include <Qsci/qscistyle.h>
 #include <map>
+#include <memory>
 #include <qboxlayout.h>
 #include <qcolor.h>
 #include <qfont.h>
 #include <qdebug.h>
 #include <qglobal.h>
 #include <qlayout.h>
+#include "mainwindow.h"
 #include "objects/script.h"
+#include "datatypes/meta.h"
 
 std::map<int, const QColor> DARK_MODE_COLOR_SCHEME = {{
     {QsciLexerLua::Comment, QColor("#808080")},
@@ -36,6 +39,15 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     script(script), QMdiSubWindow(parent) {
 
     setWindowTitle(QString::fromStdString(script->name));
+
+    // Add detector for script deletion to automatically close this document
+    scriptDeletionHandler = script->AncestryChanged->Connect([this, script](std::vector<Data::Variant> args) {
+        std::weak_ptr<Instance> child = args[0].get<Data::InstanceRef>();
+        std::weak_ptr<Instance> newParent = args[1].get<Data::InstanceRef>();
+        if (child.expired() || child.lock() != script || !newParent.expired()) return;
+
+        dynamic_cast<MainWindow*>(window())->closeScriptDocument(script);
+    });
 
     // QFrame* frame = new QFrame;
     // QVBoxLayout* frameLayout = new QVBoxLayout;
@@ -74,7 +86,6 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 
     // lexer->setAutoIndentStyle(QsciScintilla::AiOpening | QsciScintilla::AiMaintain | QsciScintilla::AiClosing);
     // scintilla->setAutoIndent(true);
-    
 
     connect(scintilla, &QsciScintilla::textChanged, [this]() {
         // this-> is important here, as otherwise it will refer to the

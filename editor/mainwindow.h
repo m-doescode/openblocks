@@ -5,8 +5,10 @@
 #include "placedocument.h"
 #include "qbasictimer.h"
 #include "qcoreevent.h"
+#include "script/scriptdocument.h"
 #include <QMainWindow>
 #include <QLineEdit>
+#include <map>
 #include <memory>
 #include <qfiledialog.h>
 
@@ -53,10 +55,12 @@ public:
     bool editSoundEffects = true;
 
     void openScriptDocument(std::shared_ptr<Script>);
+    void closeScriptDocument(std::shared_ptr<Script>);
 
     Ui::MainWindow *ui;
 private:
     PlaceDocument* placeDocument;
+    std::map<std::shared_ptr<Script>, ScriptDocument*> scriptDocuments;
 
     void updateToolbars();
     void closeEvent(QCloseEvent* evt) override;

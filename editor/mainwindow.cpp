@@ -484,11 +484,28 @@ std::optional<std::string> MainWindow::openFileDialog(QString filter, QString de
 }
 
 void MainWindow::openScriptDocument(std::shared_ptr<Script> script) {
+    // Document already exists, don't open it
+    if (scriptDocuments.count(script) > 0) {
+        ui->mdiArea->setActiveSubWindow(scriptDocuments[script]);
+        return;
+    }
+
     ScriptDocument* doc = new ScriptDocument(script);
+    scriptDocuments[script] = doc;
     doc->setAttribute(Qt::WA_DeleteOnClose, true);
     ui->mdiArea->addSubWindow(doc);
     ui->mdiArea->setActiveSubWindow(doc);
     doc->showMaximized();
+}
+
+void MainWindow::closeScriptDocument(std::shared_ptr<Script> script) {
+    if (scriptDocuments.count(script) == 0) return;
+
+    ScriptDocument* doc = scriptDocuments[script];
+    ui->mdiArea->removeSubWindow(doc);
+    ui->mdiArea->activeSubWindow()->showMaximized();
+    scriptDocuments.erase(script);
+    doc->deleteLater();
 }
 
 MainWindow::~MainWindow()
