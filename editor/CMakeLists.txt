@@ -100,6 +100,13 @@ if (WIN32)
     # No sense adding opengl-sw given that hardware acceleration is necessary, anyway
     # Also don't want to clutter with plugins, add only needed ones
 
+    # Copy over QScintilla DLLs
+    # TODO: Use a better approach?
+    add_custom_command(
+        TARGET editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${QSCINTILLA_DLLS} $<TARGET_FILE_DIR:editor>
+    )
+
     # Copy qt.conf to override default plugins location
     add_custom_command(
         TARGET editor POST_BUILD

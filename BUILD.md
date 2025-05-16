@@ -22,6 +22,7 @@ The project will be built using VCPKG and MSVC
 * Qt 6.8.3 or higher, with MSVC toolchain
 * CMake
 * Git (for cloning the repo, optional)
+* QScintilla already built (see [docs/qscintilla.md](./docs/qscintilla.md)) *\*likely temporary\**
 
 To start, clone the repository:
 
