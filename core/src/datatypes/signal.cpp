@@ -72,6 +72,19 @@ void CSignalConnection::Call(std::vector<Data::Variant> args) {
 
 //
 
+SignalConnectionHolder::SignalConnectionHolder() : heldConnection() {}
+SignalConnectionHolder::SignalConnectionHolder(std::shared_ptr<SignalConnection> connection) : heldConnection(connection) {}
+SignalConnectionHolder::SignalConnectionHolder(Data::SignalConnectionRef other) : heldConnection(other) {}
+
+SignalConnectionHolder::~SignalConnectionHolder() {
+    // printf("Prediscon!\n");
+    // if (!heldConnection.expired()) printf("Disconnected!\n");
+    if (!heldConnection.expired())
+        heldConnection.lock()->Disconnect();
+}
+
+//
+
 SignalConnectionRef Signal::Connect(std::function<void(std::vector<Data::Variant>)> callback) {
     auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<CSignalConnection>(callback, weak_from_this()));
     connections.push_back(conn);
@@ -95,6 +108,8 @@ SignalConnectionRef Signal::Once(lua_State* state) {
     onceConnections.push_back(conn);
     return SignalConnectionRef(conn);
 }
+
+//
 
 int __waitingThreads = 0;
 int Signal::Wait(lua_State* thread) {

@@ -96,6 +96,7 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
     }
 
     OnAncestryChanged(updatedChild, newParent);
+    AncestryChanged->Fire({updatedChild.has_value() ? Data::InstanceRef(updatedChild.value()) : Data::InstanceRef(), newParent.has_value() ? Data::InstanceRef(newParent.value()) : Data::InstanceRef()});
 
     // Old workspace used to exist, and workspaces differ
     if (!oldWorkspace.expired() && oldWorkspace != _workspace) {

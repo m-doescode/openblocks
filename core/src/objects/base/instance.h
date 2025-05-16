@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "datatypes/signal.h"
 #include "error/instance.h"
 #include "error/result.h"
 #include "member.h"
@@ -92,6 +93,9 @@ protected:
 public:
     const static InstanceType TYPE;
     std::string name;
+
+    // Signals
+    SignalSource AncestryChanged;
 
     // Instance is abstract, so it should not implement GetClass directly
     virtual const InstanceType* GetClass() = 0;

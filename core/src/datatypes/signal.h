@@ -56,6 +56,27 @@ public:
     ~LuaSignalConnection();
 };
 
+// Holds a signal connection such that when the holder is deleted (either via its parent object being deleted, or being overwritten),
+// the connection is disconnected. Useful to prevent lingering connections that no longer contain valid objects
+class SignalConnectionHolder {
+    std::weak_ptr<SignalConnection> heldConnection;
+public:
+    SignalConnectionHolder();
+    SignalConnectionHolder(std::shared_ptr<SignalConnection>);
+    SignalConnectionHolder(Data::SignalConnectionRef other);
+    ~SignalConnectionHolder();
+
+    // Prevent SignalConnectionHolder being accidentally copied, making it useless
+    // https://stackoverflow.com/a/10473009/16255372
+    SignalConnectionHolder(const SignalConnectionHolder&) = delete;
+    SignalConnectionHolder& operator=(const SignalConnectionHolder&) = delete;
+    SignalConnectionHolder(SignalConnectionHolder&&) = default;
+    SignalConnectionHolder& operator=(SignalConnectionHolder&&) = default;
+
+    inline bool Connected() { return !heldConnection.expired() && heldConnection.lock()->Connected(); }
+    inline void Disconnect() { if (!heldConnection.expired()) heldConnection.lock()->Disconnect(); }
+};
+
 class Signal : public std::enable_shared_from_this<Signal> {
     std::vector<std::shared_ptr<SignalConnection>> connections;
     std::vector<std::shared_ptr<SignalConnection>> onceConnections;
