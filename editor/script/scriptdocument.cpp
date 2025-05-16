@@ -12,6 +12,7 @@
 #include <qdebug.h>
 #include <qglobal.h>
 #include <qlayout.h>
+#include <qtextformat.h>
 #include "mainwindow.h"
 #include "objects/script.h"
 #include "datatypes/meta.h"
@@ -57,10 +58,15 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     // setWidget(frame);
     setWidget(scintilla);
 
+    // https://forum.qt.io/post/803690
+    QFont findFont("<NONE>");
+    findFont.setStyleHint(QFont::Monospace);
+    QFontInfo info(findFont);
+
     QFont font;
-    font.setFamily("Consolas");
-    font.setStyleHint(QFont::Monospace);
+    font.setFamily(info.family());
     font.setPointSize(12);
+    font.setFixedPitch(true);
 
     // scintilla->setMargins(2);
     scintilla->setScrollWidth(1); // Hide scrollbars on empty document, it will grow automatically
