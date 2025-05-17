@@ -108,13 +108,14 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
         dynamic_cast<MainWindow*>(window())->closeScriptDocument(script);
     });
 
-    // QFrame* frame = new QFrame;
-    // QVBoxLayout* frameLayout = new QVBoxLayout;
-    // frame->setLayout(frameLayout);
-    scintilla = new QsciScintilla;
-    // frameLayout->addWidget(scintilla);
-    // setWidget(frame);
-    setWidget(scintilla);
+    QFrame* frame = new QFrame;
+    QVBoxLayout* frameLayout = new QVBoxLayout;
+    frameLayout->setMargin(0);
+    frame->setLayout(frameLayout);
+    scintilla = new QsciScintilla(this);
+    
+    frameLayout->addWidget(scintilla);
+    setWidget(frame);
 
     // https://forum.qt.io/post/803690
     QFont findFont("<NONE>");
@@ -146,6 +147,12 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     lexer->setPaper(palette().light().color());
     QsciAPIs* api = makeApis(lexer);
     lexer->setAPIs(api);
+    scintilla->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+    scintilla->setAutoCompletionThreshold(1);
+    scintilla->setAutoCompletionCaseSensitivity(false);
+    scintilla->setAutoCompletionReplaceWord(false);
+    scintilla->setCallTipsVisible(-1);
+    scintilla->setCallTipsPosition(QsciScintilla::CallTipsBelowText);
 
     // Set color scheme
     // https://stackoverflow.com/a/26318796/16255372
@@ -167,8 +174,13 @@ ScriptDocument::~ScriptDocument() {
 }
 
 QsciAPIs* makeApis(QsciLexer* lexer) {
-
     QsciAPIs* apis = new QsciAPIs(lexer);
+
+    apis->add("workspace");
+    apis->add("game");
+    apis->add("wait(seconds: number)\n\nPauses the current thread for the specified number of seconds");
+
+    apis->prepare();
 
     return apis;
 }
