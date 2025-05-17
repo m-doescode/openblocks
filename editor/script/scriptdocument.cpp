@@ -4,6 +4,7 @@
 #include <Qsci/qscilexerlua.h>
 #include <Qsci/qsciscintillabase.h>
 #include <Qsci/qscistyle.h>
+#include <Qsci/qsciapis.h>
 #include <map>
 #include <memory>
 #include <qboxlayout.h>
@@ -16,6 +17,8 @@
 #include "mainwindow.h"
 #include "objects/script.h"
 #include "datatypes/meta.h"
+
+QsciAPIs* makeApis(QsciLexer*);
 
 std::map<int, const QColor> DARK_MODE_COLOR_SCHEME = {{
     {QsciLexerLua::Comment, QColor("#808080")},
@@ -35,6 +38,61 @@ std::map<int, const QColor> DARK_MODE_COLOR_SCHEME = {{
     {QsciLexerLua::Label, QColor("#FFFFFF")},
 
 }};
+
+class ObLuaLexer : public QsciLexerLua {
+    const char * keywords(int set) const override {
+        // Taken from qscilexerlua.cpp
+
+        if (set == 1)
+            // Keywords.
+            return
+                "and break do else elseif end false for function if "
+                "in local nil not or repeat return then true until "
+                "while";
+
+        if (set == 2)
+            // Basic functions.
+            return
+                //"foreach foreachi getn "
+
+                // Openblocks extensions
+                "shared require game workspace "
+
+                "_G _VERSION getfenv getmetatable ipairs loadstring "
+                "next pairs pcall rawequal rawget rawset select "
+                "setfenv setmetatable xpcall string table tonumber "
+                "tostring type math newproxy coroutine io os";
+
+        if (set == 3)
+            // String, table and maths functions.
+            return
+                // "abs acos asin atan atan2 ceil cos deg exp floor "
+                // "format frexp gsub ldexp log log10 max min mod rad "
+                // "random randomseed sin sqrt tan "
+
+                "string.byte string.char string.dump string.find "
+                "string.len string.lower string.rep string.sub "
+                "string.upper string.format string.gfind string.gsub "
+                "table.concat table.foreach table.foreachi table.getn "
+                "table.sort table.insert table.remove table.setn "
+                "math.abs math.acos math.asin math.atan math.atan2 "
+                "math.ceil math.cos math.deg math.exp math.floor "
+                "math.frexp math.ldexp math.log math.log10 math.max "
+                "math.min math.mod math.pi math.rad math.random "
+                "math.randomseed math.sin math.sqrt math.tan";
+
+        if (set == 4)
+            // Coroutine, I/O and system facilities.
+            return
+                // "clock date difftime time "
+
+                "coroutine.create coroutine.resume coroutine.status "
+                "coroutine.wrap coroutine.yield os.clock os.date "
+                "os.difftime os.time";
+
+        return 0;
+    };
+};
 
 ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     script(script), QMdiSubWindow(parent) {
@@ -65,7 +123,7 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 
     QFont font;
     font.setFamily(info.family());
-    font.setPointSize(12);
+    font.setPointSize(10);
     font.setFixedPitch(true);
 
     // scintilla->setMargins(2);
@@ -80,9 +138,14 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 
     scintilla->setText(QString::fromStdString(script->source));
 
-    QsciLexerLua* lexer = new QsciLexerLua;
+    ObLuaLexer* lexer = new ObLuaLexer;
     lexer->setFont(font);
     scintilla->setLexer(lexer);
+
+    // Remove background highlight color
+    lexer->setPaper(palette().light().color());
+    QsciAPIs* api = makeApis(lexer);
+    lexer->setAPIs(api);
 
     // Set color scheme
     // https://stackoverflow.com/a/26318796/16255372
@@ -101,4 +164,11 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 }
 
 ScriptDocument::~ScriptDocument() {
+}
+
+QsciAPIs* makeApis(QsciLexer* lexer) {
+
+    QsciAPIs* apis = new QsciAPIs(lexer);
+
+    return apis;
 }
