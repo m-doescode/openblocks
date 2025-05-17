@@ -44,7 +44,7 @@ static std::string castFromVariant(std::string valueStr, std::string fieldType) 
     }
 
     std::string mappedType = MAPPED_TYPE[fieldType];
-    return valueStr + ".get<" + (!mappedType.empty() ? mappedType : fieldType) + ">()";
+    return "(" + fieldType + ")" + valueStr + ".get<" + (!mappedType.empty() ? mappedType : fieldType) + ">()";
 }
 
 static std::string castToVariant(std::string valueStr, std::string fieldType) {
