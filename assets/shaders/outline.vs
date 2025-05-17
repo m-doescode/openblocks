@@ -9,10 +9,10 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec3 scale;
+uniform float thickness;
 
 void main()
 {
-    float thickness = 0.4;
     vec3 distFromEdge = sign(aPos) * 0.5 - aPos;
     vec3 tVec = (scale * sign(aPos) * 0.5 - distFromEdge * thickness) / scale;
 

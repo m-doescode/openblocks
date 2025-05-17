@@ -17,6 +17,7 @@
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
 #include "handles.h"
+#include "math_helper.h"
 #include "rendering/torus.h"
 #include "shader.h"
 #include "mesh.h"
@@ -437,15 +438,26 @@ void renderOutlines() {
 
     // Pass in the camera position
     outlineShader->set("viewPos", camera.cameraPos);
+    outlineShader->set("thickness", 0.4f);
 
     // outlineShader->set("color", glm::vec3(1.f, 0.f, 0.f));
 
-    // Sort by nearest
+    glm::vec3 min, max;
+    bool first = true;
+
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
         InstanceRef inst = *it;
         if (inst->GetClass() != &Part::TYPE) continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (!part->selected) continue;
+
+        if (first)
+            min = part->position(), max = part->position();
+        first = false;
+
+        Vector3 aabbSize = part->GetAABB();
+        expandAABB(min, max, part->position() - aabbSize / 2.f);
+        expandAABB(min, max, part->position() + aabbSize / 2.f);
 
         glm::mat4 model = part->cframe;
         model = glm::scale(model, (glm::vec3)part->size + glm::vec3(0.2));
@@ -455,6 +467,22 @@ void renderOutlines() {
         OUTLINE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, OUTLINE_MESH->vertexCount);
     }
+
+    // Render AABB of selected parts
+    if (first) return;
+    
+    glm::vec3 outlineSize, outlinePos;
+    outlineSize = (max - min);
+    outlinePos = (max + min) / 2.f;
+
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), outlinePos);
+    model = glm::scale(model, outlineSize + glm::vec3(0.1));
+    outlineShader->set("model", model);
+    outlineShader->set("scale", outlineSize + glm::vec3(0.05));
+    outlineShader->set("thickness", 0.2f);
+
+    OUTLINE_MESH->bind();
+    glDrawArrays(GL_TRIANGLES, 0, OUTLINE_MESH->vertexCount);
 }
 
 void renderRotationArcs() {

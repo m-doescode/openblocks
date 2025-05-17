@@ -101,3 +101,20 @@ void get_closest_points_between_segments(const glm::vec3 &p_p0, const glm::vec3 
 	r_ps = (1 - s) * p_p0 + s * p_p1;
 	r_qt = (1 - t) * p_q0 + t * p_q1;
 }
+
+void expandAABB(glm::vec3& min, glm::vec3& max, glm::vec3 point) {
+	min = glm::vec3(glm::min(min.x, point.x), glm::min(min.y, point.y), glm::min(min.z, point.z));
+	max = glm::vec3(glm::max(max.x, point.x), glm::max(max.y, point.y), glm::max(max.z, point.z));
+}
+
+void computeAABBFromPoints(glm::vec3& min, glm::vec3& max, glm::vec3* points, int count) {
+	if (count == 0) return;
+
+	min = points[0];
+	max = points[0];
+
+	for (int i = 0; i < count; i++) {
+		min = glm::vec3(glm::min(min.x, points[i].x), glm::min(min.y, points[i].y), glm::min(min.z, points[i].z));
+		max = glm::vec3(glm::max(max.x, points[i].x), glm::max(max.y, points[i].y), glm::max(max.z, points[i].z));
+	}
+}
