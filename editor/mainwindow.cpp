@@ -100,16 +100,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connectActionHandlers();
-    
-    // Update handles
-    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        editorToolHandles->adornee = {};
-        if (newSelection.size() == 0) return;
-        InstanceRef inst = newSelection[0].lock();
-        if (inst->GetClass() != &Part::TYPE) return;
-
-        editorToolHandles->adornee = std::dynamic_pointer_cast<Part>(inst);
-    });
 
     // Update properties
     addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
@@ -456,11 +446,11 @@ void MainWindow::updateToolbars() {
     ui->actionGridSnap05->setChecked(snappingMode == GridSnappingMode::SNAP_05_STUDS);
     ui->actionGridSnapOff->setChecked(snappingMode == GridSnappingMode::SNAP_OFF);
 
-    editorToolHandles->worldMode = (selectedTool == TOOL_SCALE || selectedTool == TOOL_ROTATE) ? false : worldSpaceTransforms;
-    editorToolHandles->nixAxes = selectedTool == TOOL_ROTATE;
+    editorToolHandles.worldMode = (selectedTool == TOOL_SCALE || selectedTool == TOOL_ROTATE) ? false : worldSpaceTransforms;
+    editorToolHandles.nixAxes = selectedTool == TOOL_ROTATE;
 
-    editorToolHandles->active = selectedTool > TOOL_SELECT && selectedTool < TOOL_SMOOTH;
-    editorToolHandles->handlesType =
+    editorToolHandles.active = selectedTool > TOOL_SELECT && selectedTool < TOOL_SMOOTH;
+    editorToolHandles.handlesType =
       selectedTool == TOOL_MOVE ? HandlesType::MoveHandles
     : selectedTool == TOOL_SCALE ? HandlesType::ScaleHandles
     : selectedTool == TOOL_ROTATE ? HandlesType::RotateHandles

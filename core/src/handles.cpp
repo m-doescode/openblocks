@@ -3,6 +3,7 @@
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
 #include <glm/ext/scalar_common.hpp>
+#include <memory>
 #include <optional>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
@@ -23,16 +24,23 @@ static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 
 static rp3d::PhysicsCommon common;
 static rp3d::PhysicsWorld* world = common.createPhysicsWorld();
 
-Handles::Handles(): Instance(&TYPE) {
+std::shared_ptr<Part> getHandleAdornee() {
+    for (std::weak_ptr<Instance> inst : getSelection()) {
+        if (!inst.expired() && inst.lock()->IsA<Part>())
+            return inst.lock()->CastTo<Part>().expect();
+    }
+
+    return {};
 }
 
-CFrame Handles::GetCFrameOfHandle(HandleFace face) {
-    if (adornee.expired()) return CFrame(glm::vec3(0,0,0), (Vector3)glm::vec3(0,0,0));
+CFrame getCFrameOfHandle(HandleFace face) {
+    auto adornee = getHandleAdornee();
+    if (adornee == nullptr) return CFrame(glm::vec3(0,0,0), (Vector3)glm::vec3(0,0,0));
 
-    CFrame localFrame = worldMode ? CFrame::IDENTITY + adornee.lock()->position() : adornee.lock()->cframe;
+    CFrame localFrame = editorToolHandles.worldMode ? CFrame::IDENTITY + adornee->position() : adornee->cframe;
 
     Vector3 handleNormal = face.normal;
-    if (nixAxes)
+    if (editorToolHandles.nixAxes)
         handleNormal = XYZToZXY * face.normal;
 
     // We don't want this to align with local * face.normal, or else we have problems.
@@ -40,35 +48,36 @@ CFrame Handles::GetCFrameOfHandle(HandleFace face) {
     if (glm::abs(glm::dot(glm::vec3(localFrame.Rotation() * handleNormal), upAxis)) > 0.9999f)
         upAxis = glm::vec3(0, 1, 0);
 
-    glm::vec3 partSize = handlesType == HandlesType::RotateHandles ? glm::vec3(glm::max(adornee.lock()->size.x, adornee.lock()->size.y, adornee.lock()->size.z)) : adornee.lock()->size;
-    Vector3 handleOffset = this->worldMode ? ((Vector3::ONE * 2.f) + adornee.lock()->GetAABB() * 0.5f) : Vector3(2.f + partSize * 0.5f);
+    glm::vec3 partSize = editorToolHandles.handlesType == HandlesType::RotateHandles ? glm::vec3(glm::max(adornee->size.x, adornee->size.y, adornee->size.z)) : adornee->size;
+    Vector3 handleOffset = editorToolHandles.worldMode ? ((Vector3::ONE * 2.f) + adornee->GetAABB() * 0.5f) : Vector3(2.f + partSize * 0.5f);
     Vector3 handlePos = localFrame * (handleOffset * handleNormal);
     CFrame cframe(handlePos, handlePos + localFrame.Rotation() * -handleNormal, upAxis);
 
     return cframe;
 }
 
-CFrame Handles::PartCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
-    if (adornee.expired()) return CFrame(glm::vec3(0,0,0), (Vector3)glm::vec3(0,0,0));
+CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
+    auto adornee = getHandleAdornee();
+    if (adornee == nullptr) return CFrame(glm::vec3(0,0,0), (Vector3)glm::vec3(0,0,0));
 
-    CFrame localFrame = worldMode ? CFrame::IDENTITY + adornee.lock()->position() : adornee.lock()->cframe;
+    CFrame localFrame = editorToolHandles.worldMode ? CFrame::IDENTITY + adornee->position() : adornee->cframe;
     CFrame inverseFrame = localFrame.Inverse();
-    Vector3 handleOffset = this->worldMode ? ((Vector3::ONE * 2.f) + adornee.lock()->GetAABB() * 0.5f) : Vector3(2.f + adornee.lock()->size * 0.5f);
+    Vector3 handleOffset = editorToolHandles.worldMode ? ((Vector3::ONE * 2.f) + adornee->GetAABB() * 0.5f) : Vector3(2.f + adornee->size * 0.5f);
 
     Vector3 handlePos = localFrame * (handleOffset * face.normal);
 
     // glm::vec3 localPos = inverseFrame * newPos;
     glm::vec3 newPartPos = newPos - localFrame.Rotation() * (handleOffset * face.normal);
-    return adornee.lock()->cframe.Rotation() + newPartPos;
+    return adornee->cframe.Rotation() + newPartPos;
 }
 
-std::optional<HandleFace> Handles::RaycastHandle(rp3d::Ray ray) {
+std::optional<HandleFace> raycastHandle(rp3d::Ray ray) {
     for (HandleFace face : HandleFace::Faces) {
-        CFrame cframe = GetCFrameOfHandle(face);
+        CFrame cframe = getCFrameOfHandle(face);
         // Implement manual detection via boxes instead of... this shit
         // This code also hardly works, and is not good at all... Hooo nope.
         rp3d::RigidBody* body = world->createRigidBody(CFrame::IDENTITY + cframe.Position());
-        body->addCollider(common.createBoxShape(cframe.Rotation() * Vector3(HandleSize(face) / 2.f)), rp3d::Transform::identity());
+        body->addCollider(common.createBoxShape(cframe.Rotation() * Vector3(handleSize(face) / 2.f)), rp3d::Transform::identity());
 
         rp3d::RaycastInfo info;
         if (body->raycast(ray, info)) {
@@ -82,8 +91,8 @@ std::optional<HandleFace> Handles::RaycastHandle(rp3d::Ray ray) {
     return std::nullopt;
 }
 
-Vector3 Handles::HandleSize(HandleFace face) {
-    if (handlesType == HandlesType::MoveHandles)
+Vector3 handleSize(HandleFace face) {
+    if (editorToolHandles.handlesType == HandlesType::MoveHandles)
         return glm::vec3(0.5f, 0.5f, 2.f);
     return glm::vec3(1,1,1);
 }

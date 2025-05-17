@@ -16,7 +16,7 @@
 
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
-#include "objects/handles.h"
+#include "handles.h"
 #include "rendering/torus.h"
 #include "shader.h"
 #include "mesh.h"
@@ -266,7 +266,7 @@ void renderSkyBox() {
 }
 
 void renderHandles() {
-    if (editorToolHandles->adornee.expired() || !editorToolHandles->active) return;
+    if (!editorToolHandles.active) return;
 
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);
@@ -292,8 +292,8 @@ void renderHandles() {
     handleShader->set("viewPos", camera.cameraPos);
 
     for (auto face : HandleFace::Faces) {
-        glm::mat4 model = editorToolHandles->GetCFrameOfHandle(face);
-        model = glm::scale(model, (glm::vec3)editorToolHandles->HandleSize(face));
+        glm::mat4 model = getCFrameOfHandle(face);
+        model = glm::scale(model, (glm::vec3)handleSize(face));
         handleShader->set("model", model);
         handleShader->set("material", Material {
             .diffuse = glm::abs(face.normal),
@@ -303,7 +303,7 @@ void renderHandles() {
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         handleShader->set("normalMatrix", normalMatrix);
 
-        if (editorToolHandles->handlesType == HandlesType::MoveHandles) {
+        if (editorToolHandles.handlesType == HandlesType::MoveHandles) {
             ARROW_MESH->bind();
             glDrawArrays(GL_TRIANGLES, 0, ARROW_MESH->vertexCount);
         } else {
@@ -319,7 +319,7 @@ void renderHandles() {
     identityShader->set("aColor", glm::vec3(0.f, 1.f, 1.f));
     
     for (auto face : HandleFace::Faces) {
-        CFrame cframe = editorToolHandles->GetCFrameOfHandle(face);
+        CFrame cframe = getCFrameOfHandle(face);
         glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
 
         if (screenPos.z < 0) continue;
@@ -458,7 +458,7 @@ void renderOutlines() {
 }
 
 void renderRotationArcs() {
-    if (editorToolHandles->adornee.expired() || editorToolHandles->handlesType != HandlesType::RotateHandles) return;
+    if (!editorToolHandles.active || editorToolHandles.handlesType != HandlesType::RotateHandles) return;
 
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);

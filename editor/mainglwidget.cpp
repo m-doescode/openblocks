@@ -5,6 +5,7 @@
 #include <qsoundeffect.h>
 #include <string>
 #include "mainglwidget.h"
+#include "handles.h"
 #include "logger.h"
 #include "mainwindow.h"
 #include "common.h"
@@ -171,21 +172,21 @@ inline glm::vec3 vec3fy(glm::vec4 vec) {
 
 // Taken from Godot's implementation of moving handles (godot/editor/plugins/gizmos/gizmo_3d_helper.cpp)
 void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
-    if (!isMouseDragging || !draggingHandle|| editorToolHandles->adornee.expired() || !editorToolHandles->active) return;
+    if (!isMouseDragging || !draggingHandle|| !editorToolHandles.active) return;
 
     QPoint position = evt->pos();
 
-    auto part = editorToolHandles->adornee.lock();
+    auto part = getHandleAdornee();
 
     // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
-    CFrame handleCFrame = editorToolHandles->GetCFrameOfHandle(draggingHandle.value());
+    CFrame handleCFrame = getCFrameOfHandle(draggingHandle.value());
     
     // Current frame. Identity frame if worldMode == true, selected object's frame if worldMode == false
-    CFrame frame = editorToolHandles->worldMode ? CFrame::IDENTITY + part->position() : part->cframe.Rotation();
+    CFrame frame = editorToolHandles.worldMode ? CFrame::IDENTITY + part->position() : part->cframe.Rotation();
 
     // Segment from axis stretching -4096 to +4096 rel to handle's position 
     glm::vec3 axisSegment0 = handleCFrame.Position() + (-handleCFrame.LookVector() * 4096.0f);
@@ -200,7 +201,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
 
     // Find new part position
-    glm::vec3 centerPoint = editorToolHandles->PartCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
+    glm::vec3 centerPoint = partCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
 
     // Apply snapping in the current frame
     glm::vec3 diff = centerPoint - (glm::vec3)part->position();
@@ -258,10 +259,10 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
 glm::vec2 startPoint;
 void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
-    if (!isMouseDragging || !draggingHandle || editorToolHandles->adornee.expired() || !editorToolHandles->active) return;
+    if (!isMouseDragging || !draggingHandle || !editorToolHandles.active) return;
 
     glm::vec2 destPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-    auto part = editorToolHandles->adornee.lock();
+    auto part = getHandleAdornee();
 
     // Calculate part pos as screen point
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 1000.0f);
@@ -299,8 +300,8 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
-    if (editorToolHandles->adornee.expired() || !editorToolHandles->active) return std::nullopt;
-    return editorToolHandles->RaycastHandle(rp3d::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
+    if (!editorToolHandles.active) return std::nullopt;
+    return ::raycastHandle(rp3d::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
 }
 
 void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
@@ -363,7 +364,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
             startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-            initialFrame = editorToolHandles->adornee.lock()->cframe;
+            initialFrame = getHandleAdornee()->cframe;
             isMouseDragging = true;
             draggingHandle = handle;
             return;

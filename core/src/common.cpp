@@ -11,7 +11,7 @@ std::shared_ptr<DataModel> gDataModel = DataModel::New();
 std::shared_ptr<DataModel> editModeDataModel = gDataModel;
 std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
-std::shared_ptr<Handles> editorToolHandles = Handles::New();
+Handles editorToolHandles;
 
 
 std::vector<InstanceRefWeak> currentSelection;

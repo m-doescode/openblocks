@@ -1,6 +1,6 @@
 #pragma once
 #include "objects/base/instance.h"
-#include "objects/handles.h"
+#include "handles.h"
 #include "objects/workspace.h"
 #include "objects/datamodel.h"
 #include "camera.h"
@@ -22,7 +22,7 @@ extern std::shared_ptr<DataModel> editModeDataModel;
 inline std::shared_ptr<Workspace> gWorkspace() { return std::dynamic_pointer_cast<Workspace>(gDataModel->services["Workspace"]); }
 extern std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 extern std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
-extern std::shared_ptr<Handles> editorToolHandles;
+extern Handles editorToolHandles;
 
 void setSelection(std::vector<InstanceRefWeak> newSelection, bool fromExplorer = false);
 const std::vector<InstanceRefWeak> getSelection();
