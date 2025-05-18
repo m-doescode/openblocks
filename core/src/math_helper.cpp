@@ -118,3 +118,8 @@ void computeAABBFromPoints(glm::vec3& min, glm::vec3& max, glm::vec3* points, in
 		max = glm::vec3(glm::max(max.x, points[i].x), glm::max(max.y, points[i].y), glm::max(max.z, points[i].z));
 	}
 }
+
+void getAABBCoords(glm::vec3 &pos, glm::vec3 &size, glm::vec3 min, glm::vec3 max) {
+	pos = (max + min) / 2.f;
+	size = (max - min);
+}

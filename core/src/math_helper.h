@@ -6,3 +6,4 @@ void get_closest_points_between_segments(const glm::vec3 &p_p0, const glm::vec3 
 
 void expandAABB(glm::vec3& min, glm::vec3& max, glm::vec3 point);
 void computeAABBFromPoints(glm::vec3& min, glm::vec3& max, glm::vec3* points, int count);
+void getAABBCoords(glm::vec3& pos, glm::vec3& size, glm::vec3 min, glm::vec3 max);

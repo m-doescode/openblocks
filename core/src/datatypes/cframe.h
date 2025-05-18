@@ -30,6 +30,11 @@ namespace Data {
 
         // Same as CFrame(position, position + toward), but makes sure that up and toward are not linearly dependant
         static CFrame pointToward(Vector3 position, Vector3 toward);
+        // Creates a cframe looking at position + toward, whilst aligning its up to up.
+        // If up and toward are approximately linearly dependent (their absolute dot product > 0.999),
+        // then the right is used instead
+        // Up and right must NOT be linearly dependent
+        static CFrame pointAligned(Vector3 position, Vector3 toward, Vector3 up, Vector3 right);
 
         DEF_DATA_PROP static const CFrame IDENTITY;
         static const CFrame YToZ;

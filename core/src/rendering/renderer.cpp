@@ -266,6 +266,8 @@ void renderSkyBox() {
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
+static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
+
 void renderHandles() {
     if (!editorToolHandles.active) return;
 
@@ -293,11 +295,11 @@ void renderHandles() {
     handleShader->set("viewPos", camera.cameraPos);
 
     for (auto face : HandleFace::Faces) {
-        glm::mat4 model = getCFrameOfHandle(face);
+        glm::mat4 model = getHandleCFrame(face);
         model = glm::scale(model, (glm::vec3)handleSize(face));
         handleShader->set("model", model);
         handleShader->set("material", Material {
-            .diffuse = glm::abs(face.normal),
+            .diffuse = editorToolHandles.handlesType == HandlesType::RotateHandles ? (glm::vec3)(XYZToZXY * glm::abs(face.normal)) : glm::abs(face.normal),
             .specular = glm::vec3(0.5f, 0.5f, 0.5f),
             .shininess = 16.0f,
         });
@@ -320,7 +322,7 @@ void renderHandles() {
     identityShader->set("aColor", glm::vec3(0.f, 1.f, 1.f));
     
     for (auto face : HandleFace::Faces) {
-        CFrame cframe = getCFrameOfHandle(face);
+        CFrame cframe = getHandleCFrame(face);
         glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
 
         if (screenPos.z < 0) continue;

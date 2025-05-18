@@ -64,7 +64,11 @@ const Data::String Data::CFrame::ToString() const {
 }
 
 Data::CFrame Data::CFrame::pointToward(Vector3 position, Vector3 toward) {
-    return Data::CFrame(position, position + toward, (abs(glm::dot((glm::vec3)toward, glm::vec3(0, 1, 0))) > 0.999) ? glm::vec3(0, 0, 1) : glm::vec3(0, 1, 0));
+    return Data::CFrame(position, position + toward, (abs(toward.Dot(Vector3(0, 1, 0))) > 0.999) ? Vector3(0, 0, 1) : Vector3(0, 1, 0));
+}
+
+Data::CFrame Data::CFrame::pointAligned(Vector3 position, Vector3 toward, Vector3 up, Vector3 right) {
+    return Data::CFrame(position, position + toward, (abs(toward.Dot(up)) > 0.999) ? right : up);
 }
 
 Data::CFrame::operator glm::mat4() const {

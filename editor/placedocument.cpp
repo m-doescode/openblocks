@@ -133,5 +133,5 @@ void PlaceDocument::init() {
     std::shared_ptr<Script> script = Script::New();
     gWorkspace()->AddChild(script);
     MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
-    mainWnd->openScriptDocument(script);
+    // mainWnd->openScriptDocument(script);
 }

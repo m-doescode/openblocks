@@ -2,6 +2,7 @@
 #include "common.h"
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
+#include "math_helper.h"
 #include <glm/ext/scalar_common.hpp>
 #include <memory>
 #include <optional>
@@ -33,29 +34,6 @@ std::shared_ptr<Part> getHandleAdornee() {
     return {};
 }
 
-CFrame getCFrameOfHandle(HandleFace face) {
-    auto adornee = getHandleAdornee();
-    if (adornee == nullptr) return CFrame(glm::vec3(0,0,0), (Vector3)glm::vec3(0,0,0));
-
-    CFrame localFrame = editorToolHandles.worldMode ? CFrame::IDENTITY + adornee->position() : adornee->cframe;
-
-    Vector3 handleNormal = face.normal;
-    if (editorToolHandles.nixAxes)
-        handleNormal = XYZToZXY * face.normal;
-
-    // We don't want this to align with local * face.normal, or else we have problems.
-    glm::vec3 upAxis(0, 0, 1);
-    if (glm::abs(glm::dot(glm::vec3(localFrame.Rotation() * handleNormal), upAxis)) > 0.9999f)
-        upAxis = glm::vec3(0, 1, 0);
-
-    glm::vec3 partSize = editorToolHandles.handlesType == HandlesType::RotateHandles ? glm::vec3(glm::max(adornee->size.x, adornee->size.y, adornee->size.z)) : adornee->size;
-    Vector3 handleOffset = editorToolHandles.worldMode ? ((Vector3::ONE * 2.f) + adornee->GetAABB() * 0.5f) : Vector3(2.f + partSize * 0.5f);
-    Vector3 handlePos = localFrame * (handleOffset * handleNormal);
-    CFrame cframe(handlePos, handlePos + localFrame.Rotation() * -handleNormal, upAxis);
-
-    return cframe;
-}
-
 CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
     auto adornee = getHandleAdornee();
     if (adornee == nullptr) return CFrame(glm::vec3(0,0,0), (Vector3)glm::vec3(0,0,0));
@@ -73,7 +51,7 @@ CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
 
 std::optional<HandleFace> raycastHandle(rp3d::Ray ray) {
     for (HandleFace face : HandleFace::Faces) {
-        CFrame cframe = getCFrameOfHandle(face);
+        CFrame cframe = getHandleCFrame(face);
         // Implement manual detection via boxes instead of... this shit
         // This code also hardly works, and is not good at all... Hooo nope.
         rp3d::RigidBody* body = world->createRigidBody(CFrame::IDENTITY + cframe.Position());
@@ -95,4 +73,64 @@ Vector3 handleSize(HandleFace face) {
     if (editorToolHandles.handlesType == HandlesType::MoveHandles)
         return glm::vec3(0.5f, 0.5f, 2.f);
     return glm::vec3(1,1,1);
+}
+
+static int getAABBOfSelection(glm::vec3& pos, glm::vec3& size, glm::vec3& min, glm::vec3& max) {
+    int count = 0;
+    for (std::weak_ptr<Instance> inst : getSelection()) {
+        if (inst.expired() || !inst.lock()->IsA<Part>()) continue;
+        std::shared_ptr<Part> part = inst.lock()->CastTo<Part>().expect();
+
+        if (count == 0)
+            min = part->position(), max = part->position();
+        count++;
+
+        Vector3 aabbSize = part->GetAABB();
+        expandAABB(min, max, part->position() - aabbSize / 2.f);
+        expandAABB(min, max, part->position() + aabbSize / 2.f);
+    }
+
+    getAABBCoords(pos, size, min, max);
+
+    return count;
+}
+
+static std::shared_ptr<Part> getFirstSelectedPart() {
+    for (std::weak_ptr<Instance> inst : getSelection()) {
+        if (inst.expired() || !inst.lock()->IsA<Part>()) continue;
+        
+        return inst.lock()->CastTo<Part>().expect();
+    }
+
+    return {};
+}
+
+CFrame getLocalHandleCFrame(HandleFace face) {
+    glm::vec3 _boxPos, boxSize, _boxMin, _boxMax;
+    int count = getAABBOfSelection(_boxPos, boxSize, _boxMin, _boxMax);
+
+    Vector3 size;
+    if (count == 1 && !editorToolHandles.worldMode)
+        size = getFirstSelectedPart()->size;
+    else
+        size = boxSize;
+
+    // Since rotation displays rings, all handles must be the same distance from origin in order for the
+    // rings to be circular
+    if (editorToolHandles.handlesType == HandlesType::RotateHandles)
+        size = Vector3::ONE * fmax(fmax(size.X(), size.Y()), size.Z());
+
+    CFrame cframe = CFrame::pointToward(face.normal * ((glm::vec3)size * 0.5f + 2.f), -face.normal);
+    return cframe;
+}
+
+CFrame getHandleCFrame(HandleFace face) {
+    glm::vec3 boxPos, boxSize, _boxMin, _boxMax;
+    int count = getAABBOfSelection(boxPos, boxSize, _boxMin, _boxMax);
+
+    if (count == 1 && !editorToolHandles.worldMode) {
+        auto part = getFirstSelectedPart();
+        return part->cframe * getLocalHandleCFrame(face);
+    } else
+        return getLocalHandleCFrame(face) + boxPos;
 }

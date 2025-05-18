@@ -183,7 +183,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
-    CFrame handleCFrame = getCFrameOfHandle(draggingHandle.value());
+    CFrame handleCFrame = getHandleCFrame(draggingHandle.value());
     
     // Current frame. Identity frame if worldMode == true, selected object's frame if worldMode == false
     CFrame frame = editorToolHandles.worldMode ? CFrame::IDENTITY + part->position() : part->cframe.Rotation();
@@ -283,14 +283,16 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     if (snappingFactor() > 0)
         angle = roundf(angle * 4 / PI / snappingFactor()) / 4 * PI * snappingFactor();
 
+    glm::vec3 handleNormal = XYZToZXY * glm::abs(draggingHandle->normal);
+
     // Checks if the rotation axis is facing towards, or away from the camera
     // If it pointing away from the camera, then we need to invert the angle change
-    glm::vec4 rotationAxis = projection * view * glm::vec4((glm::vec3)(initialFrame * glm::abs(draggingHandle->normal)), 1.f);
+    glm::vec4 rotationAxis = projection * view * glm::vec4((glm::vec3)(initialFrame * handleNormal), 1.f);
     rotationAxis /= rotationAxis.w;
     glm::vec4 signVec = glm::normalize(rotationAxis - partCenterRaw);
     float sign = -glm::sign(signVec.z);
 
-    glm::vec3 angles = glm::abs(draggingHandle->normal) * sign * glm::vec3(angle);
+    glm::vec3 angles = handleNormal * sign * glm::vec3(angle);
 
     part->cframe = initialFrame * CFrame::FromEulerAnglesXYZ(-angles);
 
