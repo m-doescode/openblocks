@@ -17,8 +17,23 @@
 #include "mainwindow.h"
 #include "objects/script.h"
 #include "datatypes/meta.h"
+#include <QPalette>
+#include <QStyleHints>
 
 QsciAPIs* makeApis(QsciLexer*);
+
+inline bool isDarkMode() {
+    // https://stackoverflow.com/a/78854851/16255372
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+        const auto scheme = QGuiApplication::styleHints()->colorScheme();
+        return scheme == Qt::ColorScheme::Dark;
+    #else
+        const QPalette defaultPalette;
+        const auto text = defaultPalette.color(QPalette::WindowText);
+        const auto window = defaultPalette.color(QPalette::Window);
+        return text.lightness() > window.lightness();
+    #endif // QT_VERSION
+}
 
 std::map<int, const QColor> DARK_MODE_COLOR_SCHEME = {{
     {QsciLexerLua::Comment, QColor("#808080")},
@@ -156,8 +171,10 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 
     // Set color scheme
     // https://stackoverflow.com/a/26318796/16255372
-    for (auto& [style, color] : DARK_MODE_COLOR_SCHEME) {
-        lexer->setColor(color, style);
+    if (isDarkMode()) {
+        for (auto& [style, color] : DARK_MODE_COLOR_SCHEME) {
+            lexer->setColor(color, style);
+        }
     }
 
     // lexer->setAutoIndentStyle(QsciScintilla::AiOpening | QsciScintilla::AiMaintain | QsciScintilla::AiClosing);

@@ -23,6 +23,7 @@
 bool worldSpaceTransforms = false;
 
 inline bool isDarkMode() {
+    // https://stackoverflow.com/a/78854851/16255372
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     const auto scheme = QGuiApplication::styleHints()->colorScheme();
     return scheme == Qt::ColorScheme::Dark;
@@ -62,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setMouseTracking(true);
 
-    // https://stackoverflow.com/a/78854851/16255372
     QIcon::setThemeSearchPaths(QIcon::themeSearchPaths() + QStringList { "./assets/icons" });
     if (isDarkMode())
         QIcon::setFallbackThemeName("editor-dark");
