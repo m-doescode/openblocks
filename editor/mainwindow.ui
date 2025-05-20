@@ -680,7 +680,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="surface-weld"/>
+    <iconset theme="surface-hinge"/>
    </property>
    <property name="text">
     <string>Hinge</string>
@@ -697,7 +697,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="surface-weld"/>
+    <iconset theme="surface-motor"/>
    </property>
    <property name="text">
     <string>Motor</string>
