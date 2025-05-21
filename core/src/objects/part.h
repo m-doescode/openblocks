@@ -92,7 +92,8 @@ public:
     DEF_PROP float frontParamB = 0.5;
     DEF_PROP float backParamB = 0.5;
 
-    DEF_SIGNAL SignalSource OnParentUpdated;
+    DEF_SIGNAL SignalSource Touched;
+    DEF_SIGNAL SignalSource TouchEnded;
 
     rp::RigidBody* rigidBody = nullptr;
     

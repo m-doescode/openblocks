@@ -1,4 +1,6 @@
 #include "workspace.h"
+#include "datatypes/meta.h"
+#include "datatypes/ref.h"
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
 #include "objects/jointsservice.h"
@@ -6,16 +8,38 @@
 #include "objects/datamodel.h"
 #include "physics/util.h"
 #include <memory>
+#include <reactphysics3d/collision/CollisionCallback.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
 rp::PhysicsCommon* Workspace::physicsCommon = new rp::PhysicsCommon;
 
-Workspace::Workspace(): Service(&TYPE) {
+Workspace::Workspace(): Service(&TYPE), physicsEventListener(this) {
 }
 
 Workspace::~Workspace() {
     if (physicsWorld && physicsCommon)
         physicsCommon->destroyPhysicsWorld(physicsWorld);
+}
+
+PhysicsEventListener::PhysicsEventListener(Workspace* parent) : workspace(parent) {}
+
+void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& data) {
+    for (int i = 0; i < data.getNbContactPairs(); i++) {
+        auto pair = data.getContactPair(i);
+        auto type = pair.getEventType();
+        if (type == rp::CollisionCallback::ContactPair::EventType::ContactStay) continue;
+
+        auto part0 = reinterpret_cast<Part*>(pair.getBody1()->getUserData())->shared<Part>();
+        auto part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
+
+        if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart) {
+            part0->Touched->Fire({ (Data::Variant)Data::InstanceRef(part1) });
+            part1->Touched->Fire({ (Data::Variant)Data::InstanceRef(part0) });
+        } else if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit) {
+            part0->TouchEnded->Fire({ (Data::Variant)Data::InstanceRef(part1) });
+            part1->TouchEnded->Fire({ (Data::Variant)Data::InstanceRef(part0) });
+        }
+    }
 }
 
 void Workspace::InitService() {
@@ -31,7 +55,7 @@ void Workspace::InitService() {
     // physicsWorld->setSleepLinearVelocity(10);
     // physicsWorld->setSleepAngularVelocity(5);
 
-    // physicsWorld->setEventListener(&eventListener);
+    physicsWorld->setEventListener(&physicsEventListener);
 
     // Sync all parts
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
@@ -71,10 +95,17 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
 
     rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
 
-    if (part->rigidBody->getNbColliders() > 0)
+    // Recreate the rigidbody if the shape changes
+    if (part->rigidBody->getNbColliders() > 0
+        && dynamic_cast<rp::BoxShape*>(part->rigidBody->getCollider(0)->getCollisionShape())->getHalfExtents() != shape->getHalfExtents()) {
+        // TODO: This causes Touched to get called twice. Fix this.
         part->rigidBody->removeCollider(part->rigidBody->getCollider(0));
+        part->rigidBody->addCollider(shape, rp::Transform());
+    }
 
-    part->rigidBody->addCollider(shape, rp::Transform());
+    if (part->rigidBody->getNbColliders() == 0)
+        part->rigidBody->addCollider(shape, rp::Transform());
+
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
     part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
 

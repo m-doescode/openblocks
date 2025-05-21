@@ -88,8 +88,6 @@ protected:
     // NOTE: This value is not necessarily present if dataModel is present
     // Objects under services other than workspace will NOT have this field set
     std::optional<std::shared_ptr<Workspace>> workspace();
-
-    template <typename T> inline std::shared_ptr<T> shared() { return std::dynamic_pointer_cast<T>(this->shared_from_this()); }
 public:
     const static InstanceType TYPE;
     std::string name;
@@ -108,6 +106,8 @@ public:
     bool IsA(std::string className);
     template <typename T> bool IsA() { return IsA(T::TYPE.className); }
     
+    template <typename T> inline std::shared_ptr<T> shared() { return std::dynamic_pointer_cast<T>(this->shared_from_this()); }
+
     DescendantsIterator GetDescendantsStart();
     DescendantsIterator GetDescendantsEnd();
     // Utility functions

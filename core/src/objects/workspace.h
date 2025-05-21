@@ -5,6 +5,7 @@
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/engine/EventListener.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 
@@ -35,11 +36,22 @@ class RotateV;
 
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
 
+class Workspace;
+class PhysicsEventListener : public rp::EventListener {
+    friend Workspace;
+    Workspace* workspace;
+
+    PhysicsEventListener(Workspace*);
+
+    void onContact(const rp::CollisionCallback::CallbackData&) override;
+};
+
 class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     AUTOGEN_PREAMBLE
     
     rp::PhysicsWorld* physicsWorld = nullptr;
-    static rp::PhysicsCommon* physicsCommon; 
+    static rp::PhysicsCommon* physicsCommon;
+    PhysicsEventListener physicsEventListener;
 
     friend Part;
     friend Snap;
