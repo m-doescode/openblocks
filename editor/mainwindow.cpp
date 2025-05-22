@@ -82,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Logger
 
     Logger::addLogListener(std::bind(&MainWindow::handleLog, this, std::placeholders::_1, std::placeholders::_2));
+    Logger::addLogListener(std::bind(&MainWindow::handleLogTrace, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     QFont font("");
     font.setStyleHint(QFont::Monospace);
@@ -161,11 +162,18 @@ void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {
 
     if (logLevel == Logger::LogLevel::INFO)
         ui->outputTextView->appendHtml(QString("<p>%1</p>").arg(QString::fromStdString(message)));
+    if (logLevel == Logger::LogLevel::TRACE)
+        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(0, 127, 255);\">%1</p>").arg(QString::fromStdString(message)));
     if (logLevel == Logger::LogLevel::WARNING)
         ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 127, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
     if (logLevel == Logger::LogLevel::ERROR || logLevel == Logger::LogLevel::FATAL_ERROR)
         ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 0, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
 }
+
+void MainWindow::handleLogTrace(std::string message, std::string source, int line, void* userData) {
+    
+}
+
 
 void MainWindow::connectActionHandlers() {
     // Explorer View

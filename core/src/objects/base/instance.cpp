@@ -430,3 +430,16 @@ std::vector<std::pair<std::string, std::shared_ptr<Instance>>> Instance::GetRefe
 
     return referenceProperties;
 }
+
+std::string Instance::GetFullName() {
+    std::string currentName = name;
+    std::optional<std::shared_ptr<Instance>> currentParent = GetParent();
+
+    while (currentParent.has_value() && !currentParent.value()->IsA("DataModel")) {
+        currentName = currentParent.value()->name + "." + currentName;
+
+        currentParent = currentParent.value()->GetParent();
+    }
+
+    return currentName;
+}

@@ -4,9 +4,8 @@
 #include "datatypes/vector.h"
 #include "logger.h"
 #include "timeutil.h"
-#include <cstdint>
 #include <ctime>
-#include <chrono>
+#include <string>
 #include "lua.h"
 
 static int g_print(lua_State*);
@@ -128,6 +127,17 @@ void ScriptContext::RunSleepingThreads() {
         if (!deleted)
             i++;
     }
+}
+
+std::string ScriptContext::RegisterScriptSource(std::shared_ptr<Script> script) {
+    int id = lastScriptSourceId++;
+    scriptSources[id] = script;
+    return "=f" + std::to_string(id);
+}
+
+std::weak_ptr<Script> ScriptContext::GetScriptFromSource(std::string source) {
+    int id = std::stoi(source.c_str() + 2);
+    return scriptSources[id];
 }
 
 // https://www.lua.org/source/5.1/lbaselib.c.html

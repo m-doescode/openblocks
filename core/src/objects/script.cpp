@@ -22,7 +22,8 @@ Script::Script(): Instance(&TYPE) {
                 "workspace.Part.TouchEnded:Connect(function(otherPart)\n"
 	            "    print(\"Touched ended with: \", otherPart.Name)\n"
                 "end)\n"
-                "\n";
+                "\n"
+                "error(\"Test\")";
 }
 
 Script::~Script() {
@@ -57,12 +58,39 @@ void Script::Run() {
     lua_pop(Lt, 1); // _G
 
     // Load source and push onto thread stack as function ptr
-    luaL_loadstring(Lt, source.c_str());
+    // luaL_loadstring(Lt, source.c_str());
+    luaL_loadbuffer(Lt, source.c_str(), source.size(), scriptContext->RegisterScriptSource(shared<Script>()).c_str());
     
     int status = lua_resume(Lt, 0);
     if (status > LUA_YIELD) {
-        Logger::error(lua_tostring(Lt, -1));
+        lua_Debug dbg;
+        lua_getstack(Lt, 1, &dbg);
+        lua_getinfo(Lt, "S", &dbg);
+
+        std::weak_ptr<Script> source = scriptContext->GetScriptFromSource(dbg.source);
+
+        std::string errorMessage = lua_tostring(Lt, -1);
+        if (!source.expired())
+            errorMessage = source.lock()->GetFullName() + errorMessage.substr(errorMessage.find(':'));
+
+        Logger::error(errorMessage);
         lua_pop(Lt, 1); // Pop return value
+
+        Logger::traceStart();
+
+        int stack = 1;
+        while (lua_getstack(Lt, stack++, &dbg)) {
+            lua_getinfo(Lt, "nlSu", &dbg);
+            
+            std::weak_ptr<Script> source = scriptContext->GetScriptFromSource(dbg.source);
+            if (source.expired()) {
+                Logger::trace(dbg.source, dbg.currentline);
+            } else {
+                Logger::trace(source.lock()->GetFullName(), dbg.currentline, &source);
+            }
+        }
+
+        Logger::traceEnd();
     }
 
     lua_pop(L, 1); // Pop the thread
