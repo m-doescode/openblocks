@@ -130,6 +130,12 @@ void ScriptContext::RunSleepingThreads() {
 }
 
 std::string ScriptContext::RegisterScriptSource(std::shared_ptr<Script> script) {
+    // If it has already been registered, reference it here
+    for (auto& [id, script2] : scriptSources) {
+        if (!script2.expired() && script2.lock() == script)
+            return "=f" + std::to_string(id);
+    }
+
     int id = lastScriptSourceId++;
     scriptSources[id] = script;
     return "=f" + std::to_string(id);

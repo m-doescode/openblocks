@@ -5,8 +5,10 @@
 #include "objects/datamodel.h"
 #include "placedocument.h"
 #include "script/scriptdocument.h"
+#include <cstdio>
 #include <memory>
 #include <qclipboard.h>
+#include <qevent.h>
 #include <qglobal.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
@@ -15,6 +17,8 @@
 #include <qstylehints.h>
 #include <qmdisubwindow.h>
 #include <pugixml.hpp>
+#include <qtextcursor.h>
+#include <qtextedit.h>
 
 #ifdef _NDEBUG
 #define NDEBUG
@@ -79,27 +83,6 @@ MainWindow::MainWindow(QWidget *parent)
         this->close();
     });
 
-    // Logger
-
-    Logger::addLogListener(std::bind(&MainWindow::handleLog, this, std::placeholders::_1, std::placeholders::_2));
-    Logger::addLogListener(std::bind(&MainWindow::handleLogTrace, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-
-    QFont font("");
-    font.setStyleHint(QFont::Monospace);
-    ui->outputTextView->setFont(font);
-
-    ui->outputTextView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->outputTextView, &QWidget::customContextMenuRequested, [&](QPoint point) {
-        QMenu *menu = ui->outputTextView->createStandardContextMenu(point);
-
-        menu->addAction("Clear Output", [&]() {
-            ui->outputTextView->clear();
-        });
-
-        menu->exec(ui->outputTextView->mapToGlobal(point));
-        delete menu;
-    });
-
     connectActionHandlers();
 
     // Update properties
@@ -156,24 +139,6 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
     }
     #endif
 }
-
-void MainWindow::handleLog(Logger::LogLevel logLevel, std::string message) {
-    if (logLevel == Logger::LogLevel::DEBUG) return;
-
-    if (logLevel == Logger::LogLevel::INFO)
-        ui->outputTextView->appendHtml(QString("<p>%1</p>").arg(QString::fromStdString(message)));
-    if (logLevel == Logger::LogLevel::TRACE)
-        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(0, 127, 255);\">%1</p>").arg(QString::fromStdString(message)));
-    if (logLevel == Logger::LogLevel::WARNING)
-        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 127, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
-    if (logLevel == Logger::LogLevel::ERROR || logLevel == Logger::LogLevel::FATAL_ERROR)
-        ui->outputTextView->appendHtml(QString("<p style=\"color:rgb(255, 0, 0); font-weight: bold;\">%1</p>").arg(QString::fromStdString(message)));
-}
-
-void MainWindow::handleLogTrace(std::string message, std::string source, int line, void* userData) {
-    
-}
-
 
 void MainWindow::connectActionHandlers() {
     // Explorer View

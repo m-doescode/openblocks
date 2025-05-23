@@ -122,7 +122,7 @@
    <widget class="QWidget" name="dockWidgetContents_3">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <widget class="QPlainTextEdit" name="outputTextView">
+      <widget class="OutputTextView" name="outputTextView">
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -779,6 +779,11 @@
    <class>PropertiesView</class>
    <extends>QTreeView</extends>
    <header>panes/propertiesview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>OutputTextView</class>
+   <extends>QTextEdit</extends>
+   <header>panes/outputtextview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

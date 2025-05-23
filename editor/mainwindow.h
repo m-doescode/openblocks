@@ -64,8 +64,6 @@ private:
 
     void updateToolbars();
     void closeEvent(QCloseEvent* evt) override;
-    void handleLog(Logger::LogLevel, std::string);
-    void handleLogTrace(std::string, std::string, int, void*);
 
     void connectActionHandlers();
     

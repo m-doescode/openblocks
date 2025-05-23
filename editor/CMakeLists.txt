@@ -24,14 +24,16 @@ set(PROJECT_SOURCES
         mainwindow.ui
         mainglwidget.h
         mainglwidget.cpp
+        placedocument.h
+        placedocument.cpp
         panes/explorerview.h
         panes/explorerview.cpp
         panes/explorermodel.h
         panes/explorermodel.cpp
         panes/propertiesview.h
         panes/propertiesview.cpp
-        placedocument.h
-        placedocument.cpp
+        panes/outputtextview.h
+        panes/outputtextview.cpp
         script/scriptdocument.h
         script/scriptdocument.cpp
         ${TS_FILES}
