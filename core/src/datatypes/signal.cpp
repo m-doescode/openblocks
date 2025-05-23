@@ -16,38 +16,27 @@ SignalConnection::SignalConnection(std::weak_ptr<Signal> parent) : parentSignal(
 SignalConnection::~SignalConnection() = default;
 
 // Only used for its address
-int __savedCallbacks = 0;
 LuaSignalConnection::LuaSignalConnection(lua_State* L, std::weak_ptr<Signal> parent) : SignalConnection(parent) {
     state = L;
 
     // https://stackoverflow.com/a/31952046/16255372
-    // Create the table
-    if (__savedCallbacks == 0) {
-        lua_newtable(L);
-        __savedCallbacks = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
 
     // Save function so it doesn't get GC'd
-    lua_rawgeti(L, LUA_REGISTRYINDEX, __savedCallbacks);
-    lua_pushvalue(L, -2);
-    function = luaL_ref(L, -2);
-    lua_pop(L, 2);
+    function = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_pop(L, 1);
 }
 
 LuaSignalConnection::~LuaSignalConnection() {
     // Remove LuaSignalConnectionthread so that it can get properly GC'd
-    lua_rawgeti(state, LUA_REGISTRYINDEX, __savedCallbacks);
-    luaL_unref(state, -1, function);
-    lua_pop(state, 1); // Pop __savedCallbacks
+    luaL_unref(state, LUA_REGISTRYINDEX, function);
 }
 
 void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
     lua_State* thread = lua_newthread(state);
 
     // Push function
-    lua_rawgeti(thread, LUA_REGISTRYINDEX, __savedCallbacks);
-    lua_rawgeti(thread, -1, function);
-    lua_remove(thread, -2);
+    lua_rawgeti(thread, LUA_REGISTRYINDEX, function);
+    luaL_unref(thread, LUA_REGISTRYINDEX, function);
 
     for (Data::Variant arg : args) {
         arg.PushLuaValue(thread);
@@ -111,19 +100,9 @@ SignalConnectionRef Signal::Once(lua_State* state) {
 
 //
 
-int __waitingThreads = 0;
 int Signal::Wait(lua_State* thread) {
-    // If the table hasn't been constructed yet, make it
-    if (__waitingThreads == 0) {
-        lua_newtable(thread);
-        __waitingThreads = luaL_ref(thread, LUA_REGISTRYINDEX);
-    }
-
-    // Get waitingThreads table
-    lua_rawgeti(thread, LUA_REGISTRYINDEX, __waitingThreads);
     lua_pushthread(thread);
-    int threadId = luaL_ref(thread, -2);
-    lua_pop(thread, -1); // pop __waitingThreads
+    int threadId = luaL_ref(thread, LUA_REGISTRYINDEX);
     waitingThreads.push_back(std::make_pair(threadId, thread));
 
     // Yield and return results
@@ -157,9 +136,7 @@ void Signal::Fire(std::vector<Data::Variant> args) {
         }
 
         // Remove thread from registry
-        lua_rawgeti(thread, LUA_REGISTRYINDEX, __waitingThreads);
-        luaL_unref(thread, -1, threadId);
-        lua_pop(thread, 1); // pop __waitingThreads
+        luaL_unref(thread, LUA_REGISTRYINDEX, threadId);
     }
 
 }
@@ -180,9 +157,7 @@ void Signal::DisconnectAll() {
     onceConnections.clear();
 
     for (auto& [threadId, thread] : waitingThreads) {
-        lua_rawgeti(thread, LUA_REGISTRYINDEX, __waitingThreads);
-        luaL_unref(thread, -1, threadId);
-        lua_pop(thread, 1);
+        luaL_unref(thread, -1, LUA_REGISTRYINDEX);
     }
     waitingThreads.clear();
 }
