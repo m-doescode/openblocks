@@ -23,7 +23,6 @@ LuaSignalConnection::LuaSignalConnection(lua_State* L, std::weak_ptr<Signal> par
 
     // Save function so it doesn't get GC'd
     function = luaL_ref(L, LUA_REGISTRYINDEX);
-    lua_pop(L, 1);
 }
 
 LuaSignalConnection::~LuaSignalConnection() {
@@ -36,7 +35,6 @@ void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
 
     // Push function
     lua_rawgeti(thread, LUA_REGISTRYINDEX, function);
-    luaL_unref(thread, LUA_REGISTRYINDEX, function);
 
     for (Data::Variant arg : args) {
         arg.PushLuaValue(thread);
