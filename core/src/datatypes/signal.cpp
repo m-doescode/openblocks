@@ -2,6 +2,8 @@
 #include "datatypes/base.h"
 #include "meta.h"
 #include "lua.h"
+#include <cstdio>
+#include <luajit-2.1/lauxlib.h>
 #include <luajit-2.1/lua.h>
 #include <pugixml.hpp>
 #include <memory>
@@ -22,24 +24,36 @@ LuaSignalConnection::LuaSignalConnection(lua_State* L, std::weak_ptr<Signal> par
 
     // https://stackoverflow.com/a/31952046/16255372
 
-    // Save function so it doesn't get GC'd
+    // Save function and current thread so they don't get GC'd
     function = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_pushthread(L);
+    thread = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 LuaSignalConnection::~LuaSignalConnection() {
     // Remove LuaSignalConnectionthread so that it can get properly GC'd
     luaL_unref(state, LUA_REGISTRYINDEX, function);
+    luaL_unref(state, LUA_REGISTRYINDEX, thread);
 }
 
 static void stackdump(lua_State* L) {
-    for (int i = lua_gettop(L); i >= 1; i--) {
-        printf("Obj: %s\n", lua_typename(L, lua_type(L, i)));
+    printf("%d\n", lua_gettop(L));
+    fflush(stdout);
+    lua_getfield(L, LUA_GLOBALSINDEX, "tostring");
+    for (int i = lua_gettop(L)-1; i >= 1; i--) {
+        lua_pushvalue(L, -1);
+        lua_pushvalue(L, i);
+        lua_call(L, 1, 1);
+        const char* str = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        printf("%s: %s\n", lua_typename(L, lua_type(L, i)), str);
     }
+    lua_pop(L, 1);
     printf("\n\n");
+    fflush(stdout);
 }
 
 void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
-    // stackdump(state);
     lua_State* thread = lua_newthread(state);
 
     // Push function
