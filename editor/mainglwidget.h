@@ -26,6 +26,7 @@ protected:
     void handleLinearTransform(QMouseEvent* evt);
     void handleRotationalTransform(QMouseEvent* evt);
     void handleCursorChange(QMouseEvent* evt);
+    void startLinearTransform(QMouseEvent* evt);
     std::optional<HandleFace> raycastHandle(glm::vec3 pointDir);
 
     void wheelEvent(QWheelEvent* evt) override;

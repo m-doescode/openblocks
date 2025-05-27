@@ -16,8 +16,10 @@
 
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
+#include "datatypes/vector.h"
 #include "handles.h"
 #include "math_helper.h"
+#include "partassembly.h"
 #include "rendering/torus.h"
 #include "shader.h"
 #include "mesh.h"
@@ -442,10 +444,11 @@ void renderOutlines() {
     outlineShader->set("viewPos", camera.cameraPos);
     outlineShader->set("thickness", 0.4f);
 
-    // outlineShader->set("color", glm::vec3(1.f, 0.f, 0.f));
+    outlineShader->set("color", glm::vec3(0.204, 0.584, 0.922));
 
     glm::vec3 min, max;
     bool first = true;
+    int count = 0;
 
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
         InstanceRef inst = *it;
@@ -453,6 +456,7 @@ void renderOutlines() {
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (!part->selected) continue;
 
+        count++;
         if (first)
             min = part->position(), max = part->position();
         first = false;
@@ -471,7 +475,7 @@ void renderOutlines() {
     }
 
     // Render AABB of selected parts
-    if (first) return;
+    if (count <= 1) return;
     
     glm::vec3 outlineSize, outlinePos;
     outlineSize = (max - min);
@@ -481,6 +485,41 @@ void renderOutlines() {
     model = glm::scale(model, outlineSize + glm::vec3(0.1));
     outlineShader->set("model", model);
     outlineShader->set("scale", outlineSize + glm::vec3(0.05));
+    outlineShader->set("thickness", 0.2f);
+
+    OUTLINE_MESH->bind();
+    glDrawArrays(GL_TRIANGLES, 0, OUTLINE_MESH->vertexCount);
+}
+
+void renderSelectionAssembly() {
+    glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    PartAssembly selectionAssembly = PartAssembly::FromSelection();
+
+    // Use shader
+    outlineShader->use();
+
+    // view/projection transformations
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 view = camera.getLookAt();
+    outlineShader->set("projection", projection);
+    outlineShader->set("view", view);
+
+    // Pass in the camera position
+    outlineShader->set("viewPos", camera.cameraPos);
+    outlineShader->set("thickness", 0.4f);
+
+    outlineShader->set("color", glm::vec3(1.f, 0.f, 0.f));
+
+    glm::mat4 model = selectionAssembly.assemblyOrigin();
+    model = glm::scale(model, (glm::vec3)selectionAssembly.bounds() + glm::vec3(0.1));
+    outlineShader->set("model", model);
+    outlineShader->set("scale", (glm::vec3)selectionAssembly.bounds() + glm::vec3(0.05));
     outlineShader->set("thickness", 0.2f);
 
     OUTLINE_MESH->bind();
@@ -599,6 +638,7 @@ void render(GLFWwindow* window) {
     renderParts();
     renderSurfaceExtras();
     renderOutlines();
+    // renderSelectionAssembly();
     renderRotationArcs();
     if (wireframeRendering)
         renderWireframe();

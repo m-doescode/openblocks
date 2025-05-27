@@ -5,12 +5,14 @@
 #include <qsoundeffect.h>
 #include <string>
 #include "mainglwidget.h"
+#include "datatypes/vector.h"
 #include "handles.h"
 #include "logger.h"
 #include "mainwindow.h"
 #include "common.h"
 #include "math_helper.h"
 #include "objects/base/instance.h"
+#include "partassembly.h"
 #include "physics/util.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
@@ -171,6 +173,7 @@ inline glm::vec3 vec3fy(glm::vec4 vec) {
 }
 
 // Taken from Godot's implementation of moving handles (godot/editor/plugins/gizmos/gizmo_3d_helper.cpp)
+Vector3 dragStartHandleOffset;
 void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     if (!isMouseDragging || !draggingHandle|| !editorToolHandles.active) return;
 
@@ -183,7 +186,9 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
-    CFrame handleCFrame = getHandleCFrame(draggingHandle.value());
+    // We use lastDragStartPos instead to consider the mouse's actual position, rather than the center
+    // of the handle. That way, transformations are "smoother" and do not jump the first movement
+    CFrame handleCFrame = getHandleCFrame(draggingHandle.value()) + dragStartHandleOffset;
     
     // Current frame. Identity frame if worldMode == true, selected object's frame if worldMode == false
     CFrame frame = editorToolHandles.worldMode ? CFrame::IDENTITY + part->position() : part->cframe.Rotation();
@@ -200,60 +205,64 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 handlePoint, rb;
     get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
 
-    // Find new part position
-    glm::vec3 centerPoint = partCFrameFromHandlePos(draggingHandle.value(), handlePoint).Position();
+    // We transform the handlePoint to the handle's cframe, and get it's length (Z)
+    float diff = (handleCFrame.Inverse() * handlePoint).Z();
+    // Vector3 absDiff = ((Vector3)handlePoint - handleCFrame.Position()); // Commented out because it is functionally identical to the below
+    Vector3 absDiff = handleCFrame.Rotation() * Vector3(0, 0, diff);
 
-    // Apply snapping in the current frame
-    glm::vec3 diff = centerPoint - (glm::vec3)part->position();
-    if (snappingFactor()) diff = frame.Rotation() * (glm::round(glm::vec3(frame.Inverse().Rotation() * diff) / snappingFactor()) * snappingFactor());
-
-    Vector3 oldSize = part->size;
-
-    switch (mainWindow()->selectedTool) {
-        case TOOL_MOVE: {
-            // Add difference
-            part->cframe = part->cframe + diff;
-        } break;
-        
-        case TOOL_SCALE: {
-            // Find local difference
-            glm::vec3 localDiff = frame.Inverse() * diff;
-            // Find outwarwd difference
-            localDiff = localDiff * glm::sign(draggingHandle->normal);
-
-            // Special case: minimum size to size mod snapping factor
-            if (snappingFactor() > 0 && glm::all(glm::lessThan((part->size + localDiff) * glm::abs(draggingHandle->normal), glm::vec3(0.01f)))) {
-                // I tried something fancy here, but honestly I'm not smart enough. Return;
-                // glm::vec3 finalSize = part->size + localDiff;
-                // finalSize = glm::mod(finalSize * glm::abs(draggingHandle->normal), snappingFactor()) + finalSize * (glm::vec3(1) - glm::abs(draggingHandle->normal));
-                // localDiff = finalSize - part->size;
-                return;
-            }
-
-            // Minimum size of 0.01f
-            localDiff = glm::max(part->size + localDiff, 0.01f) - part->size;
-            diff = frame * (localDiff * glm::sign(draggingHandle->normal));
-
-            // Add local difference to size
-            part->size += localDiff;
-
-            // If ctrl is not pressed, offset the part by half the size difference to keep the other bound where it was originally
-            if (!(evt->modifiers() & Qt::ControlModifier)) 
-                part->cframe = part->cframe + diff * 0.5f;
-        } break;
-
-        default:
-        Logger::error("Invalid tool was set to be handled by handleLinearTransform\n");
+    // Apply snapping
+    if (snappingFactor() > 0) {
+        diff = round(diff / snappingFactor()) * snappingFactor();
+        absDiff = handleCFrame.Rotation() * Vector3(0, 0, diff);
     }
 
-    if (snappingFactor() != 0 && mainWindow()->editSoundEffects && (oldSize != part->size) && QFile::exists("./assets/excluded/switch.wav"))
-        playSound("./assets/excluded/switch.wav");
+    PartAssembly selectionAssembly = PartAssembly::FromSelection();
 
-    gWorkspace()->SyncPartPhysics(part);
-    part->UpdateProperty("Position");
-    part->UpdateProperty("Size");
-    sendPropertyUpdatedSignal(part, "Position", part->position());
-    sendPropertyUpdatedSignal(part, "Size", Vector3(part->size));
+    if (editorToolHandles.handlesType == MoveHandles) {
+        selectionAssembly.TransformBy(CFrame() + absDiff);
+    } else if (editorToolHandles.handlesType == ScaleHandles) {
+        if (evt->modifiers() & Qt::AltModifier) {
+            // If size gets too small, don't
+            if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff * 2.f), glm::vec3(0.001f))))
+                return;
+
+            selectionAssembly.Scale(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff * 2.f, diff > 0);
+        } else {
+            // If size gets too small, don't
+            if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff), glm::vec3(0.001f))))
+                return;
+
+            selectionAssembly.TransformBy(CFrame() + absDiff * 0.5f);
+            selectionAssembly.Scale(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff, diff > 0);
+        }
+    }
+}
+
+void MainGLWidget::startLinearTransform(QMouseEvent* evt) {
+    if (!editorToolHandles.active) return;
+
+    QPoint position = evt->pos();
+
+    // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
+
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    pointDir = glm::normalize(pointDir);
+
+    CFrame handleCFrame = getHandleCFrame(draggingHandle.value());
+
+    // Segment from axis stretching -4096 to +4096 rel to handle's position 
+    glm::vec3 axisSegment0 = handleCFrame.Position() + (-handleCFrame.LookVector() * 4096.0f);
+    glm::vec3 axisSegment1 = handleCFrame.Position() + (-handleCFrame.LookVector() * -4096.0f);
+
+    // Segment from camera stretching 4096 forward
+    glm::vec3 mouseSegment0 = camera.cameraPos;
+    glm::vec3 mouseSegment1 = camera.cameraPos + pointDir * 4096.0f;
+
+    // Closest point on the axis segment between the two segments
+    glm::vec3 handlePoint, rb;
+    get_closest_points_between_segments(axisSegment0, axisSegment1, mouseSegment0, mouseSegment1, handlePoint, rb);
+
+    dragStartHandleOffset = (Vector3)handlePoint - handleCFrame.Position();
 }
 
 // Also implemented based on Godot: [c7ea8614](godot/editor/plugins/canvas_item_editor_plugin.cpp#L1490)
@@ -369,6 +378,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             initialFrame = getHandleAdornee()->cframe;
             isMouseDragging = true;
             draggingHandle = handle;
+            startLinearTransform(evt);
             return;
         }
 

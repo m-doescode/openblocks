@@ -5,6 +5,7 @@ uniform vec3 scale;
 in vec3 vPos;
 
 out vec4 fColor;
+uniform vec3 color;
 
 void main() {
     // float thickness = 0.2;
@@ -20,5 +21,6 @@ void main() {
     // else
     //     fColor = vec4(0);
 
-    fColor = vec4(0.204, 0.584, 0.922, 1);
+    // fColor = vec4(0.204, 0.584, 0.922, 1);
+    fColor = vec4(color, 1);
 }
