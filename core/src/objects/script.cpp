@@ -117,6 +117,8 @@ int script_delay(lua_State* L) {
     luaL_checktype(L, 2, LUA_TFUNCTION);
 
     lua_State* Lt = lua_newthread(L); // Create a new thread
+    // I think this is memory abuse??
+    // Wouldn't popping the thread in this case make it eligible for garbage collection?
     lua_pop(L, 1); // pop the newly created thread so that xmove moves func instead of it into itself
     lua_xmove(L, Lt, 1); // move func
     lua_pop(L, 1); // pop secs

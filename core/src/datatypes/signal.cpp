@@ -2,6 +2,7 @@
 #include "datatypes/base.h"
 #include "meta.h"
 #include "lua.h"
+#include <luajit-2.1/lua.h>
 #include <pugixml.hpp>
 #include <memory>
 #include <vector>
@@ -30,7 +31,15 @@ LuaSignalConnection::~LuaSignalConnection() {
     luaL_unref(state, LUA_REGISTRYINDEX, function);
 }
 
+static void stackdump(lua_State* L) {
+    for (int i = lua_gettop(L); i >= 1; i--) {
+        printf("Obj: %s\n", lua_typename(L, lua_type(L, i)));
+    }
+    printf("\n\n");
+}
+
 void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
+    // stackdump(state);
     lua_State* thread = lua_newthread(state);
 
     // Push function
@@ -45,6 +54,8 @@ void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
         Logger::error(lua_tostring(thread, -1));
         lua_pop(thread, 1); // Pop return value
     }
+
+    lua_pop(state, 1); // Pop thread
 }
 
 //
