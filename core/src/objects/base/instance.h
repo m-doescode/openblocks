@@ -42,8 +42,6 @@ struct InstanceType {
     InstanceFlags flags;
 };
 
-typedef std::pair<std::shared_ptr<Instance>, std::string> _RefStatePropertyCell;
-
 class DescendantsIterator;
 class JointInstance;
 
@@ -135,9 +133,9 @@ public:
     }
 
     // Serialization
-    void Serialize(pugi::xml_node parent);
-    static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node);
-    std::optional<std::shared_ptr<Instance>> Clone(RefState<_RefStatePropertyCell> state = std::make_shared<__RefState<_RefStatePropertyCell>>());
+    void Serialize(pugi::xml_node parent, RefStateSerialize state = std::make_shared<__RefStateSerialize>());
+    static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node, RefStateDeserialize state = std::make_shared<__RefStateDeserialize>());
+    std::optional<std::shared_ptr<Instance>> Clone(RefStateClone state = std::make_shared<__RefStateClone>());
 };
 
 typedef std::shared_ptr<Instance> InstanceRef;

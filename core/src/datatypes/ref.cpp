@@ -33,11 +33,13 @@ Data::InstanceRef::operator std::weak_ptr<Instance>() {
 // Serialization
 
 void Data::InstanceRef::Serialize(pugi::xml_node node) const {
-    // node.text().set(this->ToHex());
+    // Handled by Instance
+    panic();
 }
 
 Data::Variant Data::InstanceRef::Deserialize(pugi::xml_node node) {
-    return Data::InstanceRef();
+    // Handled by Instance
+    panic();
 }
 
 static int inst_gc(lua_State*);

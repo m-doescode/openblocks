@@ -59,49 +59,49 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     Logger::info("Place saved successfully");
 }
 
-void DataModel::DeserializeService(pugi::xml_node node) {
-    std::string className = node.attribute("class").value();
-    if (INSTANCE_MAP.count(className) == 0) {
-        Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
-        return;
-    }
+// void DataModel::DeserializeService(pugi::xml_node node, RefStateDeserialize state) {
+//     std::string className = node.attribute("class").value();
+//     if (INSTANCE_MAP.count(className) == 0) {
+//         Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
+//         return;
+//     }
 
-    if (services.count(className) != 0) {
-        Logger::fatalErrorf("Service %s defined multiple times in file", className.c_str());
-        return;
-    }
+//     if (services.count(className) != 0) {
+//         Logger::fatalErrorf("Service %s defined multiple times in file", className.c_str());
+//         return;
+//     }
 
-    // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
-    InstanceRef object = INSTANCE_MAP[className]->constructor();
-    AddChild(object);
+//     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
+//     InstanceRef object = INSTANCE_MAP[className]->constructor();
+//     AddChild(object);
 
-    // Read properties
-    pugi::xml_node propertiesNode = node.child("Properties");
-    for (pugi::xml_node propertyNode : propertiesNode) {
-        std::string propertyName = propertyNode.attribute("name").value();
-        auto meta_ = object->GetPropertyMeta(propertyName);
-        if (!meta_) {
-            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
-            continue;
-        }
-        Data::Variant value = Data::Variant::Deserialize(propertyNode);
-        object->SetPropertyValue(propertyName, value).expect();
-    }
+//     // Read properties
+//     pugi::xml_node propertiesNode = node.child("Properties");
+//     for (pugi::xml_node propertyNode : propertiesNode) {
+//         std::string propertyName = propertyNode.attribute("name").value();
+//         auto meta_ = object->GetPropertyMeta(propertyName);
+//         if (!meta_) {
+//             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
+//             continue;
+//         }
+//         Data::Variant value = Data::Variant::Deserialize(propertyNode, state);
+//         object->SetPropertyValue(propertyName, value).expect();
+//     }
 
-    // Add children
-    for (pugi::xml_node childNode : node.children("Item")) {
-        result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode);
-        if (child.isError()) {
-            std::get<NoSuchInstance>(child.error().value()).logMessage();
-            continue;
-        }
-        object->AddChild(child.expect());
-    }
+//     // Add children
+//     for (pugi::xml_node childNode : node.children("Item")) {
+//         result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode, state);
+//         if (child.isError()) {
+//             std::get<NoSuchInstance>(child.error().value()).logMessage();
+//             continue;
+//         }
+//         object->AddChild(child.expect());
+//     }
 
-    // We add the service to the list
-    // All services get init'd at once in InitServices
-    this->services[className] = std::dynamic_pointer_cast<Service>(object);
-}
+//     // We add the service to the list
+//     // All services get init'd at once in InitServices
+//     this->services[className] = std::dynamic_pointer_cast<Service>(object);
+// }
 
 std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
     std::ifstream inStream(path);
@@ -110,9 +110,28 @@ std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
 
     pugi::xml_node rootNode = doc.child("openblocks");
     std::shared_ptr<DataModel> newModel = std::make_shared<DataModel>();
+    RefStateDeserialize state = std::make_shared<__RefStateDeserialize>();
 
     for (pugi::xml_node childNode : rootNode.children("Item")) {
-        newModel->DeserializeService(childNode);
+        // Make sure the class hasn't already been deserialized
+        std::string className = childNode.attribute("class").value();
+
+        // TODO: Make this push its children into the first service, or however it is actually done in the thing
+        // for parity
+        if (newModel->services.count(className) != 0) {
+            Logger::fatalErrorf("Service %s defined multiple times in file", className.c_str());
+            continue;
+        }
+
+        auto result = Instance::Deserialize(childNode, state);
+        if (result.isError()) {
+            Logger::errorf("Failed to deserialize service: %s", result.errorMessage()->c_str());
+            continue;
+        }
+        
+        auto service = result.expect();
+        newModel->AddChild(service);
+        newModel->services[className] = std::dynamic_pointer_cast<Service>(service);
     }
 
     newModel->Init();
@@ -146,7 +165,7 @@ result<std::optional<std::shared_ptr<Service>>, NoSuchService> DataModel::FindSe
 }
 
 std::shared_ptr<DataModel> DataModel::CloneModel() {
-    RefState<_RefStatePropertyCell> state = std::make_shared<__RefState<_RefStatePropertyCell>>();
+    RefStateClone state = std::make_shared<__RefStateClone>();
     std::shared_ptr<DataModel> newModel = DataModel::New();
 
     // Copy properties

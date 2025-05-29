@@ -212,7 +212,7 @@ result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::stri
     if (name == "Name") {
         return PropertyMeta { &Data::String::TYPE };
     } else if (name == "Parent") {
-        return PropertyMeta { &Data::InstanceRef::TYPE,  };
+        return PropertyMeta { &Data::InstanceRef::TYPE, PROP_NOSAVE };
     } else if (name == "ClassName") {
         return PropertyMeta { &Data::String::TYPE, PROP_NOSAVE | PROP_READONLY };
     }
@@ -259,7 +259,7 @@ std::vector<std::string> Instance::GetProperties() {
 
 // Serialization
 
-void Instance::Serialize(pugi::xml_node parent) {
+void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
     pugi::xml_node node = parent.append_child("Item");
     node.append_attribute("class").set_value(this->GetClass()->className);
 
@@ -271,16 +271,47 @@ void Instance::Serialize(pugi::xml_node parent) {
 
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
         propertyNode.append_attribute("name").set_value(name);
-        GetPropertyValue(name).expect("Declared property is missing").Serialize(propertyNode);
+
+        // Update InstanceRef properties using map above
+        if (meta.type == &Data::InstanceRef::TYPE) {
+            std::weak_ptr<Instance> refWeak = GetPropertyValue(name).expect("Declared property is missing").get<Data::InstanceRef>();
+            if (refWeak.expired()) continue;
+
+            auto ref = refWeak.lock();
+            auto remappedRef = state->remappedInstances[ref]; // TODO: I think this is okay? Maybe?? Add null check?
+            
+            if (remappedRef != "") {
+                // If the instance has already been remapped, set the new value
+                propertyNode.text().set(remappedRef);
+            } else {
+                // Otheriise, queue this property to be updated later, and keep its current value
+                auto& refs = state->refsAwaitingRemap[ref];
+                refs.push_back(propertyNode);
+                state->refsAwaitingRemap[ref] = refs;
+            }
+        } else {
+            GetPropertyValue(name).expect("Declared property is missing").Serialize(propertyNode);
+        }
     }
+
+    // Remap self
+    std::string remappedId = "OB" + std::to_string(state->count++);
+    state->remappedInstances[shared_from_this()] = remappedId;
+    node.append_attribute("referent").set_value(remappedId);
+
+    // Remap queued properties
+    for (pugi::xml_node ref : state->refsAwaitingRemap[shared_from_this()]) {
+        ref.text().set(remappedId);
+    }
+    state->refsAwaitingRemap[shared_from_this()].clear();
 
     // Add children
     for (InstanceRef child : this->children) {
-        child->Serialize(node);
+        child->Serialize(node, state);
     }
 }
 
-result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node) {
+result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node, RefStateDeserialize state) {
     std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         return NoSuchInstance(className);
@@ -300,13 +331,45 @@ result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node) {
             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
-        Data::Variant value = Data::Variant::Deserialize(propertyNode);
-        object->SetPropertyValue(propertyName, value).expect("Declared property was missing");
+
+        // Update InstanceRef properties using map above
+        if (meta_.expect().type == &Data::InstanceRef::TYPE) {
+            if (propertyNode.text().empty())
+                continue;
+
+            std::string refId = propertyNode.text().as_string();
+            auto remappedRef = state->remappedInstances[refId]; // TODO: I think this is okay? Maybe?? Add null check?
+            
+            if (remappedRef) {
+                // If the instance has already been remapped, set the new value
+                object->SetPropertyValue(propertyName, Data::InstanceRef(remappedRef)).expect();
+            } else {
+                // Otheriise, queue this property to be updated later, and keep its current value
+                auto& refs = state->refsAwaitingRemap[refId];
+                refs.push_back(std::make_pair(object, propertyName));
+                state->refsAwaitingRemap[refId] = refs;
+
+                object->SetPropertyValue(propertyName, Data::InstanceRef()).expect();
+            }
+        } else {
+            Data::Variant value = Data::Variant::Deserialize(propertyNode);
+            object->SetPropertyValue(propertyName, value).expect("Declared property was missing");
+        }
     }
+
+    // Remap self
+    std::string remappedId = node.attribute("referent").value();
+    state->remappedInstances[remappedId] = object;
+
+    // Remap queued properties
+    for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[remappedId]) {
+        ref.first->SetPropertyValue(ref.second, Data::InstanceRef(object)).expect();
+    }
+    state->refsAwaitingRemap[remappedId].clear();
 
     // Read children
     for (pugi::xml_node childNode : node.children("Item")) {
-        result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode);
+        result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode, state);
         if (child.isError()) {
             std::get<NoSuchInstance>(child.error().value()).logMessage();
             continue;
@@ -362,7 +425,7 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
     return *this;
 }
 
-std::optional<std::shared_ptr<Instance>> Instance::Clone(RefState<_RefStatePropertyCell> state) {
+std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
     std::shared_ptr<Instance> newInstance = GetClass()->constructor();
 
     // Copy properties
@@ -403,6 +466,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefState<_RefStatePrope
     for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[shared_from_this()]) {
         ref.first->SetPropertyValue(ref.second, Data::InstanceRef(newInstance)).expect();
     }
+    state->refsAwaitingRemap[shared_from_this()].clear();
 
     // Clone children
     for (std::shared_ptr<Instance> child : GetChildren()) {

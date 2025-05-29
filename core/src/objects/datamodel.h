@@ -16,8 +16,8 @@ class Service;
 class DEF_INST_(abstract) DataModel : public Instance {
     AUTOGEN_PREAMBLE
 private:
-    void DeserializeService(pugi::xml_node node);
-    static void cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service>, RefState<_RefStatePropertyCell>);
+    // void DeserializeService(pugi::xml_node node, RefStateDeserialize);
+    static void cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service>, RefStateClone);
 public:
     std::map<std::string, std::shared_ptr<Service>> services;
 
