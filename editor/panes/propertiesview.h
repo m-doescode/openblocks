@@ -12,11 +12,11 @@ class PropertiesView : public QTreeWidget {
     Q_DECLARE_PRIVATE(QTreeView)
 
     bool ignorePropertyUpdates = false;
-    InstanceRefWeak currentInstance;
+    std::weak_ptr<Instance> currentInstance;
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);
     void rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo*, Data::Variant);
-    void onPropertyUpdated(InstanceRef instance, std::string property, Data::Variant newValue);
+    void onPropertyUpdated(std::shared_ptr<Instance> instance, std::string property, Data::Variant newValue);
 
     friend PropertiesItemDelegate;
 protected:
@@ -26,5 +26,5 @@ public:
     PropertiesView(QWidget* parent = nullptr);
     ~PropertiesView() override;
 
-    void setSelected(std::optional<InstanceRef> instance);
+    void setSelected(std::optional<std::shared_ptr<Instance>> instance);
 };

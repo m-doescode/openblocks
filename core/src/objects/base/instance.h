@@ -138,9 +138,6 @@ public:
     std::optional<std::shared_ptr<Instance>> Clone(RefStateClone state = std::make_shared<__RefStateClone>());
 };
 
-typedef std::shared_ptr<Instance> InstanceRef;
-typedef std::weak_ptr<Instance> InstanceRefWeak;
-
 // https://gist.github.com/jeetsukumaran/307264
 class DescendantsIterator {
 public:

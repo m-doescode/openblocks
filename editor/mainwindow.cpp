@@ -94,13 +94,13 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     addSelectionListener([&](auto oldSelection, auto newSelection, bool __) {
-        for (InstanceRefWeak inst : oldSelection) {
+        for (std::weak_ptr<Instance> inst : oldSelection) {
             if (inst.expired() || inst.lock()->GetClass() != &Part::TYPE) continue;
             std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst.lock());
             part->selected = false;
         }
 
-        for (InstanceRefWeak inst : newSelection) {
+        for (std::weak_ptr<Instance> inst : newSelection) {
             if (inst.expired() || inst.lock()->GetClass() != &Part::TYPE) continue;
             std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst.lock());
             part->selected = true;
@@ -291,7 +291,7 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {
-        for (InstanceRefWeak inst : getSelection()) {
+        for (std::weak_ptr<Instance> inst : getSelection()) {
             if (inst.expired()) continue;
             inst.lock()->SetParent(std::nullopt);
         }
@@ -300,7 +300,7 @@ void MainWindow::connectActionHandlers() {
 
     connect(ui->actionCopy, &QAction::triggered, this, [&]() {
         pugi::xml_document rootDoc;
-        for (InstanceRefWeak inst : getSelection()) {
+        for (std::weak_ptr<Instance> inst : getSelection()) {
             if (inst.expired()) continue;
             inst.lock()->Serialize(rootDoc);
         }
@@ -314,7 +314,7 @@ void MainWindow::connectActionHandlers() {
     });
     connect(ui->actionCut, &QAction::triggered, this, [&]() {
         pugi::xml_document rootDoc;
-        for (InstanceRefWeak inst : getSelection()) {
+        for (std::weak_ptr<Instance> inst : getSelection()) {
             if (inst.expired()) continue;
             inst.lock()->Serialize(rootDoc);
             inst.lock()->SetParent(std::nullopt);
@@ -338,7 +338,7 @@ void MainWindow::connectActionHandlers() {
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
-            result<InstanceRef, NoSuchInstance> inst = Instance::Deserialize(instNode);
+            result<std::shared_ptr<Instance>, NoSuchInstance> inst = Instance::Deserialize(instNode);
             if (!inst) { inst.logError(); continue; }
             gWorkspace()->AddChild(inst.expect());
         }
@@ -347,7 +347,7 @@ void MainWindow::connectActionHandlers() {
     connect(ui->actionPasteInto, &QAction::triggered, this, [&]() {
         if (getSelection().size() != 1) return;
 
-        InstanceRef selectedParent = getSelection()[0];
+        std::shared_ptr<Instance> selectedParent = getSelection()[0];
 
         const QMimeData* mimeData = QApplication::clipboard()->mimeData();
         if (!mimeData || !mimeData->hasFormat("application/xml")) return;
@@ -358,7 +358,7 @@ void MainWindow::connectActionHandlers() {
         rootDoc.load_string(encoded.c_str());
 
         for (pugi::xml_node instNode : rootDoc.children()) {
-            result<InstanceRef, NoSuchInstance> inst = Instance::Deserialize(instNode);
+            result<std::shared_ptr<Instance>, NoSuchInstance> inst = Instance::Deserialize(instNode);
             if (!inst) { inst.logError(); continue; }
             selectedParent->AddChild(inst.expect());
         }
@@ -373,7 +373,7 @@ void MainWindow::connectActionHandlers() {
         pugi::xml_document modelDoc;
         pugi::xml_node modelRoot = modelDoc.append_child("openblocks");
 
-        for (InstanceRefWeak inst : getSelection()) {
+        for (std::weak_ptr<Instance> inst : getSelection()) {
             if (inst.expired()) continue;
             inst.lock()->Serialize(modelRoot);
         }
@@ -383,7 +383,7 @@ void MainWindow::connectActionHandlers() {
 
     connect(ui->actionInsertModel, &QAction::triggered, this, [&]() {
         if (getSelection().size() != 1) return;
-        InstanceRef selectedParent = getSelection()[0];
+        std::shared_ptr<Instance> selectedParent = getSelection()[0];
 
         std::optional<std::string> path = openFileDialog("Openblocks Model (*.obm)", ".obm", QFileDialog::AcceptOpen);
         if (!path) return;
@@ -393,7 +393,7 @@ void MainWindow::connectActionHandlers() {
         modelDoc.load(inStream);
 
         for (pugi::xml_node instNode : modelDoc.child("openblocks").children("Item")) {
-            result<InstanceRef, NoSuchInstance> inst = Instance::Deserialize(instNode);
+            result<std::shared_ptr<Instance>, NoSuchInstance> inst = Instance::Deserialize(instNode);
             if (!inst) { inst.logError(); continue; }
             selectedParent->AddChild(inst.expect());
         }

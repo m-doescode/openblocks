@@ -34,7 +34,7 @@ void addSelectionListener(SelectionUpdateHandler handler) {
     selectionUpdateListeners.push_back(handler);
 }
 
-void sendPropertyUpdatedSignal(InstanceRef instance, std::string property, Data::Variant newValue) {
+void sendPropertyUpdatedSignal(std::shared_ptr<Instance> instance, std::string property, Data::Variant newValue) {
     for (PropertyUpdateHandler handler : propertyUpdatelisteners) {
         handler(instance, property, newValue);
     }

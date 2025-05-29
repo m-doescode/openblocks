@@ -53,7 +53,7 @@ static std::string castToVariant(std::string valueStr, std::string fieldType) {
         return "Data::Int((int)" + valueStr + ")";
     }
 
-    // InstanceRef
+    // std::shared_ptr<Instance>
     std::string subtype = parseWeakPtr(fieldType);
     if (!subtype.empty()) {
         return "Data::Variant(" + valueStr + ".expired() ? Data::InstanceRef() : Data::InstanceRef(std::dynamic_pointer_cast<Instance>(" + valueStr + ".lock())))";
@@ -73,7 +73,7 @@ static void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
     bool first = true;
     for (auto& prop : state.properties) {
         out << (first ? "" : " else ") << "if (name == \"" << prop.name << "\") {";
-        // InstanceRef
+        // std::shared_ptr<Instance>
         std::string subtype = parseWeakPtr(prop.backingFieldType);
 
         if (prop.flags & PropertyFlag_Readonly) {

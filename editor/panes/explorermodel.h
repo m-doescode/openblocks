@@ -8,7 +8,7 @@ class ExplorerModel : public QAbstractItemModel {
 public:
     Q_DISABLE_COPY_MOVE(ExplorerModel)
 
-    explicit ExplorerModel(InstanceRef dataRoot, QWidget *parent = nullptr);
+    explicit ExplorerModel(std::shared_ptr<Instance> dataRoot, QWidget *parent = nullptr);
     ~ExplorerModel() override;
 
     QVariant data(const QModelIndex &index, int role) const override;
@@ -29,15 +29,15 @@ public:
     QStringList mimeTypes() const override;
     Qt::DropActions supportedDragActions() const override;
     Qt::DropActions supportedDropActions() const override;
-    InstanceRef fromIndex(const QModelIndex index) const;
-    QModelIndex ObjectToIndex(InstanceRef item);
+    std::shared_ptr<Instance> fromIndex(const QModelIndex index) const;
+    QModelIndex ObjectToIndex(std::shared_ptr<Instance> item);
     
     QIcon iconOf(const InstanceType* type) const;
 
-    void updateRoot(InstanceRef newRoot);
+    void updateRoot(std::shared_ptr<Instance> newRoot);
 private:
-    InstanceRef rootItem;
-    QModelIndex toIndex(InstanceRef item);
+    std::shared_ptr<Instance> rootItem;
+    QModelIndex toIndex(std::shared_ptr<Instance> item);
 };
 
 // #endif

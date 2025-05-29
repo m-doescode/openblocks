@@ -133,7 +133,7 @@ void renderParts() {
     // Sort by nearest
     std::map<float, std::shared_ptr<Part>> sorted;
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        InstanceRef inst = *it;
+        std::shared_ptr<Instance> inst = *it;
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (part->transparency > 0.00001) {
@@ -227,7 +227,7 @@ void renderSurfaceExtras() {
     ghostShader->set("viewPos", camera.cameraPos);
 
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        InstanceRef inst = *it;
+        std::shared_ptr<Instance> inst = *it;
         if (!inst->IsA("Part")) continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         for (int i = 0; i < 6; i++) {
@@ -367,7 +367,7 @@ void renderAABB() {
     ghostShader->set("color", glm::vec3(1.f, 0.f, 0.f));
 
     // Sort by nearest
-    for (InstanceRef inst : gWorkspace()->GetChildren()) {
+    for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         glm::mat4 model = CFrame::IDENTITY + part->cframe.Position();
@@ -407,7 +407,7 @@ void renderWireframe() {
     wireframeShader->set("color", glm::vec3(1.f, 0.f, 0.f));
 
     // Sort by nearest
-    for (InstanceRef inst : gWorkspace()->GetChildren()) {
+    for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         glm::mat4 model = part->cframe;
@@ -451,7 +451,7 @@ void renderOutlines() {
     int count = 0;
 
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        InstanceRef inst = *it;
+        std::shared_ptr<Instance> inst = *it;
         if (inst->GetClass() != &Part::TYPE) continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         if (!part->selected) continue;

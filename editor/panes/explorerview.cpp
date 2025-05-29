@@ -53,7 +53,7 @@ ExplorerView::ExplorerView(QWidget* parent):
         if (fromExplorer) return;
 
         this->clearSelection();
-        for (InstanceRefWeak inst : newSelection) {
+        for (std::weak_ptr<Instance> inst : newSelection) {
             if (inst.expired()) continue;
             QModelIndex index = this->model.ObjectToIndex(inst.lock());
             this->selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select);
@@ -112,6 +112,6 @@ void ExplorerView::buildContextMenu() {
     }
 }
 
-void ExplorerView::updateRoot(InstanceRef newRoot) {
+void ExplorerView::updateRoot(std::shared_ptr<Instance> newRoot) {
     model.updateRoot(newRoot);
 }

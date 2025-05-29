@@ -107,7 +107,7 @@ public:
 
     static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
     static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
-    static inline InstanceRef Create() { return std::make_shared<Part>(); };
+    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Part>(); };
 
     inline Vector3 position() { return cframe.Position(); }
 

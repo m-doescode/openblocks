@@ -49,7 +49,7 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     pugi::xml_document doc;
     pugi::xml_node root = doc.append_child("openblocks");
 
-    for (InstanceRef child : this->GetChildren()) {
+    for (std::shared_ptr<Instance> child : this->GetChildren()) {
         child->Serialize(root);
     }
 
@@ -58,50 +58,6 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     name = target;
     Logger::info("Place saved successfully");
 }
-
-// void DataModel::DeserializeService(pugi::xml_node node, RefStateDeserialize state) {
-//     std::string className = node.attribute("class").value();
-//     if (INSTANCE_MAP.count(className) == 0) {
-//         Logger::fatalErrorf("Unknown service: '%s'", className.c_str());
-//         return;
-//     }
-
-//     if (services.count(className) != 0) {
-//         Logger::fatalErrorf("Service %s defined multiple times in file", className.c_str());
-//         return;
-//     }
-
-//     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
-//     InstanceRef object = INSTANCE_MAP[className]->constructor();
-//     AddChild(object);
-
-//     // Read properties
-//     pugi::xml_node propertiesNode = node.child("Properties");
-//     for (pugi::xml_node propertyNode : propertiesNode) {
-//         std::string propertyName = propertyNode.attribute("name").value();
-//         auto meta_ = object->GetPropertyMeta(propertyName);
-//         if (!meta_) {
-//             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
-//             continue;
-//         }
-//         Data::Variant value = Data::Variant::Deserialize(propertyNode, state);
-//         object->SetPropertyValue(propertyName, value).expect();
-//     }
-
-//     // Add children
-//     for (pugi::xml_node childNode : node.children("Item")) {
-//         result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode, state);
-//         if (child.isError()) {
-//             std::get<NoSuchInstance>(child.error().value()).logMessage();
-//             continue;
-//         }
-//         object->AddChild(child.expect());
-//     }
-
-//     // We add the service to the list
-//     // All services get init'd at once in InitServices
-//     this->services[className] = std::dynamic_pointer_cast<Service>(object);
-// }
 
 std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
     std::ifstream inStream(path);
@@ -174,7 +130,7 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
         
         if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
 
-        // Update InstanceRef properties using map above
+        // Update std::shared_ptr<Instance> properties using map above
         if (meta.type == &Data::InstanceRef::TYPE) {
             std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<Data::InstanceRef>();
             if (refWeak.expired()) continue;

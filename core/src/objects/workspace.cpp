@@ -59,7 +59,7 @@ void Workspace::InitService() {
 
     // Sync all parts
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        InstanceRef obj = *it;
+        std::shared_ptr<Instance> obj = *it;
         if (!obj->IsA<Part>()) continue;
         std::shared_ptr<Part> part = obj->CastTo<Part>().expect();
         this->SyncPartPhysics(part);
@@ -68,7 +68,7 @@ void Workspace::InitService() {
 
     // Activate all joints
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        InstanceRef obj = *it;
+        std::shared_ptr<Instance> obj = *it;
         if (!obj->IsA<JointInstance>()) continue;
         std::shared_ptr<JointInstance> joint = obj->CastTo<JointInstance>().expect();
         joint->UpdateProperty("Part0");
@@ -130,7 +130,7 @@ void Workspace::PhysicsStep(float deltaTime) {
     // Naive implementation. Parts are only considered so if they are just under Workspace
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        InstanceRef obj = *it;
+        std::shared_ptr<Instance> obj = *it;
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
         const rp::Transform& transform = part->rigidBody->getTransform();

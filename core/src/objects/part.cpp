@@ -224,7 +224,7 @@ void Part::MakeJoints() {
     // TEMPORARY
     // TODO: Use more efficient algorithm to *actually* find nearby parts)
     for (auto it = workspace().value()->GetDescendantsStart(); it != workspace().value()->GetDescendantsEnd(); it++) {
-        InstanceRef obj = *it;
+        std::shared_ptr<Instance> obj = *it;
         if (obj == shared_from_this()) continue; // Skip ourselves
         if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
         std::shared_ptr<Part> otherPart = obj->CastTo<Part>().expect();

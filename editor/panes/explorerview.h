@@ -16,7 +16,7 @@ public:
     // void dropEvent(QDropEvent*) override;
 
     void buildContextMenu();
-    void updateRoot(InstanceRef newRoot);
+    void updateRoot(std::shared_ptr<Instance> newRoot);
 private:
     ExplorerModel model;
     QMenu contextMenu;

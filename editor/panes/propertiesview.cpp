@@ -38,7 +38,7 @@ public:
         if (index.column() == 0) return nullptr;
     
         if (!index.parent().isValid() || view->currentInstance.expired()) return nullptr;
-        InstanceRef inst = view->currentInstance.lock();
+        std::shared_ptr<Instance> inst = view->currentInstance.lock();
 
         // If the property is deeper than 1 layer, then it is considered composite
         // Handle specially
@@ -107,7 +107,7 @@ public:
         if (index.column() == 0) return;
     
         if (!index.parent().isValid() || view->currentInstance.expired()) return;
-        InstanceRef inst = view->currentInstance.lock();
+        std::shared_ptr<Instance> inst = view->currentInstance.lock();
 
         bool isComposite = index.parent().parent().isValid();
         std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
@@ -159,7 +159,7 @@ public:
         if (index.column() == 0) return;
     
         if (!index.parent().isValid() || view->currentInstance.expired()) return;
-        InstanceRef inst = view->currentInstance.lock();
+        std::shared_ptr<Instance> inst = view->currentInstance.lock();
 
         bool isComposite = index.parent().parent().isValid();
         std::string componentName = isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString() : "";
@@ -268,11 +268,11 @@ void PropertiesView::drawBranches(QPainter *painter, const QRect &rect, const QM
     QTreeWidget::drawBranches(painter, rect, index);
 }
 
-void PropertiesView::setSelected(std::optional<InstanceRef> instance) {
+void PropertiesView::setSelected(std::optional<std::shared_ptr<Instance>> instance) {
     clear();
     currentInstance = {};
     if (!instance) return;
-    InstanceRef inst = instance.value();
+    std::shared_ptr<Instance> inst = instance.value();
     currentInstance = inst;
 
     std::map<PropertyCategory, QTreeWidgetItem*> propertyCategories;
@@ -347,7 +347,7 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     // Necessary because otherwise this will catch setCheckState from onPropertyUpdated
     if (ignorePropertyUpdates) return;
     if (!item->parent() || (item->parent() && item->parent()->parent()) || currentInstance.expired()) return;
-    InstanceRef inst = currentInstance.lock();
+    std::shared_ptr<Instance> inst = currentInstance.lock();
 
     std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
     PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
@@ -384,7 +384,7 @@ void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const Data:
 }
 
 // static auto lastUpdateTime = std::chrono::steady_clock::now();
-void PropertiesView::onPropertyUpdated(InstanceRef inst, std::string property, Data::Variant newValue) {
+void PropertiesView::onPropertyUpdated(std::shared_ptr<Instance> inst, std::string property, Data::Variant newValue) {
     // if (!currentInstance || currentInstance->expired() || instance != currentInstance->lock()) return;
     // if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - lastUpdateTime).count() < 1000) return;
     // lastUpdateTime = std::chrono::steady_clock::now();

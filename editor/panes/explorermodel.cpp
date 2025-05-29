@@ -10,11 +10,11 @@
 
 std::map<std::string, QIcon> instanceIconCache;
 
-ExplorerModel::ExplorerModel(InstanceRef dataRoot, QWidget *parent)
+ExplorerModel::ExplorerModel(std::shared_ptr<Instance> dataRoot, QWidget *parent)
     : QAbstractItemModel(parent)
     , rootItem(dataRoot) {
     // TODO: Don't use lambdas and handlers like that
-    hierarchyPreUpdateHandler = [&](InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent) {
+    hierarchyPreUpdateHandler = [&](std::shared_ptr<Instance> object, std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
         if (oldParent.has_value()) {
             auto children = oldParent.value()->GetChildren();
             size_t idx = std::find(children.begin(), children.end(), object) - children.begin();
@@ -29,7 +29,7 @@ ExplorerModel::ExplorerModel(InstanceRef dataRoot, QWidget *parent)
         }
     };
 
-    hierarchyPostUpdateHandler = [&](InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent) {
+    hierarchyPostUpdateHandler = [&](std::shared_ptr<Instance> object, std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
         if (newParent.has_value()) endInsertRows();
         if (oldParent.has_value()) endRemoveRows();
     };
@@ -50,11 +50,11 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
     return {};
 }
 
-QModelIndex ExplorerModel::toIndex(InstanceRef item) {
+QModelIndex ExplorerModel::toIndex(std::shared_ptr<Instance> item) {
     if (item == rootItem || !item->GetParent().has_value())
         return {};
 
-    InstanceRef parentItem = item->GetParent().value();
+    std::shared_ptr<Instance> parentItem = item->GetParent().value();
     // Check above ensures this item is not root, so value() must be valid
     for (int i = 0; i < parentItem->GetChildren().size(); i++)
         if (parentItem->GetChildren()[i] == item)
@@ -62,7 +62,7 @@ QModelIndex ExplorerModel::toIndex(InstanceRef item) {
     return QModelIndex{};
 }
 
-QModelIndex ExplorerModel::ObjectToIndex(InstanceRef item) {
+QModelIndex ExplorerModel::ObjectToIndex(std::shared_ptr<Instance> item) {
     return toIndex(item);
 }
 
@@ -72,13 +72,13 @@ QModelIndex ExplorerModel::parent(const QModelIndex &index) const {
 
     Instance* childItem = static_cast<Instance*>(index.internalPointer());
     // NORISK: The parent must exist if the child was obtained from it during this frame
-    InstanceRef parentItem = childItem->GetParent().value();
+    std::shared_ptr<Instance> parentItem = childItem->GetParent().value();
 
     if (parentItem == rootItem)
         return {};
 
     // Check above ensures this item is not root, so value() must be valid
-    InstanceRef parentParent = parentItem->GetParent().value();
+    std::shared_ptr<Instance> parentParent = parentItem->GetParent().value();
     for (int i = 0; i < parentParent->GetChildren().size(); i++)
         if (parentParent->GetChildren()[i] == parentItem)
             return createIndex(i, 0, parentItem.get());
@@ -196,13 +196,13 @@ Qt::DropActions ExplorerModel::supportedDropActions() const {
 }
 
 
-InstanceRef ExplorerModel::fromIndex(const QModelIndex index) const {
+std::shared_ptr<Instance> ExplorerModel::fromIndex(const QModelIndex index) const {
     if (!index.isValid()) return rootItem;
     return static_cast<Instance*>(index.internalPointer())->shared_from_this();
 }
 
 struct DragDropSlot {
-    std::vector<InstanceRef> instances;
+    std::vector<std::shared_ptr<Instance>> instances;
 };
 
 bool ExplorerModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) {
@@ -216,8 +216,8 @@ bool ExplorerModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         return true;
     }
 
-    InstanceRef parentInst = fromIndex(parent);
-    for (InstanceRef instance : slot->instances) {
+    std::shared_ptr<Instance> parentInst = fromIndex(parent);
+    for (std::shared_ptr<Instance> instance : slot->instances) {
         instance->SetParent(parentInst);
     }
 
@@ -225,7 +225,7 @@ bool ExplorerModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     return true;
 }
 
-void ExplorerModel::updateRoot(InstanceRef newRoot) {
+void ExplorerModel::updateRoot(std::shared_ptr<Instance> newRoot) {
     beginResetModel();
     rootItem = newRoot;
     endResetModel();

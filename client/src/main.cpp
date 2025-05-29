@@ -52,7 +52,7 @@ int main() {
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
 
-    for (InstanceRef inst : gWorkspace()->GetChildren()) {
+    for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
         gWorkspace()->SyncPartPhysics(part);

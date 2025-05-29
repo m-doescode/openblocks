@@ -109,7 +109,7 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
     }
 
     // Update ancestry in descendants
-    for (InstanceRef child : children) {
+    for (std::shared_ptr<Instance> child : children) {
         child->updateAncestry(updatedChild, newParent);
     }
 }
@@ -272,7 +272,7 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
         propertyNode.append_attribute("name").set_value(name);
 
-        // Update InstanceRef properties using map above
+        // Update std::shared_ptr<Instance> properties using map above
         if (meta.type == &Data::InstanceRef::TYPE) {
             std::weak_ptr<Instance> refWeak = GetPropertyValue(name).expect("Declared property is missing").get<Data::InstanceRef>();
             if (refWeak.expired()) continue;
@@ -306,18 +306,18 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
     state->refsAwaitingRemap[shared_from_this()].clear();
 
     // Add children
-    for (InstanceRef child : this->children) {
+    for (std::shared_ptr<Instance> child : this->children) {
         child->Serialize(node, state);
     }
 }
 
-result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node, RefStateDeserialize state) {
+result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xml_node node, RefStateDeserialize state) {
     std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         return NoSuchInstance(className);
     }
     // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
-    InstanceRef object = INSTANCE_MAP[className]->constructor();
+    std::shared_ptr<Instance> object = INSTANCE_MAP[className]->constructor();
     object->GetChildren();
 
     // const InstanceType* type = INSTANCE_MAP.at(className);
@@ -332,7 +332,7 @@ result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node, R
             continue;
         }
 
-        // Update InstanceRef properties using map above
+        // Update std::shared_ptr<Instance> properties using map above
         if (meta_.expect().type == &Data::InstanceRef::TYPE) {
             if (propertyNode.text().empty())
                 continue;
@@ -369,7 +369,7 @@ result<InstanceRef, NoSuchInstance> Instance::Deserialize(pugi::xml_node node, R
 
     // Read children
     for (pugi::xml_node childNode : node.children("Item")) {
-        result<InstanceRef, NoSuchInstance> child = Instance::Deserialize(childNode, state);
+        result<std::shared_ptr<Instance>, NoSuchInstance> child = Instance::Deserialize(childNode, state);
         if (child.isError()) {
             std::get<NoSuchInstance>(child.error().value()).logMessage();
             continue;
@@ -434,7 +434,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
         
         if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
 
-        // Update InstanceRef properties using map above
+        // Update std::shared_ptr<Instance> properties using map above
         if (meta.type == &Data::InstanceRef::TYPE) {
             std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<Data::InstanceRef>();
             if (refWeak.expired()) continue;
