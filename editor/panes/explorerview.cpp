@@ -38,11 +38,11 @@ ExplorerView::ExplorerView(QWidget* parent):
     });
 
     connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-        std::vector<InstanceRefWeak> selectedInstances;
+        std::vector<std::shared_ptr<Instance>> selectedInstances;
         selectedInstances.reserve(selectedIndexes().count()); // This doesn't reserve everything, but should enhance things anyway
 
         for (auto index : selectedIndexes()) {
-            selectedInstances.push_back(reinterpret_cast<Instance*>(index.internalPointer())->weak_from_this());
+            selectedInstances.push_back(reinterpret_cast<Instance*>(index.internalPointer())->shared_from_this());
         }
 
         ::setSelection(selectedInstances, true);
@@ -104,8 +104,8 @@ void ExplorerView::buildContextMenu() {
         QAction* instAction = new QAction(model.iconOf(type), QString::fromStdString(type->className));
         insertObjectMenu->addAction(instAction);
         connect(instAction, &QAction::triggered, this, [&]() {
-            if (getSelection().size() == 0 || getSelection()[0].expired()) return;
-            std::shared_ptr<Instance> instParent = getSelection()[0].lock();
+            if (getSelection().size() == 0) return;
+            std::shared_ptr<Instance> instParent = getSelection()[0];
             std::shared_ptr<Instance> newInst = type->constructor();
             newInst->SetParent(instParent);
         });

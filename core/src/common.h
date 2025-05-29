@@ -11,7 +11,7 @@ class Instance;
 // typedef std::function<void(std::shared_ptr<Instance> element, std::optional<std::shared_ptr<Instance>> newParent)> HierarchyUpdateHandler;
 typedef std::function<void(InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent)> HierarchyPreUpdateHandler;
 typedef std::function<void(InstanceRef object, std::optional<InstanceRef> oldParent, std::optional<InstanceRef> newParent)> HierarchyPostUpdateHandler;
-typedef std::function<void(std::vector<InstanceRefWeak> oldSelection, std::vector<InstanceRefWeak> newSelection, bool fromExplorer)> SelectionUpdateHandler;
+typedef std::function<void(std::vector<std::shared_ptr<Instance>> oldSelection, std::vector<std::shared_ptr<Instance>> newSelection, bool fromExplorer)> SelectionUpdateHandler;
 typedef std::function<void(InstanceRef instance, std::string property, Data::Variant newValue)> PropertyUpdateHandler;
 
 // TEMPORARY COMMON DATA FOR VARIOUS INTERNAL COMPONENTS
@@ -24,8 +24,8 @@ extern std::optional<HierarchyPreUpdateHandler> hierarchyPreUpdateHandler;
 extern std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
 extern Handles editorToolHandles;
 
-void setSelection(std::vector<InstanceRefWeak> newSelection, bool fromExplorer = false);
-const std::vector<InstanceRefWeak> getSelection();
+void setSelection(std::vector<std::shared_ptr<Instance>> newSelection, bool fromExplorer = false);
+const std::vector<std::shared_ptr<Instance>> getSelection();
 void addSelectionListener(SelectionUpdateHandler handler);
 
 void sendPropertyUpdatedSignal(InstanceRef instance, std::string property, Data::Variant newValue);

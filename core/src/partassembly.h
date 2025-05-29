@@ -7,7 +7,7 @@
 class Part;
 class Instance;
 
-const std::vector<std::weak_ptr<Instance>> getSelection();
+const std::vector<std::shared_ptr<Instance>> getSelection();
 
 class PartAssembly {
     CFrame _assemblyOrigin;
@@ -17,7 +17,7 @@ class PartAssembly {
 public:
     PartAssembly(std::vector<std::shared_ptr<Part>>, bool worldMode = false);
 
-    static PartAssembly FromSelection(std::vector<std::weak_ptr<Instance>> selection = getSelection());
+    static PartAssembly FromSelection(std::vector<std::shared_ptr<Instance>> selection = getSelection());
 
     inline CFrame assemblyOrigin() { return _assemblyOrigin; };
     inline Vector3 bounds() { return _bounds; };

@@ -32,7 +32,7 @@ PartAssembly::PartAssembly(std::vector<std::shared_ptr<Part>> parts, bool worldM
     _bounds = size;
 }
 
-PartAssembly PartAssembly::FromSelection(std::vector<std::weak_ptr<Instance>> newSelection) {
+PartAssembly PartAssembly::FromSelection(std::vector<std::shared_ptr<Instance>> newSelection) {
     std::vector<std::shared_ptr<Part>> selection;
 
     for (std::weak_ptr<Instance> obj : newSelection) {

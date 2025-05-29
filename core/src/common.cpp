@@ -14,11 +14,11 @@ std::optional<HierarchyPostUpdateHandler> hierarchyPostUpdateHandler;
 Handles editorToolHandles;
 
 
-std::vector<InstanceRefWeak> currentSelection;
+std::vector<std::shared_ptr<Instance>> currentSelection;
 std::vector<SelectionUpdateHandler> selectionUpdateListeners;
 std::vector<PropertyUpdateHandler> propertyUpdatelisteners;
 
-void setSelection(std::vector<InstanceRefWeak> newSelection, bool fromExplorer) {
+void setSelection(std::vector<std::shared_ptr<Instance>> newSelection, bool fromExplorer) {
     for (SelectionUpdateHandler handler : selectionUpdateListeners) {
         handler(currentSelection, newSelection, fromExplorer);
     }
@@ -26,7 +26,7 @@ void setSelection(std::vector<InstanceRefWeak> newSelection, bool fromExplorer) 
     currentSelection = newSelection;
 }
 
-const std::vector<InstanceRefWeak> getSelection() {
+const std::vector<std::shared_ptr<Instance>> getSelection() {
     return currentSelection;
 }
 

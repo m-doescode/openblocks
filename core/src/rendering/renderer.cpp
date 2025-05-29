@@ -556,7 +556,9 @@ void renderRotationArcs() {
     // Pass in the camera position
     handleShader->set("viewPos", camera.cameraPos);
 
-    std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(getSelection()[0].lock());
+    // TODO: This won't do... Doesn't support rotating multiple objects, and expects the first selected item to be a part,
+    // which isn't always the case
+    std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(getSelection()[0]);
 
     for (HandleFace face : HandleFace::Faces) {
         if (glm::any(glm::lessThan(face.normal, glm::vec3(0)))) continue;

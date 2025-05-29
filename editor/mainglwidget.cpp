@@ -417,10 +417,10 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         isMouseDragging = true;
         draggingObject = part;
         if (evt->modifiers() & Qt::ControlModifier) {
-            std::vector<InstanceRefWeak> currentSelection = getSelection();
+            std::vector<std::shared_ptr<Instance>> currentSelection = getSelection();
             for (int i = 0; i < currentSelection.size(); i++) {
-                InstanceRefWeak inst = currentSelection[i];
-                if (!inst.expired() && inst.lock() == part) {
+                std::shared_ptr<Instance> inst = currentSelection[i];
+                if (inst == part) {
                     currentSelection.erase(currentSelection.begin() + i);
                     goto skipAddPart;
                 }
@@ -428,8 +428,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             currentSelection.push_back(part);
             skipAddPart:
             setSelection(currentSelection);
-        }else
-            setSelection(std::vector<InstanceRefWeak> { part });
+        } else
+            setSelection({ part });
         // Disable bit so that we can ignore the part while raycasting
         // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
 
@@ -488,11 +488,11 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     if (evt->key() == Qt::Key_O)
         Logger::error("error message");
 
-    if (evt->key() == Qt::Key_C && getSelection().size() > 0 && !getSelection()[0].expired())
-        getSelection()[0].lock()->Clone().value()->SetParent(gWorkspace());
+    if (evt->key() == Qt::Key_C && getSelection().size() > 0)
+        getSelection()[0]->Clone().value()->SetParent(gWorkspace());
 
-    if (evt->key() == Qt::Key_H && getSelection().size() > 0 && !getSelection()[0].expired())
-        Logger::infof("Object at: 0x%x\n", getSelection()[0].lock().get());
+    if (evt->key() == Qt::Key_H && getSelection().size() > 0)
+        Logger::infof("Object at: 0x%x\n", getSelection()[0].get());
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {

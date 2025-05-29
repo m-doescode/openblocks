@@ -90,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (newSelection.size() == 0) return;
         if (newSelection.size() > 1)
             ui->propertiesView->setSelected(std::nullopt);
-        ui->propertiesView->setSelected(newSelection[0].lock());
+        ui->propertiesView->setSelected(newSelection[0]);
     });
 
     addSelectionListener([&](auto oldSelection, auto newSelection, bool __) {
@@ -295,7 +295,7 @@ void MainWindow::connectActionHandlers() {
             if (inst.expired()) continue;
             inst.lock()->SetParent(std::nullopt);
         }
-        setSelection(std::vector<InstanceRefWeak> {});
+        setSelection({});
     });
 
     connect(ui->actionCopy, &QAction::triggered, this, [&]() {
@@ -345,9 +345,9 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionPasteInto, &QAction::triggered, this, [&]() {
-        if (getSelection().size() != 1 || getSelection()[0].expired()) return;
+        if (getSelection().size() != 1) return;
 
-        InstanceRef selectedParent = getSelection()[0].lock();
+        InstanceRef selectedParent = getSelection()[0];
 
         const QMimeData* mimeData = QApplication::clipboard()->mimeData();
         if (!mimeData || !mimeData->hasFormat("application/xml")) return;
@@ -382,8 +382,8 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionInsertModel, &QAction::triggered, this, [&]() {
-        if (getSelection().size() != 1 || getSelection()[0].expired()) return;
-        InstanceRef selectedParent = getSelection()[0].lock();
+        if (getSelection().size() != 1) return;
+        InstanceRef selectedParent = getSelection()[0];
 
         std::optional<std::string> path = openFileDialog("Openblocks Model (*.obm)", ".obm", QFileDialog::AcceptOpen);
         if (!path) return;
