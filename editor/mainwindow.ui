@@ -176,6 +176,8 @@
    <addaction name="actionCut"/>
    <addaction name="actionPaste"/>
    <addaction name="actionPasteInto"/>
+   <addaction name="actionGroupObjects"/>
+   <addaction name="actionUngroupObjects"/>
   </widget>
   <widget class="QToolBar" name="snappingOptions">
    <property name="windowTitle">
@@ -763,6 +765,40 @@
    </property>
    <property name="toolTip">
     <string>Stop simulation</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionGroupObjects">
+   <property name="icon">
+    <iconset theme="object-group"/>
+   </property>
+   <property name="text">
+    <string>Group Objects</string>
+   </property>
+   <property name="toolTip">
+    <string>Group objects under a Model</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionUngroupObjects">
+   <property name="icon">
+    <iconset theme="object-ungroup"/>
+   </property>
+   <property name="text">
+    <string>Ungroup Objects</string>
+   </property>
+   <property name="toolTip">
+    <string>Ungroup objects inside selected Model</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

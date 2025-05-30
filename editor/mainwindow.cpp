@@ -3,6 +3,7 @@
 #include "common.h"
 #include "logger.h"
 #include "objects/datamodel.h"
+#include "objects/model.h"
 #include "placedocument.h"
 #include "script/scriptdocument.h"
 #include <cstdio>
@@ -19,6 +20,7 @@
 #include <pugixml.hpp>
 #include <qtextcursor.h>
 #include <qtextedit.h>
+#include <vector>
 
 #ifdef _NDEBUG
 #define NDEBUG
@@ -362,6 +364,44 @@ void MainWindow::connectActionHandlers() {
             if (!inst) { inst.logError(); continue; }
             selectedParent->AddChild(inst.expect());
         }
+    });
+
+    connect(ui->actionGroupObjects, &QAction::triggered, this, [&]() {
+        auto model = Model::New();
+        std::shared_ptr<Instance> firstParent;
+        
+        for (auto object : getSelection()) {
+            if (firstParent == nullptr && object->GetParent().has_value()) firstParent = object->GetParent().value();
+            object->SetParent(model);
+        }
+
+        if (model->GetChildren().size() == 0)
+            return;
+
+        // Technically not how it works in the actual studio, but it's not an API-breaking change
+        // and I think this implementation is more useful so I'm sticking with it
+        if (firstParent == nullptr) firstParent = gWorkspace();
+        model->SetParent(firstParent);
+
+        setSelection({ model });
+    });
+
+    connect(ui->actionUngroupObjects, &QAction::triggered, this, [&]() {
+        std::vector<std::shared_ptr<Instance>> newSelection;
+
+        for (auto model : getSelection()) {
+            // Not a model, skip
+            if (!model->IsA<Model>()) { newSelection.push_back(model); continue; }
+
+            for (auto object : model->GetChildren()) {
+                object->SetParent(model->GetParent());
+                newSelection.push_back(object);
+            }
+
+            model->Destroy();
+        }
+
+        setSelection(newSelection);
     });
 
     connect(ui->actionSaveModel, &QAction::triggered, this, [&]() {

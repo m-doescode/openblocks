@@ -5,6 +5,7 @@
 #include "objects/joint/rotatev.h"
 #include "objects/joint/weld.h"
 #include "objects/jointsservice.h"
+#include "objects/model.h"
 #include "objects/part.h"
 #include "objects/joint/snap.h"
 #include "objects/script.h"
@@ -24,7 +25,8 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "RotateV", &RotateV::TYPE },
     { "JointInstance", &JointInstance::TYPE },
     { "Script", &Script::TYPE },
-    { "Folder", &Folder::TYPE },
+    { "Model", &Model::TYPE },
+    // { "Folder", &Folder::TYPE },
 
     // Services
 
