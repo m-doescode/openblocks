@@ -151,7 +151,12 @@ void Workspace::PhysicsStep(float deltaTime) {
 
         // Destroy fallen parts
         if (part->cframe.Position().Y() < this->fallenPartsDestroyHeight) {
+            auto parent = part->GetParent();
             part->Destroy();
+
+            // If the parent of the part is a Model, destroy it too
+            if (parent.has_value() && parent.value()->IsA("Model"))
+                parent.value()->Destroy();
         }
     }
 }
