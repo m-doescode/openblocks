@@ -127,17 +127,19 @@ void Workspace::PhysicsStep(float deltaTime) {
     // Step the simulation a few steps
     physicsWorld->update(std::min(deltaTime / 2, (1/60.f)));
 
-    // Naive implementation. Parts are only considered so if they are just under Workspace
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
         std::shared_ptr<Instance> obj = *it;
-        if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
+        if (!obj->IsA<Part>()) continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
+
+        // Sync properties
         const rp::Transform& transform = part->rigidBody->getTransform();
         part->cframe = CFrame(transform);
         part->velocity = part->rigidBody->getLinearVelocity();
 
         // part->rigidBody->enableGravity(true);
+        // RotateV/Motor joint
         for (auto& joint : part->secondaryJoints) {
             if (joint.expired() || !joint.lock()->IsA("RotateV")) continue;
                         
@@ -145,6 +147,11 @@ void Workspace::PhysicsStep(float deltaTime) {
             float rate = motor->part0.lock()->GetSurfaceParamB(-motor->c0.LookVector().Unit()) * 30;
             // part->rigidBody->enableGravity(false);
             part->rigidBody->setAngularVelocity(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate);
+        }
+
+        // Destroy fallen parts
+        if (part->cframe.Position().Y() < this->fallenPartsDestroyHeight) {
+            part->Destroy();
         }
     }
 }
