@@ -121,6 +121,7 @@ std::optional<HandleFace> draggingHandle;
 Vector3 initialHitPos;
 Vector3 initialHitNormal;
 CFrame initialFrame;
+PartAssembly initialAssembly({});
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     if (!isMouseDragging || draggingObject.expired() || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
 
@@ -271,7 +272,6 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     if (!isMouseDragging || !draggingHandle || !editorToolHandles.active) return;
 
     glm::vec2 destPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-    auto part = getHandleAdornee();
 
     // Calculate part pos as screen point
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 1000.0f);
@@ -303,11 +303,8 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 
     glm::vec3 angles = handleNormal * sign * glm::vec3(angle);
 
-    part->cframe = initialFrame * CFrame::FromEulerAnglesXYZ(-angles);
-
-    gWorkspace()->SyncPartPhysics(part);
-    part->UpdateProperty("Rotation");
-    sendPropertyUpdatedSignal(part, "Rotation", part->cframe.ToEulerAnglesXYZ());
+    CFrame newFrame = initialFrame * CFrame::FromEulerAnglesXYZ(-angles);
+    initialAssembly.SetOrigin(newFrame);
 }
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
@@ -375,7 +372,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
             startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-            initialFrame = getHandleAdornee()->cframe;
+            initialAssembly = PartAssembly::FromSelection();
+            initialFrame = initialAssembly.assemblyOrigin();
             isMouseDragging = true;
             draggingHandle = handle;
             startLinearTransform(evt);

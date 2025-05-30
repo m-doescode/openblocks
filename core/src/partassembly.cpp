@@ -1,6 +1,7 @@
 #include "partassembly.h"
 #include "common.h"
 #include "datatypes/cframe.h"
+#include "datatypes/meta.h"
 #include "datatypes/vector.h"
 #include "math_helper.h"
 #include "objects/base/instance.h"
@@ -48,6 +49,7 @@ void PartAssembly::SetOrigin(CFrame newOrigin) {
     for (auto part : parts) {
         part->cframe = newOrigin * (_assemblyOrigin.Inverse() * part->cframe);
         part->UpdateProperty("CFrame");
+        // sendPropertyUpdatedSignal(part, "CFrame", Data::Variant(part->cframe));
     }
 
     _assemblyOrigin = newOrigin;
@@ -57,6 +59,7 @@ void PartAssembly::TransformBy(CFrame transform) {
     for (auto part : parts) {
         part->cframe = transform * part->cframe;
         part->UpdateProperty("CFrame");
+        sendPropertyUpdatedSignal(part, "CFrame", Data::Variant(part->cframe));
     }
 
     _assemblyOrigin = transform * _assemblyOrigin;
@@ -66,6 +69,7 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
     if (parts.size() == 1) {
         parts[0]->size = newSize;
         parts[0]->UpdateProperty("Size");
+        sendPropertyUpdatedSignal(parts[0], "Size", Data::Variant((Data::Vector3)parts[0]->size));
         _bounds = newSize;
         return;
     }
@@ -78,8 +82,10 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
         localOff = localOff * factor;
         part->cframe = part->cframe.Rotation() + _assemblyOrigin * localOff;
         part->UpdateProperty("CFrame");
+        sendPropertyUpdatedSignal(part, "CFrame", Data::Variant(part->cframe));
         part->size *= factor;
         part->UpdateProperty("Size");
+        sendPropertyUpdatedSignal(part, "Size", Data::Variant((Data::Vector3)part->size));
     }
 
     _bounds = _bounds * factor;
