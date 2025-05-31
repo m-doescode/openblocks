@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mainglwidget.h"
+#include <qevent.h>
 #include <qmdisubwindow.h>
 #include <QBasicTimer>
 
@@ -25,4 +26,7 @@ public:
   
     void closeEvent(QCloseEvent *closeEvent) override;
     void init();
+protected:
+    void dragEnterEvent(QDragEnterEvent*) override;
+    void dropEvent(QDropEvent*) override;
 };

@@ -9,14 +9,17 @@
 #include <cstdio>
 #include <memory>
 #include <qboxlayout.h>
+#include <qdebug.h>
 #include <qevent.h>
 #include <qmargins.h>
 #include <qmdisubwindow.h>
 #include <qlayout.h>
+#include <qmimedata.h>
 
 PlaceDocument::PlaceDocument(QWidget* parent):
     QMdiSubWindow(parent) {
     placeWidget = new MainGLWidget;
+    setAcceptDrops(true);
     setWidget(placeWidget);
     setWindowTitle("Place");
 
@@ -135,4 +138,19 @@ void PlaceDocument::init() {
     gWorkspace()->AddChild(script);
     MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
     // mainWnd->openScriptDocument(script);
+}
+
+void PlaceDocument::dragEnterEvent(QDragEnterEvent* evt) {
+    // https://stackoverflow.com/a/14895393/16255372
+    if (evt->mimeData()->hasUrls()) {
+        evt->acceptProposedAction();
+    }
+}
+
+void PlaceDocument::dropEvent(QDropEvent* evt) {
+    auto urls = evt->mimeData()->urls();
+    if (urls.size() == 0) return;
+    QString fileName = urls[0].toLocalFile();
+    MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
+    mainWnd->openFile(fileName.toStdString());
 }

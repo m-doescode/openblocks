@@ -57,6 +57,8 @@ public:
     void openScriptDocument(std::shared_ptr<Script>);
     void closeScriptDocument(std::shared_ptr<Script>);
 
+    void openFile(std::string path);
+
     Ui::MainWindow *ui;
 private:
     PlaceDocument* placeDocument;

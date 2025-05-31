@@ -438,6 +438,39 @@ void MainWindow::connectActionHandlers() {
     });
 }
 
+void MainWindow::openFile(std::string path) {
+    // Don't ask for confirmation if running a debug build (makes development easier)
+    #ifdef NDEBUG
+    // Ask if the user wants to save their changes
+    // https://stackoverflow.com/a/33890731
+    QMessageBox msgBox;
+    msgBox.setText("Save changes before creating new document?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    int result = msgBox.exec();
+
+    if (result == QMessageBox::Cancel) return;
+    if (result == QMessageBox::Save) {
+        std::optional<std::string> path;
+        if (!gDataModel->HasFile())
+            path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
+        if (!path || path == "") return;
+
+        gDataModel->SaveToFile(path);
+    }
+    #endif
+
+    std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(path);
+    editModeDataModel = newModel;
+    gDataModel = newModel;
+    newModel->Init();
+    ui->explorerView->updateRoot(newModel);
+
+    // Reset running state
+    placeDocument->setRunState(RUN_STOPPED);
+    updateToolbars();
+}
+
 void MainWindow::updateToolbars() {
     ui->actionToolSelect->setChecked(selectedTool == TOOL_SELECT);
     ui->actionToolMove->setChecked(selectedTool == TOOL_MOVE);
