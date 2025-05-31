@@ -6,23 +6,20 @@
 
 class Instance;
 
-namespace Data {
-    class InstanceRef : public Base {
-        std::weak_ptr<Instance> ref;
-    public:
-        InstanceRef();
-        InstanceRef(std::weak_ptr<Instance>);
-        ~InstanceRef();
+class InstanceRef {
+    std::weak_ptr<Instance> ref;
+public:
+    InstanceRef();
+    InstanceRef(std::weak_ptr<Instance>);
+    ~InstanceRef();
 
-        virtual const TypeInfo& GetType() const override;
-        static const TypeInfo TYPE;
+    static const TypeInfo TYPE;
 
-        operator std::weak_ptr<Instance>();
+    operator std::weak_ptr<Instance>();
 
-        virtual const Data::String ToString() const override;
-        virtual void Serialize(pugi::xml_node node) const override;
-        virtual void PushLuaValue(lua_State*) const override;
-        static Data::Variant Deserialize(pugi::xml_node node);
-        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
-    };
-}
+    virtual const std::string ToString() const;
+    virtual void Serialize(pugi::xml_node node) const;
+    virtual void PushLuaValue(lua_State*) const;
+    static Variant Deserialize(pugi::xml_node node);
+    static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
+};

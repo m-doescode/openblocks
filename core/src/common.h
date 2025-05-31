@@ -12,7 +12,7 @@ class Instance;
 typedef std::function<void(std::shared_ptr<Instance> object, std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent)> HierarchyPreUpdateHandler;
 typedef std::function<void(std::shared_ptr<Instance> object, std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent)> HierarchyPostUpdateHandler;
 typedef std::function<void(std::vector<std::shared_ptr<Instance>> oldSelection, std::vector<std::shared_ptr<Instance>> newSelection, bool fromExplorer)> SelectionUpdateHandler;
-typedef std::function<void(std::shared_ptr<Instance> instance, std::string property, Data::Variant newValue)> PropertyUpdateHandler;
+typedef std::function<void(std::shared_ptr<Instance> instance, std::string property, Variant newValue)> PropertyUpdateHandler;
 
 // TEMPORARY COMMON DATA FOR VARIOUS INTERNAL COMPONENTS
 
@@ -28,5 +28,5 @@ void setSelection(std::vector<std::shared_ptr<Instance>> newSelection, bool from
 const std::vector<std::shared_ptr<Instance>> getSelection();
 void addSelectionListener(SelectionUpdateHandler handler);
 
-void sendPropertyUpdatedSignal(std::shared_ptr<Instance> instance, std::string property, Data::Variant newValue);
+void sendPropertyUpdatedSignal(std::shared_ptr<Instance> instance, std::string property, Variant newValue);
 void addPropertyUpdateListener(PropertyUpdateHandler handler);

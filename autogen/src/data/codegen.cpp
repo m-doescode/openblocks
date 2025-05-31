@@ -9,10 +9,6 @@
 using namespace data;
 
 static std::map<std::string, std::string> MAPPED_TYPE = {
-    { "bool", "Data::Bool" },
-    { "int", "Data::Int" },
-    { "float", "Data::Float" },
-    { "std::string", "Data::String" },
     { "glm::vec3", "Vector3" },
 };
 
@@ -30,14 +26,34 @@ static std::map<std::string, std::string> LUA_TEST_FUNCS = {
     { "std::string", "lua_isstring" },
 };
 
+static std::map<std::string, std::string> LUA_PUSH_FUNCS = {
+    { "bool", "lua_pushboolean" },
+    { "int", "lua_pushinteger" },
+    { "float", "lua_pushnumber" },
+    // Handled specially
+    // { "std::string", "lua_pushstring" },
+};
+
 static std::string getLuaMethodFqn(std::string className, std::string methodName) {
     return "__lua_impl__" + className + "__" + methodName;
 }
 
 static std::string getMtName(std::string type) {
-    if (type.starts_with("Data::"))
-        return "__mt_" + type.substr(6);
+    // if (type.starts_with("Data::"))
+    //     return "__mt_" + type.substr(6);
     return "__mt_" + type;
+}
+
+static std::string pushLuaValue(std::string type, std::string expr) {
+    if (type == "std::string")
+        return "lua_pushstring(L, " + expr + ".c_str())";
+    std::string mappedType = MAPPED_TYPE[type];
+    if (mappedType != "")
+        return mappedType + "(" + expr + ").PushLuaValue(L)";
+    std::string pushFunc = LUA_PUSH_FUNCS[type];
+    if (pushFunc != "")
+        return pushFunc + "(L, " + expr + ")";
+    return expr + ".PushLuaValue(L)";
 }
 
 static void writeLuaGetArgument(std::ofstream& out, std::string type, int narg, bool member) {
@@ -69,7 +85,7 @@ static void writeLuaTestArgument(std::ofstream& out, std::string type, int narg,
 }
 
 static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
-    std::string fqn = "Data::" + state.name;
+    std::string fqn = "" + state.name;
 
     // Collect all method names to account for overloaded functions
     std::map<std::string, std::vector<MethodAnalysis>> methods;
@@ -132,11 +148,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 
             // Return result
             if (methodImpl.returnType != "void") {
-                std::string mappedType = MAPPED_TYPE[methodImpl.returnType];
-                if (mappedType == "")
-                    out << "        result.PushLuaValue(L);\n";
-                else
-                    out << "        " << mappedType << "(result).PushLuaValue(L);\n";
+                out << "        " << pushLuaValue(methodImpl.returnType, "result") << ";\n";
             }
 
             if (methodImpl.returnType == "void")
@@ -205,11 +217,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 
             // Return result
             if (methodImpl.returnType != "void") {
-                std::string mappedType = MAPPED_TYPE[methodImpl.returnType];
-                if (mappedType == "")
-                    out << "        result.PushLuaValue(L);\n";
-                else
-                    out << "        " << mappedType << "(result).PushLuaValue(L);\n";
+                out << "        " << pushLuaValue(methodImpl.returnType, "result") << ";\n";
             }
 
             if (methodImpl.returnType == "void")
@@ -228,7 +236,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 }
 
 static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
-    std::string fqn = "Data::" + state.name;
+    std::string fqn = state.name;
 
     out <<  "static int data_gc(lua_State*);\n"
             "static int data_index(lua_State*);\n"
@@ -240,12 +248,9 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
             "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
-    out << "void Data::" << state.name << "::PushLuaValue(lua_State* L) const {\n"
+    out << "void " << state.name << "::PushLuaValue(lua_State* L) const {\n"
            "    int n = lua_gettop(L);\n"
 
-        //    "    // I'm torn... should this be Data::Variant, or Data::Base?\n"
-        //    "    // If I ever decouple typing from Data::Base, I'll switch it to variant,\n"
-        //    "    // otherwise, it doesn't make much sense to represent it as one\n"
            "    " << fqn << "** userdata = (" << fqn << "**)lua_newuserdata(L, sizeof(" << fqn << "));\n"
            "    *userdata = new " << fqn <<  "(*this);\n"
 
@@ -257,11 +262,11 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
            "}\n\n";
     
 
-    out <<  "result<Data::Variant, LuaCastError> Data::" << state.name << "::FromLuaValue(lua_State* L, int idx) {\n"
+    out <<  "result<Variant, LuaCastError> " << state.name << "::FromLuaValue(lua_State* L, int idx) {\n"
             "    " << fqn << "** userdata = (" << fqn << "**) luaL_testudata(L, idx, \"" << getMtName(state.name) << "\");\n"
             "    if (userdata == nullptr)\n"
             "        return LuaCastError(lua_typename(L, idx), \"" << state.name << "\");\n"
-            "    return Data::Variant(**userdata);\n"
+            "    return Variant(**userdata);\n"
             "}\n\n";
 
     // Indexing methods and properties
@@ -292,7 +297,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
             valueExpr = "this_->" + prop.backingSymbol + "()";
 
         // This largely depends on the type
-        out << "        " << type << "(" << valueExpr << ").PushLuaValue(L);\n";
+        out << "        " << pushLuaValue(type, valueExpr) << ";\n";
         out << "        return 1;\n";
 
         out << "    }";
@@ -334,7 +339,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 }
 
 static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
-    std::string fqn = "Data::" + state.name;
+    std::string fqn = state.name;
 
     out <<  "static int lib_index(lua_State*);\n"
             "static const struct luaL_Reg lib_metatable [] = {\n"
@@ -342,7 +347,7 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
             "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
-    out << "void Data::" << state.name << "::PushLuaLibrary(lua_State* L) {\n"
+    out << "void " << state.name << "::PushLuaLibrary(lua_State* L) {\n"
            "    lua_getglobal(L, \"_G\");\n"
            "    lua_pushstring(L, \"" << state.name << "\");\n"
            "\n"
@@ -382,7 +387,7 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
         else if (prop.backingType == PropertyBackingType::Method)
             valueExpr = fqn + "::" + prop.backingSymbol + "()";
 
-        out << "        " << type << "(" << valueExpr << ").PushLuaValue(L);\n";
+        out << "        " << pushLuaValue(type, valueExpr) << ";\n";
         out << "        return 1;\n";
 
         out << "    }";
@@ -408,22 +413,19 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
 }
 
 void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAnalysis& state) {
-    std::string fqn = "Data::" + state.name;
-
     out << "#define __AUTOGEN_EXTRA_INCLUDES__\n";
     out << "#include \"" << headerPath << "\"\n\n";
-    out << "#include \"datatypes/meta.h\"\n";
+    out << "#include \"datatypes/variant.h\"\n";
     out << "#include <pugixml.hpp>\n";
     out << "#include \"lua.h\"\n\n";
-    out << "const Data::TypeInfo " << fqn << "::TYPE = {\n"
+    out << "const TypeInfo " << state.name << "::TYPE = {\n"
         << "    .name = \"" << state.serializedName << "\",\n"
-        << "    .deserializer = &" << fqn << "::Deserialize,\n";
-    if (state.hasFromString) out << "    .fromString = &" << fqn << "::FromString,\n";
-    out << "    .fromLuaValue = &" << fqn << "::FromLuaValue,\n"
-        << "};\n\n";
-
-    out << "const Data::TypeInfo& " << fqn << "::GetType() const {\n"
-        << "    return TYPE;\n"
+        << "    .serializer = toVariantFunction(&" << state.name << "::Serialize),"
+        << "    .deserializer = &" << state.name << "::Deserialize,\n"
+        << "    .toString = toVariantFunction(&" << state.name << "::ToString),";
+    if (state.hasFromString) out << "    .fromString = &" << state.name << "::FromString,\n";
+    out << "    .pushLuaValue = toVariantFunction(&" << state.name << "::PushLuaValue),"
+        << "    .fromLuaValue = &" << state.name << "::FromLuaValue,\n"
         << "};\n\n";
 
     writeLuaMethodImpls(out, state);

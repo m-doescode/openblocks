@@ -6,18 +6,18 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/matrix.hpp>
 #include <reactphysics3d/mathematics/Transform.h>
-#include "datatypes/meta.h"
+#include "datatypes/variant.h"
 #include <pugixml.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
-// #include "meta.h" // IWYU pragma: keep
+// #include "variant.h" // IWYU pragma: keep
 
-const Data::CFrame Data::CFrame::IDENTITY(glm::vec3(0, 0, 0), glm::mat3(1.f));
-const Data::CFrame Data::CFrame::YToZ(glm::vec3(0, 0, 0), glm::mat3(glm::vec3(1, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
+const CFrame CFrame::IDENTITY(glm::vec3(0, 0, 0), glm::mat3(1.f));
+const CFrame CFrame::YToZ(glm::vec3(0, 0, 0), glm::mat3(glm::vec3(1, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
 
-Data::CFrame::CFrame() : Data::CFrame::CFrame(glm::vec3(0, 0, 0), glm::mat3(1.f)) {}
+CFrame::CFrame() : CFrame::CFrame(glm::vec3(0, 0, 0), glm::mat3(1.f)) {}
 
-Data::CFrame::CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22)
+CFrame::CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22)
     : translation(x, y, z)
     , rotation({
         // { R00, R01, R02 },
@@ -29,17 +29,17 @@ Data::CFrame::CFrame(float x, float y, float z, float R00, float R01, float R02,
     }) {
 }
 
-Data::CFrame::CFrame(glm::vec3 translation, glm::mat3 rotation)
+CFrame::CFrame(glm::vec3 translation, glm::mat3 rotation)
     : translation(translation)
     , rotation(rotation) {
 }
 
-Data::CFrame::CFrame(Vector3 position, glm::quat quat)
+CFrame::CFrame(Vector3 position, glm::quat quat)
     : translation(position)
     , rotation(quat) {
 }
 
-Data::CFrame::CFrame(const rp::Transform& transform) : Data::CFrame::CFrame(rpToGlm(transform.getPosition()), rpToGlm(transform.getOrientation())) {
+CFrame::CFrame(const rp::Transform& transform) : CFrame::CFrame(rpToGlm(transform.getPosition()), rpToGlm(transform.getOrientation())) {
 }
 
 glm::mat3 lookAt(Vector3 position, Vector3 lookAt, Vector3 up) {
@@ -52,35 +52,35 @@ glm::mat3 lookAt(Vector3 position, Vector3 lookAt, Vector3 up) {
 	return { s, u, -f };
 }
 
-Data::CFrame::CFrame(Vector3 position, Vector3 lookAt, Vector3 up)
+CFrame::CFrame(Vector3 position, Vector3 lookAt, Vector3 up)
     : translation(position)
     , rotation(::lookAt(position, lookAt, up)) {
 }
 
-Data::CFrame::~CFrame() = default;
+CFrame::~CFrame() = default;
 
-const Data::String Data::CFrame::ToString() const {
+const std::string CFrame::ToString() const {
     return std::to_string(X()) + ", " + std::to_string(Y()) + ", " + std::to_string(Z());
 }
 
-Data::CFrame Data::CFrame::pointToward(Vector3 position, Vector3 toward) {
-    return Data::CFrame(position, position + toward, (abs(toward.Dot(Vector3(0, 1, 0))) > 0.999) ? Vector3(0, 0, 1) : Vector3(0, 1, 0));
+CFrame CFrame::pointToward(Vector3 position, Vector3 toward) {
+    return CFrame(position, position + toward, (abs(toward.Dot(Vector3(0, 1, 0))) > 0.999) ? Vector3(0, 0, 1) : Vector3(0, 1, 0));
 }
 
-Data::CFrame Data::CFrame::pointAligned(Vector3 position, Vector3 toward, Vector3 up, Vector3 right) {
-    return Data::CFrame(position, position + toward, (abs(toward.Dot(up)) > 0.999) ? right : up);
+CFrame CFrame::pointAligned(Vector3 position, Vector3 toward, Vector3 up, Vector3 right) {
+    return CFrame(position, position + toward, (abs(toward.Dot(up)) > 0.999) ? right : up);
 }
 
-Data::CFrame::operator glm::mat4() const {
+CFrame::operator glm::mat4() const {
     // Always make sure to translate the position first, then rotate. Matrices work backwards
     return glm::translate(glm::mat4(1.0f), this->translation) * glm::mat4(this->rotation);
 }
 
-Data::CFrame::operator rp::Transform() const {
+CFrame::operator rp::Transform() const {
     return rp::Transform(glmToRp(translation), glmToRp(rotation));
 }
 
-Vector3 Data::CFrame::ToEulerAnglesXYZ() {
+Vector3 CFrame::ToEulerAnglesXYZ() {
     float x;
     float y;
     float z;
@@ -88,37 +88,37 @@ Vector3 Data::CFrame::ToEulerAnglesXYZ() {
     return Vector3(x, y, z);
 }
 
-Data::CFrame Data::CFrame::FromEulerAnglesXYZ(Vector3 vector) {
+CFrame CFrame::FromEulerAnglesXYZ(Vector3 vector) {
     glm::mat3 mat = glm::eulerAngleXYZ(vector.X(), vector.Y(), vector.Z());
-    return Data::CFrame((glm::vec3)Vector3::ZERO, mat);
+    return CFrame((glm::vec3)Vector3::ZERO, mat);
 }
 
-Data::CFrame Data::CFrame::Inverse() const {
+CFrame CFrame::Inverse() const {
     return CFrame { -translation * glm::transpose(glm::inverse(rotation)), glm::inverse(rotation) };
 }
 
 
 // Operators
 
-Data::CFrame Data::CFrame::operator *(Data::CFrame otherFrame) const {
+CFrame CFrame::operator *(CFrame otherFrame) const {
     return CFrame { this->translation + this->rotation * otherFrame.translation, this->rotation * otherFrame.rotation };
 }
 
-Vector3 Data::CFrame::operator *(Vector3 vector) const {
+Vector3 CFrame::operator *(Vector3 vector) const {
     return this->translation + this->rotation * vector;
 }
 
-Data::CFrame Data::CFrame::operator +(Vector3 vector) const {
+CFrame CFrame::operator +(Vector3 vector) const {
     return CFrame { this->translation + glm::vec3(vector), this->rotation };
 }
 
-Data::CFrame Data::CFrame::operator -(Vector3 vector) const {
+CFrame CFrame::operator -(Vector3 vector) const {
     return *this + -vector;
 }
 
 // Serialization
 
-void Data::CFrame::Serialize(pugi::xml_node node) const {
+void CFrame::Serialize(pugi::xml_node node) const {
     node.append_child("X").text().set(std::to_string(this->X()));
     node.append_child("Y").text().set(std::to_string(this->Y()));
     node.append_child("Z").text().set(std::to_string(this->Z()));
@@ -134,8 +134,8 @@ void Data::CFrame::Serialize(pugi::xml_node node) const {
 }
 
 
-Data::Variant Data::CFrame::Deserialize(pugi::xml_node node) {
-    return Data::CFrame(
+Variant CFrame::Deserialize(pugi::xml_node node) {
+    return CFrame(
         node.child("X").text().as_float(),
         node.child("Y").text().as_float(),
         node.child("Z").text().as_float(),

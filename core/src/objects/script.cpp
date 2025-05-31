@@ -41,10 +41,10 @@ void Script::Run() {
     // Initialize script globals
     lua_getglobal(Lt, "_G");
     
-    Data::InstanceRef(dataModel().value()).PushLuaValue(Lt);
+    InstanceRef(dataModel().value()).PushLuaValue(Lt);
     lua_setfield(Lt, -2, "game");
 
-    Data::InstanceRef(dataModel().value()->GetService<Workspace>()).PushLuaValue(Lt);
+    InstanceRef(dataModel().value()->GetService<Workspace>()).PushLuaValue(Lt);
     lua_setfield(Lt, -2, "workspace");
 
     lua_pushlightuserdata(Lt, scriptContext.get());

@@ -20,6 +20,6 @@ enum SurfaceType {
     SurfaceMotor = 7,
 };
 
-namespace Data { class Vector3; } using Data::Vector3;
+class Vector3;
 NormalId faceFromNormal(Vector3);
 Vector3 normalFromFace(NormalId);

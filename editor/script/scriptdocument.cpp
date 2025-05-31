@@ -16,7 +16,7 @@
 #include <qtextformat.h>
 #include "mainwindow.h"
 #include "objects/script.h"
-#include "datatypes/meta.h"
+#include "datatypes/variant.h"
 #include <QPalette>
 #include <QStyleHints>
 
@@ -115,9 +115,9 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     setWindowTitle(QString::fromStdString(script->name));
 
     // Add detector for script deletion to automatically close this document
-    scriptDeletionHandler = script->AncestryChanged->Connect([this, script](std::vector<Data::Variant> args) {
-        std::weak_ptr<Instance> child = args[0].get<Data::InstanceRef>();
-        std::weak_ptr<Instance> newParent = args[1].get<Data::InstanceRef>();
+    scriptDeletionHandler = script->AncestryChanged->Connect([this, script](std::vector<Variant> args) {
+        std::weak_ptr<Instance> child = args[0].get<InstanceRef>();
+        std::weak_ptr<Instance> newParent = args[1].get<InstanceRef>();
         if (child.expired() || child.lock() != script || !newParent.expired()) return;
 
         dynamic_cast<MainWindow*>(window())->closeScriptDocument(script);

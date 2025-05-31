@@ -43,9 +43,9 @@ void ScriptContext::InitService() {
     // luaopen_debug(state);
     luaopen_bit(state);
 
-    Data::Vector3::PushLuaLibrary(state);
-    Data::CFrame::PushLuaLibrary(state);
-    Data::Color3::PushLuaLibrary(state);
+    Vector3::PushLuaLibrary(state);
+    CFrame::PushLuaLibrary(state);
+    Color3::PushLuaLibrary(state);
 
     // TODO: custom os library
 

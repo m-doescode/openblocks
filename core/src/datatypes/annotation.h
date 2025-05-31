@@ -26,8 +26,7 @@
 
 #define AUTOGEN_PREAMBLE_DATA \
 public: \
-virtual const TypeInfo& GetType() const override; \
 static const TypeInfo TYPE; \
-virtual void PushLuaValue(lua_State*) const override; \
-static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx); \
+virtual void PushLuaValue(lua_State*) const; \
+static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx); \
 private:

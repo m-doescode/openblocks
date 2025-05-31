@@ -17,7 +17,7 @@
 #include "physics/util.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
-#include "datatypes/meta.h"
+#include "datatypes/variant.h"
 
 #define PI 3.14159
 #define M_mainWindow dynamic_cast<MainWindow*>(window())

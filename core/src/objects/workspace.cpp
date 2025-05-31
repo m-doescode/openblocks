@@ -1,5 +1,5 @@
 #include "workspace.h"
-#include "datatypes/meta.h"
+#include "datatypes/variant.h"
 #include "datatypes/ref.h"
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
@@ -33,11 +33,11 @@ void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& 
         auto part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
 
         if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart) {
-            part0->Touched->Fire({ (Data::Variant)Data::InstanceRef(part1) });
-            part1->Touched->Fire({ (Data::Variant)Data::InstanceRef(part0) });
+            part0->Touched->Fire({ (Variant)InstanceRef(part1) });
+            part1->Touched->Fire({ (Variant)InstanceRef(part0) });
         } else if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit) {
-            part0->TouchEnded->Fire({ (Data::Variant)Data::InstanceRef(part1) });
-            part1->TouchEnded->Fire({ (Data::Variant)Data::InstanceRef(part0) });
+            part0->TouchEnded->Fire({ (Variant)InstanceRef(part1) });
+            part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
         }
     }
 }

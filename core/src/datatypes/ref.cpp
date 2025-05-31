@@ -2,7 +2,7 @@
 #include "datatypes/base.h"
 #include "error/data.h"
 #include "logger.h"
-#include "meta.h" // IWYU pragma: keep
+#include "variant.h" // IWYU pragma: keep
 #include <memory>
 #include <optional>
 #include "objects/base/instance.h"
@@ -10,34 +10,36 @@
 #include "objects/base/member.h"
 #include <pugixml.hpp>
 
-Data::InstanceRef::InstanceRef() {};
-Data::InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};
-Data::InstanceRef::~InstanceRef() = default;
+InstanceRef::InstanceRef() {};
+InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};
+InstanceRef::~InstanceRef() = default;
 
-const Data::TypeInfo Data::InstanceRef::TYPE = {
+const TypeInfo InstanceRef::TYPE = {
     .name = "Ref",
-    .deserializer = &Data::InstanceRef::Deserialize,
-    .fromLuaValue = &Data::InstanceRef::FromLuaValue,
+    .serializer = toVariantFunction(&InstanceRef::Serialize),
+    .deserializer = &InstanceRef::Deserialize,
+    .toString = toVariantFunction(&InstanceRef::ToString),
+    .fromString = nullptr,
+    .pushLuaValue = toVariantFunction(&InstanceRef::PushLuaValue),
+    .fromLuaValue = &InstanceRef::FromLuaValue,
 };
 
-const Data::TypeInfo& Data::InstanceRef::GetType() const { return Data::InstanceRef::TYPE; };
-
-const Data::String Data::InstanceRef::ToString() const {
+const std::string InstanceRef::ToString() const {
     return ref.expired() ? "" : ref.lock()->name;
 }
 
-Data::InstanceRef::operator std::weak_ptr<Instance>() {
+InstanceRef::operator std::weak_ptr<Instance>() {
     return ref;
 }
 
 // Serialization
 
-void Data::InstanceRef::Serialize(pugi::xml_node node) const {
+void InstanceRef::Serialize(pugi::xml_node node) const {
     // Handled by Instance
     panic();
 }
 
-Data::Variant Data::InstanceRef::Deserialize(pugi::xml_node node) {
+Variant InstanceRef::Deserialize(pugi::xml_node node) {
     // Handled by Instance
     panic();
 }
@@ -52,7 +54,7 @@ static const struct luaL_Reg metatable [] = {
     {NULL, NULL} /* end of array */
 };
 
-void Data::InstanceRef::PushLuaValue(lua_State* L) const {
+void InstanceRef::PushLuaValue(lua_State* L) const {
     if (ref.expired()) return lua_pushnil(L);
 
     int n = lua_gettop(L);
@@ -70,14 +72,14 @@ void Data::InstanceRef::PushLuaValue(lua_State* L) const {
     lua_setmetatable(L, n+1);
 }
 
-result<Data::Variant, LuaCastError> Data::InstanceRef::FromLuaValue(lua_State* L, int idx) {
+result<Variant, LuaCastError> InstanceRef::FromLuaValue(lua_State* L, int idx) {
     if (lua_isnil(L, idx))
-        return Data::Variant(Data::InstanceRef());
+        return Variant(InstanceRef());
     if (!lua_isuserdata(L, idx))
         return LuaCastError(lua_typename(L, idx), "Instance");
     // TODO: overhaul this to support other types
     auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, idx);
-    return Data::Variant(Data::InstanceRef(**userdata));
+    return Variant(InstanceRef(**userdata));
 }
 
 static int inst_gc(lua_State* L) {
@@ -99,7 +101,7 @@ static int inst_index(lua_State* L) {
     // Read property
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);
     if (meta) {
-        Data::Variant value = inst->GetPropertyValue(key).expect();
+        Variant value = inst->GetPropertyValue(key).expect();
         value.PushLuaValue(L);
         return 1;
     }
@@ -107,7 +109,7 @@ static int inst_index(lua_State* L) {
     // Look for child
     std::optional<std::shared_ptr<Instance>> child = inst->FindFirstChild(key);
     if (child) {
-        Data::InstanceRef(child.value()).PushLuaValue(L);
+        InstanceRef(child.value()).PushLuaValue(L);
         return 1;
     }
 
@@ -129,7 +131,7 @@ static int inst_newindex(lua_State* L) {
     if (key == "Parent" && inst->IsParentLocked())
         return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent().value()->name.c_str() : "NULL", inst->GetClass()->className.c_str());
 
-    result<Data::Variant, LuaCastError> value = meta->type->fromLuaValue(L, -1);
+    result<Variant, LuaCastError> value = meta->type->fromLuaValue(L, -1);
     lua_pop(L, 3);
 
     if (value.isError())

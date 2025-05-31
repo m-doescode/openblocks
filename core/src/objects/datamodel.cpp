@@ -5,7 +5,7 @@
 #include "objects/base/service.h"
 #include "objects/meta.h"
 #include "objects/script/serverscriptservice.h"
-#include "datatypes/meta.h"
+#include "datatypes/variant.h"
 #include "workspace.h"
 #include "logger.h"
 #include "panic.h"
@@ -131,8 +131,8 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
         if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
 
         // Update std::shared_ptr<Instance> properties using map above
-        if (meta.type == &Data::InstanceRef::TYPE) {
-            std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<Data::InstanceRef>();
+        if (meta.type == &InstanceRef::TYPE) {
+            std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<InstanceRef>();
             if (refWeak.expired()) continue;
 
             auto ref = refWeak.lock();
@@ -140,17 +140,17 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
             
             if (remappedRef) {
                 // If the instance has already been remapped, set the new value
-                newModel->SetPropertyValue(property, Data::InstanceRef(remappedRef)).expect();
+                newModel->SetPropertyValue(property, InstanceRef(remappedRef)).expect();
             } else {
                 // Otheriise, queue this property to be updated later, and keep its current value
                 auto& refs = state->refsAwaitingRemap[ref];
                 refs.push_back(std::make_pair(newModel, property));
                 state->refsAwaitingRemap[ref] = refs;
 
-                newModel->SetPropertyValue(property, Data::InstanceRef(ref)).expect();
+                newModel->SetPropertyValue(property, InstanceRef(ref)).expect();
             }
         } else {
-            Data::Variant value = GetPropertyValue(property).expect();
+            Variant value = GetPropertyValue(property).expect();
             newModel->SetPropertyValue(property, value).expect();
         }
     }
@@ -160,7 +160,7 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
 
     // Remap queued properties
     for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[shared_from_this()]) {
-        ref.first->SetPropertyValue(ref.second, Data::InstanceRef(newModel)).expect();
+        ref.first->SetPropertyValue(ref.second, InstanceRef(newModel)).expect();
     }
 
     // Clone services

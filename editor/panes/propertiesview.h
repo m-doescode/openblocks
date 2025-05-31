@@ -15,8 +15,8 @@ class PropertiesView : public QTreeWidget {
     std::weak_ptr<Instance> currentInstance;
     void propertyChanged(QTreeWidgetItem *item, int column);
     void activateProperty(QTreeWidgetItem *item, int column);
-    void rebuildCompositeProperty(QTreeWidgetItem *item, const Data::TypeInfo*, Data::Variant);
-    void onPropertyUpdated(std::shared_ptr<Instance> instance, std::string property, Data::Variant newValue);
+    void rebuildCompositeProperty(QTreeWidgetItem *item, const TypeInfo*, Variant);
+    void onPropertyUpdated(std::shared_ptr<Instance> instance, std::string property, Variant newValue);
 
     friend PropertiesItemDelegate;
 protected:

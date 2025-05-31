@@ -37,8 +37,8 @@
 #define AUTOGEN_PREAMBLE \
 protected: \
 virtual result<PropertyMeta, MemberNotFound> InternalGetPropertyMeta(std::string name) override; \
-virtual fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Data::Variant value) override; \
-virtual result<Data::Variant, MemberNotFound> InternalGetPropertyValue(std::string name) override; \
+virtual fallible<MemberNotFound, AssignToReadOnlyMember> InternalSetPropertyValue(std::string name, Variant value) override; \
+virtual result<Variant, MemberNotFound> InternalGetPropertyValue(std::string name) override; \
 virtual void InternalUpdateProperty(std::string name) override; \
 virtual std::vector<std::string> InternalGetProperties() override; \
 public: \

@@ -8,5 +8,5 @@ namespace Data { class CFrame; class Color3; };
 void renderInit(GLFWwindow* window, int width, int height);
 void render(GLFWwindow* window);
 void setViewport(int width, int height);
-void addDebugRenderCFrame(Data::CFrame);
-void addDebugRenderCFrame(Data::CFrame, Data::Color3);
+void addDebugRenderCFrame(CFrame);
+void addDebugRenderCFrame(CFrame, Color3);

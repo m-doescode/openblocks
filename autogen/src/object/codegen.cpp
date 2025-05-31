@@ -16,11 +16,15 @@ static std::map<std::string, std::string> CATEGORY_STR = {
 };
 
 static std::map<std::string, std::string> MAPPED_TYPE = {
-    { "bool", "Data::Bool" },
-    { "int", "Data::Int" },
-    { "float", "Data::Float" },
-    { "std::string", "Data::String" },
     { "glm::vec3", "Vector3" },
+};
+
+static std::map<std::string, std::string> TYPEINFO_REFS = {
+    { "glm::vec3", "Vector3::TYPE" },
+    { "bool", "BOOL_TYPE" },
+    { "int", "INT_TYPE" },
+    { "float", "FLOAT_TYPE" },
+    { "std::string", "STRING_TYPE" },
 };
 
 static std::map<std::string, std::monostate> ENUM_TYPES = {
@@ -40,7 +44,7 @@ static std::string parseWeakPtr(std::string weakPtrType) {
 static std::string castFromVariant(std::string valueStr, std::string fieldType) {
     // Manual exception for now, enums will get their own system eventually
     if (fieldType == "SurfaceType") {
-        return "(SurfaceType)(int)" + valueStr + ".get<Data::Int>()";
+        return "(SurfaceType)(int)" + valueStr + ".get<int>()";
     }
 
     std::string mappedType = MAPPED_TYPE[fieldType];
@@ -50,13 +54,13 @@ static std::string castFromVariant(std::string valueStr, std::string fieldType) 
 static std::string castToVariant(std::string valueStr, std::string fieldType) {
     // Manual exception for now, enums will get their own system eventually
     if (fieldType == "SurfaceType") {
-        return "Data::Int((int)" + valueStr + ")";
+        return "(int)" + valueStr;
     }
 
     // std::shared_ptr<Instance>
     std::string subtype = parseWeakPtr(fieldType);
     if (!subtype.empty()) {
-        return "Data::Variant(" + valueStr + ".expired() ? Data::InstanceRef() : Data::InstanceRef(std::dynamic_pointer_cast<Instance>(" + valueStr + ".lock())))";
+        return "Variant(" + valueStr + ".expired() ? InstanceRef() : InstanceRef(std::dynamic_pointer_cast<Instance>(" + valueStr + ".lock())))";
     }
 
     std::string mappedType = MAPPED_TYPE[fieldType];
@@ -67,7 +71,7 @@ static std::string castToVariant(std::string valueStr, std::string fieldType) {
 }
 
 static void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
-    out << "fallible<MemberNotFound, AssignToReadOnlyMember> " << state.name << "::InternalSetPropertyValue(std::string name, Data::Variant value) {";
+    out << "fallible<MemberNotFound, AssignToReadOnlyMember> " << state.name << "::InternalSetPropertyValue(std::string name, Variant value) {";
 
     out << "\n    ";
     bool first = true;
@@ -83,7 +87,7 @@ static void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
         }  else if (prop.cframeMember == CFrameMember_Rotation) {
             out << "\n        this->" << prop.fieldName << " = CFrame::FromEulerAnglesXYZ(value.get<Vector3>()) + this->" << prop.fieldName << ".Position();";
         } else if (!subtype.empty()) {
-            out << "\n        std::weak_ptr<Instance> ref = value.get<Data::InstanceRef>();"
+            out << "\n        std::weak_ptr<Instance> ref = value.get<InstanceRef>();"
                 << "\n        this->" << prop.fieldName << " = ref.expired() ? std::weak_ptr<" << subtype << ">() : std::dynamic_pointer_cast<" << subtype << ">(ref.lock());";
         } else {
             out << "\n        this->" << prop.fieldName << " = " << castFromVariant("value", prop.backingFieldType) << ";";
@@ -128,7 +132,7 @@ static void writePropertyUpdateHandler(std::ofstream& out, ClassAnalysis state) 
 }
 
 static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
-    out << "result<Data::Variant, MemberNotFound> " << state.name << "::InternalGetPropertyValue(std::string name) {";
+    out << "result<Variant, MemberNotFound> " << state.name << "::InternalGetPropertyValue(std::string name) {";
 
     out << "\n    ";
     bool first = true;
@@ -136,11 +140,11 @@ static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
         out << (first ? "" : " else ") << "if (name == \"" << prop.name << "\") {";
 
         if (prop.cframeMember == CFrameMember_Position) {
-            out << "\n        return Data::Variant(" << prop.fieldName << ".Position());";
+            out << "\n        return Variant(" << prop.fieldName << ".Position());";
         } else if (prop.cframeMember == CFrameMember_Rotation) {
-            out << "\n        return Data::Variant(" << prop.fieldName << ".ToEulerAnglesXYZ());";
+            out << "\n        return Variant(" << prop.fieldName << ".ToEulerAnglesXYZ());";
         } else {
-            out << "\n        return Data::Variant(" << castToVariant(prop.fieldName, prop.backingFieldType) << ");";
+            out << "\n        return Variant(" << castToVariant(prop.fieldName, prop.backingFieldType) << ");";
         }
 
         out << "\n    }";
@@ -153,7 +157,7 @@ static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
     for (auto& signal : state.signals) {
         out << (first ? "" : " else ") << "if (name == \"" << signal.name << "\") {";
 
-        out << "\n        return Data::Variant(Data::SignalRef(" << signal.sourceFieldName << "));";
+        out << "\n        return Variant(SignalRef(" << signal.sourceFieldName << "));";
 
         out << "\n    }";
         first = false;
@@ -186,10 +190,10 @@ static void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
     for (auto& prop : state.properties) {
         out << (first ? "" : " else ") << "if (name == \"" << prop.name << "\") {";
 
-        std::string type = MAPPED_TYPE[prop.backingFieldType];
-        if (type.empty()) type = prop.backingFieldType;
-        if (type == "SurfaceType") type = "Data::Int";
-        if (!parseWeakPtr(prop.backingFieldType).empty()) type = "Data::InstanceRef";
+        std::string typeInfo = TYPEINFO_REFS[prop.backingFieldType];
+        if (typeInfo.empty()) typeInfo = prop.backingFieldType + "::TYPE";
+        if (!parseWeakPtr(prop.backingFieldType).empty()) typeInfo = "InstanceRef::TYPE";
+        if (prop.backingFieldType == "SurfaceType") typeInfo = "INT_TYPE";
 
         std::string strFlags;
         if (prop.flags & PropertyFlag_Readonly)
@@ -206,7 +210,7 @@ static void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
         std::string category = CATEGORY_STR[prop.category];
         if (category.empty()) category = "PROP_CATEGORY_DATA";
 
-        out << "\n        return PropertyMeta { &" << type << "::TYPE, " << strFlags << ", " << category << " };";
+        out << "\n        return PropertyMeta { &" << typeInfo << ", " << strFlags << ", " << category << " };";
 
         out << "\n    }";
         first = false;
@@ -220,8 +224,8 @@ static void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
         
         std::string strFlags;
         strFlags += "PROP_READONLY";
-        strFlags += "| PROP_HIDDEN";
-        strFlags += "| PROP_NOSAVE";
+        strFlags += " | PROP_HIDDEN";
+        strFlags += " | PROP_NOSAVE";
 
         out << "\n        return PropertyMeta { &SignalRef::TYPE, " << strFlags << " };";
 
@@ -252,7 +256,8 @@ void object::writeCodeForClass(std::ofstream& out, std::string headerPath, Class
 
     out << "#define __AUTOGEN_EXTRA_INCLUDES__\n";
     out << "#include \"" << state.headerPath << "\"\n\n";
-    out << "#include \"datatypes/meta.h\"\n\n";
+    out << "#include \"datatypes/variant.h\"\n\n";
+    out << "#include \"datatypes/primitives.h\"\n\n";
     out << "const InstanceType " << state.name << "::TYPE = {\n"
         << "    .super = &" << state.baseClass << "::TYPE,\n"
         << "    .className = \"" << state.name << "\",\n"

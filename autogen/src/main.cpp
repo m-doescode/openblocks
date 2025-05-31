@@ -54,7 +54,7 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     fs::path relpath = fs::relative(srcPath, srcRoot);
     printf("[AUTOGEN] Processing file %s...\n", relpath.c_str());
     object::analyzeClasses(cursor, srcRoot, &objectAnlyState);
-    data::analyzeClasses(cursor, srcRoot, &dataAnlyState);
+    analyzeClasses(cursor, srcRoot, &dataAnlyState);
 
     fs::create_directories(outPath.parent_path()); // Make sure generated dir exists before we try writing to it
 
@@ -72,7 +72,7 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     }
 
     for (auto& [_, clazz] : dataAnlyState.classes) {
-        data::writeCodeForClass(outStream, relpath, clazz);
+        writeCodeForClass(outStream, relpath, clazz);
     }
 
     outStream.close();

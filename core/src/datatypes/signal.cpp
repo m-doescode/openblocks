@@ -1,6 +1,6 @@
 #include "signal.h"
 #include "datatypes/base.h"
-#include "meta.h"
+#include "variant.h"
 #include "lua.h"
 #include <cstdio>
 #include <luajit-2.1/lauxlib.h>
@@ -53,13 +53,13 @@ static void stackdump(lua_State* L) {
     fflush(stdout);
 }
 
-void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
+void LuaSignalConnection::Call(std::vector<Variant> args) {
     lua_State* thread = lua_newthread(state);
 
     // Push function
     lua_rawgeti(thread, LUA_REGISTRYINDEX, function);
 
-    for (Data::Variant arg : args) {
+    for (Variant arg : args) {
         arg.PushLuaValue(thread);
     }
 
@@ -74,11 +74,11 @@ void LuaSignalConnection::Call(std::vector<Data::Variant> args) {
 
 //
 
-CSignalConnection::CSignalConnection(std::function<void(std::vector<Data::Variant>)> func, std::weak_ptr<Signal> parent) : SignalConnection(parent) {
+CSignalConnection::CSignalConnection(std::function<void(std::vector<Variant>)> func, std::weak_ptr<Signal> parent) : SignalConnection(parent) {
     this->function = func;
 }
 
-void CSignalConnection::Call(std::vector<Data::Variant> args) {
+void CSignalConnection::Call(std::vector<Variant> args) {
     function(args);
 }
 
@@ -86,7 +86,7 @@ void CSignalConnection::Call(std::vector<Data::Variant> args) {
 
 SignalConnectionHolder::SignalConnectionHolder() : heldConnection() {}
 SignalConnectionHolder::SignalConnectionHolder(std::shared_ptr<SignalConnection> connection) : heldConnection(connection) {}
-SignalConnectionHolder::SignalConnectionHolder(Data::SignalConnectionRef other) : heldConnection(other) {}
+SignalConnectionHolder::SignalConnectionHolder(SignalConnectionRef other) : heldConnection(other) {}
 
 SignalConnectionHolder::~SignalConnectionHolder() {
     // printf("Prediscon!\n");
@@ -97,7 +97,7 @@ SignalConnectionHolder::~SignalConnectionHolder() {
 
 //
 
-SignalConnectionRef Signal::Connect(std::function<void(std::vector<Data::Variant>)> callback) {
+SignalConnectionRef Signal::Connect(std::function<void(std::vector<Variant>)> callback) {
     auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<CSignalConnection>(callback, weak_from_this()));
     connections.push_back(conn);
     return SignalConnectionRef(conn);
@@ -109,7 +109,7 @@ SignalConnectionRef Signal::Connect(lua_State* state) {
     return SignalConnectionRef(conn);
 }
 
-SignalConnectionRef Signal::Once(std::function<void(std::vector<Data::Variant>)> callback) {
+SignalConnectionRef Signal::Once(std::function<void(std::vector<Variant>)> callback) {
     auto conn = std::dynamic_pointer_cast<SignalConnection>(std::make_shared<CSignalConnection>(callback, weak_from_this()));
     onceConnections.push_back(conn);
     return SignalConnectionRef(conn);
@@ -132,7 +132,7 @@ int Signal::Wait(lua_State* thread) {
     return lua_yield(thread, 0);
 }
 
-void Signal::Fire(std::vector<Data::Variant> args) {
+void Signal::Fire(std::vector<Variant> args) {
     for (std::shared_ptr<SignalConnection> connection : connections) {
         connection->Call(args);
     }
@@ -148,7 +148,7 @@ void Signal::Fire(std::vector<Data::Variant> args) {
     auto prevThreads = std::move(waitingThreads);
     waitingThreads = std::vector<std::pair<int, lua_State*>>();
     for (auto& [threadId, thread] : prevThreads) {
-        for (Data::Variant arg : args) {
+        for (Variant arg : args) {
             arg.PushLuaValue(thread);
         }
 
@@ -165,7 +165,7 @@ void Signal::Fire(std::vector<Data::Variant> args) {
 }
 
 void Signal::Fire() {
-    return Fire(std::vector<Data::Variant> {});
+    return Fire(std::vector<Variant> {});
 }
 
 void Signal::DisconnectAll() {
@@ -222,29 +222,27 @@ static const struct luaL_Reg signal_metatable [] = {
     {NULL, NULL} /* end of array */
 };
 
-Data::SignalRef::SignalRef(std::weak_ptr<Signal> ref) : signal(ref) {}
-Data::SignalRef::~SignalRef() = default;
+SignalRef::SignalRef(std::weak_ptr<Signal> ref) : signal(ref) {}
+SignalRef::~SignalRef() = default;
 
-const Data::TypeInfo Data::SignalRef::TYPE = {
+const TypeInfo SignalRef::TYPE = {
     .name = "Signal",
-    .fromLuaValue = &Data::SignalRef::FromLuaValue,
+    .fromLuaValue = &SignalRef::FromLuaValue,
 };
 
-const Data::TypeInfo& Data::SignalRef::GetType() const { return Data::SignalRef::TYPE; };
-
-const Data::String Data::SignalRef::ToString() const {
-    return Data::String("Signal");
+const std::string SignalRef::ToString() const {
+    return "Signal";
 }
 
-Data::SignalRef::operator std::weak_ptr<Signal>() {
+SignalRef::operator std::weak_ptr<Signal>() {
     return signal;
 }
 
-void Data::SignalRef::Serialize(pugi::xml_node node) const {
+void SignalRef::Serialize(pugi::xml_node node) const {
     // Not serializable
 }
 
-void Data::SignalRef::PushLuaValue(lua_State* L) const {
+void SignalRef::PushLuaValue(lua_State* L) const {
     int n = lua_gettop(L);
 
     auto userdata = (std::weak_ptr<Signal>**)lua_newuserdata(L, sizeof(std::weak_ptr<Signal>));
@@ -257,10 +255,10 @@ void Data::SignalRef::PushLuaValue(lua_State* L) const {
     lua_setmetatable(L, n+1);
 }
 
-result<Data::Variant, LuaCastError> Data::SignalRef::FromLuaValue(lua_State* L, int idx) {
+result<Variant, LuaCastError> SignalRef::FromLuaValue(lua_State* L, int idx) {
     auto userdata = (std::weak_ptr<Signal>**)luaL_checkudata(L, 1, "__mt_signal");
     lua_pop(L, 1);
-    return Data::Variant(Data::SignalRef(**userdata));
+    return Variant(SignalRef(**userdata));
 }
 
 static int signal_gc(lua_State* L) {
@@ -343,29 +341,27 @@ static const struct luaL_Reg signalconnection_metatable [] = {
     {NULL, NULL} /* end of array */
 };
 
-Data::SignalConnectionRef::SignalConnectionRef(std::weak_ptr<SignalConnection> ref) : signalConnection(ref) {}
-Data::SignalConnectionRef::~SignalConnectionRef() = default;
+SignalConnectionRef::SignalConnectionRef(std::weak_ptr<SignalConnection> ref) : signalConnection(ref) {}
+SignalConnectionRef::~SignalConnectionRef() = default;
 
-const Data::TypeInfo Data::SignalConnectionRef::TYPE = {
+const TypeInfo SignalConnectionRef::TYPE = {
     .name = "Signal",
-    .fromLuaValue = &Data::SignalConnectionRef::FromLuaValue,
+    .fromLuaValue = &SignalConnectionRef::FromLuaValue,
 };
 
-const Data::TypeInfo& Data::SignalConnectionRef::GetType() const { return Data::SignalConnectionRef::TYPE; };
-
-const Data::String Data::SignalConnectionRef::ToString() const {
-    return Data::String("Connection");
+const std::string SignalConnectionRef::ToString() const {
+    return "Connection";
 }
 
-Data::SignalConnectionRef::operator std::weak_ptr<SignalConnection>() {
+SignalConnectionRef::operator std::weak_ptr<SignalConnection>() {
     return signalConnection;
 }
 
-void Data::SignalConnectionRef::Serialize(pugi::xml_node node) const {
+void SignalConnectionRef::Serialize(pugi::xml_node node) const {
     // Not serializable
 }
 
-void Data::SignalConnectionRef::PushLuaValue(lua_State* L) const {
+void SignalConnectionRef::PushLuaValue(lua_State* L) const {
     int n = lua_gettop(L);
 
     auto userdata = (std::weak_ptr<SignalConnection>**)lua_newuserdata(L, sizeof(std::weak_ptr<SignalConnection>));
@@ -378,10 +374,10 @@ void Data::SignalConnectionRef::PushLuaValue(lua_State* L) const {
     lua_setmetatable(L, n+1);
 }
 
-result<Data::Variant, LuaCastError> Data::SignalConnectionRef::FromLuaValue(lua_State* L, int idx) {
+result<Variant, LuaCastError> SignalConnectionRef::FromLuaValue(lua_State* L, int idx) {
     auto userdata = (std::weak_ptr<SignalConnection>**)luaL_checkudata(L, 1, "__mt_signalconnection");
     lua_pop(L, 1);
-    return Data::Variant(Data::SignalConnectionRef(**userdata));
+    return Variant(SignalConnectionRef(**userdata));
 }
 
 static int signalconnection_tostring(lua_State* L) {

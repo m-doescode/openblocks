@@ -15,7 +15,7 @@
 class Instance;
 class Signal;
 
-namespace Data { class SignalConnectionRef; }
+class SignalConnectionRef;
 
 class SignalConnection : public std::enable_shared_from_this<SignalConnection> {
 protected:
@@ -23,7 +23,7 @@ protected:
 
     SignalConnection(std::weak_ptr<Signal> parent);
 
-    virtual void Call(std::vector<Data::Variant>) = 0;
+    virtual void Call(std::vector<Variant>) = 0;
     friend Signal;
 public:
     inline bool Connected() { return !parentSignal.expired(); };
@@ -33,13 +33,13 @@ public:
 };
 
 class CSignalConnection : public SignalConnection {
-    std::function<void(std::vector<Data::Variant>)> function;
+    std::function<void(std::vector<Variant>)> function;
 
     friend Signal;
 protected:
-    void Call(std::vector<Data::Variant>) override;
+    void Call(std::vector<Variant>) override;
 public:
-    CSignalConnection(std::function<void(std::vector<Data::Variant>)>, std::weak_ptr<Signal> parent);
+    CSignalConnection(std::function<void(std::vector<Variant>)>, std::weak_ptr<Signal> parent);
 };
 
 class LuaSignalConnection : public SignalConnection {
@@ -48,7 +48,7 @@ class LuaSignalConnection : public SignalConnection {
 
     friend Signal;
 protected:
-    void Call(std::vector<Data::Variant>) override;
+    void Call(std::vector<Variant>) override;
 public:
     LuaSignalConnection(lua_State*, std::weak_ptr<Signal> parent);
     LuaSignalConnection (const LuaSignalConnection&) = delete;
@@ -63,7 +63,7 @@ class SignalConnectionHolder {
 public:
     SignalConnectionHolder();
     SignalConnectionHolder(std::shared_ptr<SignalConnection>);
-    SignalConnectionHolder(Data::SignalConnectionRef other);
+    SignalConnectionHolder(SignalConnectionRef other);
     ~SignalConnectionHolder();
 
     // Prevent SignalConnectionHolder being accidentally copied, making it useless
@@ -90,12 +90,12 @@ public:
     Signal& operator= (const Signal&) = delete;
 
     void DisconnectAll();
-    void Fire(std::vector<Data::Variant> args);
+    void Fire(std::vector<Variant> args);
     void Fire();
-    Data::SignalConnectionRef Connect(std::function<void(std::vector<Data::Variant>)> callback);
-    Data::SignalConnectionRef Connect(lua_State*);
-    Data::SignalConnectionRef Once(std::function<void(std::vector<Data::Variant>)> callback);
-    Data::SignalConnectionRef Once(lua_State*);
+    SignalConnectionRef Connect(std::function<void(std::vector<Variant>)> callback);
+    SignalConnectionRef Connect(lua_State*);
+    SignalConnectionRef Once(std::function<void(std::vector<Variant>)> callback);
+    SignalConnectionRef Once(lua_State*);
     int Wait(lua_State*);
 };
 
@@ -105,43 +105,36 @@ public:
     virtual ~SignalSource();
 };
 
-namespace Data {
-    class SignalRef : public Data::Base {
-        std::weak_ptr<Signal> signal;
+class SignalRef {
+    std::weak_ptr<Signal> signal;
 
-    public:
-        SignalRef(std::weak_ptr<Signal>);
-        ~SignalRef();
+public:
+    SignalRef(std::weak_ptr<Signal>);
+    ~SignalRef();
 
-        virtual const TypeInfo& GetType() const override;
-        static const TypeInfo TYPE;
+    static const TypeInfo TYPE;
 
-        operator std::weak_ptr<Signal>();
+    operator std::weak_ptr<Signal>();
 
-        virtual const Data::String ToString() const override;
-        virtual void Serialize(pugi::xml_node node) const override;
-        virtual void PushLuaValue(lua_State*) const override;
-        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
-    };
+    virtual const std::string ToString() const;
+    virtual void Serialize(pugi::xml_node node) const;
+    virtual void PushLuaValue(lua_State*) const;
+    static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
+};
 
-    class SignalConnectionRef : public Data::Base {
-        std::weak_ptr<SignalConnection> signalConnection;
+class SignalConnectionRef {
+    std::weak_ptr<SignalConnection> signalConnection;
 
-    public:
-        SignalConnectionRef(std::weak_ptr<SignalConnection>);
-        ~SignalConnectionRef();
+public:
+    SignalConnectionRef(std::weak_ptr<SignalConnection>);
+    ~SignalConnectionRef();
 
-        virtual const TypeInfo& GetType() const override;
-        static const TypeInfo TYPE;
+    static const TypeInfo TYPE;
 
-        operator std::weak_ptr<SignalConnection>();
+    operator std::weak_ptr<SignalConnection>();
 
-        virtual const Data::String ToString() const override;
-        virtual void Serialize(pugi::xml_node node) const override;
-        virtual void PushLuaValue(lua_State*) const override;
-        static result<Data::Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
-    };
-}
-
-using Data::SignalRef;
-using Data::SignalConnectionRef;
+    virtual const std::string ToString() const;
+    virtual void Serialize(pugi::xml_node node) const;
+    virtual void PushLuaValue(lua_State*) const;
+    static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
+};

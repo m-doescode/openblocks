@@ -1,7 +1,7 @@
 // TEMPORARY COMMON DATA FOR DIFFERENT INTERNAL COMPONENTS
 
 #include "objects/datamodel.h"
-#include "datatypes/meta.h"
+#include "datatypes/variant.h"
 #include "common.h"
 #include <memory>
 
@@ -34,7 +34,7 @@ void addSelectionListener(SelectionUpdateHandler handler) {
     selectionUpdateListeners.push_back(handler);
 }
 
-void sendPropertyUpdatedSignal(std::shared_ptr<Instance> instance, std::string property, Data::Variant newValue) {
+void sendPropertyUpdatedSignal(std::shared_ptr<Instance> instance, std::string property, Variant newValue) {
     for (PropertyUpdateHandler handler : propertyUpdatelisteners) {
         handler(instance, property, newValue);
     }
