@@ -6,6 +6,7 @@
 #include <QOpenGLWidget>
 #include <QWidget>
 #include <memory>
+#include <qmenu.h>
 
 class HandleFace;
 class MainWindow;
@@ -16,6 +17,7 @@ public:
     void updateCycle();
     std::shared_ptr<Part> lastPart;
 
+    void buildContextMenu();
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
@@ -35,6 +37,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent* evt) override;
     void keyPressEvent(QKeyEvent* evt) override;
     void keyReleaseEvent(QKeyEvent* evt) override;
+
+    QMenu contextMenu;
 
     MainWindow* mainWindow();
     float snappingFactor();

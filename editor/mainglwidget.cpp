@@ -4,6 +4,7 @@
 #include <qnamespace.h>
 #include <qsoundeffect.h>
 #include <string>
+#include "./ui_mainwindow.h"
 #include "mainglwidget.h"
 #include "datatypes/vector.h"
 #include "handles.h"
@@ -19,10 +20,11 @@
 #include "datatypes/meta.h"
 
 #define PI 3.14159
+#define M_mainWindow dynamic_cast<MainWindow*>(window())
 
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
-MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent) {
+MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent), contextMenu(this) {
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     setMouseTracking(true);
 }
@@ -115,6 +117,7 @@ CFrame snapCFrame(CFrame frame) {
     return CFrame(frame.Position(), frame.Position() + closestVec1, closestVec2);
 }
 
+bool tryMouseContextMenu = false;
 bool isMouseDragging = false;
 std::weak_ptr<Part> draggingObject;
 std::optional<HandleFace> draggingHandle;
@@ -339,6 +342,7 @@ void MainGLWidget::wheelEvent(QWheelEvent* evt) {
 }
 
 void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
+    tryMouseContextMenu = false;
     handleCameraRotate(evt);
     handleObjectDrag(evt);
     handleCursorChange(evt);
@@ -357,6 +361,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
 }
 
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
+    tryMouseContextMenu = evt->button() == Qt::RightButton;
     switch(evt->button()) {
     // Camera drag
     case Qt::RightButton: {
@@ -443,6 +448,23 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     isMouseDragging = false;
     draggingObject = {};
     draggingHandle = std::nullopt;
+
+    // Open context menu
+    if (tryMouseContextMenu)
+        contextMenu.exec(QCursor::pos());
+    tryMouseContextMenu = false;
+}
+
+void MainGLWidget::buildContextMenu() {
+    contextMenu.addAction(M_mainWindow->ui->actionDelete);
+    contextMenu.addSeparator();
+    contextMenu.addAction(M_mainWindow->ui->actionCopy);
+    contextMenu.addAction(M_mainWindow->ui->actionCut);
+    contextMenu.addAction(M_mainWindow->ui->actionPaste);
+    contextMenu.addAction(M_mainWindow->ui->actionPasteInto);
+    contextMenu.addSeparator();
+    contextMenu.addAction(M_mainWindow->ui->actionSaveModel);
+    contextMenu.addAction(M_mainWindow->ui->actionInsertModel);
 }
 
 static int moveZ = 0;

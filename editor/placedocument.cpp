@@ -74,6 +74,7 @@ void PlaceDocument::timerEvent(QTimerEvent* evt) {
 
 void PlaceDocument::init() {
     timer.start(33, this);
+    placeWidget->buildContextMenu();
 
     std::shared_ptr<Part> lastPart;
     // Baseplate

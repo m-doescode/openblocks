@@ -85,6 +85,8 @@ MainWindow::MainWindow(QWidget *parent)
         this->close();
     });
 
+    ui->explorerView->buildContextMenu();
+
     connectActionHandlers();
 
     // Update properties
@@ -143,10 +145,6 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
 }
 
 void MainWindow::connectActionHandlers() {
-    // Explorer View
-
-    ui->explorerView->buildContextMenu();
-
     connect(ui->actionToolSelect, &QAction::triggered, this, [&]() { selectedTool = TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_MOVE : TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_SCALE : TOOL_SELECT; updateToolbars(); });
