@@ -19,7 +19,7 @@
 #endif
 }
 
-const TypeInfo* VARIANT_TYPES[] {
+const TypeDescriptor* VARIANT_TYPES[] {
     &NULL_TYPE,
     &BOOL_TYPE,
     &INT_TYPE,
@@ -42,20 +42,18 @@ void Variant::Serialize(pugi::xml_node node) const {
 }
 
 void Variant::PushLuaValue(lua_State* state) const {
+    printf("What %zu\n", wrapped.index());
     VARIANT_TYPES[wrapped.index()]->pushLuaValue(*this, state);
 }
 
-Variant Variant::Deserialize(pugi::xml_node node) {
-    if (TYPE_MAP.count(node.name()) == 0) {
-        Logger::fatalErrorf("Unknown type for property: '%s'", node.name());
-        panic();
-    }
-
-    const TypeInfo* type = TYPE_MAP[node.name()];
-    return type->deserializer(node);
+Variant Variant::Deserialize(pugi::xml_node node, const TypeInfo type) {
+    if (type.type == DATA_VALUE)
+        return type.descriptor->deserializer(node);
+    else
+        panic(); //TODO: NYI
 }
 
-std::map<std::string, const TypeInfo*> TYPE_MAP = {
+std::map<std::string, const TypeDescriptor*> TYPE_MAP = {
     { "null", &NULL_TYPE },
     { "bool", &BOOL_TYPE },
     { "int", &INT_TYPE },

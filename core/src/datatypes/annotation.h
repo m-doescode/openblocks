@@ -26,7 +26,7 @@
 
 #define AUTOGEN_PREAMBLE_DATA \
 public: \
-static const TypeInfo TYPE; \
+static const TypeDescriptor TYPE; \
 virtual void PushLuaValue(lua_State*) const; \
 static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx); \
 private:

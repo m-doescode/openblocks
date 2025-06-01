@@ -270,11 +270,11 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
         PropertyMeta meta = GetPropertyMeta(name).expect("Meta of declared property is missing");
         if (meta.flags & (PROP_NOSAVE | PROP_READONLY)) continue; // This property should not be serialized. Skip...
 
-        pugi::xml_node propertyNode = propertiesNode.append_child(meta.type->name);
+        pugi::xml_node propertyNode = propertiesNode.append_child(meta.type.type == DATA_ENUM ? "token" : meta.type.descriptor->name);
         propertyNode.append_attribute("name").set_value(name);
 
         // Update std::shared_ptr<Instance> properties using map above
-        if (meta.type == &InstanceRef::TYPE) {
+        if (meta.type.type == DATA_VALUE && meta.type.descriptor == &InstanceRef::TYPE) {
             std::weak_ptr<Instance> refWeak = GetPropertyValue(name).expect("Declared property is missing").get<InstanceRef>();
             if (refWeak.expired()) continue;
 
@@ -332,9 +332,10 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
             Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
             continue;
         }
+        auto meta = meta_.expect();
 
         // Update std::shared_ptr<Instance> properties using map above
-        if (meta_.expect().type == &InstanceRef::TYPE) {
+        if (meta.type.type == DATA_VALUE && meta.type.descriptor == &InstanceRef::TYPE) {
             if (propertyNode.text().empty())
                 continue;
 
@@ -353,7 +354,7 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
                 object->SetPropertyValue(propertyName, InstanceRef()).expect();
             }
         } else {
-            Variant value = Variant::Deserialize(propertyNode);
+            Variant value = Variant::Deserialize(propertyNode, meta.type);
             object->SetPropertyValue(propertyName, value).expect("Declared property was missing");
         }
     }
@@ -436,7 +437,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
         if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
 
         // Update std::shared_ptr<Instance> properties using map above
-        if (meta.type == &InstanceRef::TYPE) {
+        if (meta.type.type == DATA_VALUE && meta.type.descriptor == &InstanceRef::TYPE) {
             std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<InstanceRef>();
             if (refWeak.expired()) continue;
 
@@ -486,7 +487,7 @@ std::vector<std::pair<std::string, std::shared_ptr<Instance>>> Instance::GetRefe
 
     for (std::string property : propertyNames) {
         PropertyMeta meta = GetPropertyMeta(property).expect();
-        if (meta.type != &InstanceRef::TYPE) continue;
+        if (meta.type.type != DATA_VALUE || meta.type.descriptor != &InstanceRef::TYPE) continue;
 
         std::weak_ptr<Instance> ref = GetPropertyValue(property).expect().get<InstanceRef>();
         if (ref.expired()) continue;

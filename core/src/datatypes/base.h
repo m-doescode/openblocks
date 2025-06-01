@@ -3,6 +3,7 @@
 #include <string>
 #include <functional>
 #include <optional>
+#include "datatypes/enum.h"
 #include "error/result.h"
 #include "error/data.h"
 
@@ -18,7 +19,7 @@ typedef std::function<std::optional<Variant>(std::string)> FromString;
 typedef std::function<result<Variant, LuaCastError>(lua_State*, int idx)> FromLuaValue;
 typedef std::function<void(Variant self, lua_State*)> PushLuaValue;
 
-struct TypeInfo {
+struct TypeDescriptor {
     std::string name;
     Serializer serializer;
     Deserializer deserializer;
@@ -26,4 +27,24 @@ struct TypeInfo {
     FromString fromString;
     PushLuaValue pushLuaValue;
     FromLuaValue fromLuaValue;
+};
+
+enum DataType {
+    // This distinction is not currently useful, so to
+    // minimize complexity, there will only be two categories
+    // (for now)
+    //DATA_PRIMITIVE,
+    //DATA_COMPOUND,
+    DATA_VALUE,
+    DATA_ENUM,
+};
+
+struct TypeInfo {
+    DataType type;
+    union {
+        const TypeDescriptor* descriptor;
+        _EnumData* enumData;
+    };
+    
+    inline TypeInfo(const TypeDescriptor* descriptor) : type(DATA_VALUE), descriptor(descriptor) {}
 };

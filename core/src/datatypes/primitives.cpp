@@ -30,7 +30,7 @@ result<Variant, LuaCastError> Null_FromLuaValue(lua_State* L, int idx) {
     return Variant(std::monostate());
 }
 
-const TypeInfo NULL_TYPE {
+const TypeDescriptor NULL_TYPE {
     "null",
     Null_Serialize,
     Null_Deserialize,
@@ -70,7 +70,7 @@ result<Variant, LuaCastError> Bool_FromLuaValue(lua_State* L, int idx) {
     return Variant(lua_toboolean(L, idx));
 }
 
-const TypeInfo BOOL_TYPE {
+const TypeDescriptor BOOL_TYPE {
     "bool",
     Bool_Serialize,
     Bool_Deserialize,
@@ -113,7 +113,7 @@ result<Variant, LuaCastError> Int_FromLuaValue(lua_State* L, int idx) {
     return Variant((int)lua_tonumber(L, idx));
 }
 
-const TypeInfo INT_TYPE {
+const TypeDescriptor INT_TYPE {
     "int",
     Int_Serialize,
     Int_Deserialize,
@@ -158,7 +158,7 @@ result<Variant, LuaCastError> Float_FromLuaValue(lua_State* L, int idx) {
     return Variant((float)lua_tonumber(L, idx));
 }
 
-const TypeInfo FLOAT_TYPE {
+const TypeDescriptor FLOAT_TYPE {
     "float",
     Float_Serialize,
     Float_Deserialize,
@@ -198,7 +198,7 @@ result<Variant, LuaCastError> String_FromLuaValue(lua_State* L, int idx) {
     return Variant(lua_tostring(L, idx));
 }
 
-const TypeInfo STRING_TYPE {
+const TypeDescriptor STRING_TYPE {
     "string",
     String_Serialize,
     String_Deserialize,

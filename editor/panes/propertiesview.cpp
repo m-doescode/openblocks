@@ -53,7 +53,7 @@ public:
         Variant currentValue = inst->GetPropertyValue(propertyName).expect();
 
         if (isComposite) {
-            if (meta.type == &Vector3::TYPE) {
+            if (meta.type.descriptor == &Vector3::TYPE) {
                 Vector3 vector = currentValue.get<Vector3>();
                 float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
 
@@ -66,7 +66,9 @@ public:
             return nullptr;
         }
 
-        if (meta.type == &FLOAT_TYPE) {
+        if (meta.type.type == DATA_ENUM) {
+
+        } else if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
             spinBox->setValue(currentValue.get<float>());
 
@@ -77,24 +79,24 @@ public:
             }
 
             return spinBox;
-        } else if (meta.type == &INT_TYPE) {
+        } else if (meta.type.descriptor == &INT_TYPE) {
             QSpinBox* spinBox = new QSpinBox(parent);
             spinBox->setValue(currentValue.get<int>());
 
             return spinBox;
-        } else if (meta.type == &STRING_TYPE) {
+        } else if (meta.type.descriptor == &STRING_TYPE) {
             QLineEdit* lineEdit = new QLineEdit(parent);
             lineEdit->setText(QString::fromStdString(currentValue.get<std::string>()));
 
             return lineEdit;
-        } else if (meta.type == &Color3::TYPE) {
+        } else if (meta.type.descriptor == &Color3::TYPE) {
             QColorDialog* colorDialog = new QColorDialog(parent->window());
 
             Color3 color = currentValue.get<Color3>();
             colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
 
             return colorDialog;
-        } else if (meta.type->fromString) {
+        } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = new QLineEdit(parent);
             lineEdit->setText(QString::fromStdString(currentValue.ToString()));
 
@@ -119,7 +121,7 @@ public:
         Variant currentValue = inst->GetPropertyValue(propertyName).expect();
         
         if (isComposite) {
-            if (meta.type == &Vector3::TYPE) {
+            if (meta.type.descriptor == &Vector3::TYPE) {
                 Vector3 vector = currentValue.get<Vector3>();
                 float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
 
@@ -132,24 +134,26 @@ public:
             return;
         }
 
-        if (meta.type == &FLOAT_TYPE) {
+        if (meta.type.type == DATA_ENUM) {
+
+        } else if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
             spinBox->setValue(currentValue.get<float>());
-        } else if (meta.type == &INT_TYPE) {
+        } else if (meta.type.descriptor == &INT_TYPE) {
             QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
 
             spinBox->setValue(currentValue.get<int>());
-        } else if (meta.type == &STRING_TYPE) {
+        } else if (meta.type.descriptor == &STRING_TYPE) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             lineEdit->setText(QString::fromStdString((std::string)currentValue.get<std::string>()));
-        } else if (meta.type == &Color3::TYPE) {
+        } else if (meta.type.descriptor == &Color3::TYPE) {
             QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
 
             Color3 color = currentValue.get<Color3>();
             colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
-        } else if (meta.type->fromString) {
+        } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             lineEdit->setText(QString::fromStdString((std::string)currentValue.ToString()));
@@ -170,7 +174,7 @@ public:
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
         if (isComposite) {
-            if (meta.type == &Vector3::TYPE) {
+            if (meta.type.descriptor == &Vector3::TYPE) {
                 QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
                 float value = spinBox->value();
 
@@ -187,22 +191,24 @@ public:
             return;
         }
 
-        if (meta.type == &FLOAT_TYPE) {
+        if (meta.type.type == DATA_ENUM) {
+
+        } else if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
             inst->SetPropertyValue(propertyName, (float)spinBox->value()).expect();
             model->setData(index, spinBox->value());
-        } else if (meta.type == &INT_TYPE) {
+        } else if (meta.type.descriptor == &INT_TYPE) {
             QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
 
             inst->SetPropertyValue(propertyName, (int)spinBox->value()).expect();
             model->setData(index, spinBox->value());
-        } else if (meta.type == &STRING_TYPE) {
+        } else if (meta.type.descriptor == &STRING_TYPE) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
             inst->SetPropertyValue(propertyName, lineEdit->text().toStdString()).expect();
             model->setData(index, lineEdit->text());
-        } else if (meta.type == &Color3::TYPE) {
+        } else if (meta.type.descriptor == &Color3::TYPE) {
             QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
 
             QColor color = colorDialog->currentColor();
@@ -210,14 +216,14 @@ public:
             inst->SetPropertyValue(propertyName, color3).expect();
             model->setData(index, QString::fromStdString(color3.ToString()), Qt::DisplayRole);
             model->setData(index, color, Qt::DecorationRole);
-        } else if (meta.type->fromString) {
+        } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
-            std::optional<Variant> parsedResult = meta.type->fromString(lineEdit->text().toStdString());
+            std::optional<Variant> parsedResult = meta.type.descriptor->fromString(lineEdit->text().toStdString());
             if (!parsedResult) return;
             inst->SetPropertyValue(propertyName, parsedResult.value()).expect();
             model->setData(index, QString::fromStdString(parsedResult.value().ToString()));
-            view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type, parsedResult.value());
+            view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type.descriptor, parsedResult.value());
         }
     }
 };
@@ -299,33 +305,33 @@ void PropertiesView::setSelected(std::optional<std::shared_ptr<Instance>> instan
         PropertyMeta meta = inst->GetPropertyMeta(property).expect();
         Variant currentValue = inst->GetPropertyValue(property).expect();
 
-        if (meta.type == &CFrame::TYPE || meta.flags & PROP_HIDDEN) continue;
+        if (meta.type.descriptor == &CFrame::TYPE || meta.flags & PROP_HIDDEN) continue;
 
         QTreeWidgetItem* item = new QTreeWidgetItem;
         item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
         item->setData(0, Qt::DisplayRole, QString::fromStdString(property));
         
-        if (meta.type == &BOOL_TYPE) {
+        if (meta.type.descriptor == &BOOL_TYPE) {
             item->setCheckState(1, (bool)currentValue.get<bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
-        } else if (meta.type == &Color3::TYPE) {
+        } else if (meta.type.descriptor == &Color3::TYPE) {
             Color3 color = currentValue.get<Color3>();
             item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-        } else if (meta.type == &Vector3::TYPE) {
+        } else if (meta.type.descriptor == &Vector3::TYPE) {
             Vector3 vector = currentValue.get<Vector3>();
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-        // } else if (meta.type == &CFrame::TYPE) {
+        // } else if (meta.type.descriptor == &CFrame::TYPE) {
         //     Vector3 vector = currentValue.get<CFrame>().Position();
         //     item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         } else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
 
-        if (meta.type != &Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
+        if (meta.type.type == DATA_VALUE && meta.type.descriptor != &Color3::TYPE && (!meta.type.descriptor->fromString || meta.flags & PROP_READONLY)) {
             item->setDisabled(true);
         }
 
-        rebuildCompositeProperty(item, meta.type, currentValue);
+        rebuildCompositeProperty(item, meta.type.descriptor, currentValue);
 
         propertyCategories[meta.category]->addChild(item);
         propertyCategories[meta.category]->setExpanded(true);
@@ -353,12 +359,12 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     std::string propertyName = item->data(0, Qt::DisplayRole).toString().toStdString();
     PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
-    if (meta.type == &BOOL_TYPE) {
+    if (meta.type.descriptor == &BOOL_TYPE) {
         inst->SetPropertyValue(propertyName, item->checkState(1) == Qt::Checked).expect();
     }
 }
 
-void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const TypeInfo* type, Variant value) {
+void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const TypeDescriptor* type, Variant value) {
     if (type == &Vector3::TYPE) {
         // https://forum.qt.io/post/266837
         foreach(auto i, item->takeChildren()) delete i;
@@ -393,7 +399,7 @@ void PropertiesView::onPropertyUpdated(std::shared_ptr<Instance> inst, std::stri
     PropertyMeta meta = inst->GetPropertyMeta(property).expect();
     Variant currentValue = inst->GetPropertyValue(property).expect();
     
-    if (meta.type == &CFrame::TYPE) return;
+    if (meta.type.descriptor == &CFrame::TYPE) return;
 
     for (int categoryItemIdx = 0; categoryItemIdx < topLevelItemCount(); categoryItemIdx++) {
         QTreeWidgetItem* categoryItem = topLevelItem(categoryItemIdx);
@@ -402,27 +408,27 @@ void PropertiesView::onPropertyUpdated(std::shared_ptr<Instance> inst, std::stri
 
             if (item->data(0, Qt::DisplayRole).toString().toStdString() != property) continue;
 
-            if (meta.type == &BOOL_TYPE) {
+            if (meta.type.descriptor == &BOOL_TYPE) {
                 // This is done because otherwise propertyChanged will catch this change erroneously
                 ignorePropertyUpdates = true;
                 item->setCheckState(1, (bool)currentValue.get<bool>() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
                 ignorePropertyUpdates = false;
-            } else if (meta.type == &Color3::TYPE) {
+            } else if (meta.type.descriptor == &Color3::TYPE) {
                 Color3 color = currentValue.get<Color3>();
                 item->setData(1, Qt::DecorationRole, QColor::fromRgbF(color.R(), color.G(), color.B()));
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-            } else if (meta.type == &Vector3::TYPE) {
+            } else if (meta.type.descriptor == &Vector3::TYPE) {
                 Vector3 vector = currentValue.get<Vector3>();
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
             } else {
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
             }
 
-            if (meta.type != &Color3::TYPE && (!meta.type->fromString || meta.flags & PROP_READONLY)) {
+            if (meta.type.type == DATA_VALUE && meta.type.descriptor != &Color3::TYPE && (!meta.type.descriptor->fromString || meta.flags & PROP_READONLY)) {
                 item->setDisabled(true);
             }
 
-            rebuildCompositeProperty(item, meta.type, currentValue);
+            rebuildCompositeProperty(item, meta.type.descriptor, currentValue);
 
             return;
         }

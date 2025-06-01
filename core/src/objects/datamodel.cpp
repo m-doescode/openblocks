@@ -131,7 +131,7 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
         if (meta.flags & (PROP_READONLY | PROP_NOSAVE)) continue;
 
         // Update std::shared_ptr<Instance> properties using map above
-        if (meta.type == &InstanceRef::TYPE) {
+        if (meta.type.type == DATA_VALUE && meta.type.descriptor == &InstanceRef::TYPE) {
             std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<InstanceRef>();
             if (refWeak.expired()) continue;
 

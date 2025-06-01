@@ -40,7 +40,7 @@ public:
     
     void Serialize(pugi::xml_node node) const;
     void PushLuaValue(lua_State* state) const;
-    static Variant Deserialize(pugi::xml_node node);
+    static Variant Deserialize(pugi::xml_node node, const TypeInfo);
 };
 
 template <typename T, typename R, typename ...Args>
@@ -58,4 +58,4 @@ std::function<R(Variant, Args...)> toVariantFunction(R(T::*f)(Args...) const) {
 }
 
 // Map of all data types to their type names
-extern std::map<std::string, const TypeInfo*> TYPE_MAP;
+extern std::map<std::string, const TypeDescriptor*> TYPE_MAP;

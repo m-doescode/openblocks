@@ -1,6 +1,5 @@
 #include "enum.h"
 
-
 Enum::Enum(_EnumData* data) : data(data) {}
 
 std::vector<EnumItem> Enum::GetEnumItems() {

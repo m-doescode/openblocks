@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base.h"
 #include <optional>
+#include <string>
 #include <vector>
 
 struct _EnumData {

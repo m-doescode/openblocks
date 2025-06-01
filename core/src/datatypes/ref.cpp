@@ -14,7 +14,7 @@ InstanceRef::InstanceRef() {};
 InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};
 InstanceRef::~InstanceRef() = default;
 
-const TypeInfo InstanceRef::TYPE = {
+const TypeDescriptor InstanceRef::TYPE = {
     .name = "Ref",
     .serializer = toVariantFunction(&InstanceRef::Serialize),
     .deserializer = &InstanceRef::Deserialize,
@@ -131,7 +131,8 @@ static int inst_newindex(lua_State* L) {
     if (key == "Parent" && inst->IsParentLocked())
         return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent().value()->name.c_str() : "NULL", inst->GetClass()->className.c_str());
 
-    result<Variant, LuaCastError> value = meta->type->fromLuaValue(L, -1);
+    // TODO: Make this work for enums, this is not a solution!!
+    result<Variant, LuaCastError> value = meta->type.descriptor->fromLuaValue(L, -1);
     lua_pop(L, 3);
 
     if (value.isError())

@@ -112,7 +112,7 @@ public:
     SignalRef(std::weak_ptr<Signal>);
     ~SignalRef();
 
-    static const TypeInfo TYPE;
+    static const TypeDescriptor TYPE;
 
     operator std::weak_ptr<Signal>();
 
@@ -129,7 +129,7 @@ public:
     SignalConnectionRef(std::weak_ptr<SignalConnection>);
     ~SignalConnectionRef();
 
-    static const TypeInfo TYPE;
+    static const TypeDescriptor TYPE;
 
     operator std::weak_ptr<SignalConnection>();
 

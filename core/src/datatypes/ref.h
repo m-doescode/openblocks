@@ -13,7 +13,7 @@ public:
     InstanceRef(std::weak_ptr<Instance>);
     ~InstanceRef();
 
-    static const TypeInfo TYPE;
+    static const TypeDescriptor TYPE;
 
     operator std::weak_ptr<Instance>();
 
