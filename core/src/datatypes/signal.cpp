@@ -227,6 +227,8 @@ SignalRef::~SignalRef() = default;
 
 const TypeInfo SignalRef::TYPE = {
     .name = "Signal",
+    .toString = toVariantFunction(&SignalRef::ToString),
+    .pushLuaValue = toVariantFunction(&SignalRef::PushLuaValue),
     .fromLuaValue = &SignalRef::FromLuaValue,
 };
 
@@ -346,6 +348,8 @@ SignalConnectionRef::~SignalConnectionRef() = default;
 
 const TypeInfo SignalConnectionRef::TYPE = {
     .name = "Signal",
+    .toString = toVariantFunction(&SignalConnectionRef::ToString),
+    .pushLuaValue = toVariantFunction(&SignalConnectionRef::PushLuaValue),
     .fromLuaValue = &SignalConnectionRef::FromLuaValue,
 };
 
