@@ -11,17 +11,20 @@ extern "C" { typedef struct lua_State lua_State; }
 namespace pugi { class xml_node; };
 
 class Variant;
-typedef std::function<void(Variant, pugi::xml_node)> Serializer;
-typedef std::function<Variant(pugi::xml_node)> Deserializer;
+struct TypeMeta;
+
+typedef std::function<void(Variant, pugi::xml_node)> Serialize;
+typedef std::function<result<Variant, DataParseError>(pugi::xml_node, const TypeMeta)> Deserialize;
 typedef std::function<std::string(Variant)> ToString;
-typedef std::function<std::optional<Variant>(std::string)> FromString;
+typedef std::function<result<Variant, DataParseError>(std::string, const TypeMeta)> FromString;
 typedef std::function<result<Variant, LuaCastError>(lua_State*, int idx)> FromLuaValue;
 typedef std::function<void(Variant self, lua_State*)> PushLuaValue;
 
-struct TypeDescriptor {
+// Describes a concrete type
+struct TypeDesc {
     std::string name;
-    Serializer serializer;
-    Deserializer deserializer;
+    Serialize serialize;
+    Deserialize deserialize;
     ToString toString;
     FromString fromString;
     PushLuaValue pushLuaValue;
@@ -29,11 +32,17 @@ struct TypeDescriptor {
 };
 
 class Enum;
+struct InstanceType;
 
-struct TypeInfo {
-    const TypeDescriptor* descriptor;
-    Enum* enum_;
+// Describes a meta-type, which consists of a concrete type, and some generic argument.
+struct TypeMeta {
+    const TypeDesc* descriptor;
+    union {
+        Enum* enum_; // Applicable for EnumItem
+        InstanceType* instType; // Applicable for InstanceRef
+    };
 
-    inline TypeInfo(const TypeDescriptor* descriptor) : descriptor(descriptor) {}
-    TypeInfo(Enum*);
+    inline TypeMeta(const TypeDesc* descriptor) : descriptor(descriptor) {}
+    TypeMeta(Enum*);
+    TypeMeta(InstanceType*);
 };

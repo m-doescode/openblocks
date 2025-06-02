@@ -1,5 +1,6 @@
 #pragma once
 
+#include <type_traits>
 #include <variant>
 #include <map>
 #include "base.h"
@@ -7,6 +8,7 @@
 #include "datatypes/enum.h"
 #include "datatypes/ref.h"
 #include "datatypes/signal.h"
+#include "error/data.h"
 #include "vector.h"
 #include "cframe.h"
 
@@ -37,16 +39,16 @@ typedef std::variant<
 class Variant {
     __VARIANT_TYPE wrapped;
 public:
-    template <typename T> Variant(T obj) : wrapped(obj) {}
-    template <typename T> T get() { return std::get<T>(wrapped); }
+    template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, T>, int> = 0> Variant(T obj) : wrapped(obj) {}
+    template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, T>, int> = 0> T get() { return std::get<T>(wrapped); }
     std::string ToString() const;
     
-    const TypeInfo GetTypeInfo() const;
-    const TypeDescriptor* GetType() const;
+    const TypeMeta GetTypeMeta() const;
+    const TypeDesc* GetType() const;
 
     void Serialize(pugi::xml_node node) const;
     void PushLuaValue(lua_State* state) const;
-    static Variant Deserialize(pugi::xml_node node, const TypeInfo);
+    static result<Variant, DataParseError> Deserialize(pugi::xml_node node, const TypeMeta);
 };
 
 template <typename T, typename R, typename ...Args>
@@ -70,5 +72,23 @@ std::function<Variant(Args...)> toVariantGenerator(T(f)(Args...)) {
     };
 }
 
+template <typename T, typename ...Args, typename ...E>
+std::function<result<Variant, E...>(Args...)> toVariantGenerator(result<T, E...>(f)(Args...)) {
+    return [f](Args... args) -> result<Variant, E...> {
+        auto result = f(args...);
+        if (result.isSuccess()) return (Variant)(result.success().value());
+        return result.error().value();
+    };
+}
+
+template <typename T, typename ...Args, typename ...E>
+std::function<result<Variant, E...>(Args..., const TypeMeta)> toVariantGeneratorNoMeta(result<T, E...>(f)(Args...)) {
+    return [f](Args... args, const TypeMeta) -> result<Variant, E...> {
+        auto result = f(args...);
+        if (result.isSuccess()) return (Variant)(result.success().value());
+        return result.error().value();
+    };
+}
+
 // Map of all data types to their type names
-extern std::map<std::string, const TypeDescriptor*> TYPE_MAP;
+extern std::map<std::string, const TypeDesc*> TYPE_MAP;

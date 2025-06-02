@@ -3,6 +3,7 @@
 #include "base.h"
 #include "datatypes/annotation.h"
 #include "datatypes/vector.h"
+#include "error/data.h"
 #include <glm/ext/quaternion_float.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/matrix.hpp>
@@ -40,7 +41,7 @@ public:
 
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node parent) const;
-    static CFrame Deserialize(pugi::xml_node node);
+    static result<CFrame, DataParseError> Deserialize(pugi::xml_node node);
 
     static void PushLuaLibrary(lua_State*);
 

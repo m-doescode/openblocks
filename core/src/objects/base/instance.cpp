@@ -354,7 +354,12 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
                 object->SetPropertyValue(propertyName, InstanceRef()).expect();
             }
         } else {
-            Variant value = Variant::Deserialize(propertyNode, meta.type);
+            auto valueResult = Variant::Deserialize(propertyNode, meta.type);
+            if (valueResult.isError()) {
+                valueResult.logError();
+                continue;
+            }
+            auto value = valueResult.expect();
             object->SetPropertyValue(propertyName, value).expect("Declared property was missing");
         }
     }

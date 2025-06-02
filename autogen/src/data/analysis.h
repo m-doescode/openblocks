@@ -37,6 +37,8 @@ struct ClassAnalysis {
     std::string headerPath;
     bool hasFromString;
     bool isSerializable;
+    bool hasGenericDeserializer;
+    bool hasGenericFromString;
     std::vector<PropertyAnalysis> properties;
     std::vector<MethodAnalysis> methods;
     std::vector<PropertyAnalysis> staticProperties;

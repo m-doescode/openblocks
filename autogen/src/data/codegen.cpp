@@ -238,13 +238,13 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
     std::string fqn = state.name;
 
-    out <<  "static int data_gc(lua_State*);\n"
-            "static int data_index(lua_State*);\n"
-            "static int data_tostring(lua_State*);\n"
-            "static const struct luaL_Reg metatable [] = {\n"
-            "    {\"__gc\", data_gc},\n"
-            "    {\"__index\", data_index},\n"
-            "    {\"__tostring\", data_tostring},\n"
+    out <<  "static int data_" << state.name << "_gc(lua_State*);\n"
+            "static int data_" << state.name << "_index(lua_State*);\n"
+            "static int data_" << state.name << "_tostring(lua_State*);\n"
+            "static const struct luaL_Reg " << state.name << "_metatable [] = {\n"
+            "    {\"__gc\", data_" << state.name << "_gc},\n"
+            "    {\"__index\", data_" << state.name << "_index},\n"
+            "    {\"__tostring\", data_" << state.name << "_tostring},\n"
             "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
@@ -256,7 +256,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 
            "    // Create the library's metatable\n"
            "    luaL_newmetatable(L, \"__mt_" << state.name << "\");\n"
-           "    luaL_register(L, NULL, metatable);\n"
+           "    luaL_register(L, NULL, " << state.name << "_metatable);\n"
 
            "    lua_setmetatable(L, n+1);\n"
            "}\n\n";
@@ -271,7 +271,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 
     // Indexing methods and properties
 
-    out <<  "static int data_index(lua_State* L) {\n"
+    out <<  "static int data_" << state.name << "_index(lua_State* L) {\n"
             "    " << fqn << "* this_ = *(" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
             "\n"
             "    std::string key(lua_tostring(L, 2));\n"
@@ -323,7 +323,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 
     // ToString
 
-    out <<  "\nint data_tostring(lua_State* L) {\n"
+    out <<  "\nint data_" << state.name << "_tostring(lua_State* L) {\n"
     "    " << fqn << "* this_ = *(" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
     "    lua_pushstring(L, std::string(this_->ToString()).c_str());\n"
     "    return 1;\n"
@@ -331,7 +331,7 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 
     // Destructor
 
-    out <<  "\nint data_gc(lua_State* L) {\n"
+    out <<  "\nint data_" << state.name << "_gc(lua_State* L) {\n"
             "    " << fqn << "** userdata = (" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
             "    delete *userdata;\n"
             "    return 0;\n"
@@ -341,9 +341,12 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
 static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
     std::string fqn = state.name;
 
-    out <<  "static int lib_index(lua_State*);\n"
-            "static const struct luaL_Reg lib_metatable [] = {\n"
-            "    {\"__index\", lib_index},\n"
+    // If there are no static methods or properties, no need to create a library
+    if (state.staticMethods.size() == 0 && state.staticProperties.size() == 0) return;
+
+    out <<  "static int lib_" << state.name << "_index(lua_State*);\n"
+            "static const struct luaL_Reg lib_" << state.name << "_metatable [] = {\n"
+            "    {\"__index\", lib_" << state.name << "_index},\n"
             "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
@@ -355,7 +358,7 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
            "\n"
            "    // Create the library's metatable\n"
            "    luaL_newmetatable(L, \"__mt_lib_" << state.name << "\");\n"
-           "    luaL_register(L, NULL, lib_metatable);\n"
+           "    luaL_register(L, NULL, lib_" << state.name << "_metatable);\n"
            "    lua_setmetatable(L, -2);\n"
            "\n"
            "    lua_rawset(L, -3);\n"
@@ -364,7 +367,7 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
     
     // Indexing methods and properties
 
-    out <<  "static int lib_index(lua_State* L) {\n"
+    out <<  "static int lib_" << state.name << "_index(lua_State* L) {\n"
             "    std::string key(lua_tostring(L, 2));\n"
             "    lua_pop(L, 2);\n"
             "\n";
@@ -418,14 +421,24 @@ void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAn
     out << "#include \"datatypes/variant.h\"\n";
     out << "#include <pugixml.hpp>\n";
     out << "#include \"lua.h\"\n\n";
-    out << "const TypeDescriptor " << state.name << "::TYPE = {\n"
-        << "    .name = \"" << state.serializedName << "\",\n"
-        << "    .serializer = toVariantFunction(&" << state.name << "::Serialize),"
-        << "    .deserializer = toVariantGenerator(&" << state.name << "::Deserialize),\n"
-        << "    .toString = toVariantFunction(&" << state.name << "::ToString),";
-    if (state.hasFromString) out << "    .fromString = &" << state.name << "::FromString,\n";
+    out << "const TypeDesc " << state.name << "::TYPE = {\n"
+        << "    .name = \"" << state.serializedName << "\",\n";
+    if (state.isSerializable) {
+        out << "    .serialize = toVariantFunction(&" << state.name << "::Serialize),";
+        if (state.hasGenericDeserializer)
+            out << "    .deserialize = toVariantGenerator(&" << state.name << "::Deserialize),\n";
+        else
+            out << "    .deserialize = toVariantGeneratorNoMeta(&" << state.name << "::Deserialize),\n";
+    }
+    out << "    .toString = toVariantFunction(&" << state.name << "::ToString),";
+    if (state.hasFromString) {
+        if (state.hasGenericFromString)
+            out << "    .fromString = toVariantGenerator(&" << state.name << "::FromString),\n";
+        else
+            out << "    .fromString = toVariantGeneratorNoMeta(&" << state.name << "::FromString),\n";
+    }
     out << "    .pushLuaValue = toVariantFunction(&" << state.name << "::PushLuaValue),"
-        << "    .fromLuaValue = &" << state.name << "::FromLuaValue,\n"
+        << "    .fromLuaValue = toVariantGenerator(&" << state.name << "::FromLuaValue),\n"
         << "};\n\n";
 
     writeLuaMethodImpls(out, state);

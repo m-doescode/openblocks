@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "datatypes/annotation.h"
+#include "error/data.h"
 #include <glm/ext/vector_float3.hpp>
 
 class DEF_DATA Color3 {
@@ -21,7 +22,7 @@ public:
     virtual const std::string ToString() const;
     DEF_DATA_METHOD std::string ToHex() const;
     virtual void Serialize(pugi::xml_node node) const;
-    static Color3 Deserialize(pugi::xml_node node);
+    static result<Color3, DataParseError> Deserialize(pugi::xml_node node);
 
     static void PushLuaLibrary(lua_State*);
 

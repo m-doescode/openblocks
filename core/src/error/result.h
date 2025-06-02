@@ -24,6 +24,8 @@ class [[nodiscard]] result {
 
     std::variant<success_state, error_state> value;
 public:
+    // Helper for std::variant, etc.
+    template <typename ...T_Args, std::enable_if_t<std::is_constructible_v<T_Result, T_Args...>, int> = 0> result(T_Args... args) : value(success_state { T_Result(args...) }) {}
     result(T_Result success) : value(success_state { success }) {}
     result(std::variant<T_Errors...> error) : value(error_state { error }) {}
     template <typename T_Error, std::enable_if_t<std::disjunction_v<std::is_same<T_Error, T_Errors>...>, int> = 0>
@@ -61,7 +63,7 @@ public:
 
     // Equivalent to .success
     operator std::optional<T_Result>() { return success(); }
-    operator bool() { return isSuccess(); }
+    explicit operator bool() const { return isSuccess(); } // Explicity is necessary to prevent auto-casting from result to Variant, for instance
     bool operator !() { return isError(); }
 };
 

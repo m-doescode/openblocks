@@ -10,14 +10,16 @@
 #include "objects/base/member.h"
 #include <pugixml.hpp>
 
+TypeMeta::TypeMeta(InstanceType* instType) : instType(instType), descriptor(&InstanceRef::TYPE) {}
+
 InstanceRef::InstanceRef() {};
 InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};
 InstanceRef::~InstanceRef() = default;
 
-const TypeDescriptor InstanceRef::TYPE = {
+const TypeDesc InstanceRef::TYPE = {
     .name = "Ref",
-    .serializer = toVariantFunction(&InstanceRef::Serialize),
-    .deserializer = &InstanceRef::Deserialize,
+    .serialize = toVariantFunction(&InstanceRef::Serialize),
+    .deserialize = toVariantGeneratorNoMeta(&InstanceRef::Deserialize),
     .toString = toVariantFunction(&InstanceRef::ToString),
     .fromString = nullptr,
     .pushLuaValue = toVariantFunction(&InstanceRef::PushLuaValue),
@@ -39,7 +41,7 @@ void InstanceRef::Serialize(pugi::xml_node node) const {
     panic();
 }
 
-InstanceRef InstanceRef::Deserialize(pugi::xml_node node) {
+result<InstanceRef, DataParseError> InstanceRef::Deserialize(pugi::xml_node node) {
     // Handled by Instance
     panic();
 }

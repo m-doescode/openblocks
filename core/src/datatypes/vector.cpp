@@ -8,6 +8,7 @@
 #include <pugixml.hpp>
 #include "datatypes/base.h"
 #include "datatypes/variant.h"
+#include "error/data.h"
 #include <sstream>
 
 namespace rp = reactphysics3d;
@@ -87,15 +88,15 @@ void Vector3::Serialize(pugi::xml_node node) const {
     node.append_child("Z").text().set(std::to_string(this->Z()));
 }
 
-Vector3 Vector3::Deserialize(pugi::xml_node node) {
+result<Vector3, DataParseError> Vector3::Deserialize(pugi::xml_node node) {
     return Vector3(node.child("X").text().as_float(), node.child("Y").text().as_float(), node.child("Z").text().as_float());
 }
 
-std::optional<Variant> Vector3::FromString(std::string string) {
+result<Vector3, DataParseError> Vector3::FromString(std::string string) {
     float components[3];
 
     for (int i = 0; i < 3; i++) {
-        if (string.length() == 0) return std::nullopt;
+        if (string.length() == 0) return DataParseError(string, "Vector3");
         while (string[0] == ' ' && string.length() > 0) string.erase(0, 1);
         size_t nextPos = string.find(",");
         if (nextPos == -1) nextPos = string.length();
@@ -104,7 +105,7 @@ std::optional<Variant> Vector3::FromString(std::string string) {
 
         char* cpos;
         float value = std::strtof(term.c_str(), &cpos);
-        if (cpos == term.c_str()) return std::nullopt;
+        if (cpos == term.c_str()) return DataParseError(string, "Vector3");
 
         components[i] = value;
     }

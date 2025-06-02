@@ -1,8 +1,10 @@
 #include "enum.h"
 #include "datatypes/base.h"
 #include "datatypes/variant.h"
+#include "error/data.h"
+#include <pugixml.hpp>
 
-TypeInfo::TypeInfo(Enum* enum_) : enum_(enum_), descriptor(&EnumItem::TYPE) {}
+TypeMeta::TypeMeta(Enum* enum_) : enum_(enum_), descriptor(&EnumItem::TYPE) {}
 
 Enum::Enum(_EnumData* data) : data(data) {}
 
@@ -36,24 +38,29 @@ EnumItem::EnumItem(_EnumData* parentData, std::string name, int value) : parentD
 
 //
 
-std::string Enum::ToString() {
+std::string Enum::ToString() const {
     return "Enum." + this->data->name;
 }
 
-void Enum::PushLuaValue(lua_State*) {
+//
 
+std::string EnumItem::ToString() const {
+    return "Enum." + parentData->name + "." + name;
 }
 
-Variant Enum::FromLuaValue(lua_State*, int) {
-    
+void EnumItem::Serialize(pugi::xml_node node) const {
+    node.set_name("token");
+    node.text().set(value);
 }
 
-const TypeDescriptor Enum::TYPE {
-    .name = "Enum",
-    .toString = toVariantFunction(&Enum::ToString),
-    // .fromString = Enum_FromString,
-    // .pushLuaValue = &Enum_PushLuaValue,
-    .fromLuaValue = toVariantGenerator(Enum::FromLuaValue),
-    // .serializer = Enum_Serialize,
-    // .deserializer = Enum_Deserialize,
-};
+result<EnumItem, DataParseError> EnumItem::Deserialize(pugi::xml_node node, const TypeMeta info) {
+    auto result = info.enum_->FromValue(node.text().as_int());
+    if (result.has_value()) return result.value();
+    return DataParseError(node.text().as_string(), "EnumItem");
+}
+
+result<EnumItem, DataParseError> EnumItem::FromString(std::string string, const TypeMeta info) {
+    auto result = info.enum_->FromName(string);
+    if (result.has_value()) return result.value();
+    return DataParseError(string, "EnumItem");
+}

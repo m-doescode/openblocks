@@ -3,6 +3,7 @@
 #include "datatypes/base.h"
 #include "datatypes/variant.h"
 #include "datatypes/primitives.h"
+#include "error/data.h"
 #include "objects/base/member.h"
 
 #include <QColorDialog>
@@ -213,11 +214,12 @@ public:
         } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
-            std::optional<Variant> parsedResult = meta.type.descriptor->fromString(lineEdit->text().toStdString());
+            result<Variant, DataParseError> parsedResult = meta.type.descriptor->fromString(lineEdit->text().toStdString(), meta.type);
             if (!parsedResult) return;
-            inst->SetPropertyValue(propertyName, parsedResult.value()).expect();
-            model->setData(index, QString::fromStdString(parsedResult.value().ToString()));
-            view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type.descriptor, parsedResult.value());
+            Variant parsedValue = parsedResult.expect();
+            inst->SetPropertyValue(propertyName, parsedValue).expect();
+            model->setData(index, QString::fromStdString(parsedValue.ToString()));
+            view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type.descriptor, parsedValue);
         }
     }
 };
@@ -358,7 +360,7 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     }
 }
 
-void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const TypeDescriptor* type, Variant value) {
+void PropertiesView::rebuildCompositeProperty(QTreeWidgetItem *item, const TypeDesc* type, Variant value) {
     if (type == &Vector3::TYPE) {
         // https://forum.qt.io/post/266837
         foreach(auto i, item->takeChildren()) delete i;

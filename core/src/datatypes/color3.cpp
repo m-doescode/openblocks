@@ -1,5 +1,6 @@
 #include "color3.h"
 #include "datatypes/variant.h"
+#include "error/data.h"
 #include <pugixml.hpp>
 #include <sstream>
 #include <iomanip>
@@ -39,6 +40,6 @@ void Color3::Serialize(pugi::xml_node node) const {
     node.text().set(this->ToHex());
 }
 
-Color3 Color3::Deserialize(pugi::xml_node node) {
+result<Color3, DataParseError> Color3::Deserialize(pugi::xml_node node) {
     return Color3::FromHex(node.text().get());
 }

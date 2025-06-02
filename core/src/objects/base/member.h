@@ -24,7 +24,7 @@ enum PropertyCategory {
 const int PROPERTY_CATEGORY_MAX = PROP_CATEGORY_SURFACE_INPUT;
 
 struct PropertyMeta {
-    const TypeInfo type;
+    const TypeMeta type;
     PropertyFlags flags;
     PropertyCategory category = PROP_CATEGORY_DATA;
 };

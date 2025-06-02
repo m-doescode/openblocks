@@ -225,7 +225,7 @@ static const struct luaL_Reg signal_metatable [] = {
 SignalRef::SignalRef(std::weak_ptr<Signal> ref) : signal(ref) {}
 SignalRef::~SignalRef() = default;
 
-const TypeDescriptor SignalRef::TYPE = {
+const TypeDesc SignalRef::TYPE = {
     .name = "Signal",
     .toString = toVariantFunction(&SignalRef::ToString),
     .pushLuaValue = toVariantFunction(&SignalRef::PushLuaValue),
@@ -346,7 +346,7 @@ static const struct luaL_Reg signalconnection_metatable [] = {
 SignalConnectionRef::SignalConnectionRef(std::weak_ptr<SignalConnection> ref) : signalConnection(ref) {}
 SignalConnectionRef::~SignalConnectionRef() = default;
 
-const TypeDescriptor SignalConnectionRef::TYPE = {
+const TypeDesc SignalConnectionRef::TYPE = {
     .name = "Signal",
     .toString = toVariantFunction(&SignalConnectionRef::ToString),
     .pushLuaValue = toVariantFunction(&SignalConnectionRef::PushLuaValue),

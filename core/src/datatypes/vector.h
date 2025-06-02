@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "datatypes/annotation.h"
+#include "error/data.h"
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
 
@@ -24,8 +25,8 @@ public:
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node node) const;
 
-    static Vector3 Deserialize(pugi::xml_node node);
-    static std::optional<Variant> FromString(std::string);
+    static result<Vector3, DataParseError> Deserialize(pugi::xml_node node);
+    static result<Vector3, DataParseError> FromString(std::string);
     
     static void PushLuaLibrary(lua_State*);
 

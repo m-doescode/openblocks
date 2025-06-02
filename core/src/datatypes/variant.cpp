@@ -6,6 +6,7 @@
 #include "datatypes/ref.h"
 #include "datatypes/signal.h"
 #include "datatypes/vector.h"
+#include "error/data.h"
 #include "logger.h"
 #include "panic.h"
 #include <pugixml.hpp>
@@ -20,7 +21,7 @@
 #endif
 }
 
-const TypeDescriptor* VARIANT_TYPES[] {
+const TypeDesc* VARIANT_TYPES[] {
     &NULL_TYPE,
     &BOOL_TYPE,
     &INT_TYPE,
@@ -32,15 +33,15 @@ const TypeDescriptor* VARIANT_TYPES[] {
     &InstanceRef::TYPE,
     &SignalRef::TYPE,
     &SignalConnectionRef::TYPE,
-    // &Enum::TYPE,
-    // &EnumItem::TYPE,
+    &Enum::TYPE,
+    &EnumItem::TYPE,
 };
 
-const TypeInfo Variant::GetTypeInfo() const {
+const TypeMeta Variant::GetTypeMeta() const {
     return VARIANT_TYPES[wrapped.index()];
 }
 
-const TypeDescriptor* Variant::GetType() const {
+const TypeDesc* Variant::GetType() const {
     return VARIANT_TYPES[wrapped.index()];
 }
 
@@ -55,7 +56,7 @@ void Variant::Serialize(pugi::xml_node node) const {
     if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
         Logger::fatalErrorf("Data type %s does not implement serializer", VARIANT_TYPES[wrapped.index()]->name.c_str());
     }
-    VARIANT_TYPES[wrapped.index()]->serializer(*this, node);
+    VARIANT_TYPES[wrapped.index()]->serialize(*this, node);
 }
 
 void Variant::PushLuaValue(lua_State* state) const {
@@ -65,14 +66,15 @@ void Variant::PushLuaValue(lua_State* state) const {
     VARIANT_TYPES[wrapped.index()]->pushLuaValue(*this, state);
 }
 
-Variant Variant::Deserialize(pugi::xml_node node, const TypeInfo type) {
-    if (!type.descriptor->deserializer) {
+result<Variant, DataParseError> Variant::Deserialize(pugi::xml_node node, const TypeMeta type) {
+    if (!type.descriptor->deserialize) {
         Logger::fatalErrorf("Data type %s does not implement deserialize", type.descriptor->name.c_str());
+        return DataParseError(node.text().as_string(), type.descriptor->name);
     }
-    return type.descriptor->deserializer(node);
+    return type.descriptor->deserialize(node, type);
 }
 
-std::map<std::string, const TypeDescriptor*> TYPE_MAP = {
+std::map<std::string, const TypeDesc*> TYPE_MAP = {
     { "null", &NULL_TYPE },
     { "bool", &BOOL_TYPE },
     { "int", &INT_TYPE },
@@ -82,4 +84,5 @@ std::map<std::string, const TypeDescriptor*> TYPE_MAP = {
     { "CoordinateFrame", &CFrame::TYPE },
     { "Color3", &Color3::TYPE },
     { "Ref", &InstanceRef::TYPE },
+    { "token", &EnumItem::TYPE },
 };

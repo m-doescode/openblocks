@@ -1,5 +1,6 @@
 #include "cframe.h"
 #include "datatypes/vector.h"
+#include "error/data.h"
 #include "physics/util.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -134,7 +135,7 @@ void CFrame::Serialize(pugi::xml_node node) const {
 }
 
 
-CFrame CFrame::Deserialize(pugi::xml_node node) {
+result<CFrame, DataParseError> CFrame::Deserialize(pugi::xml_node node) {
     return CFrame(
         node.child("X").text().as_float(),
         node.child("Y").text().as_float(),

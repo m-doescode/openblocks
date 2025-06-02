@@ -174,6 +174,25 @@ static bool hasMethod(CXCursor cur, std::string methodName) {
     return found;
 }
 
+static bool hasGenericMethod(CXCursor cur, std::string methodName) {
+    bool found = false;
+    x_clang_visitChildren(cur, [&](CXCursor cur, CXCursor parent) {
+        CXCursorKind kind = clang_getCursorKind(cur);
+        if (kind != CXCursor_CXXMethod) return CXChildVisit_Continue;
+        
+        if (x_clang_toString(clang_getCursorSpelling(cur)) != methodName) return CXChildVisit_Continue;
+
+        int numArgs = clang_Cursor_getNumArguments(cur);
+        CXCursor lastParam = clang_Cursor_getArgument(cur, numArgs - 1);
+        std::string lastParamType = x_clang_toString(clang_getTypeSpelling(clang_getCursorType(lastParam)));
+        if (lastParamType != "const TypeMeta") return CXChildVisit_Continue;
+
+        found = true;
+        return CXChildVisit_Break;
+    });
+    return found;
+}
+
 static void processClass(CXCursor cur, AnalysisState* state, std::string className, std::string srcRoot) {
     ClassAnalysis anly;
 
@@ -184,6 +203,8 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
     anly.serializedName = result["name"];
     anly.hasFromString = hasMethod(cur, "FromString");
     anly.isSerializable = hasMethod(cur, "Serialize") && hasMethod(cur, "Deserialize");
+    anly.hasGenericDeserializer = hasGenericMethod(cur, "Deserialize");
+    anly.hasGenericFromString = hasGenericMethod(cur, "FromString");
 
     if (anly.serializedName == "")
         anly.serializedName = className;

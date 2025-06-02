@@ -1,4 +1,5 @@
 #include "primitives.h"
+#include "error/data.h"
 #include "variant.h"
 #include <pugixml.hpp>
 #include "lua.h"
@@ -10,7 +11,7 @@ void Null_Serialize(Variant self, pugi::xml_node node) {
     node.text().set("null");
 }
 
-Variant Null_Deserialize(pugi::xml_node node) {
+result<Variant, DataParseError> Null_Deserialize(pugi::xml_node node, const TypeMeta) {
     return std::monostate();
 }
 
@@ -18,7 +19,7 @@ const std::string Null_ToString(Variant self) {
     return "null";
 }
 
-const std::optional<Variant> Null_FromString(std::string str) {
+result<Variant, DataParseError> Null_FromString(std::string string, const TypeMeta) {
     return std::monostate();
 }
 
@@ -30,7 +31,7 @@ result<Variant, LuaCastError> Null_FromLuaValue(lua_State* L, int idx) {
     return Variant(std::monostate());
 }
 
-const TypeDescriptor NULL_TYPE {
+const TypeDesc NULL_TYPE {
     "null",
     Null_Serialize,
     Null_Deserialize,
@@ -48,7 +49,7 @@ void Bool_Serialize(Variant self, pugi::xml_node node) {
     node.text().set(self.get<bool>() ? "true" : "false");
 }
 
-Variant Bool_Deserialize(pugi::xml_node node) {
+result<Variant, DataParseError> Bool_Deserialize(pugi::xml_node node, const TypeMeta) {
     return node.text().as_bool();
 }
 
@@ -56,7 +57,7 @@ const std::string Bool_ToString(Variant self) {
     return self.get<bool>() ? "true" : "false";
 }
 
-const std::optional<Variant> Bool_FromString(std::string string) {
+result<Variant, DataParseError> Bool_FromString(std::string string, const TypeMeta) {
     return string[0] == 't' || string[0] == 'T' || string[0] == '1' || string[0] == 'y' || string[0] == 'Y';
 }
 
@@ -70,7 +71,7 @@ result<Variant, LuaCastError> Bool_FromLuaValue(lua_State* L, int idx) {
     return Variant(lua_toboolean(L, idx));
 }
 
-const TypeDescriptor BOOL_TYPE {
+const TypeDesc BOOL_TYPE {
     "bool",
     Bool_Serialize,
     Bool_Deserialize,
@@ -88,7 +89,7 @@ void Int_Serialize(Variant self, pugi::xml_node node) {
     node.text().set(self.get<int>());
 }
 
-Variant Int_Deserialize(pugi::xml_node node) {
+result<Variant, DataParseError> Int_Deserialize(pugi::xml_node node, const TypeMeta) {
     return node.text().as_int();
 }
 
@@ -96,10 +97,10 @@ const std::string Int_ToString(Variant self) {
     return std::to_string(self.get<int>());
 }
 
-const std::optional<Variant> Int_FromString(std::string string) {
+result<Variant, DataParseError> Int_FromString(std::string string, const TypeMeta) {
     char* endPos;
     int value = (int)std::strtol(string.c_str(), &endPos, 10);
-    if (endPos == string.c_str()) return std::nullopt;
+    if (endPos == string.c_str()) return DataParseError(string, "int");
     return value;
 }
 
@@ -113,7 +114,7 @@ result<Variant, LuaCastError> Int_FromLuaValue(lua_State* L, int idx) {
     return Variant((int)lua_tonumber(L, idx));
 }
 
-const TypeDescriptor INT_TYPE {
+const TypeDesc INT_TYPE {
     "int",
     Int_Serialize,
     Int_Deserialize,
@@ -131,7 +132,7 @@ void Float_Serialize(Variant self, pugi::xml_node node) {
     node.text().set(self.get<float>());
 }
 
-Variant Float_Deserialize(pugi::xml_node node) {
+result<Variant, DataParseError> Float_Deserialize(pugi::xml_node node, const TypeMeta) {
     return node.text().as_float();
 }
 
@@ -141,10 +142,10 @@ const std::string Float_ToString(Variant self) {
     return stream.str();
 }
 
-const std::optional<Variant> Float_FromString(std::string string) {
+result<Variant, DataParseError> Float_FromString(std::string string, const TypeMeta) {
     char* endPos;
     float value = std::strtof(string.c_str(), &endPos);
-    if (endPos == string.c_str()) return std::nullopt;
+    if (endPos == string.c_str()) return DataParseError(string, "float");
     return value;
 }
 
@@ -158,7 +159,7 @@ result<Variant, LuaCastError> Float_FromLuaValue(lua_State* L, int idx) {
     return Variant((float)lua_tonumber(L, idx));
 }
 
-const TypeDescriptor FLOAT_TYPE {
+const TypeDesc FLOAT_TYPE {
     "float",
     Float_Serialize,
     Float_Deserialize,
@@ -176,7 +177,7 @@ void String_Serialize(Variant self, pugi::xml_node node) {
     node.text().set(self.get<std::string>());
 }
 
-Variant String_Deserialize(pugi::xml_node node) {
+result<Variant, DataParseError> String_Deserialize(pugi::xml_node node, const TypeMeta) {
     return node.text().as_string();
 }
 
@@ -184,7 +185,7 @@ const std::string String_ToString(Variant self) {
     return self.get<std::string>();
 }
 
-const std::optional<Variant> String_FromString(std::string string) {
+result<Variant, DataParseError> String_FromString(std::string string, const TypeMeta) {
     return string;
 }
 
@@ -198,7 +199,7 @@ result<Variant, LuaCastError> String_FromLuaValue(lua_State* L, int idx) {
     return Variant(lua_tostring(L, idx));
 }
 
-const TypeDescriptor STRING_TYPE {
+const TypeDesc STRING_TYPE {
     "string",
     String_Serialize,
     String_Deserialize,
