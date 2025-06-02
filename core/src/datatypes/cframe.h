@@ -40,7 +40,7 @@ public:
 
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node parent) const;
-    static Variant Deserialize(pugi::xml_node node);
+    static CFrame Deserialize(pugi::xml_node node);
 
     static void PushLuaLibrary(lua_State*);
 

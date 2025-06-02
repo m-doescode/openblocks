@@ -418,10 +418,10 @@ void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAn
     out << "#include \"datatypes/variant.h\"\n";
     out << "#include <pugixml.hpp>\n";
     out << "#include \"lua.h\"\n\n";
-    out << "const TypeInfo " << state.name << "::TYPE = {\n"
+    out << "const TypeDescriptor " << state.name << "::TYPE = {\n"
         << "    .name = \"" << state.serializedName << "\",\n"
         << "    .serializer = toVariantFunction(&" << state.name << "::Serialize),"
-        << "    .deserializer = &" << state.name << "::Deserialize,\n"
+        << "    .deserializer = toVariantGenerator(&" << state.name << "::Deserialize),\n"
         << "    .toString = toVariantFunction(&" << state.name << "::ToString),";
     if (state.hasFromString) out << "    .fromString = &" << state.name << "::FromString,\n";
     out << "    .pushLuaValue = toVariantFunction(&" << state.name << "::PushLuaValue),"

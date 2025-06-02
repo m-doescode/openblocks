@@ -1,11 +1,14 @@
 #pragma once
 
+#include "base.h"
 #include <optional>
 #include <string>
 #include <vector>
+#include "lua.h"
 
 struct _EnumData {
     std::pair<int, std::string>* values;
+    std::string name;
     int count;
 };
 
@@ -16,9 +19,16 @@ class Enum {
 public:
     Enum(_EnumData*);
 
-    std::vector<EnumItem> GetEnumItems();
-    std::optional<EnumItem> FromName(std::string);
-    std::optional<EnumItem> FromValue(int);
+    static const TypeDescriptor TYPE;
+
+    inline _EnumData* InternalType() const { return this->data; };
+    std::vector<EnumItem> GetEnumItems() const;
+    std::optional<EnumItem> FromName(std::string) const;
+    std::optional<EnumItem> FromValue(int) const;
+
+    std::string ToString();
+    void PushLuaValue(lua_State*);
+    static Variant FromLuaValue(lua_State*, int);
 };
 
 class EnumItem {
@@ -27,7 +37,10 @@ class EnumItem {
     int value;
 public:
     EnumItem(_EnumData*, std::string, int);
-    inline std::string Name() { return this->name; }
-    inline int Value() { return this->value; }
-    inline Enum EnumType() { return Enum(this->parentData); }
+    
+    static const TypeDescriptor TYPE;
+
+    inline std::string Name() const { return this->name; }
+    inline int Value() const { return this->value; }
+    inline Enum EnumType() const { return Enum(this->parentData); }
 };

@@ -66,9 +66,7 @@ public:
             return nullptr;
         }
 
-        if (meta.type.type == DATA_ENUM) {
-
-        } else if (meta.type.descriptor == &FLOAT_TYPE) {
+        if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
             spinBox->setValue(currentValue.get<float>());
 
@@ -134,9 +132,7 @@ public:
             return;
         }
 
-        if (meta.type.type == DATA_ENUM) {
-
-        } else if (meta.type.descriptor == &FLOAT_TYPE) {
+        if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
             spinBox->setValue(currentValue.get<float>());
@@ -191,9 +187,7 @@ public:
             return;
         }
 
-        if (meta.type.type == DATA_ENUM) {
-
-        } else if (meta.type.descriptor == &FLOAT_TYPE) {
+        if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
             inst->SetPropertyValue(propertyName, (float)spinBox->value()).expect();
@@ -327,7 +321,7 @@ void PropertiesView::setSelected(std::optional<std::shared_ptr<Instance>> instan
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
 
-        if (meta.type.type == DATA_VALUE && meta.type.descriptor != &Color3::TYPE && (!meta.type.descriptor->fromString || meta.flags & PROP_READONLY)) {
+        if (meta.type.descriptor != &Color3::TYPE && (!meta.type.descriptor->fromString || meta.flags & PROP_READONLY)) {
             item->setDisabled(true);
         }
 
@@ -424,7 +418,7 @@ void PropertiesView::onPropertyUpdated(std::shared_ptr<Instance> inst, std::stri
                 item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
             }
 
-            if (meta.type.type == DATA_VALUE && meta.type.descriptor != &Color3::TYPE && (!meta.type.descriptor->fromString || meta.flags & PROP_READONLY)) {
+            if (meta.type.descriptor != &Color3::TYPE && (!meta.type.descriptor->fromString || meta.flags & PROP_READONLY)) {
                 item->setDisabled(true);
             }
 

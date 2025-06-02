@@ -39,7 +39,7 @@ void InstanceRef::Serialize(pugi::xml_node node) const {
     panic();
 }
 
-Variant InstanceRef::Deserialize(pugi::xml_node node) {
+InstanceRef InstanceRef::Deserialize(pugi::xml_node node) {
     // Handled by Instance
     panic();
 }

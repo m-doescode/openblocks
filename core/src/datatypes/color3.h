@@ -21,7 +21,7 @@ public:
     virtual const std::string ToString() const;
     DEF_DATA_METHOD std::string ToHex() const;
     virtual void Serialize(pugi::xml_node node) const;
-    static Variant Deserialize(pugi::xml_node node);
+    static Color3 Deserialize(pugi::xml_node node);
 
     static void PushLuaLibrary(lua_State*);
 

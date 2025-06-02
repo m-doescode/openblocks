@@ -24,7 +24,7 @@ public:
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node node) const;
 
-    static Variant Deserialize(pugi::xml_node node);
+    static Vector3 Deserialize(pugi::xml_node node);
     static std::optional<Variant> FromString(std::string);
     
     static void PushLuaLibrary(lua_State*);

@@ -20,6 +20,6 @@ public:
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node node) const;
     virtual void PushLuaValue(lua_State*) const;
-    static Variant Deserialize(pugi::xml_node node);
+    static InstanceRef Deserialize(pugi::xml_node node);
     static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
 };

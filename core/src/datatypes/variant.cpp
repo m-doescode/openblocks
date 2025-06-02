@@ -1,6 +1,7 @@
 #include "variant.h"
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
+#include "datatypes/enum.h"
 #include "datatypes/primitives.h"
 #include "datatypes/ref.h"
 #include "datatypes/signal.h"
@@ -31,26 +32,44 @@ const TypeDescriptor* VARIANT_TYPES[] {
     &InstanceRef::TYPE,
     &SignalRef::TYPE,
     &SignalConnectionRef::TYPE,
+    // &Enum::TYPE,
+    // &EnumItem::TYPE,
 };
 
+const TypeInfo Variant::GetTypeInfo() const {
+    return VARIANT_TYPES[wrapped.index()];
+}
+
+const TypeDescriptor* Variant::GetType() const {
+    return VARIANT_TYPES[wrapped.index()];
+}
+
 std::string Variant::ToString() const {
+    if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
+        Logger::fatalErrorf("Data type %s does not implement toString", VARIANT_TYPES[wrapped.index()]->name.c_str());
+    }
     return VARIANT_TYPES[wrapped.index()]->toString(*this);
 }
 
 void Variant::Serialize(pugi::xml_node node) const {
+    if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
+        Logger::fatalErrorf("Data type %s does not implement serializer", VARIANT_TYPES[wrapped.index()]->name.c_str());
+    }
     VARIANT_TYPES[wrapped.index()]->serializer(*this, node);
 }
 
 void Variant::PushLuaValue(lua_State* state) const {
-    printf("What %zu\n", wrapped.index());
+    if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
+        Logger::fatalErrorf("Data type %s does not implement pushLuaValue", VARIANT_TYPES[wrapped.index()]->name.c_str());
+    }
     VARIANT_TYPES[wrapped.index()]->pushLuaValue(*this, state);
 }
 
 Variant Variant::Deserialize(pugi::xml_node node, const TypeInfo type) {
-    if (type.type == DATA_VALUE)
-        return type.descriptor->deserializer(node);
-    else
-        panic(); //TODO: NYI
+    if (!type.descriptor->deserializer) {
+        Logger::fatalErrorf("Data type %s does not implement deserialize", type.descriptor->name.c_str());
+    }
+    return type.descriptor->deserializer(node);
 }
 
 std::map<std::string, const TypeDescriptor*> TYPE_MAP = {

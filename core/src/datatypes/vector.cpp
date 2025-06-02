@@ -87,7 +87,7 @@ void Vector3::Serialize(pugi::xml_node node) const {
     node.append_child("Z").text().set(std::to_string(this->Z()));
 }
 
-Variant Vector3::Deserialize(pugi::xml_node node) {
+Vector3 Vector3::Deserialize(pugi::xml_node node) {
     return Vector3(node.child("X").text().as_float(), node.child("Y").text().as_float(), node.child("Z").text().as_float());
 }
 

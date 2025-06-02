@@ -134,7 +134,7 @@ void CFrame::Serialize(pugi::xml_node node) const {
 }
 
 
-Variant CFrame::Deserialize(pugi::xml_node node) {
+CFrame CFrame::Deserialize(pugi::xml_node node) {
     return CFrame(
         node.child("X").text().as_float(),
         node.child("Y").text().as_float(),

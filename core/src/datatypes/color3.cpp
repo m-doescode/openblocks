@@ -39,6 +39,6 @@ void Color3::Serialize(pugi::xml_node node) const {
     node.text().set(this->ToHex());
 }
 
-Variant Color3::Deserialize(pugi::xml_node node) {
+Color3 Color3::Deserialize(pugi::xml_node node) {
     return Color3::FromHex(node.text().get());
 }

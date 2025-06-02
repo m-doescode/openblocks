@@ -4,6 +4,7 @@
 #include <map>
 #include "base.h"
 #include "datatypes/color3.h"
+#include "datatypes/enum.h"
 #include "datatypes/ref.h"
 #include "datatypes/signal.h"
 #include "vector.h"
@@ -28,7 +29,9 @@ typedef std::variant<
     Color3,
     InstanceRef,
     SignalRef,
-    SignalConnectionRef
+    SignalConnectionRef,
+    Enum,
+    EnumItem
 > __VARIANT_TYPE;
 
 class Variant {
@@ -38,6 +41,9 @@ public:
     template <typename T> T get() { return std::get<T>(wrapped); }
     std::string ToString() const;
     
+    const TypeInfo GetTypeInfo() const;
+    const TypeDescriptor* GetType() const;
+
     void Serialize(pugi::xml_node node) const;
     void PushLuaValue(lua_State* state) const;
     static Variant Deserialize(pugi::xml_node node, const TypeInfo);
@@ -54,6 +60,13 @@ template <typename T, typename R, typename ...Args>
 std::function<R(Variant, Args...)> toVariantFunction(R(T::*f)(Args...) const) {
     return [f](Variant var, Args... args) {
         return (var.get<T>().*f)(args...);
+    };
+}
+
+template <typename T, typename ...Args>
+std::function<Variant(Args...)> toVariantGenerator(T(f)(Args...)) {
+    return [f](Args... args) {
+        return (Variant)f(args...);
     };
 }
 
