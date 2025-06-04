@@ -7,12 +7,14 @@
 #include "objects/base/member.h"
 
 #include <QColorDialog>
+#include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QTime>
 #include <functional>
+#include <qcombobox.h>
 #include <qnamespace.h>
 #include <qtreewidget.h>
 
@@ -95,6 +97,18 @@ public:
             colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
 
             return colorDialog;
+        } else if (meta.type.descriptor == &EnumItem::TYPE) {
+            QComboBox* comboBox = new QComboBox(parent);
+
+            EnumItem enumItem = currentValue.get<EnumItem>();
+            std::vector<EnumItem> siblingItems = meta.type.enum_->GetEnumItems();
+            for (int i = 0; i < siblingItems.size(); i++) {
+                comboBox->addItem(QString::fromStdString(siblingItems[i].Name()));
+                if (siblingItems[i].Value() == enumItem.Value())
+                    comboBox->setCurrentIndex(i);
+            }
+
+            return comboBox;
         } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = new QLineEdit(parent);
             lineEdit->setText(QString::fromStdString(currentValue.ToString()));
@@ -150,6 +164,15 @@ public:
 
             Color3 color = currentValue.get<Color3>();
             colorDialog->setCurrentColor(QColor::fromRgbF(color.R(), color.G(), color.B()));
+        } else if (meta.type.descriptor == &EnumItem::TYPE) {
+            QComboBox* comboBox = dynamic_cast<QComboBox*>(editor);
+
+            EnumItem enumItem = currentValue.get<EnumItem>();
+            std::vector<EnumItem> siblingItems = meta.type.enum_->GetEnumItems();
+            for (int i = 0; i < siblingItems.size(); i++) {
+                if (siblingItems[i].Value() == enumItem.Value())
+                    comboBox->setCurrentIndex(i);
+            }
         } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
@@ -211,6 +234,13 @@ public:
             inst->SetPropertyValue(propertyName, color3).expect();
             model->setData(index, QString::fromStdString(color3.ToString()), Qt::DisplayRole);
             model->setData(index, color, Qt::DecorationRole);
+        } else if (meta.type.descriptor == &EnumItem::TYPE) {
+            QComboBox* comboBox = dynamic_cast<QComboBox*>(editor);
+
+            std::vector<EnumItem> siblingItems = meta.type.enum_->GetEnumItems();
+            EnumItem newItem = siblingItems[comboBox->currentIndex()];
+            inst->SetPropertyValue(propertyName, newItem).expect("Failed to set enum value in properties pane");
+            model->setData(index, QString::fromStdString(newItem.Name()), Qt::DisplayRole);
         } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
@@ -319,7 +349,9 @@ void PropertiesView::setSelected(std::optional<std::shared_ptr<Instance>> instan
         // } else if (meta.type.descriptor == &CFrame::TYPE) {
         //     Vector3 vector = currentValue.get<CFrame>().Position();
         //     item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
-        } else {
+        } else if (meta.type.descriptor == &EnumItem::TYPE) {
+            item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.get<EnumItem>().Name()));
+        }  else {
             item->setData(1, Qt::DisplayRole, QString::fromStdString(currentValue.ToString()));
         }
 
