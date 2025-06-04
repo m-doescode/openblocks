@@ -387,9 +387,9 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
 
         // raycast part
         std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-        if (!rayHit || !partFromBody(rayHit->body)) return;
+        if (!rayHit || !partFromBody(rayHit->body)) { setSelection({}); return; }
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
-        if (part->locked) return;
+        if (part->locked) { setSelection({}); return; }
         initialFrame = part->cframe;
         initialHitPos = rayHit->worldPoint;
         initialHitNormal = rayHit->worldNormal;
