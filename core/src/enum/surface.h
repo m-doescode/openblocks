@@ -12,15 +12,15 @@ enum DEF_ENUM NormalId {
     Front = 5
 };
 
-enum DEF_ENUM SurfaceType {
-    SurfaceSmooth = 0,
-    SurfaceGlue = 1,
-    SurfaceWeld = 2,
-    SurfaceStuds = 3,
-    SurfaceInlets = 4,
-    SurfaceUniversal = 5,
-    SurfaceHinge = 6,
-    SurfaceMotor = 7,
+enum class DEF_ENUM SurfaceType {
+    Smooth = 0,
+    Glue = 1,
+    Weld = 2,
+    Studs = 3,
+    Inlet = 4,
+    Universal = 5,
+    Hinge = 6,
+    Motor = 7,
 };
 
 namespace EnumType {

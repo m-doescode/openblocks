@@ -120,7 +120,7 @@ SurfaceType Part::surfaceFromFace(NormalId face) {
         case Front: return frontSurface;
         case Back: return backSurface;
     }
-    return SurfaceSmooth; // Unreachable
+    return SurfaceType::Smooth; // Unreachable
 }
 
 float Part::GetSurfaceParamA(Vector3 face) {
@@ -199,14 +199,14 @@ bool Part::checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFa
 }
 
 std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType a, SurfaceType b) {
-    if (a == SurfaceWeld || b == SurfaceWeld || a == SurfaceGlue || b == SurfaceGlue) return Weld::New();
-    if ((a == SurfaceStuds && (b == SurfaceInlets || b == SurfaceUniversal))
-    || (a == SurfaceInlets && (b == SurfaceStuds || b == SurfaceUniversal))
-    || (a == SurfaceUniversal && (b == SurfaceStuds || b == SurfaceInlets || b == SurfaceUniversal)))
+    if (a == SurfaceType::Weld || b == SurfaceType::Weld || a == SurfaceType::Glue || b == SurfaceType::Glue) return Weld::New();
+    if ((a == SurfaceType::Studs && (b == SurfaceType::Inlet || b == SurfaceType::Universal))
+    || (a == SurfaceType::Inlet && (b == SurfaceType::Studs || b == SurfaceType::Universal))
+    || (a == SurfaceType::Universal && (b == SurfaceType::Studs || b == SurfaceType::Inlet || b == SurfaceType::Universal)))
         return Snap::New();
-    if (a == SurfaceHinge)
+    if (a == SurfaceType::Hinge)
         return Rotate::New();
-    if (a == SurfaceMotor)
+    if (a == SurfaceType::Motor)
         return RotateV::New();
     return std::nullopt;
 }
@@ -251,7 +251,7 @@ void Part::MakeJoints() {
                 SurfaceType otherSurface = surfaceFromFace(faceFromNormal(otherFace));
 
                 // If it is a hinge, only attach if actually touching the "hinge"
-                if ((mySurface == SurfaceHinge || mySurface == SurfaceMotor) && !checkSurfacesTouching(surfaceFrame, Vector3(0.4, 0.4, 0.4), myFace, otherFace, otherPart)) continue;
+                if ((mySurface == SurfaceType::Hinge || mySurface == SurfaceType::Motor) && !checkSurfacesTouching(surfaceFrame, Vector3(0.4, 0.4, 0.4), myFace, otherFace, otherPart)) continue;
 
                 // Create contacts
                 // Contact always occurs at the center of Part0's surface (even if that point does not overlap both surfaces)

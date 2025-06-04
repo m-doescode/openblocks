@@ -131,7 +131,7 @@ void PlaceDocument::init() {
     // part1->frontSurface = SurfaceWeld;
 
     // part0->backSurface = SurfaceHinge;
-    part0->backSurface = SurfaceMotor;
+    part0->backSurface = SurfaceType::Motor;
     // part1->frontSurface = SurfaceHinge;
 
     std::shared_ptr<Script> script = Script::New();

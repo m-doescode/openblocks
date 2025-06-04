@@ -146,7 +146,7 @@ static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
         } else if (prop.cframeMember == CFrameMember_Rotation) {
             out << "\n        return Variant(" << prop.fieldName << ".ToEulerAnglesXYZ());";
         } else if (prop.backingFieldType == "EnumItem") {
-            out << "\n        return Variant(EnumType::" << prop.backingFieldEnum << ".FromValueInternal(" << prop.fieldName << "));";
+            out << "\n        return Variant(EnumType::" << prop.backingFieldEnum << ".FromValueInternal((int)" << prop.fieldName << "));";
         } else {
             out << "\n        return Variant(" << castToVariant(prop.fieldName, prop.backingFieldType) << ");";
         }

@@ -154,12 +154,12 @@ void renderParts() {
             shader->set("texScale", part->size);
             shader->set("transparency", part->transparency);
 
-            shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", part->rightSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", part->topSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", part->backSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", part->leftSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", part->bottomSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", part->frontSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", (int)part->topSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", (int)part->backSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", (int)part->leftSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", (int)part->bottomSurface);
+            shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", (int)part->frontSurface);
 
             CUBE_MESH->bind();
             glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
@@ -184,12 +184,12 @@ void renderParts() {
         shader->set("texScale", part->size);
         shader->set("transparency", part->transparency);
 
-        shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", part->rightSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", part->topSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", part->backSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", part->leftSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", part->bottomSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", part->frontSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", (int)part->topSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", (int)part->backSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", (int)part->leftSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", (int)part->bottomSurface);
+        shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", (int)part->frontSurface);
 
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
@@ -233,7 +233,7 @@ void renderSurfaceExtras() {
         for (int i = 0; i < 6; i++) {
             NormalId face = (NormalId)i;
             SurfaceType type = part->GetSurfaceFromFace(face);
-            if (type <= SurfaceType::SurfaceUniversal) continue;
+            if (type <= SurfaceType::Universal) continue;
 
             Vector3 surfaceCenter = part->cframe * (normalFromFace(face) * part->size / 2.f);
 

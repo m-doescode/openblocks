@@ -70,12 +70,12 @@ public:
     DEF_PROP bool locked = false;
 
     DEF_PROP_CATEGORY(SURFACE)
-    DEF_PROP SurfaceType topSurface = SurfaceType::SurfaceStuds;
-    DEF_PROP SurfaceType bottomSurface = SurfaceType::SurfaceInlets;
-    DEF_PROP SurfaceType leftSurface = SurfaceType::SurfaceSmooth;
-    DEF_PROP SurfaceType rightSurface = SurfaceType::SurfaceSmooth;
-    DEF_PROP SurfaceType frontSurface = SurfaceType::SurfaceSmooth;
-    DEF_PROP SurfaceType backSurface = SurfaceType::SurfaceSmooth;
+    DEF_PROP SurfaceType topSurface = SurfaceType::Studs;
+    DEF_PROP SurfaceType bottomSurface = SurfaceType::Inlet;
+    DEF_PROP SurfaceType leftSurface = SurfaceType::Smooth;
+    DEF_PROP SurfaceType rightSurface = SurfaceType::Smooth;
+    DEF_PROP SurfaceType frontSurface = SurfaceType::Smooth;
+    DEF_PROP SurfaceType backSurface = SurfaceType::Smooth;
 
     DEF_PROP_CATEGORY(SURFACE_INPUT)
     DEF_PROP float topParamA = -0.5;
