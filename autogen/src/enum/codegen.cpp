@@ -1,9 +1,7 @@
 #include "codegen.h"
 #include "analysis.h"
 #include <fstream>
-#include <map>
 #include <string>
-#include <variant>
 #include <vector>
 
 using namespace enum_;
@@ -17,7 +15,7 @@ void enum_::writeCodeForClass(std::ofstream& out, std::string headerPath, EnumAn
         out << "    { " << entry.value << ", \"" << entry.name << "\" },\n";
     }
 
-    out << "};";
+    out << "};\n\n";
 
     out << "static _EnumData __data_" << state.name << " = {\n"
         << "    \"" << state.name << "\",\n"
@@ -26,6 +24,8 @@ void enum_::writeCodeForClass(std::ofstream& out, std::string headerPath, EnumAn
         << "};\n\n";
 
     out << "namespace EnumType {\n"
-        << "    const Enum " << state.name << "(&__data_" << state.name << ");\n"
+        // extern is necessary here too to prevent "const" from marking Enum as implicitly static
+        // https://stackoverflow.com/questions/2190919/mixing-extern-and-const#comment2509591_2190981
+        << "    extern const Enum " << state.name << "(&__data_" << state.name << ");\n"
         << "}\n\n";
 }

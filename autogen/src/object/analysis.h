@@ -31,6 +31,7 @@ struct PropertyAnalysis {
     std::string fieldName;
     CFrameMember cframeMember = CFrameMember_None; // for cframe_position_prop etc.
     std::string backingFieldType;
+    std::string backingFieldEnum;
     std::string onUpdateCallback;
     std::string category;
     PropertyFlags flags = (PropertyFlags)0;

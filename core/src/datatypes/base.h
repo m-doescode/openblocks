@@ -38,11 +38,11 @@ struct InstanceType;
 struct TypeMeta {
     const TypeDesc* descriptor;
     union {
-        Enum* enum_; // Applicable for EnumItem
-        InstanceType* instType; // Applicable for InstanceRef
+        const Enum* enum_; // Applicable for EnumItem
+        const InstanceType* instType; // Applicable for InstanceRef
     };
 
     inline TypeMeta(const TypeDesc* descriptor) : descriptor(descriptor) {}
-    TypeMeta(Enum*);
-    TypeMeta(InstanceType*);
+    TypeMeta(const Enum*);
+    TypeMeta(const InstanceType*);
 };

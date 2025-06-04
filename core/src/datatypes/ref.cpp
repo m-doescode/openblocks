@@ -10,7 +10,7 @@
 #include "objects/base/member.h"
 #include <pugixml.hpp>
 
-TypeMeta::TypeMeta(InstanceType* instType) : instType(instType), descriptor(&InstanceRef::TYPE) {}
+TypeMeta::TypeMeta(const InstanceType* instType) : instType(instType), descriptor(&InstanceRef::TYPE) {}
 
 InstanceRef::InstanceRef() {};
 InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};

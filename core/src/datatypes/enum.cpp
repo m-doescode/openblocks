@@ -4,7 +4,7 @@
 #include "error/data.h"
 #include <pugixml.hpp>
 
-TypeMeta::TypeMeta(Enum* enum_) : enum_(enum_), descriptor(&EnumItem::TYPE) {}
+TypeMeta::TypeMeta(const Enum* enum_) : enum_(enum_), descriptor(&EnumItem::TYPE) {}
 
 Enum::Enum(_EnumData* data) : data(data) {}
 
@@ -32,6 +32,12 @@ std::optional<EnumItem> Enum::FromValue(int value) const {
             return EnumItem(data, data->values[i].second, value);
     }
     return {};
+}
+
+EnumItem Enum::FromValueInternal(int value) const {
+    auto result = this->FromValue(value);
+    if (!result) return EnumItem(data, "", value);
+    return result.value();
 }
 
 EnumItem::EnumItem(_EnumData* parentData, std::string name, int value) : parentData(parentData), name(name), value(value) {}

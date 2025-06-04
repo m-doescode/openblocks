@@ -89,6 +89,8 @@ static void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
         } else if (!subtype.empty()) {
             out << "\n        std::weak_ptr<Instance> ref = value.get<InstanceRef>();"
                 << "\n        this->" << prop.fieldName << " = ref.expired() ? std::weak_ptr<" << subtype << ">() : std::dynamic_pointer_cast<" << subtype << ">(ref.lock());";
+        } else if (prop.backingFieldType == "EnumItem") {
+            out << "\n        this->" << prop.fieldName << " = (" << prop.backingFieldEnum << ")value.get<EnumItem>().Value();";
         } else {
             out << "\n        this->" << prop.fieldName << " = " << castFromVariant("value", prop.backingFieldType) << ";";
         }
@@ -143,6 +145,8 @@ static void writePropertyGetHandler(std::ofstream& out, ClassAnalysis state) {
             out << "\n        return Variant(" << prop.fieldName << ".Position());";
         } else if (prop.cframeMember == CFrameMember_Rotation) {
             out << "\n        return Variant(" << prop.fieldName << ".ToEulerAnglesXYZ());";
+        } else if (prop.backingFieldType == "EnumItem") {
+            out << "\n        return Variant(EnumType::" << prop.backingFieldEnum << ".FromValueInternal(" << prop.fieldName << "));";
         } else {
             out << "\n        return Variant(" << castToVariant(prop.fieldName, prop.backingFieldType) << ");";
         }
@@ -193,7 +197,7 @@ static void writePropertyMetaHandler(std::ofstream& out, ClassAnalysis state) {
         std::string typeInfo = TYPEINFO_REFS[prop.backingFieldType];
         if (typeInfo.empty()) typeInfo = prop.backingFieldType + "::TYPE";
         if (!parseWeakPtr(prop.backingFieldType).empty()) typeInfo = "InstanceRef::TYPE";
-        if (prop.backingFieldType == "SurfaceType") typeInfo = "INT_TYPE";
+        if (prop.backingFieldType == "EnumItem") typeInfo = "EnumType::" + prop.backingFieldEnum;
 
         std::string strFlags;
         if (prop.flags & PropertyFlag_Readonly)
@@ -256,8 +260,8 @@ void object::writeCodeForClass(std::ofstream& out, std::string headerPath, Class
 
     out << "#define __AUTOGEN_EXTRA_INCLUDES__\n";
     out << "#include \"" << state.headerPath << "\"\n\n";
-    out << "#include \"datatypes/variant.h\"\n\n";
-    out << "#include \"datatypes/primitives.h\"\n\n";
+    out << "#include \"datatypes/variant.h\"\n";
+    out << "#include \"datatypes/primitives.h\"\n";
     out << "const InstanceType " << state.name << "::TYPE = {\n"
         << "    .super = &" << state.baseClass << "::TYPE,\n"
         << "    .className = \"" << state.name << "\",\n"

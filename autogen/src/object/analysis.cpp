@@ -80,7 +80,13 @@ static void processField(CXCursor cur, ClassAnalysis* state) {
         anly.flags = anly.flags | PropertyFlags::PropertyFlag_Readonly;
 
     CXType type = clang_getCursorType(cur);
-    anly.backingFieldType = x_clang_toString(clang_getTypeSpelling(type)).c_str();
+    anly.backingFieldType = x_clang_toString(clang_getTypeSpelling(type));
+    CXCursor typeCur = clang_getTypeDeclaration(type);
+    bool isEnum = findAnnotation(typeCur, "OB::def_enum").has_value();
+    if (isEnum) {
+        anly.backingFieldType = "EnumItem";
+        anly.backingFieldEnum = x_clang_toString(clang_getTypeSpelling(type));
+    }
 
     state->properties.push_back(anly);
 

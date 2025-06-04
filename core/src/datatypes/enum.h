@@ -27,6 +27,8 @@ public:
     std::vector<EnumItem> GetEnumItems() const;
     std::optional<EnumItem> FromName(std::string) const;
     std::optional<EnumItem> FromValue(int) const;
+    
+    EnumItem FromValueInternal(int) const;
 
     std::string ToString() const;
     void PushLuaValue(lua_State*) const;
