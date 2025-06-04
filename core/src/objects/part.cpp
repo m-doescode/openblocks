@@ -13,7 +13,7 @@
 #include "objects/joint/jointinstance.h"
 #include "objects/joint/snap.h"
 #include "rendering/renderer.h"
-#include "rendering/surface.h"
+#include "enum/surface.h"
 #include <cstdio>
 #include <glm/common.hpp>
 #include <memory>

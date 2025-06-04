@@ -28,7 +28,7 @@
 #include "../common.h"
 #include "../objects/part.h"
 #include "skybox.h"
-#include "surface.h"
+#include "enum/surface.h"
 #include "texture3d.h"
 
 #include "renderer.h"

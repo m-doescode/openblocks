@@ -5,7 +5,7 @@
 #include "objects/joint/snap.h"
 #include "objects/script.h"
 #include "objects/script/scriptcontext.h"
-#include "rendering/surface.h"
+#include "enum/surface.h"
 #include <cstdio>
 #include <memory>
 #include <qboxlayout.h>

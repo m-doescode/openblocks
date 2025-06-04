@@ -16,7 +16,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LUAJIT REQUIRED luajit)
 
 # Run autogen
-file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/objects/*.h" "src/datatypes/*.h")
+file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/objects/*.h" "src/datatypes/*.h" "src/enum/*.h")
 
 # https://cmake.org/cmake/help/book/mastering-cmake/chapter/Custom%20Commands.html
 foreach (SRC ${AUTOGEN_SOURCES})

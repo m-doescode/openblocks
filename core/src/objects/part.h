@@ -8,7 +8,7 @@
 #include "datatypes/signal.h"
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
-#include "rendering/surface.h"
+#include "enum/surface.h"
 #include <optional>
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>

@@ -9,8 +9,8 @@
 #include "lua.h"
 
 struct _EnumData {
-    std::pair<int, std::string>* values;
     std::string name;
+    std::pair<int, std::string>* values;
     int count;
 };
 

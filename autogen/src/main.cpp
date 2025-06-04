@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <fstream>
 #include <filesystem>
+#include "enum/analysis.h"
+#include "enum/codegen.h"
 #include "object/analysis.h"
 #include "object/codegen.h"
 #include "data/analysis.h"
@@ -50,11 +52,13 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
 
     object::AnalysisState objectAnlyState;
     data::AnalysisState dataAnlyState;
+    enum_::AnalysisState enumAnlyState;
 
     fs::path relpath = fs::relative(srcPath, srcRoot);
     printf("[AUTOGEN] Processing file %s...\n", relpath.c_str());
     object::analyzeClasses(cursor, srcRoot, &objectAnlyState);
-    analyzeClasses(cursor, srcRoot, &dataAnlyState);
+    data::analyzeClasses(cursor, srcRoot, &dataAnlyState);
+    enum_::analyzeClasses(cursor, srcRoot, &enumAnlyState);
 
     fs::create_directories(outPath.parent_path()); // Make sure generated dir exists before we try writing to it
 
@@ -72,7 +76,11 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     }
 
     for (auto& [_, clazz] : dataAnlyState.classes) {
-        writeCodeForClass(outStream, relpath, clazz);
+        data::writeCodeForClass(outStream, relpath, clazz);
+    }
+
+    for (auto& [_, clazz] : enumAnlyState.classes) {
+        enum_::writeCodeForClass(outStream, relpath, clazz);
     }
 
     outStream.close();
