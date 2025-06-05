@@ -40,7 +40,7 @@ CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
 
     CFrame localFrame = editorToolHandles.worldMode ? CFrame::IDENTITY + adornee->position() : adornee->cframe;
     CFrame inverseFrame = localFrame.Inverse();
-    Vector3 handleOffset = editorToolHandles.worldMode ? ((Vector3::ONE * 2.f) + adornee->GetAABB() * 0.5f) : Vector3(2.f + adornee->size * 0.5f);
+    Vector3 handleOffset = editorToolHandles.worldMode ? ((Vector3::ONE * 2.f) + adornee->GetAABB() * 0.5f) : Vector3(2.f) + adornee->size * 0.5f;
 
     Vector3 handlePos = localFrame * (handleOffset * face.normal);
 

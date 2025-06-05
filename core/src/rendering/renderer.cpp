@@ -140,7 +140,7 @@ void renderParts() {
         } else {
             glm::mat4 model = part->cframe;
             // if (part->name == "camera") model = camera.getLookAt();
-            model = glm::scale(model, part->size);
+            model = glm::scale(model, (glm::vec3)part->size);
             shader->set("model", model);
             shader->set("material", Material {
                 .diffuse = part->color,
@@ -170,7 +170,7 @@ void renderParts() {
         std::shared_ptr<Part> part = it->second;
         glm::mat4 model = part->cframe;
         // if (part->name == "camera") model = camera.getLookAt();
-        model = glm::scale(model, part->size);
+        model = glm::scale(model, (glm::vec3)part->size);
         shader->set("model", model);
         shader->set("material", Material {
             .diffuse = part->color,

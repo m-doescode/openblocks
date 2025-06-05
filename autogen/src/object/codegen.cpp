@@ -16,11 +16,9 @@ static std::map<std::string, std::string> CATEGORY_STR = {
 };
 
 static std::map<std::string, std::string> MAPPED_TYPE = {
-    { "glm::vec3", "Vector3" },
 };
 
 static std::map<std::string, std::string> TYPEINFO_REFS = {
-    { "glm::vec3", "Vector3::TYPE" },
     { "bool", "BOOL_TYPE" },
     { "int", "INT_TYPE" },
     { "float", "FLOAT_TYPE" },

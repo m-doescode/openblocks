@@ -170,15 +170,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     } else if (mode == 1) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-            lastPart->size.x += shiftFactor;
+            lastPart->size += Vector3(1, 0, 0) * shiftFactor;
             gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-            lastPart->size.y += shiftFactor;
+            lastPart->size += Vector3(0, 1, 0) * shiftFactor;
             gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-            lastPart->size.z += shiftFactor;
+            lastPart->size += Vector3(0, 0, 1) * shiftFactor;
             gWorkspace()->SyncPartPhysics(lastPart);
         }
     }

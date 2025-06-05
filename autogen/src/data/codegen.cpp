@@ -9,7 +9,6 @@
 using namespace data;
 
 static std::map<std::string, std::string> MAPPED_TYPE = {
-    { "glm::vec3", "Vector3" },
 };
 
 static std::map<std::string, std::string> LUA_CHECK_FUNCS = {

@@ -83,7 +83,7 @@ Vector3 Part::GetAABB() {
     Vector3 min(0, 0, 0);
     Vector3 max(0, 0, 0);
     for (Vector3 vert : verts) {
-        Vector3 worldVert = this->cframe.Rotation() * ((Vector3)this->size * vert);
+        Vector3 worldVert = this->cframe.Rotation() * (this->size * vert);
         expandMaxExtents(&min, &max, worldVert);
     }
 

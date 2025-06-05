@@ -15,6 +15,7 @@ class DEF_DATA Vector3 {
 public:
     DEF_DATA_CTOR Vector3();
     DEF_DATA_CTOR Vector3(float x, float y, float z);
+    inline Vector3(float value) : Vector3(value, value, value) {}
     Vector3(const glm::vec3&);
     Vector3(const reactphysics3d::Vector3&);
     virtual ~Vector3();
@@ -47,6 +48,7 @@ public:
     DEF_DATA_OP Vector3 operator *(float) const;
     DEF_DATA_OP Vector3 operator /(float) const;
     DEF_DATA_OP Vector3 operator *(Vector3) const; // Component-wise
+    DEF_DATA_OP Vector3 operator /(Vector3) const; // Component-wise
     DEF_DATA_OP Vector3 operator +(Vector3) const;
     DEF_DATA_OP Vector3 operator -(Vector3) const;
     DEF_DATA_OP Vector3 operator -() const;
@@ -55,6 +57,14 @@ public:
     DEF_DATA_OP bool operator >(Vector3) const;
 
     DEF_DATA_OP bool operator ==(Vector3) const;
+
+    // Augmented shorthands
+    inline Vector3 operator *=(float factor) const { return *this * factor; }
+    inline Vector3 operator /=(float factor) const { return *this / factor; }
+    inline Vector3 operator *=(Vector3 factor) const { return *this * factor; }
+    inline Vector3 operator /=(Vector3 factor) const { return *this / factor; }
+    inline Vector3 operator +=(Vector3 vector) const { return *this + vector; }
+    inline Vector3 operator -=(Vector3 vector) const { return *this + vector; }
 };
 
 inline void printVec(Vector3 vec) {

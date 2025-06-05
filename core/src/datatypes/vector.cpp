@@ -48,6 +48,10 @@ Vector3 Vector3::operator *(Vector3 other) const {
     return Vector3(this->X() * other.X(), this->Y() * other.Y(), this->Z() * other.Z());
 }
 
+Vector3 Vector3::operator /(Vector3 other) const {
+    return Vector3(this->X() / other.X(), this->Y() / other.Y(), this->Z() / other.Z());
+}
+
 Vector3 Vector3::operator +(Vector3 other) const {
     return Vector3(this->X() + other.X(), this->Y() + other.Y(), this->Z() + other.Z());
 }

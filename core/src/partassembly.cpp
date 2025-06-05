@@ -69,7 +69,7 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
     if (parts.size() == 1) {
         parts[0]->size = newSize;
         parts[0]->UpdateProperty("Size");
-        sendPropertyUpdatedSignal(parts[0], "Size", Variant((Vector3)parts[0]->size));
+        sendPropertyUpdatedSignal(parts[0], "Size", Variant(parts[0]->size));
         _bounds = newSize;
         return;
     }
@@ -85,7 +85,7 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
         sendPropertyUpdatedSignal(part, "CFrame", Variant(part->cframe));
         part->size *= factor;
         part->UpdateProperty("Size");
-        sendPropertyUpdatedSignal(part, "Size", Variant((Vector3)part->size));
+        sendPropertyUpdatedSignal(part, "Size", Variant(part->size));
     }
 
     _bounds = _bounds * factor;

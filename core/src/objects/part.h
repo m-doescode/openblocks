@@ -18,9 +18,9 @@ namespace rp = reactphysics3d;
 
 // For easy construction from C++. Maybe should be removed?
 struct PartConstructParams {
-    glm::vec3 position;
-    glm::vec3 rotation;
-    glm::vec3 size;
+    Vector3 position;
+    Vector3 rotation;
+    Vector3 size;
     Color3 color;
     
     bool anchored = false;
@@ -58,7 +58,7 @@ public:
     CFrame cframe;
 
     DEF_PROP_CATEGORY(PART)
-    DEF_PROP_(on_update=onUpdated) glm::vec3 size;
+    DEF_PROP_(on_update=onUpdated) Vector3 size;
 
     DEF_PROP_CATEGORY(APPEARANCE)
     DEF_PROP Color3 color;
