@@ -59,7 +59,11 @@ void PartAssembly::TransformBy(CFrame transform) {
     for (auto part : parts) {
         part->cframe = transform * part->cframe;
         part->UpdateProperty("CFrame");
+        part->UpdateProperty("Position");
+        part->UpdateProperty("Rotation");
         sendPropertyUpdatedSignal(part, "CFrame", Variant(part->cframe));
+        sendPropertyUpdatedSignal(part, "Position", Variant(part->cframe));
+        sendPropertyUpdatedSignal(part, "Rotation", Variant(part->cframe));
     }
 
     _assemblyOrigin = transform * _assemblyOrigin;
@@ -82,7 +86,11 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
         localOff = localOff * factor;
         part->cframe = part->cframe.Rotation() + _assemblyOrigin * localOff;
         part->UpdateProperty("CFrame");
+        part->UpdateProperty("Position");
+        part->UpdateProperty("Rotation");
         sendPropertyUpdatedSignal(part, "CFrame", Variant(part->cframe));
+        sendPropertyUpdatedSignal(part, "Position", Variant(part->cframe));
+        sendPropertyUpdatedSignal(part, "Rotation", Variant(part->cframe));
         part->size *= factor;
         part->UpdateProperty("Size");
         sendPropertyUpdatedSignal(part, "Size", Variant(part->size));
