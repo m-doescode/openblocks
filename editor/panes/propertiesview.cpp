@@ -13,8 +13,12 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QTime>
+#include <cfloat>
+#include <cmath>
 #include <functional>
+#include <qapplication.h>
 #include <qcombobox.h>
+#include <qevent.h>
 #include <qnamespace.h>
 #include <qtreewidget.h>
 
@@ -72,6 +76,8 @@ public:
         if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
             spinBox->setValue(currentValue.get<float>());
+            spinBox->setMinimum(-INFINITY);
+            spinBox->setMaximum(INFINITY);
 
             if (meta.flags & PROP_UNIT_FLOAT) {
                 spinBox->setMinimum(0);
@@ -82,6 +88,8 @@ public:
             return spinBox;
         } else if (meta.type.descriptor == &INT_TYPE) {
             QSpinBox* spinBox = new QSpinBox(parent);
+            spinBox->setMinimum(INT_MIN);
+            spinBox->setMaximum(INT_MAX);
             spinBox->setValue(currentValue.get<int>());
 
             return spinBox;
@@ -107,6 +115,13 @@ public:
                 if (siblingItems[i].Value() == enumItem.Value())
                     comboBox->setCurrentIndex(i);
             }
+
+            // If a selection is made
+            // https://forum.qt.io/post/426902
+            connect(comboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, comboBox, index]() {
+                setModelData(comboBox, view->model(), index);
+                view->closeEditor(comboBox, QAbstractItemDelegate::EndEditHint::NoHint);
+            });
 
             return comboBox;
         } else if (meta.type.descriptor->fromString) {
