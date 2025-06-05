@@ -17,7 +17,7 @@ public:
     DEF_DATA_CTOR Vector3(float x, float y, float z);
     Vector3(const glm::vec3&);
     Vector3(const reactphysics3d::Vector3&);
-    ~Vector3();
+    virtual ~Vector3();
 
     DEF_DATA_PROP static Vector3 ZERO;
     DEF_DATA_PROP static Vector3 ONE;

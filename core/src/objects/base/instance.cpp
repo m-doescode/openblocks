@@ -28,6 +28,7 @@ const InstanceType Instance::TYPE = {
     .className = "Instance",
     .constructor = NULL, // Instance is abstract and therefore not creatable
     .explorerIcon = "instance",
+    .flags = 0
 };
 
 // Instance is abstract, so it should not implement GetClass directly
@@ -211,7 +212,7 @@ result<Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string n
 
 result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) {
     if (name == "Name") {
-        return PropertyMeta { &STRING_TYPE };
+        return PropertyMeta { &STRING_TYPE, 0 };
     } else if (name == "Parent") {
         return PropertyMeta { &InstanceRef::TYPE, PROP_NOSAVE };
     } else if (name == "ClassName") {
@@ -391,7 +392,7 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
 
 // DescendantsIterator
 
-DescendantsIterator::DescendantsIterator(std::shared_ptr<Instance> current) : current(current), root(current == DUMMY_INSTANCE ? DUMMY_INSTANCE : current->GetParent()), siblingIndex { 0 } { }
+DescendantsIterator::DescendantsIterator(std::shared_ptr<Instance> current) : root(current == DUMMY_INSTANCE ? DUMMY_INSTANCE : current->GetParent()), current(current), siblingIndex { 0 } { }
 
 DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
     // If the current item is dummy, an error has occurred, this is not supposed to happen.
@@ -416,7 +417,7 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
     }
 
     // If we've hit the end of this item's children, move one up
-    while (current->GetParent() && current->GetParent().value()->GetChildren().size() <= (siblingIndex.back() + 1)) {
+    while (current->GetParent() && current->GetParent().value()->GetChildren().size() <= size_t(siblingIndex.back() + 1)) {
         siblingIndex.pop_back();
         current = current->GetParent().value();
 

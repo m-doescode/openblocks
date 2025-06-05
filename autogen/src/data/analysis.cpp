@@ -10,8 +10,6 @@
 using namespace data;
 
 static std::string toStaticName(std::string orig) {
-    bool isSnakeCase = orig.find('_') == -1;
-
     std::string newName = "";
     int wordStart = 0;
     for (char c : orig) {
@@ -46,7 +44,6 @@ static void processConstructor(CXCursor cur, ClassAnalysis* state) {
 
     auto result = parseAnnotationString(propertyDef.value());
     std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
-    CXType retType = clang_getCursorResultType(cur);
     
     anly.name = result["name"];
     anly.functionName = "__ctor";

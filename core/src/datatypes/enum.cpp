@@ -4,7 +4,7 @@
 #include "error/data.h"
 #include <pugixml.hpp>
 
-TypeMeta::TypeMeta(const Enum* enum_) : enum_(enum_), descriptor(&EnumItem::TYPE) {}
+TypeMeta::TypeMeta(const Enum* enum_) : descriptor(&EnumItem::TYPE), enum_(enum_) {}
 
 Enum::Enum(_EnumData* data) : data(data) {}
 

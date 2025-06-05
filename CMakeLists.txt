@@ -3,6 +3,12 @@ set(CMAKE_CXX_STANDARD 20)
 project(openblocks VERSION 0.1.0)
 set(OpenGL_GL_PREFERENCE "GLVND")
 
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
+endif()
+
 set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
 
 add_subdirectory(autogen)

@@ -33,7 +33,6 @@ ExplorerView::ExplorerView(QWidget* parent):
     this->expand(model.ObjectToIndex(gWorkspace()));
 
     connect(this, &QTreeView::customContextMenuRequested, this, [&](const QPoint& point) {
-        QModelIndex index = this->indexAt(point);
         contextMenu.exec(this->viewport()->mapToGlobal(point));
     });
 

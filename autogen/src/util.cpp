@@ -25,11 +25,11 @@ std::map<std::string, std::string> parseAnnotationString(std::string src) {
     int stage = 0;
     bool quoted = false;
 
-    int i = 0;
+    size_t i = 0;
     for (; i < src.length(); i++) {
         if (src[i] == ' ' && (stage != 2 || !quoted)) continue; // Ignore spaces if not in stage 2 and quoted
         if (src[i] == ',' && stage == 0) continue; // Let empty commas slip by
-        if (stage < 2 && (src[i] >= 'a' && src[i] <= 'z' || src[i] >= 'A' && src[i] <= 'Z' || src[i] >= '0' && src[i] <= '9' || src[i] == '_')) {
+        if (stage < 2 && ((src[i] >= 'a' && src[i] <= 'z') || (src[i] >= 'A' && src[i] <= 'Z') || (src[i] >= '0' && src[i] <= '9') || src[i] == '_')) {
             currentIdent += src[i];
             stage = 1;
             continue;
@@ -63,7 +63,7 @@ std::map<std::string, std::string> parseAnnotationString(std::string src) {
             currentValue += src[i];
             continue;
         }
-        fprintf(stderr, "Unexpected symbol: %c at index %d\n", src[i], i);
+        fprintf(stderr, "Unexpected symbol: %c at index %zu\n", src[i], i);
         fprintf(stderr, "\t%s\n", src.c_str());
         fprintf(stderr, "\t%s^\n", i > 0 ? std::string(i, '~').c_str() : "");
         abort();

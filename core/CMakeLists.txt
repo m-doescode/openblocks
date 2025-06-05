@@ -26,6 +26,7 @@ foreach (SRC ${AUTOGEN_SOURCES})
 
     add_custom_command(
         OUTPUT "${OUT_PATH}"
+        DEPENDS autogen
         DEPENDS "${SRC_PATH}"
         COMMAND "${CMAKE_BINARY_DIR}/autogen/autogen" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SRC_PATH}" "${OUT_PATH}"
     )
@@ -43,6 +44,7 @@ add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_libraries(openblocks ${GLEW_LIBRARIES} ${LUAJIT_LIBRARIES} OpenGL::GL ReactPhysics3D::ReactPhysics3D pugixml::pugixml)
 target_include_directories(openblocks PUBLIC "src" "../include" ${LUAJIT_INCLUDE_DIR})
+add_dependencies(openblocks autogen_build autogen)
 
 # Windows-specific dependencies
 if(WIN32)

@@ -20,6 +20,7 @@ class DEF_DATA Enum {
     _EnumData* data;
 public:
     Enum(_EnumData*);
+    virtual ~Enum() = default;
 
     static const TypeDesc TYPE;
 
@@ -41,6 +42,7 @@ class DEF_DATA EnumItem {
     int value;
 public:
     EnumItem(_EnumData*, std::string, int);
+    virtual ~EnumItem() = default;
     
     static const TypeDesc TYPE;
 

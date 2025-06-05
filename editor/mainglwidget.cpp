@@ -421,7 +421,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         draggingObject = part;
         if (evt->modifiers() & Qt::ControlModifier) {
             std::vector<std::shared_ptr<Instance>> currentSelection = getSelection();
-            for (int i = 0; i < currentSelection.size(); i++) {
+            for (size_t i = 0; i < currentSelection.size(); i++) {
                 std::shared_ptr<Instance> inst = currentSelection[i];
                 if (inst == part) {
                     currentSelection.erase(currentSelection.begin() + i);

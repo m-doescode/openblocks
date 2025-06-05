@@ -40,6 +40,7 @@ protected:
     void Call(std::vector<Variant>) override;
 public:
     CSignalConnection(std::function<void(std::vector<Variant>)>, std::weak_ptr<Signal> parent);
+    virtual ~CSignalConnection() = default;
 };
 
 class LuaSignalConnection : public SignalConnection {
@@ -53,7 +54,7 @@ public:
     LuaSignalConnection(lua_State*, std::weak_ptr<Signal> parent);
     LuaSignalConnection (const LuaSignalConnection&) = delete;
     LuaSignalConnection& operator= (const LuaSignalConnection&) = delete;
-    ~LuaSignalConnection();
+    virtual ~LuaSignalConnection();
 };
 
 // Holds a signal connection such that when the holder is deleted (either via its parent object being deleted, or being overwritten),
@@ -110,7 +111,7 @@ class SignalRef {
 
 public:
     SignalRef(std::weak_ptr<Signal>);
-    ~SignalRef();
+    virtual ~SignalRef();
 
     static const TypeDesc TYPE;
 
@@ -127,7 +128,7 @@ class SignalConnectionRef {
 
 public:
     SignalConnectionRef(std::weak_ptr<SignalConnection>);
-    ~SignalConnectionRef();
+    virtual ~SignalConnectionRef();
 
     static const TypeDesc TYPE;
 

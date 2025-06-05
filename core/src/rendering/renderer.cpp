@@ -52,8 +52,6 @@ void renderInit(GLFWwindow* window, int width, int height) {
     viewportWidth = width, viewportHeight = height;
     glViewport(0, 0, width, height);
 
-    int argc = 1;
-    char* argv = const_cast<char*>("");
     initMeshes();
 
     glEnable(GL_DEPTH_TEST);
@@ -240,7 +238,6 @@ void renderSurfaceExtras() {
             glm::mat4 model = CFrame::pointToward(surfaceCenter, part->cframe.Rotation() * normalFromFace(face));
             model = glm::scale(model, glm::vec3(0.4,0.4,0.4));
             ghostShader->set("model", model);
-            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
     
             CYLINDER_MESH->bind();
             glDrawArrays(GL_TRIANGLES, 0, CYLINDER_MESH->vertexCount);

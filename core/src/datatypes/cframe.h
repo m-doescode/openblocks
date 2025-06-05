@@ -26,7 +26,7 @@ public:
     DEF_DATA_CTOR CFrame(Vector3 , Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
     CFrame(const reactphysics3d::Transform&);
     CFrame(Vector3 position, glm::quat quat);
-    ~CFrame();
+    virtual ~CFrame();
 
     // Same as CFrame(position, position + toward), but makes sure that up and toward are not linearly dependant
     static CFrame pointToward(Vector3 position, Vector3 toward);

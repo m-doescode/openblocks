@@ -149,7 +149,7 @@ public:
     typedef int difference_type;
 
     DescendantsIterator(std::shared_ptr<Instance> current);
-    inline self_type operator++() { self_type i = *this; ++*this; return i; }
+    inline self_type operator++() { (*this)++; return (*this); }
     inline std::shared_ptr<Instance> operator*() { return current; }
     inline std::shared_ptr<Instance> operator->() { return current; }
     inline bool operator==(const self_type& rhs) { return current == rhs.current; }

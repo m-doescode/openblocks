@@ -25,13 +25,11 @@
 class PropertiesItemDelegate : public QStyledItemDelegate {
     PropertiesView* view;
 public:
-    PropertiesItemDelegate(PropertiesView* parent) : view(parent), QStyledItemDelegate(parent) {}
+    PropertiesItemDelegate(PropertiesView* parent) : QStyledItemDelegate(parent), view(parent) {}
 
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override {
         // https://stackoverflow.com/a/76645757/16255372
         // https://stackoverflow.com/a/70078448/16255372
-
-        int indent = dynamic_cast<PropertiesView*>(parent())->indentation();
 
         QStyledItemDelegate::initStyleOption(option, index);
 
@@ -110,7 +108,7 @@ public:
 
             EnumItem enumItem = currentValue.get<EnumItem>();
             std::vector<EnumItem> siblingItems = meta.type.enum_->GetEnumItems();
-            for (int i = 0; i < siblingItems.size(); i++) {
+            for (size_t i = 0; i < siblingItems.size(); i++) {
                 comboBox->addItem(QString::fromStdString(siblingItems[i].Name()));
                 if (siblingItems[i].Value() == enumItem.Value())
                     comboBox->setCurrentIndex(i);
@@ -184,7 +182,7 @@ public:
 
             EnumItem enumItem = currentValue.get<EnumItem>();
             std::vector<EnumItem> siblingItems = meta.type.enum_->GetEnumItems();
-            for (int i = 0; i < siblingItems.size(); i++) {
+            for (size_t i = 0; i < siblingItems.size(); i++) {
                 if (siblingItems[i].Value() == enumItem.Value())
                     comboBox->setCurrentIndex(i);
             }

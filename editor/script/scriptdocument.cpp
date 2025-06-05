@@ -110,7 +110,7 @@ class ObLuaLexer : public QsciLexerLua {
 };
 
 ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
-    script(script), QMdiSubWindow(parent) {
+    QMdiSubWindow(parent), script(script) {
 
     setWindowTitle(QString::fromStdString(script->name));
 

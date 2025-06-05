@@ -118,14 +118,14 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
             // Check number of arguments
             out << "n == " << std::to_string(methodImpl.parameters.size() + 1); // Account for first argument as 'this'
 
-            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+            for (size_t i = 0; i < methodImpl.parameters.size(); i++) {
                 out << " && ";
                 writeLuaTestArgument(out, methodImpl.parameters[i].type, i, true);
             }
 
             out << ") {\n"; // End if condition, start if body
 
-            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+            for (size_t i = 0; i < methodImpl.parameters.size(); i++) {
                 writeLuaGetArgument(out, methodImpl.parameters[i].type, i, true);
             }
 
@@ -138,7 +138,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
             // Call function
             out << "this_->" << methodImpl.functionName << "(";
 
-            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+            for (size_t i = 0; i < methodImpl.parameters.size(); i++) {
                 std::string varname = "arg" + std::to_string(i);
                 if (i != 0) out << ", ";
                 out << varname;
@@ -183,7 +183,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
             // Check number of arguments
             out << "n == " << std::to_string(methodImpl.parameters.size());
 
-            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+            for (size_t i = 0; i < methodImpl.parameters.size(); i++) {
                 out << " && ";
                 writeLuaTestArgument(out, methodImpl.parameters[i].type, i, false);
             }
@@ -191,7 +191,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
             out << ") {\n"; // End if condition, start if body
 
             // Get the arguments
-            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+            for (size_t i = 0; i < methodImpl.parameters.size(); i++) {
                 writeLuaGetArgument(out, methodImpl.parameters[i].type, i, false);
             }
 
@@ -207,7 +207,7 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
             else
                 out << fqn << "::" << methodImpl.functionName << "(";
 
-            for (int i = 0; i < methodImpl.parameters.size(); i++) {
+            for (size_t i = 0; i < methodImpl.parameters.size(); i++) {
                 std::string varname = "arg" + std::to_string(i);
                 if (i != 0) out << ", ";
                 out << varname;

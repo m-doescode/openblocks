@@ -45,7 +45,7 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
         ? static_cast<Instance*>(parent.internalPointer())
         : rootItem.get();
 
-    if (parentItem->GetChildren().size() >= row && !(parentItem->GetChildren()[row]->GetClass()->flags & INSTANCE_HIDDEN))
+    if (parentItem->GetChildren().size() >= (size_t)row && !(parentItem->GetChildren()[row]->GetClass()->flags & INSTANCE_HIDDEN))
         return createIndex(row, column, parentItem->GetChildren()[row].get());
     return {};
 }
@@ -56,7 +56,7 @@ QModelIndex ExplorerModel::toIndex(std::shared_ptr<Instance> item) {
 
     std::shared_ptr<Instance> parentItem = item->GetParent().value();
     // Check above ensures this item is not root, so value() must be valid
-    for (int i = 0; i < parentItem->GetChildren().size(); i++)
+    for (size_t i = 0; i < parentItem->GetChildren().size(); i++)
         if (parentItem->GetChildren()[i] == item)
             return createIndex(i, 0, item.get());
     return QModelIndex{};
@@ -79,7 +79,7 @@ QModelIndex ExplorerModel::parent(const QModelIndex &index) const {
 
     // Check above ensures this item is not root, so value() must be valid
     std::shared_ptr<Instance> parentParent = parentItem->GetParent().value();
-    for (int i = 0; i < parentParent->GetChildren().size(); i++)
+    for (size_t i = 0; i < parentParent->GetChildren().size(); i++)
         if (parentParent->GetChildren()[i] == parentItem)
             return createIndex(i, 0, parentItem.get());
     return QModelIndex{};
@@ -156,7 +156,7 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
 
     Logger::infof("Moved %d from %s", count, sourceParent->name.c_str());
 
-    if ((sourceRow + count) >= sourceParent->GetChildren().size()) {
+    if (size_t(sourceRow + count) >= sourceParent->GetChildren().size()) {
         Logger::fatalErrorf("Attempt to move rows %d-%d from %s (%s) while it only has %zu children.", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
         return false;
     }
@@ -169,7 +169,7 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
 }
 
 bool ExplorerModel::removeRows(int row, int count, const QModelIndex& parentIdx) {
-    Instance* parent = parentIdx.isValid() ? static_cast<Instance*>(parentIdx.internalPointer()) : rootItem.get();
+    // Instance* parent = parentIdx.isValid() ? static_cast<Instance*>(parentIdx.internalPointer()) : rootItem.get();
     
     for (int i = row; i < (row + count); i++) {
         //parent->GetChildren()[i]->SetParent(nullptr);

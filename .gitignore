@@ -1,6 +1,7 @@
 /bin/
 /lib/
 /build/
+/build-rel
 /autogen/build
 
 # Qt

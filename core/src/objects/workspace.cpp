@@ -24,7 +24,7 @@ Workspace::~Workspace() {
 PhysicsEventListener::PhysicsEventListener(Workspace* parent) : workspace(parent) {}
 
 void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& data) {
-    for (int i = 0; i < data.getNbContactPairs(); i++) {
+    for (size_t i = 0; i < data.getNbContactPairs(); i++) {
         auto pair = data.getContactPair(i);
         auto type = pair.getEventType();
         if (type == rp::CollisionCallback::ContactPair::EventType::ContactStay) continue;
@@ -83,8 +83,6 @@ void Workspace::InitService() {
 
 void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
     if (!physicsWorld) return;
-
-    glm::mat4 rotMat = glm::mat4(1.0f);
 
     rp::Transform transform = part->cframe;
     if (!part->rigidBody) {

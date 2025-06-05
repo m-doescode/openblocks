@@ -36,6 +36,7 @@ LuaSignalConnection::~LuaSignalConnection() {
     luaL_unref(state, LUA_REGISTRYINDEX, thread);
 }
 
+#if 0
 static void stackdump(lua_State* L) {
     printf("%d\n", lua_gettop(L));
     fflush(stdout);
@@ -52,6 +53,7 @@ static void stackdump(lua_State* L) {
     printf("\n\n");
     fflush(stdout);
 }
+#endif
 
 void LuaSignalConnection::Call(std::vector<Variant> args) {
     lua_State* thread = lua_newthread(state);
@@ -227,7 +229,10 @@ SignalRef::~SignalRef() = default;
 
 const TypeDesc SignalRef::TYPE = {
     .name = "Signal",
+    .serialize = nullptr,
+    .deserialize = nullptr,
     .toString = toVariantFunction(&SignalRef::ToString),
+    .fromString = nullptr,
     .pushLuaValue = toVariantFunction(&SignalRef::PushLuaValue),
     .fromLuaValue = &SignalRef::FromLuaValue,
 };
@@ -348,7 +353,10 @@ SignalConnectionRef::~SignalConnectionRef() = default;
 
 const TypeDesc SignalConnectionRef::TYPE = {
     .name = "Signal",
+    .serialize = nullptr,
+    .deserialize = nullptr,
     .toString = toVariantFunction(&SignalConnectionRef::ToString),
+    .fromString = nullptr,
     .pushLuaValue = toVariantFunction(&SignalConnectionRef::PushLuaValue),
     .fromLuaValue = &SignalConnectionRef::FromLuaValue,
 };

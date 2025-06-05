@@ -69,6 +69,7 @@ endif()
 
 target_include_directories(editor PUBLIC "../core/src" "../include" ${QSCINTILLA_INCLUDE_DIR})
 target_link_libraries(editor PRIVATE openblocks Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia ${QSCINTILLA_LIBRARY})
+add_dependencies(editor openblocks)
 
 # Qt6 does not include QOpenGLWidgets as part of Widgets base anymore, so
 # we have to include it manually

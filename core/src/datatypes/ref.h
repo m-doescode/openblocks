@@ -11,7 +11,7 @@ class InstanceRef {
 public:
     InstanceRef();
     InstanceRef(std::weak_ptr<Instance>);
-    ~InstanceRef();
+    virtual ~InstanceRef();
 
     static const TypeDesc TYPE;
 

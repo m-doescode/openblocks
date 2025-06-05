@@ -15,7 +15,7 @@ class DEF_DATA Color3 {
 public:
     DEF_DATA_CTOR Color3(float r, float g, float b);
     Color3(const glm::vec3&);
-    ~Color3();
+    virtual ~Color3();
 
     DEF_DATA_METHOD static Color3 FromHex(std::string hex);
 

@@ -94,7 +94,7 @@ void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
 }
 
 void ScriptContext::RunSleepingThreads() {
-    for (int i = 0; i < sleepingThreads.size();) {
+    for (size_t i = 0; i < sleepingThreads.size();) {
         bool deleted = false;
 
         SleepingThread sleep = sleepingThreads[i];

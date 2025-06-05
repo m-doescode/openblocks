@@ -99,7 +99,7 @@ result<Vector3, DataParseError> Vector3::FromString(std::string string) {
         if (string.length() == 0) return DataParseError(string, "Vector3");
         while (string[0] == ' ' && string.length() > 0) string.erase(0, 1);
         size_t nextPos = string.find(",");
-        if (nextPos == -1) nextPos = string.length();
+        if (nextPos == std::string::npos) nextPos = string.length();
         std::string term = string.substr(0, nextPos);
         string.erase(0, nextPos+1);
 
