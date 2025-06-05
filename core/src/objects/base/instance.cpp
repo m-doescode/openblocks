@@ -261,6 +261,7 @@ std::vector<std::string> Instance::GetProperties() {
 // Serialization
 
 void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
+    if (state == nullptr) state = std::make_shared<__RefStateSerialize>();
     pugi::xml_node node = parent.append_child("Item");
     node.append_attribute("class").set_value(this->GetClass()->className);
 
@@ -313,6 +314,7 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
 }
 
 result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xml_node node, RefStateDeserialize state) {
+    if (state == nullptr) state = std::make_shared<__RefStateDeserialize>();
     std::string className = node.attribute("class").value();
     if (INSTANCE_MAP.count(className) == 0) {
         return NoSuchInstance(className);
@@ -433,6 +435,7 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
 }
 
 std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
+    if (state == nullptr) state = std::make_shared<__RefStateClone>();
     std::shared_ptr<Instance> newInstance = GetClass()->constructor();
 
     // Copy properties

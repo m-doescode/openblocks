@@ -133,9 +133,9 @@ public:
     }
 
     // Serialization
-    void Serialize(pugi::xml_node parent, RefStateSerialize state = std::make_shared<__RefStateSerialize>());
-    static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node, RefStateDeserialize state = std::make_shared<__RefStateDeserialize>());
-    std::optional<std::shared_ptr<Instance>> Clone(RefStateClone state = std::make_shared<__RefStateClone>());
+    void Serialize(pugi::xml_node parent, RefStateSerialize state = {});
+    static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node, RefStateDeserialize state = {});
+    std::optional<std::shared_ptr<Instance>> Clone(RefStateClone state = {});
 };
 
 // https://gist.github.com/jeetsukumaran/307264
