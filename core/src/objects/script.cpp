@@ -15,15 +15,7 @@ int script_wait(lua_State*);
 int script_delay(lua_State*);
 
 Script::Script(): Instance(&TYPE) {
-    source =    "workspace.Part.Touched:Connect(function(otherPart)\n"
-	            "    print(\"Touched by: \", otherPart.Name)\n"
-                "end)\n"
-                "\n"
-                "workspace.Part.TouchEnded:Connect(function(otherPart)\n"
-	            "    print(\"Touched ended with: \", otherPart.Name)\n"
-                "end)\n"
-                "\n"
-                "error(\"Test\")";
+    source = "print(\"Hello, world!\")";
 }
 
 Script::~Script() {

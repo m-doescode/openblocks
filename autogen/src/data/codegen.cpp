@@ -345,8 +345,10 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
     if (state.staticMethods.size() == 0 && state.staticProperties.size() == 0) return;
 
     out <<  "static int lib_" << state.name << "_index(lua_State*);\n"
+            "static int lib_" << state.name << "_tostring(lua_State*);\n"
             "static const struct luaL_Reg lib_" << state.name << "_metatable [] = {\n"
             "    {\"__index\", lib_" << state.name << "_index},\n"
+            "    {\"__tostring\", lib_" << state.name << "_tostring},\n"
             "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
@@ -364,6 +366,13 @@ static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
            "    lua_rawset(L, -3);\n"
            "    lua_pop(L, 1);\n"
            "}\n\n";
+
+    // tostring
+
+    out <<  "\nint lib_" << state.name << "_tostring(lua_State* L) {\n"
+        "    lua_pushstring(L, \"" << state.name << "\");\n"
+        "    return 1;\n"
+        "}\n\n";
     
     // Indexing methods and properties
 

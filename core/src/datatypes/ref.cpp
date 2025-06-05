@@ -3,6 +3,7 @@
 #include "error/data.h"
 #include "logger.h"
 #include "variant.h" // IWYU pragma: keep
+#include <luajit-2.1/lua.h>
 #include <memory>
 #include <optional>
 #include "objects/base/instance.h"
@@ -49,10 +50,12 @@ result<InstanceRef, DataParseError> InstanceRef::Deserialize(pugi::xml_node node
 static int inst_gc(lua_State*);
 static int inst_index(lua_State*);
 static int inst_newindex(lua_State*);
+static int inst_tostring(lua_State*);
 static const struct luaL_Reg metatable [] = {
     {"__gc", inst_gc},
     {"__index", inst_index},
     {"__newindex", inst_newindex},
+    {"__tostring", inst_tostring},
     {NULL, NULL} /* end of array */
 };
 
@@ -141,4 +144,13 @@ static int inst_newindex(lua_State* L) {
         return luaL_error(L, "%s", value.errorMessage().value().c_str());
     inst->SetPropertyValue(key, value.expect()).expect();
     return 0;
+}
+
+static int inst_tostring(lua_State* L) {
+    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, 1);
+    std::shared_ptr<Instance> inst = **userdata;
+
+    lua_pushstring(L, inst->name.c_str());
+
+    return 1;
 }

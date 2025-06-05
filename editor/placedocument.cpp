@@ -93,51 +93,15 @@ void PlaceDocument::init() {
     gWorkspace()->SyncPartPhysics(lastPart);
 
     gWorkspace()->AddChild(lastPart = Part::New({
-        .position = glm::vec3(0),
-        .rotation = glm::vec3(-2.6415927, 1.1415926, 2.57075),
+        .position = glm::vec3(-3.8),
+        .rotation = glm::vec3(0),
         .size = glm::vec3(4, 1.2, 2),
         .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
     }));
     gWorkspace()->SyncPartPhysics(lastPart);
     auto part0 = lastPart;
 
-    gWorkspace()->AddChild(lastPart = Part::New({
-        .position = glm::vec3(1.7610925, 0.48568499, -0.82623518),
-        // .rotation = glm::vec3(0.5, 2, 1),
-        .rotation = glm::vec3(-2.6415927, 1.1415926, -2.141639),
-        .size = glm::vec3(4, 1.2, 2),
-        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    }));
-    gWorkspace()->SyncPartPhysics(lastPart);
-    auto part1 = lastPart;
-
     lastPart = Part::New();
-    shit = part1;
-
-    part0->anchored = true;
-    part0->UpdateProperty("Anchored");
-
-    // auto snap = Snap::New();
-    // snap->part0 = part0;
-    // snap->part1 = part1;
-    // snap->c0 = part1->cframe;
-    // snap->c1 = part0->cframe;
-
-    // gWorkspace()->AddChild(snap);
-    // snap->UpdateProperty("Part0");
-    // snap->UpdateProperty("Part1");
-
-    // part0->backSurface = SurfaceWeld;
-    // part1->frontSurface = SurfaceWeld;
-
-    // part0->backSurface = SurfaceHinge;
-    part0->backSurface = SurfaceType::Motor;
-    // part1->frontSurface = SurfaceHinge;
-
-    std::shared_ptr<Script> script = Script::New();
-    gWorkspace()->AddChild(script);
-    MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
-    // mainWnd->openScriptDocument(script);
 }
 
 void PlaceDocument::dragEnterEvent(QDragEnterEvent* evt) {
