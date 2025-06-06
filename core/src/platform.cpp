@@ -4,7 +4,7 @@
 #include "panic.h"
 
 // GNU/Linux implementation
-#if defined(_POSIX_VERSION) || defined(__linux) || defined(__linux__)
+#if defined(_POSIX_VERSION) || defined(__linux) || defined(__linux__) || defined(__unix__)
 
 #include <unistd.h>
 #include <sys/types.h>

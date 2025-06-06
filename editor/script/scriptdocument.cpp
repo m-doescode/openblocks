@@ -125,7 +125,7 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 
     QFrame* frame = new QFrame;
     QVBoxLayout* frameLayout = new QVBoxLayout;
-    frameLayout->setMargin(0);
+    frameLayout->setContentsMargins({0, 0, 0, 0});
     frame->setLayout(frameLayout);
     scintilla = new QsciScintilla(this);
     
