@@ -90,6 +90,7 @@ std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
         newModel->services[className] = std::dynamic_pointer_cast<Service>(service);
     }
 
+    newModel->currentFile = path;
     newModel->Init();
 
     return newModel;
