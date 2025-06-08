@@ -5,8 +5,9 @@
 #include "error/data.h"
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
+#include <reactphysics3d/mathematics/Vector3.h>
 
-namespace reactphysics3d { class Vector3; };
+// namespace reactphysics3d { class Vector3; };
 
 class DEF_DATA Vector3 {
     AUTOGEN_PREAMBLE_DATA

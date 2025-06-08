@@ -4,7 +4,7 @@ project(openblocks VERSION 0.1.0)
 set(OpenGL_GL_PREFERENCE "GLVND")
 
 if (MSVC)
-    add_compile_options(/W4 /WX)
+    add_compile_options(/W4)
 else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
 endif()

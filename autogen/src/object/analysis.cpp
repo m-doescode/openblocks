@@ -162,7 +162,7 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
 
     anly.name = className;
     anly.baseClass = baseClass;
-    anly.headerPath = headerPath;
+    anly.headerPath = string_of(headerPath);
 
     // Add misc flags and options
     auto instanceDef = findAnnotation(cur, "OB::def_inst");

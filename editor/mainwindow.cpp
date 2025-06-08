@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (isDarkMode())
         QIcon::setFallbackThemeName("editor-dark");
     else
-        QIcon::setFallbackThemeName("editor");
+        QIcon::setThemeName("editor");
 
     // qApp->setStyle(QStyleFactory::create("fusion"));
     defaultMessageHandler = qInstallMessageHandler(logQtMessage);

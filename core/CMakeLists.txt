@@ -29,7 +29,7 @@ foreach (SRC ${AUTOGEN_SOURCES})
         OUTPUT "${OUT_PATH}"
         DEPENDS autogen
         DEPENDS "${SRC_PATH}"
-        COMMAND "${CMAKE_BINARY_DIR}/autogen/autogen" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SRC_PATH}" "${OUT_PATH}"
+        COMMAND "$<TARGET_FILE:autogen>" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SRC_PATH}" "${OUT_PATH}"
     )
 
     list(APPEND AUTOGEN_OUTS "${OUT_PATH}")

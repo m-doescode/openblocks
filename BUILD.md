@@ -38,10 +38,12 @@ Now, generate the build files with cmake via the vcpkg preset:
 
     cmake -Bbuild . --preset vcpkg
 
-Then, finally, build in release mode:
+Then, finally, build in release mode\*:
 
     cmake --build build --config Release
 
 The compiled binaries should then be placed in `./build/bin/` and should be ready for redistribution without any further work.
 
 If any of the compilation steps fail, or the binaries fail to execute, please create an issue so that this can be corrected.
+
+\* Release mode is necessary as debug mode copies DLLs that are not linked to the output binary

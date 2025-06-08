@@ -12,6 +12,7 @@
 #include "object/codegen.h"
 #include "data/analysis.h"
 #include "data/codegen.h"
+#include "util.h"
 
 // namespace data {
 //     #include "data/analysis.h"
@@ -22,13 +23,17 @@ namespace fs = std::filesystem;
 
 // https://clang.llvm.org/docs/LibClang.html
 int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
-    const char* cargs[] = { "-x", "c++", "-I", srcRoot.c_str(), "-D__AUTOGEN__", 0 };
+    std::string srcRootStr = string_of(srcRoot);
+    std::string srcPathStr = string_of(srcPath);
+    std::string outPathStr = string_of(outPath);
+
+    const char* cargs[] = { "-xc++", "-std=c++17", "-I", srcRootStr.c_str(), "-D__AUTOGEN__", 0 };
     // THANK YOU SO MUCH THIS STACKOVERFLOW ANSWER IS SO HELPFUL
     // https://stackoverflow.com/a/59206378/16255372
     CXIndex index = clang_createIndex(0, 0);
     CXTranslationUnit unit = clang_parseTranslationUnit(
         index,
-        srcPath.c_str(), cargs, 5,
+        srcPathStr.c_str(), cargs, 5,
         nullptr, 0,
         CXTranslationUnit_None);
 
@@ -55,15 +60,16 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     enum_::AnalysisState enumAnlyState;
 
     fs::path relpath = fs::relative(srcPath, srcRoot);
-    printf("[AUTOGEN] Processing file %s...\n", relpath.c_str());
-    object::analyzeClasses(cursor, srcRoot, &objectAnlyState);
-    data::analyzeClasses(cursor, srcRoot, &dataAnlyState);
-    enum_::analyzeClasses(cursor, srcRoot, &enumAnlyState);
+    std::string relpathStr = string_of(relpath);
+    printf("[AUTOGEN] Processing file %s...\n", relpathStr.c_str());
+    object::analyzeClasses(cursor, srcRootStr, &objectAnlyState);
+    data::analyzeClasses(cursor, srcRootStr, &dataAnlyState);
+    enum_::analyzeClasses(cursor, srcRootStr, &enumAnlyState);
 
     fs::create_directories(outPath.parent_path()); // Make sure generated dir exists before we try writing to it
 
-    printf("[AUTOGEN] Generating file %s...\n", relpath.c_str());
-    std::ofstream outStream(outPath);
+    printf("[AUTOGEN] Generating file %s...\n", relpathStr.c_str());
+    std::ofstream outStream(outPathStr);
 
     if (!objectAnlyState.classes.empty() || !dataAnlyState.classes.empty()) {
         outStream << "/////////////////////////////////////////////////////////////////////////////////////////\n";
@@ -72,15 +78,15 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     }
 
     for (auto& [_, clazz] : objectAnlyState.classes) {
-        object::writeCodeForClass(outStream, relpath, clazz);
+        object::writeCodeForClass(outStream, relpathStr, clazz);
     }
 
     for (auto& [_, clazz] : dataAnlyState.classes) {
-        data::writeCodeForClass(outStream, relpath, clazz);
+        data::writeCodeForClass(outStream, relpathStr, clazz);
     }
 
     for (auto& [_, clazz] : enumAnlyState.classes) {
-        enum_::writeCodeForClass(outStream, relpath, clazz);
+        enum_::writeCodeForClass(outStream, relpathStr, clazz);
     }
 
     outStream.close();

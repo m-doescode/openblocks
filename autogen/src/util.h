@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <filesystem>
 
 typedef std::function<CXChildVisitResult(CXCursor cursor, CXCursor parent)> X_CXCursorVisitor;
 
@@ -20,3 +21,5 @@ std::string x_clang_toString(CXString string);
 std::map<std::string, std::string> parseAnnotationString(std::string src);
 
 std::optional<std::string> findAnnotation(CXCursor cur, std::string annotationName);
+
+std::string string_of(std::filesystem::path path);

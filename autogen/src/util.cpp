@@ -109,3 +109,7 @@ std::optional<std::string> findAnnotation(CXCursor cur, std::string annotationNa
     });
     return ret;
 }
+
+std::string string_of(std::filesystem::path path) {
+    return path.string();
+}
