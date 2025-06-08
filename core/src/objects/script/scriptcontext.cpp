@@ -162,6 +162,7 @@ static int g_print(lua_State* L) {
         const char* str = lua_tostring(L, -1); // convert result into c-string
         lua_pop(L, 1); // pop result
         
+        if (i > 1) buf += '\t';
         buf += str;
     }
 
