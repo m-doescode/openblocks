@@ -270,6 +270,9 @@ static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 
 void renderHandles() {
     if (!editorToolHandles.active) return;
 
+    auto assembly = PartAssembly::FromSelection();
+    if (assembly.bounds() == Vector3::ZERO) return;
+
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW); // This is right... Probably.....

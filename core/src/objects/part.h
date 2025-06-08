@@ -58,6 +58,8 @@ public:
     CFrame cframe;
 
     DEF_PROP_CATEGORY(PART)
+    // Special compatibility changes for this property were made in
+    // Instance::Serialize
     DEF_PROP_(on_update=onUpdated) Vector3 size;
 
     DEF_PROP_CATEGORY(APPEARANCE)

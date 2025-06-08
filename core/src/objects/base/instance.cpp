@@ -12,6 +12,7 @@
 #include "logger.h"
 #include "panic.h"
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <memory>
@@ -182,10 +183,12 @@ void Instance::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
 // Properties
 
 result<Variant, MemberNotFound> Instance::GetPropertyValue(std::string name) {
+    name[0] = toupper(name[0]); // Ignore case of first character
     return InternalGetPropertyValue(name);
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Variant value, bool sendUpdateEvent) {
+    name[0] = toupper(name[0]); // Ignore case of first character
     auto result = InternalSetPropertyValue(name, value);
     if (result.isSuccess() && sendUpdateEvent) {
         InternalUpdateProperty(name);
@@ -195,6 +198,7 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std:
 }
 
 result<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name) {
+    name[0] = toupper(name[0]); // Ignore case of first character
     return InternalGetPropertyMeta(name);
 }
 
@@ -271,6 +275,15 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
     for (std::string name : GetProperties()) {
         PropertyMeta meta = GetPropertyMeta(name).expect("Meta of declared property is missing");
         if (meta.flags & (PROP_NOSAVE | PROP_READONLY)) continue; // This property should not be serialized. Skip...
+
+#if 1
+        // Special consideration for Part.Size
+        // It should be serialized as "size" to be compatible with rbxl files
+        // This is optional, as they can still be opened otherwise, but I opted
+        // to keep this enabled
+        if (IsA("Part") && name == "Size")
+            name = "size";
+#endif
 
         pugi::xml_node propertyNode = propertiesNode.append_child(meta.type.descriptor->name);
         propertyNode.append_attribute("name").set_value(name);

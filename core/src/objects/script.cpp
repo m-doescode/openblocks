@@ -32,6 +32,9 @@ void Script::Run() {
 
     // Initialize script globals
     lua_getglobal(Lt, "_G");
+
+    InstanceRef(shared_from_this()).PushLuaValue(Lt);
+    lua_setfield(Lt, -2, "script");
     
     InstanceRef(dataModel().value()).PushLuaValue(Lt);
     lua_setfield(Lt, -2, "game");
