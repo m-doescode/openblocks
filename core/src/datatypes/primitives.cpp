@@ -2,7 +2,7 @@
 #include "error/data.h"
 #include "variant.h"
 #include <pugixml.hpp>
-#include "lua.h"
+#include "lua.h" // IWYU pragma: keep
 #include <sstream>
 
 // null

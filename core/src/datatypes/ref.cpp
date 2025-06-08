@@ -3,11 +3,10 @@
 #include "error/data.h"
 #include "logger.h"
 #include "variant.h" // IWYU pragma: keep
-#include <luajit-2.1/lua.h>
 #include <memory>
 #include <optional>
 #include "objects/base/instance.h"
-#include "lua.h"
+#include "lua.h" // IWYU pragma: keep
 #include "objects/base/member.h"
 #include <pugixml.hpp>
 

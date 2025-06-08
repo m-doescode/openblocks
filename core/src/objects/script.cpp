@@ -7,7 +7,7 @@
 #include "objects/workspace.h"
 #include "objects/datamodel.h"
 #include "datatypes/ref.h"
-#include "lua.h"
+#include "lua.h" // IWYU pragma: keep
 #include <algorithm>
 #include <memory>
 

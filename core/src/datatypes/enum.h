@@ -6,7 +6,7 @@
 #include <vector>
 #include "datatypes/annotation.h"
 #include "error/data.h"
-#include "lua.h"
+#include "lua.h" // IWYU pragma: keep
 
 struct _EnumData {
     std::string name;

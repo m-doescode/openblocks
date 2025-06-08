@@ -1,10 +1,8 @@
 #include "signal.h"
 #include "datatypes/base.h"
 #include "variant.h"
-#include "lua.h"
+#include "lua.h" // IWYU pragma: keep
 #include <cstdio>
-#include <luajit-2.1/lauxlib.h>
-#include <luajit-2.1/lua.h>
 #include <pugixml.hpp>
 #include <memory>
 #include <vector>
