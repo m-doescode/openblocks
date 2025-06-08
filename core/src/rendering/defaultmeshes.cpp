@@ -1,5 +1,7 @@
 #include "defaultmeshes.h"
 
+#pragma warning( disable : 4305 )
+
 static float CUBE_VERTICES[] = {
     // positions                     // normals                  // texture coords
         0.5,    -0.5,   -0.5,       -0.0, -0.0, -1.0,       1.0, 0.0,
