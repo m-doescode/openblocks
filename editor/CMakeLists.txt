@@ -36,6 +36,10 @@ set(PROJECT_SOURCES
         panes/outputtextview.cpp
         script/scriptdocument.h
         script/scriptdocument.cpp
+        license.ui
+        license.h
+        license.cpp
+        licensetxt.cpp
         ${TS_FILES}
 )
 

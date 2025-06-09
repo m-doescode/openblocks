@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "common.h"
+#include "license.h"
 #include "logger.h"
 #include "objects/datamodel.h"
 #include "objects/model.h"
@@ -435,6 +436,11 @@ void MainWindow::connectActionHandlers() {
             if (!inst) { inst.logError(); continue; }
             selectedParent->AddChild(inst.expect());
         }
+    });
+
+    connect(ui->actionViewLicense, &QAction::triggered, this, [this]() {
+        LicenseDialog* licenseDialog = new LicenseDialog(this);
+        licenseDialog->exec();
     });
 }
 
