@@ -41,13 +41,15 @@ void PlaceDocument::setRunState(RunState newState) {
         std::shared_ptr<DataModel> newModel = editModeDataModel->CloneModel();
         gDataModel = newModel;
         gDataModel->Init(true);
+        setSelection({});
     } else if (newState == RUN_PAUSED && _runState == RUN_RUNNING) {
         _runState = RUN_PAUSED;
     } else if (newState == RUN_STOPPED) {
         _runState = RUN_STOPPED;
 
-        // GC: Check to make sure gDataModel gets properly garbage collected prior to this
+        // TODO: GC: Check to make sure gDataModel gets properly garbage collected prior to this
         gDataModel = editModeDataModel;
+        setSelection({});
     }
 }
 
