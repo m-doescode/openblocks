@@ -22,7 +22,7 @@
 Part::Part(): Part(PartConstructParams { .size = glm::vec3(2, 1.2, 4), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
-Part::Part(PartConstructParams params): Instance(&TYPE), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
+Part::Part(PartConstructParams params): PVInstance(&TYPE), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
                                         size(params.size), color(params.color), anchored(params.anchored), locked(params.locked) {                      
     
 }

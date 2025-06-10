@@ -15,6 +15,7 @@
 #include <qmessagebox.h>
 #include <qmimedata.h>
 #include <qnamespace.h>
+#include <qsoundeffect.h>
 #include <qstylefactory.h>
 #include <qstylehints.h>
 #include <qmdisubwindow.h>
@@ -59,6 +60,13 @@ void logQtMessage(QtMsgType type, const QMessageLogContext &context, const QStri
     Logger::log("[Qt] " + msg.toStdString(), logLevel);
 
     // if (defaultMessageHandler) defaultMessageHandler(type, context, msg);
+}
+
+inline void playSound(QString path) {
+    QSoundEffect *sound = new QSoundEffect;
+    sound->setSource(QUrl::fromLocalFile(path));
+    sound->play();
+    sound->connect(sound, &QSoundEffect::playingChanged, [=]() { /* Thank you QSound source code! */ sound->deleteLater(); return false; });
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -383,6 +391,7 @@ void MainWindow::connectActionHandlers() {
         model->SetParent(firstParent);
 
         setSelection({ model });
+        playSound("./assets/excluded/electronicpingshort.wav");
     });
 
     connect(ui->actionUngroupObjects, &QAction::triggered, this, [&]() {
@@ -401,6 +410,7 @@ void MainWindow::connectActionHandlers() {
         }
 
         setSelection(newSelection);
+        playSound("./assets/excluded/electronicpingshort.wav");
     });
 
     connect(ui->actionSaveModel, &QAction::triggered, this, [&]() {

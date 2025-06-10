@@ -13,6 +13,7 @@
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>
 #include "annotation.h"
+#include "objects/pvinstance.h"
 
 namespace rp = reactphysics3d;
 
@@ -29,7 +30,7 @@ struct PartConstructParams {
 
 class Workspace;
 
-class DEF_INST_(explorer_icon="part") Part : public Instance {
+class DEF_INST_(explorer_icon="part") Part : public PVInstance {
     AUTOGEN_PREAMBLE
 protected:
     // Joints where this part is Part0

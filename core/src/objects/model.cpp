@@ -1,4 +1,4 @@
 #include "model.h"
 
-Model::Model(): Instance(&TYPE) {}
+Model::Model(): PVInstance(&TYPE) {}
 Model::~Model() = default;

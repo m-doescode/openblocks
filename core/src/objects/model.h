@@ -2,11 +2,12 @@
 
 #include "objects/annotation.h"
 #include "objects/base/instance.h"
+#include "objects/pvinstance.h"
 #include <memory>
 
 // Group object for Parts
 
-class DEF_INST_(explorer_icon="model") Model : public Instance {
+class DEF_INST_(explorer_icon="model") Model : public PVInstance {
     AUTOGEN_PREAMBLE
 
 public:

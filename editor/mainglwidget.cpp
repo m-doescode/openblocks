@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <glm/common.hpp>
 #include <glm/vector_relational.hpp>
+#include <memory>
 #include <qnamespace.h>
 #include <qsoundeffect.h>
 #include <string>
@@ -13,6 +14,7 @@
 #include "common.h"
 #include "math_helper.h"
 #include "objects/base/instance.h"
+#include "objects/pvinstance.h"
 #include "partassembly.h"
 #include "physics/util.h"
 #include "rendering/renderer.h"
@@ -390,6 +392,17 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         if (!rayHit || !partFromBody(rayHit->body)) { setSelection({}); return; }
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
         if (part->locked) { setSelection({}); return; }
+
+        std::shared_ptr<PVInstance> selObject = part;
+
+        // Traverse to the root model
+        if (~evt->modifiers() & Qt::AltModifier) {
+            std::optional<std::shared_ptr<Instance>> nextParent = selObject->GetParent();
+            while (nextParent.value() && nextParent.value()->IsA("Model")) {
+                selObject = std::dynamic_pointer_cast<PVInstance>(nextParent.value()); nextParent = selObject->GetParent();
+            }
+        }
+
         initialFrame = part->cframe;
         initialHitPos = rayHit->worldPoint;
         initialHitNormal = rayHit->worldNormal;
@@ -419,20 +432,20 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         //part.selected = true;
         isMouseDragging = true;
         draggingObject = part;
-        if (evt->modifiers() & Qt::ControlModifier) {
+        if (evt->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) {
             std::vector<std::shared_ptr<Instance>> currentSelection = getSelection();
             for (size_t i = 0; i < currentSelection.size(); i++) {
                 std::shared_ptr<Instance> inst = currentSelection[i];
-                if (inst == part) {
+                if (inst == selObject) {
                     currentSelection.erase(currentSelection.begin() + i);
                     goto skipAddPart;
                 }
             }
-            currentSelection.push_back(part);
+            currentSelection.push_back(selObject);
             skipAddPart:
             setSelection(currentSelection);
         } else
-            setSelection({ part });
+            setSelection({ selObject });
         // Disable bit so that we can ignore the part while raycasting
         // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
 
