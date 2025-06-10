@@ -476,7 +476,7 @@ void renderOutlines() {
 
     // Render AABB of selected parts
     PartAssembly selectionAssembly = PartAssembly::FromSelection();
-    if (!selectionAssembly.multipleSelected()) return;
+    if (selectionAssembly.size() == Vector3()) return;
     glm::vec3 outlineSize = selectionAssembly.bounds();
     glm::vec3 outlinePos = selectionAssembly.assemblyOrigin().Position();
 
