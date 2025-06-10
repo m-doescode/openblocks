@@ -12,12 +12,12 @@
 #include "vector.h"
 #include "cframe.h"
 
-// #define __VARIANT_TYPE std::variant< \
-//         Null, \
-//         Bool, \
-//         Int, \
-//         Float, \
-//         String \
+// #define __VARIANT_TYPE std::variant< \_
+//         Null, \_
+//         Bool, \_
+//         Int, \_
+//         Float, \_
+//         String \_
 //     >
 
 typedef std::variant<
