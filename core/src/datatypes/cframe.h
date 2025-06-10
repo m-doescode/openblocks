@@ -68,4 +68,8 @@ public:
     DEF_DATA_OP Vector3 operator *(Vector3) const;
     DEF_DATA_OP CFrame operator +(Vector3) const;
     DEF_DATA_OP CFrame operator -(Vector3) const;
+
+    inline CFrame operator *=(CFrame otherFrame) { return *this = *this * otherFrame; }
+    inline CFrame operator +=(Vector3 offset) { return *this = *this + offset; }
+    inline CFrame operator -=(Vector3 offset) { return *this = *this - offset; }
 };

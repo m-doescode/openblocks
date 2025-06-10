@@ -271,7 +271,7 @@ void renderHandles() {
     if (!editorToolHandles.active) return;
 
     auto assembly = PartAssembly::FromSelection();
-    if (assembly.bounds() == Vector3::ZERO) return;
+    if (assembly.size() == Vector3::ZERO) return;
 
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);
@@ -517,9 +517,9 @@ void renderSelectionAssembly() {
     outlineShader->set("color", glm::vec3(1.f, 0.f, 0.f));
 
     glm::mat4 model = selectionAssembly.assemblyOrigin();
-    model = glm::scale(model, (glm::vec3)selectionAssembly.bounds() + glm::vec3(0.1));
+    model = glm::scale(model, (glm::vec3)selectionAssembly.size() + glm::vec3(0.1));
     outlineShader->set("model", model);
-    outlineShader->set("scale", (glm::vec3)selectionAssembly.bounds() + glm::vec3(0.05));
+    outlineShader->set("scale", (glm::vec3)selectionAssembly.size() + glm::vec3(0.05));
     outlineShader->set("thickness", 0.2f);
 
     OUTLINE_MESH->bind();
@@ -563,7 +563,7 @@ void renderRotationArcs() {
         glm::mat4 model = assembly.assemblyOrigin() * CFrame(glm::vec3(0), face.normal, glm::vec3(0, 1.01, 0.1));
         handleShader->set("model", model);
 
-        float radius = glm::max(assembly.bounds().X(), assembly.bounds().Y(), assembly.bounds().Z()) / 2.f + 2.f;
+        float radius = glm::max(assembly.size().X(), assembly.size().Y(), assembly.size().Z()) / 2.f + 2.f;
 
         handleShader->set("material", Material {
             .diffuse = glm::abs(face.normal),

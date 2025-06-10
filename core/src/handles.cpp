@@ -3,6 +3,7 @@
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
 #include "math_helper.h"
+#include "partassembly.h"
 #include <glm/ext/scalar_common.hpp>
 #include <memory>
 #include <optional>
@@ -106,14 +107,13 @@ static std::shared_ptr<Part> getFirstSelectedPart() {
 }
 
 CFrame getLocalHandleCFrame(HandleFace face) {
-    glm::vec3 _boxPos, boxSize, _boxMin, _boxMax;
-    int count = getAABBOfSelection(_boxPos, boxSize, _boxMin, _boxMax);
+    PartAssembly assembly = PartAssembly::FromSelection();
 
     Vector3 size;
-    if (count == 1 && !editorToolHandles.worldMode)
-        size = getFirstSelectedPart()->size;
+    if (editorToolHandles.worldMode)
+        size = assembly.bounds();
     else
-        size = boxSize;
+        size = assembly.size();
 
     // Since rotation displays rings, all handles must be the same distance from origin in order for the
     // rings to be circular
@@ -125,12 +125,10 @@ CFrame getLocalHandleCFrame(HandleFace face) {
 }
 
 CFrame getHandleCFrame(HandleFace face) {
-    glm::vec3 boxPos, boxSize, _boxMin, _boxMax;
-    int count = getAABBOfSelection(boxPos, boxSize, _boxMin, _boxMax);
+    PartAssembly assembly = PartAssembly::FromSelection();
 
-    if (count == 1 && !editorToolHandles.worldMode) {
-        auto part = getFirstSelectedPart();
-        return part->cframe * getLocalHandleCFrame(face);
+    if (editorToolHandles.worldMode) {
+        return getLocalHandleCFrame(face) + assembly.assemblyOrigin().Position();
     } else
-        return getLocalHandleCFrame(face) + boxPos;
+        return assembly.assemblyOrigin() * getLocalHandleCFrame(face);
 }

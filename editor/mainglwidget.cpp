@@ -154,7 +154,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     localFrame = snapCFrame(localFrame);
 
     // Snap to studs
-    Vector3 draggingPartSize = initialAssembly.bounds();
+    Vector3 draggingPartSize = initialAssembly.size();
     glm::vec3 inverseNormalPartSize = (Vector3)(partSize - glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
     if (snappingFactor() > 0)
         localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
@@ -164,7 +164,7 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     // Unsink the object
     // Get the normal of the surface relative to the part's frame, and get the size along that vector
-    Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * initialAssembly.bounds() / 2);
+    Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * initialAssembly.size() / 2);
 
     initialAssembly.SetOrigin(newFrame + unsinkOffset);
 }
@@ -180,7 +180,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
 
     QPoint position = evt->pos();
 
-    auto part = getHandleAdornee();
+    // auto part = getHandleAdornee();
 
     // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
 
@@ -192,7 +192,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     CFrame handleCFrame = getHandleCFrame(draggingHandle.value()) + dragStartHandleOffset;
     
     // Current frame. Identity frame if worldMode == true, selected object's frame if worldMode == false
-    CFrame frame = editorToolHandles.worldMode ? CFrame::IDENTITY + part->position() : part->cframe.Rotation();
+    CFrame frame = editorToolHandles.worldMode ? CFrame::IDENTITY + initialAssembly.assemblyOrigin().Position() : initialAssembly.assemblyOrigin().Rotation();
 
     // Segment from axis stretching -4096 to +4096 rel to handle's position 
     glm::vec3 axisSegment0 = handleCFrame.Position() + (-handleCFrame.LookVector() * 4096.0f);
@@ -224,17 +224,17 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     } else if (editorToolHandles.handlesType == ScaleHandles) {
         if (evt->modifiers() & Qt::AltModifier) {
             // If size gets too small, don't
-            if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff * 2.f), glm::vec3(0.001f))))
+            if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.size() + abs(draggingHandle->normal) * diff * 2.f), glm::vec3(0.001f))))
                 return;
 
-            selectionAssembly.Scale(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff * 2.f, diff > 0);
+            selectionAssembly.Scale(selectionAssembly.size() + abs(draggingHandle->normal) * diff * 2.f, diff > 0);
         } else {
             // If size gets too small, don't
-            if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff), glm::vec3(0.001f))))
+            if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.size() + abs(draggingHandle->normal) * diff), glm::vec3(0.001f))))
                 return;
 
             selectionAssembly.TransformBy(CFrame() + absDiff * 0.5f);
-            selectionAssembly.Scale(selectionAssembly.bounds() + abs(draggingHandle->normal) * diff, diff > 0);
+            selectionAssembly.Scale(selectionAssembly.size() + abs(draggingHandle->normal) * diff, diff > 0);
         }
     }
 }

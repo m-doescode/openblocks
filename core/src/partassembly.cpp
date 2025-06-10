@@ -14,7 +14,8 @@ PartAssembly::PartAssembly(std::vector<std::shared_ptr<Part>> parts, bool worldM
     if (parts.size() == 0) return;
     if (parts.size() == 1 && !worldMode) {
         _assemblyOrigin = parts[0]->cframe;
-        _bounds = parts[0]->size;
+        _size = parts[0]->size;
+        _bounds = parts[0]->GetAABB();
         return;
     }
 
@@ -30,7 +31,7 @@ PartAssembly::PartAssembly(std::vector<std::shared_ptr<Part>> parts, bool worldM
     getAABBCoords(pos, size, min, max);
 
     _assemblyOrigin = CFrame() + pos;
-    _bounds = size;
+    _size = _bounds = size;
 }
 
 PartAssembly PartAssembly::FromSelection(std::vector<std::shared_ptr<Instance>> newSelection) {

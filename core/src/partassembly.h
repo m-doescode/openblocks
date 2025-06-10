@@ -12,6 +12,7 @@ const std::vector<std::shared_ptr<Instance>> getSelection();
 class PartAssembly {
     CFrame _assemblyOrigin;
     Vector3 _bounds;
+    Vector3 _size;
 
     std::vector<std::shared_ptr<Part>> parts;
 public:
@@ -21,6 +22,7 @@ public:
 
     inline CFrame assemblyOrigin() { return _assemblyOrigin; };
     inline Vector3 bounds() { return _bounds; };
+    inline Vector3 size() { return _size; };
 
     // Transforms the assembly such that newOrigin is now this assembly's new assemblyOrigin
     void SetOrigin(CFrame newOrigin);
