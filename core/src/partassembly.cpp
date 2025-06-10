@@ -36,13 +36,27 @@ PartAssembly::PartAssembly(std::vector<std::shared_ptr<Part>> parts, bool worldM
 PartAssembly PartAssembly::FromSelection(std::vector<std::shared_ptr<Instance>> newSelection) {
     std::vector<std::shared_ptr<Part>> selection;
 
-    for (std::weak_ptr<Instance> obj : newSelection) {
-        if (obj.expired() || !obj.lock()->IsA<Part>()) continue;
+    for (std::shared_ptr<Instance> obj : newSelection) {
+        if (!obj->IsA<PVInstance>()) continue;
 
-        selection.push_back(obj.lock()->CastTo<Part>().expect());
+        if (obj->IsA<Part>())
+            selection.push_back(obj->CastTo<Part>().expect());
+
+        // Add object descendants
+        for (DescendantsIterator it = obj->GetDescendantsStart(); it != obj->GetDescendantsEnd(); it++) {
+            if (!(*it)->IsA<Part>()) continue;
+
+            selection.push_back((*it)->CastTo<Part>().expect());
+        }
     }
 
     return PartAssembly(selection, editorToolHandles.worldMode);
+}
+
+void PartAssembly::SetCollisionsEnabled(bool enabled) {
+    for (auto part : parts) {
+        part->rigidBody->getCollider(0)->setIsWorldQueryCollider(enabled);
+    }
 }
 
 void PartAssembly::SetOrigin(CFrame newOrigin) {

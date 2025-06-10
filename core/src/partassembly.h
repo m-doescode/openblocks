@@ -32,4 +32,8 @@ public:
     // If multiple parts are selected, finds the greatest scale factor of each component pair, and
     // scales it up by that amount
     void Scale(Vector3 newSize, bool scaleUp = true);
+
+    // Update temporary collisions of rigidbodies. Useful for ignoring
+    // items for raycasts
+    void SetCollisionsEnabled(bool enabled);
 };

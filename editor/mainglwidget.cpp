@@ -132,10 +132,10 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     QPoint position = evt->pos();
 
+    initialAssembly.SetCollisionsEnabled(false);
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000, [](std::shared_ptr<Part> part) {
-        return (part == draggingObject.lock()) ? FilterResult::PASS : FilterResult::TARGET;
-    });
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    initialAssembly.SetCollisionsEnabled(true);
     
     if (!rayHit) return;
 
@@ -148,13 +148,13 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     Vector3 vec = rayHit->worldPoint + (tFormedInitialPos - tFormedHitPos);
     // The part being dragged's frame local to the hit target's frame, but without its position component
     // To find a world vector local to the new frame, use newFrame, not localFrame, as localFrame is localFrame is local to targetFrame in itself
-    CFrame localFrame = (targetFrame.Inverse() * (draggingObject.lock()->cframe.Rotation() + vec));
+    CFrame localFrame = (targetFrame.Inverse() * (initialAssembly.assemblyOrigin().Rotation() + vec));
 
     // Snap axis
     localFrame = snapCFrame(localFrame);
 
     // Snap to studs
-    Vector3 draggingPartSize = draggingObject.lock()->size;
+    Vector3 draggingPartSize = initialAssembly.bounds();
     glm::vec3 inverseNormalPartSize = (Vector3)(partSize - glm::vec3(localFrame.Rotation() * draggingPartSize)) * inverseSurfaceNormal / 2.f;
     if (snappingFactor() > 0)
         localFrame = localFrame.Rotation() + glm::round(glm::vec3(localFrame.Position() * inverseSurfaceNormal - inverseNormalPartSize) / snappingFactor()) * snappingFactor() + inverseNormalPartSize
@@ -164,14 +164,9 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
 
     // Unsink the object
     // Get the normal of the surface relative to the part's frame, and get the size along that vector
-    Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * draggingObject.lock()->size / 2);
+    Vector3 unsinkOffset = newFrame.Rotation() * ((newFrame.Rotation().Inverse() * rayHit->worldNormal) * initialAssembly.bounds() / 2);
 
-    draggingObject.lock()->cframe = newFrame + unsinkOffset;
-
-
-    gWorkspace()->SyncPartPhysics(draggingObject.lock());
-    draggingObject.lock()->UpdateProperty("Position");
-    sendPropertyUpdatedSignal(draggingObject.lock(), "Position", draggingObject.lock()->position());
+    initialAssembly.SetOrigin(newFrame + unsinkOffset);
 }
 
 inline glm::vec3 vec3fy(glm::vec4 vec) {
@@ -403,7 +398,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             }
         }
 
-        initialFrame = part->cframe;
+        initialAssembly = PartAssembly::FromSelection({selObject});
+        initialFrame = initialAssembly.assemblyOrigin();
         initialHitPos = rayHit->worldPoint;
         initialHitNormal = rayHit->worldNormal;
         
