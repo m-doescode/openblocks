@@ -60,12 +60,12 @@ public:
     DEF_DATA_OP bool operator ==(Vector3) const;
 
     // Augmented shorthands
-    inline Vector3 operator *=(float factor) const { return *this * factor; }
-    inline Vector3 operator /=(float factor) const { return *this / factor; }
-    inline Vector3 operator *=(Vector3 factor) const { return *this * factor; }
-    inline Vector3 operator /=(Vector3 factor) const { return *this / factor; }
-    inline Vector3 operator +=(Vector3 vector) const { return *this + vector; }
-    inline Vector3 operator -=(Vector3 vector) const { return *this + vector; }
+    inline Vector3 operator *=(float factor) { return *this = *this * factor; }
+    inline Vector3 operator /=(float factor) { return *this = *this / factor; }
+    inline Vector3 operator *=(Vector3 factor) { return *this = *this * factor; }
+    inline Vector3 operator /=(Vector3 factor) { return *this = *this / factor; }
+    inline Vector3 operator +=(Vector3 vector) { return *this = *this + vector; }
+    inline Vector3 operator -=(Vector3 vector) { return *this = *this + vector; }
 };
 
 inline void printVec(Vector3 vec) {
