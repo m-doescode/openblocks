@@ -23,6 +23,7 @@ public:
     inline CFrame assemblyOrigin() { return _assemblyOrigin; };
     inline Vector3 bounds() { return _bounds; };
     inline Vector3 size() { return _size; };
+    inline bool multipleSelected() { return parts.size() > 1; }
 
     // Transforms the assembly such that newOrigin is now this assembly's new assemblyOrigin
     void SetOrigin(CFrame newOrigin);

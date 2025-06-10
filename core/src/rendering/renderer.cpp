@@ -475,11 +475,10 @@ void renderOutlines() {
     }
 
     // Render AABB of selected parts
-    if (count <= 1) return;
-    
-    glm::vec3 outlineSize, outlinePos;
-    outlineSize = (max - min);
-    outlinePos = (max + min) / 2.f;
+    PartAssembly selectionAssembly = PartAssembly::FromSelection();
+    if (!selectionAssembly.multipleSelected()) return;
+    glm::vec3 outlineSize = selectionAssembly.bounds();
+    glm::vec3 outlinePos = selectionAssembly.assemblyOrigin().Position();
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), outlinePos);
     model = glm::scale(model, outlineSize + glm::vec3(0.1));
