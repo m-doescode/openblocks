@@ -12,8 +12,8 @@
 
 TypeMeta::TypeMeta(const InstanceType* instType) : descriptor(&InstanceRef::TYPE), instType(instType) {}
 
-InstanceRef::InstanceRef() {};
-InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance) {};
+InstanceRef::InstanceRef() : ref(nullptr) {};
+InstanceRef::InstanceRef(std::weak_ptr<Instance> instance) : ref(instance.expired() ? nullptr : instance.lock()) {};
 InstanceRef::~InstanceRef() = default;
 
 const TypeDesc InstanceRef::TYPE = {
@@ -27,11 +27,19 @@ const TypeDesc InstanceRef::TYPE = {
 };
 
 const std::string InstanceRef::ToString() const {
-    return ref.expired() ? "" : ref.lock()->name;
+    return ref == nullptr ? "NULL" : ref->name;
+}
+
+InstanceRef::operator std::shared_ptr<Instance>() {
+    return ref;
 }
 
 InstanceRef::operator std::weak_ptr<Instance>() {
     return ref;
+}
+
+bool InstanceRef::operator ==(InstanceRef other) const {
+    return this->ref == other.ref;
 }
 
 // Serialization
@@ -50,16 +58,43 @@ static int inst_gc(lua_State*);
 static int inst_index(lua_State*);
 static int inst_newindex(lua_State*);
 static int inst_tostring(lua_State*);
+static int inst_eq(lua_State*);
 static const struct luaL_Reg metatable [] = {
     {"__gc", inst_gc},
     {"__index", inst_index},
     {"__newindex", inst_newindex},
     {"__tostring", inst_tostring},
+    {"__eq", inst_eq},
     {NULL, NULL} /* end of array */
 };
 
 void InstanceRef::PushLuaValue(lua_State* L) const {
-    if (ref.expired()) return lua_pushnil(L);
+    if (ref == nullptr) return lua_pushnil(L);
+
+    // Get or create InstanceRef table
+    lua_getfield(L, LUA_REGISTRYINDEX, "__instances");
+    if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        lua_newtable(L);
+        
+        // Set metatable
+        lua_newtable(L);
+        lua_pushstring(L, "kv");
+        lua_setfield(L, -2, "__mode");
+        lua_setmetatable(L, -2);
+
+        lua_pushvalue(L, -1);
+        lua_setfield(L, LUA_REGISTRYINDEX, "__instances");
+    }
+
+    // Check if value already exists, and if so, return that instead
+    lua_pushlightuserdata(L, ref.get());
+    lua_rawget(L, -2);
+    if (!lua_isnil(L, -1)) {
+        lua_remove(L, -2); // Remove __instances
+        return;
+    }
+    lua_pop(L, 1);
 
     int n = lua_gettop(L);
 
@@ -72,8 +107,13 @@ void InstanceRef::PushLuaValue(lua_State* L) const {
     // Create the instance's metatable
     luaL_newmetatable(L, "__mt_instance");
     luaL_register(L, NULL, metatable);
-
     lua_setmetatable(L, n+1);
+
+    // Add instance to __instances
+    lua_pushlightuserdata(L, ref.get());
+    lua_pushvalue(L, -2); // Push userdata
+    lua_rawset(L, -4); // Put into __instance
+    lua_remove(L, -2); // Remove __instance
 }
 
 result<Variant, LuaCastError> InstanceRef::FromLuaValue(lua_State* L, int idx) {
@@ -151,5 +191,15 @@ static int inst_tostring(lua_State* L) {
 
     lua_pushstring(L, inst->name.c_str());
 
+    return 1;
+}
+
+static int inst_eq(lua_State* L) {
+    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, 1);
+    std::shared_ptr<Instance> inst = **userdata;
+    auto userdata2 = (std::shared_ptr<Instance>**)luaL_checkudata(L, 2, "__mt_instance");
+    std::shared_ptr<Instance> inst2 = **userdata2;
+
+    lua_pushboolean(L, inst == inst2);
     return 1;
 }

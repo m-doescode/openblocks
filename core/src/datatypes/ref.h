@@ -7,7 +7,7 @@
 class Instance;
 
 class InstanceRef {
-    std::weak_ptr<Instance> ref;
+    std::shared_ptr<Instance> ref;
 public:
     InstanceRef();
     InstanceRef(std::weak_ptr<Instance>);
@@ -15,6 +15,7 @@ public:
 
     static const TypeDesc TYPE;
 
+    operator std::shared_ptr<Instance>();
     operator std::weak_ptr<Instance>();
 
     virtual const std::string ToString() const;
@@ -22,4 +23,6 @@ public:
     virtual void PushLuaValue(lua_State*) const;
     static result<InstanceRef, DataParseError> Deserialize(pugi::xml_node node);
     static result<Variant, LuaCastError> FromLuaValue(lua_State*, int idx);
+
+    bool operator ==(InstanceRef) const;
 };
