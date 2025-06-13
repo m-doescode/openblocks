@@ -117,6 +117,10 @@ CFrame CFrame::operator -(Vector3 vector) const {
     return *this + -vector;
 }
 
+bool CFrame::operator ==(CFrame other) const {
+    return this->Position() == other.Position() && this->rotation == other.rotation;
+}
+
 // Serialization
 
 void CFrame::Serialize(pugi::xml_node node) const {

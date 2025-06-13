@@ -117,6 +117,8 @@ public:
 
     operator std::weak_ptr<Signal>();
 
+    DEF_DATA_OP bool operator ==(SignalRef) const;
+
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node node) const;
     virtual void PushLuaValue(lua_State*) const;
@@ -133,6 +135,8 @@ public:
     static const TypeDesc TYPE;
 
     operator std::weak_ptr<SignalConnection>();
+
+    DEF_DATA_OP bool operator ==(SignalConnectionRef) const;
 
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node node) const;

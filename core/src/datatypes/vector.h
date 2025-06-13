@@ -55,8 +55,9 @@ public:
     DEF_DATA_OP Vector3 operator -() const;
 
     DEF_DATA_OP bool operator <(Vector3) const;
-    DEF_DATA_OP bool operator >(Vector3) const;
-
+    DEF_DATA_OP bool operator <=(Vector3) const;
+    bool operator >(Vector3) const;
+    bool operator >=(Vector3) const;
     DEF_DATA_OP bool operator ==(Vector3) const;
 
     // Augmented shorthands

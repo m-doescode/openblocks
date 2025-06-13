@@ -35,6 +35,10 @@ Color3 Color3::FromHex(std::string hex) {
     return Color3(r, g, b);
 }
 
+bool Color3::operator ==(Color3 other) const {
+    return this->r == other.r && this->g == other.g && this->b == other.b;
+}
+
 // Serialization
 
 void Color3::Serialize(pugi::xml_node node) const {

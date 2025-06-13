@@ -8,6 +8,7 @@
 #define def_data_prop(...) clang::annotate("OB::def_data_prop", #__VA_ARGS__)
 #define def_data_method(...) clang::annotate("OB::def_data_method", #__VA_ARGS__)
 #define def_data_ctor(...) clang::annotate("OB::def_data_ctor", #__VA_ARGS__)
+#define def_data_op(...) clang::annotate("OB::def_data_op", #__VA_ARGS__)
 #else
 #define def_data(...)
 #define def_data_prop(...)

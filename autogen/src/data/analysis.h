@@ -19,6 +19,11 @@ struct PropertyAnalysis {
     std::string valueType;
 };
 
+struct OperatorAnalysis {
+    std::string type;
+    std::string param_type;
+};
+
 struct MethodParameter {
     std::string name;
     std::string type;
@@ -43,6 +48,7 @@ struct ClassAnalysis {
     std::vector<MethodAnalysis> methods;
     std::vector<PropertyAnalysis> staticProperties;
     std::vector<MethodAnalysis> staticMethods;
+    std::map<std::string, std::vector<OperatorAnalysis>> operators;
 };
 
 struct AnalysisState {

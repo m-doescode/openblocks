@@ -121,6 +121,33 @@ static void processMethod(CXCursor cur, ClassAnalysis* state) {
         state->methods.push_back(anly);
 }
 
+static void processOperator(CXCursor cur, ClassAnalysis* state) {
+    std::optional<std::string> operatorDef = findAnnotation(cur, "OB::def_data_op");
+    if (!operatorDef) return;
+
+    OperatorAnalysis anly;
+
+    std::string symbolName = x_clang_toString(clang_getCursorSpelling(cur));
+    if (!symbolName.starts_with("operator"))
+        return;
+    
+    std::string opName = symbolName.substr(8);
+
+    // Special case: Unary minus gets its own type
+    if (clang_Cursor_getNumArguments(cur) == 0)
+        opName = "-()";
+
+    anly.type = opName;
+
+    if (clang_Cursor_getNumArguments(cur) != 0) {
+        CXCursor arg = clang_Cursor_getArgument(cur, 0);
+        CXType type = clang_getCursorType(arg);
+        anly.param_type = x_clang_toString(clang_getTypeSpelling(type));
+    }
+
+    state->operators[opName].push_back(anly);
+}
+
 // This processes both methods and fields
 static void processProperty(CXCursor cur, ClassAnalysis* state) {
     std::optional<std::string> propertyDef = findAnnotation(cur, "OB::def_data_prop");
@@ -219,6 +246,7 @@ static void processClass(CXCursor cur, AnalysisState* state, std::string classNa
 
         if (kind == CXCursor_CXXMethod) {
             processMethod(cur, &anly);
+            processOperator(cur, &anly);
         }
 
         return CXChildVisit_Continue;

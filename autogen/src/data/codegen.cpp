@@ -33,6 +33,17 @@ static std::map<std::string, std::string> LUA_PUSH_FUNCS = {
     // { "std::string", "lua_pushstring" },
 };
 
+static std::map<std::string, std::string> LUA_OP_NAME = {
+    { "==", "__eq" },
+    { "<", "__lt" },
+    { "<=", "__le" },
+    { "+", "__add" },
+    { "-", "__sub" },
+    { "-()", "__unm" },
+    { "*", "__mul" },
+    { "/", "__div" },
+};
+
 static std::string getLuaMethodFqn(std::string className, std::string methodName) {
     return "__lua_impl__" + className + "__" + methodName;
 }
@@ -237,14 +248,27 @@ static void writeLuaMethodImpls(std::ofstream& out, ClassAnalysis& state) {
 static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
     std::string fqn = state.name;
 
+    // Insert additional operators
+    for (auto& [key, ops] : state.operators) {
+        std::string opname = LUA_OP_NAME[key];
+        out << "static int data_" << state.name << opname << "(lua_State*);\n";
+    }
+
     out <<  "static int data_" << state.name << "_gc(lua_State*);\n"
             "static int data_" << state.name << "_index(lua_State*);\n"
             "static int data_" << state.name << "_tostring(lua_State*);\n"
             "static const struct luaL_Reg " << state.name << "_metatable [] = {\n"
             "    {\"__gc\", data_" << state.name << "_gc},\n"
             "    {\"__index\", data_" << state.name << "_index},\n"
-            "    {\"__tostring\", data_" << state.name << "_tostring},\n"
-            "    {NULL, NULL} /* end of array */\n"
+            "    {\"__tostring\", data_" << state.name << "_tostring},\n";
+
+    // Insert additional operators
+    for (auto& [key, ops] : state.operators) {
+        std::string opname = LUA_OP_NAME[key];
+        out << "    {\"" + opname + "\", data_" << state.name << opname << "},\n";
+    }
+
+    out <<  "    {NULL, NULL} /* end of array */\n"
             "};\n\n";
 
     out << "void " << state.name << "::PushLuaValue(lua_State* L) const {\n"
@@ -335,6 +359,55 @@ static void writeLuaValueGenerator(std::ofstream& out, ClassAnalysis& state) {
             "    delete *userdata;\n"
             "    return 0;\n"
             "}\n\n";
+}
+
+static void writeLuaOperatorImpls(std::ofstream& out, ClassAnalysis& state) {
+    std::string fqn = "" + state.name;
+
+    for (auto& [name, ops] : state.operators) {
+        out <<  "static int data_" << state.name << LUA_OP_NAME[name] << "(lua_State* L) {\n"
+                "    " << fqn << "* this_ = *(" << fqn << "**)luaL_checkudata(L, 1, \"__mt_" << state.name << "\");\n"
+                "    int n = lua_gettop(L);\n";
+        out <<  "    ";
+                
+        // Support multiple overloads of the same function
+        bool first = true;
+        for (OperatorAnalysis op : ops) {
+            if (!first) out << " else ";
+            first = false;
+
+            // Check to see if the arguments possibly match this implementation's parameter types
+            out << "if (";
+
+            // Check number of arguments
+            out << "n == " << std::to_string(name == "-()" ? 2 : op.param_type == "" ? 1 : 2); // Account for first argument as 'this'
+
+            if (op.param_type != "") {
+                out << " && ";
+                writeLuaTestArgument(out, op.param_type, 0, true);
+            }
+
+            out << ") {\n"; // End if condition, start if body
+
+            if (op.param_type != "") {
+                writeLuaGetArgument(out, op.param_type, 0, true);
+            }
+
+            if (name == "-()") {
+                out << "        Variant(-*this_).PushLuaValue(L);\n";
+            } else {
+                out << "        Variant(*this_ " << name << " arg0).PushLuaValue(L);\n";
+            }
+
+            out << "        return 1;\n"
+                   "    }";
+        }
+
+        // No function implementation matched
+        out << "\n\n    return luaL_error(L, \"Cannot apply '" << name << "' to values of type " << state.name << " and %s \", x_luaL_udatatname(L, 2));\n";
+
+        out << "}\n\n"; // End function
+    }
 }
 
 static void writeLuaLibraryGenerator(std::ofstream& out, ClassAnalysis& state) {
@@ -451,5 +524,6 @@ void data::writeCodeForClass(std::ofstream& out, std::string headerPath, ClassAn
 
     writeLuaMethodImpls(out, state);
     writeLuaValueGenerator(out, state);
+    writeLuaOperatorImpls(out, state);
     writeLuaLibraryGenerator(out, state);
 }

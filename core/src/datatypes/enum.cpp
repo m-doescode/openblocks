@@ -40,15 +40,17 @@ EnumItem Enum::FromValueInternal(int value) const {
     return result.value();
 }
 
-EnumItem::EnumItem(_EnumData* parentData, std::string name, int value) : parentData(parentData), name(name), value(value) {}
-
-//
-
 std::string Enum::ToString() const {
     return "Enum." + this->data->name;
 }
 
+bool Enum::operator ==(Enum other) const {
+    return this->data == other.data;
+}
+
 //
+
+EnumItem::EnumItem(_EnumData* parentData, std::string name, int value) : parentData(parentData), name(name), value(value) {}
 
 std::string EnumItem::ToString() const {
     return "Enum." + parentData->name + "." + name;
@@ -69,4 +71,8 @@ result<EnumItem, DataParseError> EnumItem::FromString(std::string string, const 
     auto result = info.enum_->FromName(string);
     if (result.has_value()) return result.value();
     return DataParseError(string, "EnumItem");
+}
+
+bool EnumItem::operator ==(EnumItem other) const {
+    return this->parentData == other.parentData && this->value == other.value;
 }

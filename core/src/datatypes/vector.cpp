@@ -72,8 +72,16 @@ bool Vector3::operator <(Vector3 other) const {
     return X() < other.X() && Y() < other.Y() && Z() < other.Z();
 }
 
+bool Vector3::operator <=(Vector3 other) const {
+    return X() <= other.X() && Y() <= other.Y() && Z() <= other.Z();
+}
+
 bool Vector3::operator >(Vector3 other) const {
     return X() > other.X() && Y() > other.Y() && Z() > other.Z();
+}
+
+bool Vector3::operator >=(Vector3 other) const {
+    return X() >= other.X() && Y() >= other.Y() && Z() >= other.Z();
 }
 
 Vector3 Vector3::Cross(Vector3 other) const {

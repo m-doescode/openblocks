@@ -72,4 +72,6 @@ public:
     inline CFrame operator *=(CFrame otherFrame) { return *this = *this * otherFrame; }
     inline CFrame operator +=(Vector3 offset) { return *this = *this + offset; }
     inline CFrame operator -=(Vector3 offset) { return *this = *this - offset; }
+
+    DEF_DATA_OP bool operator ==(CFrame) const;
 };

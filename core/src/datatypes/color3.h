@@ -31,4 +31,6 @@ public:
     DEF_DATA_PROP inline float R() const { return r; }
     DEF_DATA_PROP inline float G() const { return g; }
     DEF_DATA_PROP inline float B() const { return b; }
+
+    DEF_DATA_OP bool operator ==(Color3) const;
 };

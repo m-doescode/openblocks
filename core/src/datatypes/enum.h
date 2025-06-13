@@ -31,6 +31,8 @@ public:
     
     EnumItem FromValueInternal(int) const;
 
+    DEF_DATA_OP bool operator ==(Enum) const;
+
     std::string ToString() const;
     void PushLuaValue(lua_State*) const;
     static result<Variant, LuaCastError> FromLuaValue(lua_State*, int);
@@ -49,6 +51,8 @@ public:
     inline std::string Name() const { return this->name; }
     inline int Value() const { return this->value; }
     inline Enum EnumType() const { return Enum(this->parentData); }
+
+    DEF_DATA_OP bool operator ==(EnumItem) const;
 
     static result<EnumItem, DataParseError> FromString(std::string, const TypeMeta);
     std::string ToString() const;
