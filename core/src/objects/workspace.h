@@ -44,6 +44,7 @@ class PhysicsEventListener : public rp::EventListener {
     PhysicsEventListener(Workspace*);
 
     void onContact(const rp::CollisionCallback::CallbackData&) override;
+    void onTrigger(const rp::OverlapCallback::CallbackData&) override;
 };
 
 class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {

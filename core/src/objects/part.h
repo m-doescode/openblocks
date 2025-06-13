@@ -70,6 +70,7 @@ public:
     
     DEF_PROP_CATEGORY(BEHAVIOR)
     DEF_PROP_(on_update=onUpdated) bool anchored = false;
+    DEF_PROP_(on_update=onUpdated) bool canCollide = true;
     DEF_PROP bool locked = false;
 
     DEF_PROP_CATEGORY(SURFACE)

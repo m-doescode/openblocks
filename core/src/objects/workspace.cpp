@@ -9,6 +9,7 @@
 #include "physics/util.h"
 #include <memory>
 #include <reactphysics3d/collision/CollisionCallback.h>
+#include <reactphysics3d/collision/OverlapCallback.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
 rp::PhysicsCommon* Workspace::physicsCommon = new rp::PhysicsCommon;
@@ -36,6 +37,25 @@ void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& 
             part0->Touched->Fire({ (Variant)InstanceRef(part1) });
             part1->Touched->Fire({ (Variant)InstanceRef(part0) });
         } else if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit) {
+            part0->TouchEnded->Fire({ (Variant)InstanceRef(part1) });
+            part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
+        }
+    }
+}
+
+void PhysicsEventListener::onTrigger(const rp::OverlapCallback::CallbackData& data) {
+for (size_t i = 0; i < data.getNbOverlappingPairs(); i++) {
+        auto pair = data.getOverlappingPair(i);
+        auto type = pair.getEventType();
+        if (type == rp::OverlapCallback::OverlapPair::EventType::OverlapStay) continue;
+
+        auto part0 = reinterpret_cast<Part*>(pair.getBody1()->getUserData())->shared<Part>();
+        auto part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
+
+        if (type == reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStart) {
+            part0->Touched->Fire({ (Variant)InstanceRef(part1) });
+            part1->Touched->Fire({ (Variant)InstanceRef(part0) });
+        } else if (type == reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapExit) {
             part0->TouchEnded->Fire({ (Variant)InstanceRef(part1) });
             part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
         }
@@ -106,6 +126,9 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
 
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
     part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
+
+    part->rigidBody->getCollider(0)->setIsSimulationCollider(part->canCollide);
+    part->rigidBody->getCollider(0)->setIsTrigger(!part->canCollide);
 
     rp::Material& material = part->rigidBody->getCollider(0)->getMaterial();
     material.setFrictionCoefficient(0.35);
