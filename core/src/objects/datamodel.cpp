@@ -133,7 +133,7 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
 
         // Update std::shared_ptr<Instance> properties using map above
         if (meta.type.descriptor == &InstanceRef::TYPE) {
-            std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<InstanceRef>();
+            std::weak_ptr<Instance> refWeak = GetProperty(property).expect().get<InstanceRef>();
             if (refWeak.expired()) continue;
 
             auto ref = refWeak.lock();
@@ -141,18 +141,18 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
             
             if (remappedRef) {
                 // If the instance has already been remapped, set the new value
-                newModel->SetPropertyValue(property, InstanceRef(remappedRef)).expect();
+                newModel->SetProperty(property, InstanceRef(remappedRef)).expect();
             } else {
                 // Otheriise, queue this property to be updated later, and keep its current value
                 auto& refs = state->refsAwaitingRemap[ref];
                 refs.push_back(std::make_pair(newModel, property));
                 state->refsAwaitingRemap[ref] = refs;
 
-                newModel->SetPropertyValue(property, InstanceRef(ref)).expect();
+                newModel->SetProperty(property, InstanceRef(ref)).expect();
             }
         } else {
-            Variant value = GetPropertyValue(property).expect();
-            newModel->SetPropertyValue(property, value).expect();
+            Variant value = GetProperty(property).expect();
+            newModel->SetProperty(property, value).expect();
         }
     }
 
@@ -161,7 +161,7 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
 
     // Remap queued properties
     for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[shared_from_this()]) {
-        ref.first->SetPropertyValue(ref.second, InstanceRef(newModel)).expect();
+        ref.first->SetProperty(ref.second, InstanceRef(newModel)).expect();
     }
 
     // Clone services

@@ -182,12 +182,12 @@ void Instance::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
 
 // Properties
 
-result<Variant, MemberNotFound> Instance::GetPropertyValue(std::string name) {
+result<Variant, MemberNotFound> Instance::GetProperty(std::string name) {
     name[0] = toupper(name[0]); // Ignore case of first character
     return InternalGetPropertyValue(name);
 }
 
-fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetPropertyValue(std::string name, Variant value, bool sendUpdateEvent) {
+fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetProperty(std::string name, Variant value, bool sendUpdateEvent) {
     name[0] = toupper(name[0]); // Ignore case of first character
     auto result = InternalSetPropertyValue(name, value);
     if (result.isSuccess() && sendUpdateEvent) {
@@ -290,7 +290,7 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
 
         // Update std::shared_ptr<Instance> properties using map above
         if (meta.type.descriptor == &InstanceRef::TYPE) {
-            std::weak_ptr<Instance> refWeak = GetPropertyValue(name).expect("Declared property is missing").get<InstanceRef>();
+            std::weak_ptr<Instance> refWeak = GetProperty(name).expect("Declared property is missing").get<InstanceRef>();
             if (refWeak.expired()) continue;
 
             auto ref = refWeak.lock();
@@ -306,7 +306,7 @@ void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
                 state->refsAwaitingRemap[ref] = refs;
             }
         } else {
-            GetPropertyValue(name).expect("Declared property is missing").Serialize(propertyNode);
+            GetProperty(name).expect("Declared property is missing").Serialize(propertyNode);
         }
     }
 
@@ -360,14 +360,14 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
             
             if (remappedRef) {
                 // If the instance has already been remapped, set the new value
-                object->SetPropertyValue(propertyName, InstanceRef(remappedRef)).expect();
+                object->SetProperty(propertyName, InstanceRef(remappedRef)).expect();
             } else {
                 // Otheriise, queue this property to be updated later, and keep its current value
                 auto& refs = state->refsAwaitingRemap[refId];
                 refs.push_back(std::make_pair(object, propertyName));
                 state->refsAwaitingRemap[refId] = refs;
 
-                object->SetPropertyValue(propertyName, InstanceRef()).expect();
+                object->SetProperty(propertyName, InstanceRef()).expect();
             }
         } else {
             auto valueResult = Variant::Deserialize(propertyNode, meta.type);
@@ -376,7 +376,7 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
                 continue;
             }
             auto value = valueResult.expect();
-            object->SetPropertyValue(propertyName, value).expect("Declared property was missing");
+            object->SetProperty(propertyName, value).expect("Declared property was missing");
         }
     }
 
@@ -386,7 +386,7 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
 
     // Remap queued properties
     for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[remappedId]) {
-        ref.first->SetPropertyValue(ref.second, InstanceRef(object)).expect();
+        ref.first->SetProperty(ref.second, InstanceRef(object)).expect();
     }
     state->refsAwaitingRemap[remappedId].clear();
 
@@ -460,7 +460,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
 
         // Update std::shared_ptr<Instance> properties using map above
         if (meta.type.descriptor == &InstanceRef::TYPE) {
-            std::weak_ptr<Instance> refWeak = GetPropertyValue(property).expect().get<InstanceRef>();
+            std::weak_ptr<Instance> refWeak = GetProperty(property).expect().get<InstanceRef>();
             if (refWeak.expired()) continue;
 
             auto ref = refWeak.lock();
@@ -468,18 +468,18 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
             
             if (remappedRef) {
                 // If the instance has already been remapped, set the new value
-                newInstance->SetPropertyValue(property, InstanceRef(remappedRef)).expect();
+                newInstance->SetProperty(property, InstanceRef(remappedRef)).expect();
             } else {
                 // Otheriise, queue this property to be updated later, and keep its current value
                 auto& refs = state->refsAwaitingRemap[ref];
                 refs.push_back(std::make_pair(newInstance, property));
                 state->refsAwaitingRemap[ref] = refs;
 
-                newInstance->SetPropertyValue(property, InstanceRef(ref)).expect();
+                newInstance->SetProperty(property, InstanceRef(ref)).expect();
             }
         } else {
-            Variant value = GetPropertyValue(property).expect();
-            newInstance->SetPropertyValue(property, value).expect();
+            Variant value = GetProperty(property).expect();
+            newInstance->SetProperty(property, value).expect();
         }
     }
 
@@ -488,7 +488,7 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
 
     // Remap queued properties
     for (std::pair<std::shared_ptr<Instance>, std::string> ref : state->refsAwaitingRemap[shared_from_this()]) {
-        ref.first->SetPropertyValue(ref.second, InstanceRef(newInstance)).expect();
+        ref.first->SetProperty(ref.second, InstanceRef(newInstance)).expect();
     }
     state->refsAwaitingRemap[shared_from_this()].clear();
 
@@ -511,7 +511,7 @@ std::vector<std::pair<std::string, std::shared_ptr<Instance>>> Instance::GetRefe
         PropertyMeta meta = GetPropertyMeta(property).expect();
         if (meta.type.descriptor != &InstanceRef::TYPE) continue;
 
-        std::weak_ptr<Instance> ref = GetPropertyValue(property).expect().get<InstanceRef>();
+        std::weak_ptr<Instance> ref = GetProperty(property).expect().get<InstanceRef>();
         if (ref.expired()) continue;
         referenceProperties.push_back(std::make_pair(property, ref.lock()));
     }

@@ -55,7 +55,7 @@ public:
         std::string propertyName = !isComposite ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
             : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
-        Variant currentValue = inst->GetPropertyValue(propertyName).expect();
+        Variant currentValue = inst->GetProperty(propertyName).expect();
 
         if (isComposite) {
             if (meta.type.descriptor == &Vector3::TYPE) {
@@ -144,7 +144,7 @@ public:
         std::string propertyName = !index.parent().parent().isValid() ? view->itemFromIndex(index)->data(0, Qt::DisplayRole).toString().toStdString()
             : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
-        Variant currentValue = inst->GetPropertyValue(propertyName).expect();
+        Variant currentValue = inst->GetProperty(propertyName).expect();
         
         if (isComposite) {
             if (meta.type.descriptor == &Vector3::TYPE) {
@@ -211,12 +211,12 @@ public:
                 QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
                 float value = spinBox->value();
 
-                Vector3 prev = inst->GetPropertyValue(propertyName).expect().get<Vector3>();
+                Vector3 prev = inst->GetProperty(propertyName).expect().get<Vector3>();
                 Vector3 newVector = componentName == "X" ? Vector3(value, prev.Y(), prev.Z())
                 : componentName == "Y" ? Vector3(prev.X(), value, prev.Z())
                 : componentName == "Z" ? Vector3(prev.X(), prev.Y(), value) : prev;
 
-                inst->SetPropertyValue(propertyName, newVector).expect();
+                inst->SetProperty(propertyName, newVector).expect();
                 view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Vector3::TYPE, newVector);
                 return;
             }
@@ -227,24 +227,24 @@ public:
         if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
 
-            inst->SetPropertyValue(propertyName, (float)spinBox->value()).expect();
+            inst->SetProperty(propertyName, (float)spinBox->value()).expect();
             model->setData(index, spinBox->value());
         } else if (meta.type.descriptor == &INT_TYPE) {
             QSpinBox* spinBox = dynamic_cast<QSpinBox*>(editor);
 
-            inst->SetPropertyValue(propertyName, (int)spinBox->value()).expect();
+            inst->SetProperty(propertyName, (int)spinBox->value()).expect();
             model->setData(index, spinBox->value());
         } else if (meta.type.descriptor == &STRING_TYPE) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
 
-            inst->SetPropertyValue(propertyName, lineEdit->text().toStdString()).expect();
+            inst->SetProperty(propertyName, lineEdit->text().toStdString()).expect();
             model->setData(index, lineEdit->text());
         } else if (meta.type.descriptor == &Color3::TYPE) {
             QColorDialog* colorDialog = dynamic_cast<QColorDialog*>(editor);
 
             QColor color = colorDialog->currentColor();
             Color3 color3(color.redF(), color.greenF(), color.blueF());
-            inst->SetPropertyValue(propertyName, color3).expect();
+            inst->SetProperty(propertyName, color3).expect();
             model->setData(index, QString::fromStdString(color3.ToString()), Qt::DisplayRole);
             model->setData(index, color, Qt::DecorationRole);
         } else if (meta.type.descriptor == &EnumItem::TYPE) {
@@ -252,7 +252,7 @@ public:
 
             std::vector<EnumItem> siblingItems = meta.type.enum_->GetEnumItems();
             EnumItem newItem = siblingItems[comboBox->currentIndex()];
-            inst->SetPropertyValue(propertyName, newItem).expect("Failed to set enum value in properties pane");
+            inst->SetProperty(propertyName, newItem).expect("Failed to set enum value in properties pane");
             model->setData(index, QString::fromStdString(newItem.Name()), Qt::DisplayRole);
         } else if (meta.type.descriptor->fromString) {
             QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
@@ -260,7 +260,7 @@ public:
             result<Variant, DataParseError> parsedResult = meta.type.descriptor->fromString(lineEdit->text().toStdString(), meta.type);
             if (!parsedResult) return;
             Variant parsedValue = parsedResult.expect();
-            inst->SetPropertyValue(propertyName, parsedValue).expect();
+            inst->SetProperty(propertyName, parsedValue).expect();
             model->setData(index, QString::fromStdString(parsedValue.ToString()));
             view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type.descriptor, parsedValue);
         }
@@ -342,7 +342,7 @@ void PropertiesView::setSelected(std::optional<std::shared_ptr<Instance>> instan
 
     for (std::string property : properties) {
         PropertyMeta meta = inst->GetPropertyMeta(property).expect();
-        Variant currentValue = inst->GetPropertyValue(property).expect();
+        Variant currentValue = inst->GetProperty(property).expect();
 
         if (meta.type.descriptor == &CFrame::TYPE || meta.flags & PROP_HIDDEN) continue;
 
@@ -401,7 +401,7 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
     PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
     if (meta.type.descriptor == &BOOL_TYPE) {
-        inst->SetPropertyValue(propertyName, item->checkState(1) == Qt::Checked).expect();
+        inst->SetProperty(propertyName, item->checkState(1) == Qt::Checked).expect();
     }
 }
 
@@ -438,7 +438,7 @@ void PropertiesView::onPropertyUpdated(std::shared_ptr<Instance> inst, std::stri
     // lastUpdateTime = std::chrono::steady_clock::now();
 
     PropertyMeta meta = inst->GetPropertyMeta(property).expect();
-    Variant currentValue = inst->GetPropertyValue(property).expect();
+    Variant currentValue = inst->GetProperty(property).expect();
     
     if (meta.type.descriptor == &CFrame::TYPE) return;
 

@@ -145,7 +145,7 @@ static int inst_index(lua_State* L) {
     // Read property
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);
     if (meta) {
-        Variant value = inst->GetPropertyValue(key).expect();
+        Variant value = inst->GetProperty(key).expect();
         value.PushLuaValue(L);
         return 1;
     }
@@ -181,7 +181,7 @@ static int inst_newindex(lua_State* L) {
 
     if (value.isError())
         return luaL_error(L, "%s", value.errorMessage().value().c_str());
-    inst->SetPropertyValue(key, value.expect()).expect();
+    inst->SetProperty(key, value.expect()).expect();
     return 0;
 }
 

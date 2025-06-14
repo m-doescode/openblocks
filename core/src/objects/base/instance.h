@@ -114,8 +114,8 @@ public:
     std::string GetFullName();
 
     // Properties
-    result<Variant, MemberNotFound> GetPropertyValue(std::string name);
-    fallible<MemberNotFound, AssignToReadOnlyMember> SetPropertyValue(std::string name, Variant value, bool sendUpdateEvent = true);
+    result<Variant, MemberNotFound> GetProperty(std::string name);
+    fallible<MemberNotFound, AssignToReadOnlyMember> SetProperty(std::string name, Variant value, bool sendUpdateEvent = true);
     result<PropertyMeta, MemberNotFound> GetPropertyMeta(std::string name);
     // Manually trigger the update of a property. Useful internally when setting properties directly
     void UpdateProperty(std::string name);
