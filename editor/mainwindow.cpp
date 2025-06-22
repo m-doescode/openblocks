@@ -1,13 +1,12 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "common.h"
-#include "license.h"
+#include "aboutdialog.h"
 #include "logger.h"
 #include "objects/datamodel.h"
 #include "objects/model.h"
 #include "placedocument.h"
 #include "script/scriptdocument.h"
-#include <cstdio>
 #include <memory>
 #include <qclipboard.h>
 #include <qevent.h>
@@ -448,9 +447,9 @@ void MainWindow::connectActionHandlers() {
         }
     });
 
-    connect(ui->actionViewLicense, &QAction::triggered, this, [this]() {
-        LicenseDialog* licenseDialog = new LicenseDialog(this);
-        licenseDialog->exec();
+    connect(ui->actionAbout, &QAction::triggered, this, [this]() {
+        AboutDialog* aboutDialog = new AboutDialog(this);
+        aboutDialog->open();
     });
 }
 

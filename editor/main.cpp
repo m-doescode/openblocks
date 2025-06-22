@@ -1,4 +1,3 @@
-#include "error/data.h"
 #include "mainwindow.h"
 
 #include "logger.h"

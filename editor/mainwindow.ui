@@ -82,7 +82,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionViewLicense"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -811,9 +811,9 @@
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
-  <action name="actionViewLicense">
+  <action name="actionAbout">
    <property name="text">
-    <string>License</string>
+    <string>About...</string>
    </property>
   </action>
  </widget>
