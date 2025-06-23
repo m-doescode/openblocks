@@ -118,3 +118,17 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
 
     _bounds = _bounds * factor;
 }
+
+std::vector<PartTransformState> PartAssembly::GetCurrentTransforms() {
+    std::vector<PartTransformState> transforms;
+
+    for (auto part : parts) {
+        PartTransformState t;
+        t.part = part;
+        t.cframe = part->cframe;
+        t.size = part->size;
+        transforms.push_back(t);
+    }
+
+    return transforms;
+}

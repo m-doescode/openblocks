@@ -8,6 +8,12 @@ class Part;
 class Instance;
 class Selection;
 
+struct PartTransformState {
+    std::shared_ptr<Part> part;
+    Vector3 size;
+    CFrame cframe;
+};
+
 class PartAssembly {
     CFrame _assemblyOrigin;
     Vector3 _bounds;
@@ -24,6 +30,9 @@ public:
     inline Vector3 bounds() { return _bounds; };
     inline Vector3 size() { return _size; };
     inline bool multipleSelected() { return parts.size() > 1; }
+
+    // Gets the current transform state of all the parts in the assembly
+    std::vector<PartTransformState> GetCurrentTransforms();
 
     // Transforms the assembly such that newOrigin is now this assembly's new assemblyOrigin
     void SetOrigin(CFrame newOrigin);

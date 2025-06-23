@@ -21,6 +21,7 @@
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
 #include "datatypes/variant.h"
+#include "undohistory.h"
 
 #define PI 3.14159
 #define M_mainWindow dynamic_cast<MainWindow*>(window())
@@ -119,6 +120,8 @@ CFrame snapCFrame(CFrame frame) {
     // Vector3 thirdVec = closestVec1.Cross(closestVec2);
     return CFrame(frame.Position(), frame.Position() + closestVec1, closestVec2);
 }
+
+std::vector<PartTransformState> initialTransforms;
 
 bool tryMouseContextMenu = false;
 bool isMouseDragging = false;
@@ -359,6 +362,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
 }
 
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
+    initialTransforms = {};
     tryMouseContextMenu = evt->button() == Qt::RightButton;
     switch(evt->button()) {
     // Camera drag
@@ -377,6 +381,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
             initialAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
             initialFrame = initialAssembly.assemblyOrigin();
+            initialTransforms = PartAssembly::FromSelection(gDataModel->GetService<Selection>()).GetCurrentTransforms();
+            printf("%ld\n", initialTransforms.size());
             isMouseDragging = true;
             draggingHandle = handle;
             startLinearTransform(evt);
@@ -430,6 +436,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         //part.selected = true;
         isMouseDragging = true;
         draggingObject = part;
+        initialTransforms = PartAssembly::FromSelection({part}).GetCurrentTransforms();
         if (evt->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) {
             auto sel = selection->Get();
             if (std::find(sel.begin(), sel.end(), selObject) == sel.end())
@@ -454,6 +461,17 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     isMouseDragging = false;
     draggingObject = {};
     draggingHandle = std::nullopt;
+
+    if (!initialTransforms.empty()) {
+        UndoState historyState;
+
+        for (auto t : initialTransforms) {
+            historyState.push_back(UndoStatePropertyChanged { t.part, "CFrame", t.cframe, t.part->cframe });
+            historyState.push_back(UndoStatePropertyChanged { t.part, "Size", t.size, t.part->size });
+        }
+
+        M_mainWindow->undoManager.PushState(historyState);
+    }
 
     // Open context menu
     if (tryMouseContextMenu)
@@ -505,6 +523,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         }));
         gWorkspace()->SyncPartPhysics(lastPart);
         lastPart->name = "Part" + std::to_string(partId++);
+        M_mainWindow->undoManager.PushState({ UndoStateInstanceCreated { lastPart, gWorkspace() } });
     }
 }
 
