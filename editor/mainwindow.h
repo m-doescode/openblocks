@@ -60,6 +60,8 @@ public:
     void openFile(std::string path);
 
     Ui::MainWindow *ui;
+
+    friend PlaceDocument;
 private:
     PlaceDocument* placeDocument;
     std::map<std::shared_ptr<Script>, ScriptDocument*> scriptDocuments;

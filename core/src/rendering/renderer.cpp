@@ -19,6 +19,7 @@
 #include "datatypes/vector.h"
 #include "handles.h"
 #include "math_helper.h"
+#include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/torus.h"
 #include "shader.h"
@@ -270,7 +271,7 @@ static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 
 void renderHandles() {
     if (!editorToolHandles.active) return;
 
-    auto assembly = PartAssembly::FromSelection();
+    auto assembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
     if (assembly.size() == Vector3::ZERO) return;
 
     glDepthMask(GL_TRUE);
@@ -448,15 +449,12 @@ void renderOutlines() {
 
     glm::vec3 min, max;
     bool first = true;
-    int count = 0;
 
-    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> inst = *it;
+    std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+    for (auto inst : selection->Get()) {
         if (inst->GetClass() != &Part::TYPE) continue;
         std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
-        if (!part->selected) continue;
 
-        count++;
         if (first)
             min = part->position(), max = part->position();
         first = false;
@@ -475,7 +473,7 @@ void renderOutlines() {
     }
 
     // Render AABB of selected parts
-    PartAssembly selectionAssembly = PartAssembly::FromSelection();
+    PartAssembly selectionAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
     if (selectionAssembly.size() == Vector3()) return;
     glm::vec3 outlineSize = selectionAssembly.bounds();
     glm::vec3 outlinePos = selectionAssembly.assemblyOrigin().Position();
@@ -498,7 +496,7 @@ void renderSelectionAssembly() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    PartAssembly selectionAssembly = PartAssembly::FromSelection();
+    PartAssembly selectionAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
 
     // Use shader
     outlineShader->use();
@@ -555,7 +553,7 @@ void renderRotationArcs() {
     // Pass in the camera position
     handleShader->set("viewPos", camera.cameraPos);
 
-    PartAssembly assembly = PartAssembly::FromSelection();
+    PartAssembly assembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
 
     for (HandleFace face : HandleFace::Faces) {
         if (glm::any(glm::lessThan(face.normal, glm::vec3(0)))) continue;

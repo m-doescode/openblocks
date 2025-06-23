@@ -1,5 +1,6 @@
 #include "placedocument.h"
 #include "common.h"
+#include "datatypes/variant.h"
 #include "mainglwidget.h"
 #include "mainwindow.h"
 #include "objects/joint/snap.h"
@@ -15,6 +16,8 @@
 #include <qmdisubwindow.h>
 #include <qlayout.h>
 #include <qmimedata.h>
+#include "../ui_mainwindow.h"
+#include "objects/service/selection.h"
 
 PlaceDocument::PlaceDocument(QWidget* parent):
     QMdiSubWindow(parent) {
@@ -24,6 +27,7 @@ PlaceDocument::PlaceDocument(QWidget* parent):
     setWindowTitle("Place");
 
     _runState = RUN_STOPPED;
+    updateSelectionListeners(gDataModel->GetService<Selection>());
 }
 
 PlaceDocument::~PlaceDocument() {
@@ -41,7 +45,7 @@ void PlaceDocument::setRunState(RunState newState) {
         std::shared_ptr<DataModel> newModel = editModeDataModel->CloneModel();
         gDataModel = newModel;
         gDataModel->Init(true);
-        setSelection({});
+        updateSelectionListeners(gDataModel->GetService<Selection>());
     } else if (newState == RUN_PAUSED && _runState == RUN_RUNNING) {
         _runState = RUN_PAUSED;
     } else if (newState == RUN_STOPPED) {
@@ -49,8 +53,26 @@ void PlaceDocument::setRunState(RunState newState) {
 
         // TODO: GC: Check to make sure gDataModel gets properly garbage collected prior to this
         gDataModel = editModeDataModel;
-        setSelection({});
+        updateSelectionListeners(gDataModel->GetService<Selection>());
     }
+}
+
+void PlaceDocument::updateSelectionListeners(std::shared_ptr<Selection> selection) {
+    MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
+
+    if (!selectionConnection.expired())
+        selectionConnection.lock()->Disconnect();
+
+    selectionConnection = selection->SelectionChanged->Connect([selection, mainWnd](std::vector<Variant> _){
+        // Update properties
+        if (selection->Get().size() != 1)
+            mainWnd->ui->propertiesView->setSelected(std::nullopt);
+        else
+            mainWnd->ui->propertiesView->setSelected(selection->Get()[0]);
+
+        // Update explorer
+        mainWnd->ui->explorerView->setSelectedObjects(selection->Get());
+    });
 }
 
 void PlaceDocument::closeEvent(QCloseEvent *closeEvent) {

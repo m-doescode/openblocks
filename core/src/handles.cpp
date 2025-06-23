@@ -3,6 +3,7 @@
 #include "datatypes/cframe.h"
 #include "datatypes/vector.h"
 #include "math_helper.h"
+#include "objects/service/selection.h"
 #include "partassembly.h"
 #include <glm/ext/scalar_common.hpp>
 #include <memory>
@@ -27,7 +28,8 @@ static rp3d::PhysicsCommon common;
 static rp3d::PhysicsWorld* world = common.createPhysicsWorld();
 
 std::shared_ptr<Part> getHandleAdornee() {
-    for (std::weak_ptr<Instance> inst : getSelection()) {
+    std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+    for (std::weak_ptr<Instance> inst : selection->Get()) {
         if (!inst.expired() && inst.lock()->IsA<Part>())
             return inst.lock()->CastTo<Part>().expect();
     }
@@ -78,7 +80,8 @@ Vector3 handleSize(HandleFace face) {
 
 static int getAABBOfSelection(glm::vec3& pos, glm::vec3& size, glm::vec3& min, glm::vec3& max) {
     int count = 0;
-    for (std::weak_ptr<Instance> inst : getSelection()) {
+    std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+    for (std::weak_ptr<Instance> inst : selection->Get()) {
         if (inst.expired() || !inst.lock()->IsA<Part>()) continue;
         std::shared_ptr<Part> part = inst.lock()->CastTo<Part>().expect();
 
@@ -97,7 +100,8 @@ static int getAABBOfSelection(glm::vec3& pos, glm::vec3& size, glm::vec3& min, g
 }
 
 static std::shared_ptr<Part> getFirstSelectedPart() {
-    for (std::weak_ptr<Instance> inst : getSelection()) {
+    std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+    for (std::weak_ptr<Instance> inst : selection->Get()) {
         if (inst.expired() || !inst.lock()->IsA<Part>()) continue;
         
         return inst.lock()->CastTo<Part>().expect();
@@ -107,7 +111,7 @@ static std::shared_ptr<Part> getFirstSelectedPart() {
 }
 
 CFrame getLocalHandleCFrame(HandleFace face) {
-    PartAssembly assembly = PartAssembly::FromSelection();
+    PartAssembly assembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
 
     Vector3 size;
     if (editorToolHandles.worldMode)
@@ -125,7 +129,7 @@ CFrame getLocalHandleCFrame(HandleFace face) {
 }
 
 CFrame getHandleCFrame(HandleFace face) {
-    PartAssembly assembly = PartAssembly::FromSelection();
+    PartAssembly assembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
 
     if (editorToolHandles.worldMode) {
         return getLocalHandleCFrame(face) + assembly.assemblyOrigin().Position();

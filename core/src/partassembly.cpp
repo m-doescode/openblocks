@@ -6,6 +6,7 @@
 #include "math_helper.h"
 #include "objects/base/instance.h"
 #include "objects/part.h"
+#include "objects/service/selection.h"
 #include <glm/common.hpp>
 #include <memory>
 #include <vector>
@@ -52,6 +53,10 @@ PartAssembly PartAssembly::FromSelection(std::vector<std::shared_ptr<Instance>> 
     }
 
     return PartAssembly(selection, editorToolHandles.worldMode);
+}
+
+PartAssembly PartAssembly::FromSelection(std::shared_ptr<Selection> selection) {
+    return FromSelection(selection->Get());
 }
 
 void PartAssembly::SetCollisionsEnabled(bool enabled) {

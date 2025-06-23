@@ -66,7 +66,6 @@ public:
     DEF_PROP_CATEGORY(APPEARANCE)
     DEF_PROP Color3 color;
     DEF_PROP float transparency = 0.f;
-    bool selected = false;
     
     DEF_PROP_CATEGORY(BEHAVIOR)
     DEF_PROP_(on_update=onUpdated) bool anchored = false;

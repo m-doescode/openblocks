@@ -15,6 +15,7 @@
 #include "math_helper.h"
 #include "objects/base/instance.h"
 #include "objects/pvinstance.h"
+#include "objects/service/selection.h"
 #include "partassembly.h"
 #include "physics/util.h"
 #include "rendering/renderer.h"
@@ -217,7 +218,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
         absDiff = handleCFrame.Rotation() * Vector3(0, 0, diff);
     }
 
-    PartAssembly selectionAssembly = PartAssembly::FromSelection();
+    PartAssembly selectionAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
 
     if (editorToolHandles.handlesType == MoveHandles) {
         selectionAssembly.TransformBy(CFrame() + absDiff);
@@ -374,7 +375,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
             startPoint = glm::vec2(evt->pos().x(), evt->pos().y());
-            initialAssembly = PartAssembly::FromSelection();
+            initialAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
             initialFrame = initialAssembly.assemblyOrigin();
             isMouseDragging = true;
             draggingHandle = handle;
@@ -383,10 +384,11 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         }
 
         // raycast part
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-        if (!rayHit || !partFromBody(rayHit->body)) { setSelection({}); return; }
+        if (!rayHit || !partFromBody(rayHit->body)) { selection->Set({}); return; }
         std::shared_ptr<Part> part = partFromBody(rayHit->body);
-        if (part->locked) { setSelection({}); return; }
+        if (part->locked) { selection->Set({}); return; }
 
         std::shared_ptr<PVInstance> selObject = part;
 
@@ -429,19 +431,14 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         isMouseDragging = true;
         draggingObject = part;
         if (evt->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) {
-            std::vector<std::shared_ptr<Instance>> currentSelection = getSelection();
-            for (size_t i = 0; i < currentSelection.size(); i++) {
-                std::shared_ptr<Instance> inst = currentSelection[i];
-                if (inst == selObject) {
-                    currentSelection.erase(currentSelection.begin() + i);
-                    goto skipAddPart;
-                }
-            }
-            currentSelection.push_back(selObject);
-            skipAddPart:
-            setSelection(currentSelection);
-        } else
-            setSelection({ selObject });
+            auto sel = selection->Get();
+            if (std::find(sel.begin(), sel.end(), selObject) == sel.end())
+                selection->Add({ selObject });
+            else
+                selection->Remove({ selObject });
+        } else {
+            selection->Set({ selObject });
+        }
         // Disable bit so that we can ignore the part while raycasting
         // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
 
@@ -509,19 +506,6 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         gWorkspace()->SyncPartPhysics(lastPart);
         lastPart->name = "Part" + std::to_string(partId++);
     }
-
-    if (evt->key() == Qt::Key_U)
-        Logger::info("info message");
-    if (evt->key() == Qt::Key_I)
-        Logger::warning("warning message");
-    if (evt->key() == Qt::Key_O)
-        Logger::error("error message");
-
-    if (evt->key() == Qt::Key_C && getSelection().size() > 0)
-        getSelection()[0]->Clone().value()->SetParent(gWorkspace());
-
-    if (evt->key() == Qt::Key_H && getSelection().size() > 0)
-        Logger::infof("Object at: 0x%x\n", getSelection()[0].get());
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {

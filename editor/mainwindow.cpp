@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "objects/datamodel.h"
 #include "objects/model.h"
+#include "objects/service/selection.h"
 #include "placedocument.h"
 #include "script/scriptdocument.h"
 #include <memory>
@@ -96,28 +97,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->explorerView->buildContextMenu();
 
     connectActionHandlers();
-
-    // Update properties
-    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        if (newSelection.size() == 0) return;
-        if (newSelection.size() > 1)
-            ui->propertiesView->setSelected(std::nullopt);
-        ui->propertiesView->setSelected(newSelection[0]);
-    });
-
-    addSelectionListener([&](auto oldSelection, auto newSelection, bool __) {
-        for (std::weak_ptr<Instance> inst : oldSelection) {
-            if (inst.expired() || inst.lock()->GetClass() != &Part::TYPE) continue;
-            std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst.lock());
-            part->selected = false;
-        }
-
-        for (std::weak_ptr<Instance> inst : newSelection) {
-            if (inst.expired() || inst.lock()->GetClass() != &Part::TYPE) continue;
-            std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst.lock());
-            part->selected = true;
-        }
-    });
 
     // ui->explorerView->Init(ui);
     placeDocument = new PlaceDocument(this);
@@ -299,16 +278,18 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {
-        for (std::weak_ptr<Instance> inst : getSelection()) {
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
             inst.lock()->SetParent(std::nullopt);
         }
-        setSelection({});
+        selection->Set({});
     });
 
     connect(ui->actionCopy, &QAction::triggered, this, [&]() {
         pugi::xml_document rootDoc;
-        for (std::weak_ptr<Instance> inst : getSelection()) {
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
             inst.lock()->Serialize(rootDoc);
         }
@@ -322,11 +303,13 @@ void MainWindow::connectActionHandlers() {
     });
     connect(ui->actionCut, &QAction::triggered, this, [&]() {
         pugi::xml_document rootDoc;
-        for (std::weak_ptr<Instance> inst : getSelection()) {
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
             inst.lock()->Serialize(rootDoc);
             inst.lock()->SetParent(std::nullopt);
         }
+        selection->Set({});
 
         std::ostringstream encoded;
         rootDoc.save(encoded);
@@ -353,9 +336,10 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionPasteInto, &QAction::triggered, this, [&]() {
-        if (getSelection().size() != 1) return;
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        if (selection->Get().size() != 1) return;
 
-        std::shared_ptr<Instance> selectedParent = getSelection()[0];
+        std::shared_ptr<Instance> selectedParent = selection->Get()[0];
 
         const QMimeData* mimeData = QApplication::clipboard()->mimeData();
         if (!mimeData || !mimeData->hasFormat("application/xml")) return;
@@ -376,7 +360,8 @@ void MainWindow::connectActionHandlers() {
         auto model = Model::New();
         std::shared_ptr<Instance> firstParent;
         
-        for (auto object : getSelection()) {
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        for (auto object : selection->Get()) {
             if (firstParent == nullptr && object->GetParent().has_value()) firstParent = object->GetParent().value();
             object->SetParent(model);
         }
@@ -389,14 +374,15 @@ void MainWindow::connectActionHandlers() {
         if (firstParent == nullptr) firstParent = gWorkspace();
         model->SetParent(firstParent);
 
-        setSelection({ model });
+        selection->Set({ model });
         playSound("./assets/excluded/electronicpingshort.wav");
     });
 
     connect(ui->actionUngroupObjects, &QAction::triggered, this, [&]() {
         std::vector<std::shared_ptr<Instance>> newSelection;
 
-        for (auto model : getSelection()) {
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        for (auto model : selection->Get()) {
             // Not a model, skip
             if (!model->IsA<Model>()) { newSelection.push_back(model); continue; }
 
@@ -408,7 +394,7 @@ void MainWindow::connectActionHandlers() {
             model->Destroy();
         }
 
-        setSelection(newSelection);
+        selection->Set(newSelection);
         playSound("./assets/excluded/electronicpingshort.wav");
     });
 
@@ -421,7 +407,8 @@ void MainWindow::connectActionHandlers() {
         pugi::xml_document modelDoc;
         pugi::xml_node modelRoot = modelDoc.append_child("openblocks");
 
-        for (std::weak_ptr<Instance> inst : getSelection()) {
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
             inst.lock()->Serialize(modelRoot);
         }
@@ -430,8 +417,9 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionInsertModel, &QAction::triggered, this, [&]() {
-        if (getSelection().size() != 1) return;
-        std::shared_ptr<Instance> selectedParent = getSelection()[0];
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        if (selection->Get().size() != 1) return;
+        std::shared_ptr<Instance> selectedParent = selection->Get()[0];
 
         std::optional<std::string> path = openFileDialog("Openblocks Model (*.obm)", ".obm", QFileDialog::AcceptOpen);
         if (!path) return;

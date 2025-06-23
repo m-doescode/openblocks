@@ -5,6 +5,7 @@
 #include "objects/base/instance.h"
 #include "objects/meta.h"
 #include "objects/script.h"
+#include "objects/service/selection.h"
 #include <memory>
 #include <qaction.h>
 #include <qtreeview.h>
@@ -37,6 +38,10 @@ ExplorerView::ExplorerView(QWidget* parent):
     });
 
     connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+        // Simple, good old debounce.
+        if (handlingSelectionUpdate)
+            return;
+
         std::vector<std::shared_ptr<Instance>> selectedInstances;
         selectedInstances.reserve(selectedIndexes().count()); // This doesn't reserve everything, but should enhance things anyway
 
@@ -44,20 +49,23 @@ ExplorerView::ExplorerView(QWidget* parent):
             selectedInstances.push_back(reinterpret_cast<Instance*>(index.internalPointer())->shared_from_this());
         }
 
-        ::setSelection(selectedInstances, true);
+        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+        selection->Set(selectedInstances);
     });
 
-    addSelectionListener([&](auto oldSelection, auto newSelection, bool fromExplorer) {
-        // It's from us, ignore it.
-        if (fromExplorer) return;
+}
 
-        this->clearSelection();
-        for (std::weak_ptr<Instance> inst : newSelection) {
-            if (inst.expired()) continue;
-            QModelIndex index = this->model.ObjectToIndex(inst.lock());
-            this->selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select);
-        }
-    });
+void ExplorerView::setSelectedObjects(std::vector<std::shared_ptr<Instance>> selection) {
+    handlingSelectionUpdate = true;
+
+    this->clearSelection();
+    for (std::weak_ptr<Instance> inst : selection) {
+        if (inst.expired()) continue;
+        QModelIndex index = this->model.ObjectToIndex(inst.lock());
+        this->selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select);
+    }
+
+    handlingSelectionUpdate = false;
 }
 
 ExplorerView::~ExplorerView() {
@@ -103,8 +111,9 @@ void ExplorerView::buildContextMenu() {
         QAction* instAction = new QAction(model.iconOf(type), QString::fromStdString(type->className));
         insertObjectMenu->addAction(instAction);
         connect(instAction, &QAction::triggered, this, [&]() {
-            if (getSelection().size() == 0) return;
-            std::shared_ptr<Instance> instParent = getSelection()[0];
+            std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+            if (selection->Get().size() == 0) return;
+            std::shared_ptr<Instance> instParent = selection->Get()[0];
             std::shared_ptr<Instance> newInst = type->constructor();
             newInst->SetParent(instParent);
         });
