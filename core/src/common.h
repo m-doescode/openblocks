@@ -1,7 +1,7 @@
 #pragma once
 #include "objects/base/instance.h"
 #include "handles.h"
-#include "objects/workspace.h"
+#include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 #include "camera.h"
 #include <functional>

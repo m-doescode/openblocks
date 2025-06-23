@@ -3,9 +3,9 @@
 #include "datatypes/cframe.h"
 #include "datatypes/ref.h"
 #include "objects/datamodel.h"
-#include "objects/jointsservice.h"
+#include "objects/service/jointsservice.h"
 #include "objects/part.h"
-#include "objects/workspace.h"
+#include "objects/service/workspace.h"
 #include <memory>
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>

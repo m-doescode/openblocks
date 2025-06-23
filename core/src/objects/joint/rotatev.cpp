@@ -1,7 +1,7 @@
 #include "rotatev.h"
-#include "objects/jointsservice.h"
+#include "objects/service/jointsservice.h"
 #include "objects/part.h"
-#include "objects/workspace.h"
+#include "objects/service/workspace.h"
 #include "rendering/renderer.h"
 #include <reactphysics3d/constraint/HingeJoint.h>
 

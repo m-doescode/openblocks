@@ -4,14 +4,14 @@
 #include "objects/joint/rotate.h"
 #include "objects/joint/rotatev.h"
 #include "objects/joint/weld.h"
-#include "objects/jointsservice.h"
+#include "objects/service/jointsservice.h"
 #include "objects/model.h"
 #include "objects/part.h"
 #include "objects/joint/snap.h"
 #include "objects/script.h"
-#include "objects/script/scriptcontext.h"
-#include "objects/script/serverscriptservice.h"
-#include "objects/workspace.h"
+#include "objects/service/script/scriptcontext.h"
+#include "objects/service/script/serverscriptservice.h"
+#include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {

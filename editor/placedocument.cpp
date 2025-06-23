@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include "objects/joint/snap.h"
 #include "objects/script.h"
-#include "objects/script/scriptcontext.h"
+#include "objects/service/script/scriptcontext.h"
 #include "enum/surface.h"
 #include <cstdio>
 #include <memory>

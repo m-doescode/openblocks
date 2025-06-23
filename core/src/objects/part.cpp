@@ -9,7 +9,7 @@
 #include "objects/joint/rotate.h"
 #include "objects/joint/rotatev.h"
 #include "objects/joint/weld.h"
-#include "objects/jointsservice.h"
+#include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/joint/snap.h"
 #include "rendering/renderer.h"

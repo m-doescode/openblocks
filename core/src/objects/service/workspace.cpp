@@ -3,7 +3,7 @@
 #include "datatypes/ref.h"
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
-#include "objects/jointsservice.h"
+#include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
 #include "physics/util.h"

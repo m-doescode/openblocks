@@ -3,8 +3,8 @@
 #include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
-#include "objects/script/scriptcontext.h"
-#include "objects/workspace.h"
+#include "objects/service/script/scriptcontext.h"
+#include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 #include "datatypes/ref.h"
 #include "lua.h" // IWYU pragma: keep
