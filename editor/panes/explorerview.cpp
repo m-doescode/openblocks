@@ -6,6 +6,7 @@
 #include "objects/meta.h"
 #include "objects/script.h"
 #include "objects/service/selection.h"
+#include "undohistory.h"
 #include <memory>
 #include <qaction.h>
 #include <qtreeview.h>
@@ -116,6 +117,7 @@ void ExplorerView::buildContextMenu() {
             std::shared_ptr<Instance> instParent = selection->Get()[0];
             std::shared_ptr<Instance> newInst = type->constructor();
             newInst->SetParent(instParent);
+            M_mainWindow->undoManager.PushState({ UndoStateInstanceCreated { newInst, instParent } });
         });
     }
 }

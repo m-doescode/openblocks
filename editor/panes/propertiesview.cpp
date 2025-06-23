@@ -4,7 +4,9 @@
 #include "datatypes/variant.h"
 #include "datatypes/primitives.h"
 #include "error/data.h"
+#include "mainwindow.h"
 #include "objects/base/member.h"
+#include "undohistory.h"
 
 #include <QColorDialog>
 #include <QComboBox>
@@ -206,6 +208,8 @@ public:
             : view->itemFromIndex(index.parent())->data(0, Qt::DisplayRole).toString().toStdString();
         PropertyMeta meta = inst->GetPropertyMeta(propertyName).expect();
 
+        Variant oldValue = inst->GetProperty(propertyName).expect();
+
         if (isComposite) {
             if (meta.type.descriptor == &Vector3::TYPE) {
                 QDoubleSpinBox* spinBox = dynamic_cast<QDoubleSpinBox*>(editor);
@@ -264,12 +268,15 @@ public:
             model->setData(index, QString::fromStdString(parsedValue.ToString()));
             view->rebuildCompositeProperty(view->itemFromIndex(index), meta.type.descriptor, parsedValue);
         }
+
+        Variant newValue = inst->GetProperty(propertyName).expect();
+        view->undoManager->PushState({ UndoStatePropertyChanged { inst, propertyName, oldValue, newValue } });
     }
 };
 
 PropertiesView::PropertiesView(QWidget* parent):
     QTreeWidget(parent) {
-    
+
     clear();
     setHeaderHidden(true);
     setColumnCount(2);
@@ -299,6 +306,10 @@ QStringList PROPERTY_CATEGORY_NAMES {
     "Surface",
     "Surface Inputs",
 };
+
+void PropertiesView::init() {
+    undoManager = &dynamic_cast<MainWindow*>(window())->undoManager;
+}
 
 QModelIndex PropertiesView::indexAt(const QPoint &point) const {
     return QTreeWidget::indexAt(point + QPoint(indentation(), 0));
@@ -402,6 +413,7 @@ void PropertiesView::propertyChanged(QTreeWidgetItem *item, int column) {
 
     if (meta.type.descriptor == &BOOL_TYPE) {
         inst->SetProperty(propertyName, item->checkState(1) == Qt::Checked).expect();
+        undoManager->PushState({ UndoStatePropertyChanged { inst, propertyName, item->checkState(1) != Qt::Checked, item->checkState(1) == Qt::Checked } });
     }
 }
 

@@ -2,12 +2,13 @@
 
 #include "base.h"
 #include "error/data.h"
+#include "utils.h"
 #include <memory>
 
 class Instance;
 
 class InstanceRef {
-    std::shared_ptr<Instance> ref;
+    nullable std::shared_ptr<Instance> ref;
 public:
     InstanceRef();
     InstanceRef(std::weak_ptr<Instance>);

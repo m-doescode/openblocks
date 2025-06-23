@@ -6,6 +6,7 @@
 #include "qbasictimer.h"
 #include "qcoreevent.h"
 #include "script/scriptdocument.h"
+#include "undohistory.h"
 #include <QMainWindow>
 #include <QLineEdit>
 #include <map>
@@ -49,6 +50,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    UndoHistory undoManager;
     
     SelectedTool selectedTool;
     GridSnappingMode snappingMode;

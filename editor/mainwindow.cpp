@@ -8,10 +8,12 @@
 #include "objects/service/selection.h"
 #include "placedocument.h"
 #include "script/scriptdocument.h"
+#include "undohistory.h"
 #include <memory>
 #include <qclipboard.h>
 #include <qevent.h>
 #include <qglobal.h>
+#include <qkeysequence.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
 #include <qnamespace.h>
@@ -45,15 +47,6 @@ inline bool isDarkMode() {
 
 QtMessageHandler defaultMessageHandler = nullptr;
 
-// std::map<QtMsgType, Logger::LogLevel> QT_MESSAGE_TYPE_TO_LOG_LEVEL = {
-//     { QtMsgType::QtInfoMsg, Logger::LogLevel::INFO },  
-//     { QtMsgType::QtSystemMsg, Logger::LogLevel::INFO }, 
-//     { QtMsgType::QtDebugMsg, Logger::LogLevel::DEBUG }, 
-//     { QtMsgType::QtWarningMsg, Logger::LogLevel::WARNING }, 
-//     { QtMsgType::QtCriticalMsg, Logger::LogLevel::ERROR }, 
-//     { QtMsgType::QtFatalMsg, Logger::LogLevel::FATAL_ERROR }, 
-// };
-
 void logQtMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
     // Logger::log("[Qt] " + msg.toStdString(), QT_MESSAGE_TYPE_TO_LOG_LEVEL[type]);
     Logger::LogLevel logLevel = type == QtMsgType::QtFatalMsg ? Logger::LogLevel::FATAL_ERROR : Logger::LogLevel::DEBUG;
@@ -77,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     setMouseTracking(true);
+
+    ui->actionRedo->setShortcuts({QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")});
 
     QIcon::setThemeSearchPaths(QIcon::themeSearchPaths() + QStringList { "./assets/icons" });
     if (isDarkMode())
@@ -105,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mdiArea->currentSubWindow()->showMaximized();
     ui->mdiArea->findChild<QTabBar*>()->setExpanding(false);
     placeDocument->init();
+    ui->propertiesView->init();
 
     ui->mdiArea->setTabsClosable(true);
 }
@@ -278,12 +274,16 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
+            historyState.push_back(UndoStateInstanceRemoved { inst.lock(), inst.lock()->GetParent().value() });
             inst.lock()->SetParent(std::nullopt);
         }
         selection->Set({});
+        historyState.push_back(UndoStateSelectionChanged {selection->Get(), {}});
+        undoManager.PushState(historyState);
     });
 
     connect(ui->actionCopy, &QAction::triggered, this, [&]() {
@@ -301,15 +301,20 @@ void MainWindow::connectActionHandlers() {
         mimeData->setData("application/xml", QByteArray::fromStdString(encoded.str()));
         QApplication::clipboard()->setMimeData(mimeData);
     });
+    
     connect(ui->actionCut, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         pugi::xml_document rootDoc;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
+            historyState.push_back(UndoStateInstanceRemoved { inst.lock(), inst.lock()->GetParent().value() });
             inst.lock()->Serialize(rootDoc);
             inst.lock()->SetParent(std::nullopt);
         }
         selection->Set({});
+        historyState.push_back(UndoStateSelectionChanged {selection->Get(), {}});
+        undoManager.PushState(historyState);
 
         std::ostringstream encoded;
         rootDoc.save(encoded);
@@ -320,6 +325,7 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionPaste, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         const QMimeData* mimeData = QApplication::clipboard()->mimeData();
         if (!mimeData || !mimeData->hasFormat("application/xml")) return;
         QByteArray bytes = mimeData->data("application/xml");
@@ -331,11 +337,15 @@ void MainWindow::connectActionHandlers() {
         for (pugi::xml_node instNode : rootDoc.children()) {
             result<std::shared_ptr<Instance>, NoSuchInstance> inst = Instance::Deserialize(instNode);
             if (!inst) { inst.logError(); continue; }
+            historyState.push_back(UndoStateInstanceCreated { inst.expect(), gWorkspace() });
             gWorkspace()->AddChild(inst.expect());
         }
+
+        undoManager.PushState(historyState);
     });
 
     connect(ui->actionPasteInto, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         if (selection->Get().size() != 1) return;
 
@@ -352,17 +362,22 @@ void MainWindow::connectActionHandlers() {
         for (pugi::xml_node instNode : rootDoc.children()) {
             result<std::shared_ptr<Instance>, NoSuchInstance> inst = Instance::Deserialize(instNode);
             if (!inst) { inst.logError(); continue; }
+            historyState.push_back(UndoStateInstanceCreated { inst.expect(), selectedParent });
             selectedParent->AddChild(inst.expect());
         }
+
+        undoManager.PushState(historyState);
     });
 
     connect(ui->actionGroupObjects, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         auto model = Model::New();
         std::shared_ptr<Instance> firstParent;
         
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (auto object : selection->Get()) {
             if (firstParent == nullptr && object->GetParent().has_value()) firstParent = object->GetParent().value();
+            historyState.push_back(UndoStateInstanceReparented { object, object->GetParent().value(), model });
             object->SetParent(model);
         }
 
@@ -372,13 +387,16 @@ void MainWindow::connectActionHandlers() {
         // Technically not how it works in the actual studio, but it's not an API-breaking change
         // and I think this implementation is more useful so I'm sticking with it
         if (firstParent == nullptr) firstParent = gWorkspace();
+        historyState.push_back(UndoStateInstanceCreated { model, firstParent });
         model->SetParent(firstParent);
 
+        historyState.push_back(UndoStateSelectionChanged { selection->Get(), { model } });
         selection->Set({ model });
         playSound("./assets/excluded/electronicpingshort.wav");
     });
 
     connect(ui->actionUngroupObjects, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         std::vector<std::shared_ptr<Instance>> newSelection;
 
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
@@ -387,13 +405,16 @@ void MainWindow::connectActionHandlers() {
             if (!model->IsA<Model>()) { newSelection.push_back(model); continue; }
 
             for (auto object : model->GetChildren()) {
+                historyState.push_back(UndoStateInstanceReparented { object, object->GetParent().value(), model->GetParent().value() });
                 object->SetParent(model->GetParent());
                 newSelection.push_back(object);
             }
 
-            model->Destroy();
+            historyState.push_back(UndoStateInstanceRemoved { model, model->GetParent().value() });
+            model->SetParent(std::nullopt);
         }
 
+        historyState.push_back(UndoStateSelectionChanged { selection->Get(), newSelection });
         selection->Set(newSelection);
         playSound("./assets/excluded/electronicpingshort.wav");
     });
@@ -417,6 +438,7 @@ void MainWindow::connectActionHandlers() {
     });
 
     connect(ui->actionInsertModel, &QAction::triggered, this, [&]() {
+        UndoState historyState;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         if (selection->Get().size() != 1) return;
         std::shared_ptr<Instance> selectedParent = selection->Get()[0];
@@ -431,8 +453,17 @@ void MainWindow::connectActionHandlers() {
         for (pugi::xml_node instNode : modelDoc.child("openblocks").children("Item")) {
             result<std::shared_ptr<Instance>, NoSuchInstance> inst = Instance::Deserialize(instNode);
             if (!inst) { inst.logError(); continue; }
+            historyState.push_back(UndoStateInstanceCreated { inst.expect(), selectedParent });
             selectedParent->AddChild(inst.expect());
         }
+    });
+
+    connect(ui->actionUndo, &QAction::triggered, this, [&]() {
+        undoManager.Undo();
+    });
+
+    connect(ui->actionRedo, &QAction::triggered, this, [&]() {
+        undoManager.Redo();
     });
 
     connect(ui->actionAbout, &QAction::triggered, this, [this]() {

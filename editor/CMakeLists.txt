@@ -26,6 +26,8 @@ set(PROJECT_SOURCES
         mainglwidget.cpp
         placedocument.h
         placedocument.cpp
+        undohistory.h
+        undohistory.cpp
         panes/explorerview.h
         panes/explorerview.cpp
         panes/explorermodel.h

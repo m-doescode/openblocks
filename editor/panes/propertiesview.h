@@ -3,6 +3,7 @@
 #include <QTreeWidget>
 #include "datatypes/base.h"
 #include "objects/base/instance.h"
+#include "undohistory.h"
 
 class Ui_MainWindow;
 class PropertiesItemDelegate;
@@ -18,6 +19,8 @@ class PropertiesView : public QTreeWidget {
     void rebuildCompositeProperty(QTreeWidgetItem *item, const TypeDesc*, Variant);
     void onPropertyUpdated(std::shared_ptr<Instance> instance, std::string property, Variant newValue);
 
+    UndoHistory* undoManager;
+
     friend PropertiesItemDelegate;
 protected:
     void drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const override;
@@ -25,6 +28,8 @@ protected:
 public:
     PropertiesView(QWidget* parent = nullptr);
     ~PropertiesView() override;
+
+    void init();
 
     void setSelected(std::optional<std::shared_ptr<Instance>> instance);
 };
