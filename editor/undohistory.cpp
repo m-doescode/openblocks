@@ -10,6 +10,7 @@ void UndoHistory::PushState(UndoState state) {
         undoHistory.erase(undoHistory.begin(), undoHistory.begin()+maxBufferSize-(int)undoHistory.size()-1);
 
     undoHistory.push_back(state);
+    undoStateListener(!undoHistory.empty(), !redoHistory.empty());
 }
 
 void UndoHistory::Undo() {
@@ -37,6 +38,7 @@ void UndoHistory::Undo() {
     }
 
     processingUndo = false;
+    undoStateListener(!undoHistory.empty(), !redoHistory.empty());
 }
 
 void UndoHistory::Redo() {
@@ -64,4 +66,9 @@ void UndoHistory::Redo() {
     }
 
     processingUndo = false;
+    undoStateListener(!undoHistory.empty(), !redoHistory.empty());
+}
+
+void UndoHistory::SetUndoStateListener(UndoStateChangedListener listener) {
+    undoStateListener = listener;
 }

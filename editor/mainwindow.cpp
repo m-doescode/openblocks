@@ -103,6 +103,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->propertiesView->init();
 
     ui->mdiArea->setTabsClosable(true);
+
+    // Undo/Redo
+    ui->actionUndo->setEnabled(false);
+    ui->actionRedo->setEnabled(false);
+
+    undoManager.SetUndoStateListener([&](bool canUndo, bool canRedo) {
+        ui->actionUndo->setEnabled(canUndo);
+        ui->actionRedo->setEnabled(canRedo);
+    });
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {

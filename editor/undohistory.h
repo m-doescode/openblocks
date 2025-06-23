@@ -38,16 +38,21 @@ struct UndoStateSelectionChanged {
 
 typedef std::variant<UndoStatePropertyChanged, UndoStateInstanceCreated, UndoStateInstanceRemoved, UndoStateInstanceReparented, UndoStateSelectionChanged> UndoStateChange;
 typedef std::vector<UndoStateChange> UndoState;
+typedef std::function<void(bool canUndo, bool canRedo)> UndoStateChangedListener;
 
 class UndoHistory  {
     // Ignore PushState requests
     bool processingUndo = false;
     std::deque<UndoState> undoHistory;
     std::stack<UndoState> redoHistory;
+
+    UndoStateChangedListener undoStateListener;
 public:
     int maxBufferSize = 100;
 
     void PushState(UndoState);
     void Undo();
     void Redo();
+
+    void SetUndoStateListener(UndoStateChangedListener listener);
 };
