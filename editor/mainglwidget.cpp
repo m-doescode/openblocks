@@ -382,7 +382,6 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             initialAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
             initialFrame = initialAssembly.assemblyOrigin();
             initialTransforms = PartAssembly::FromSelection(gDataModel->GetService<Selection>()).GetCurrentTransforms();
-            printf("%ld\n", initialTransforms.size());
             isMouseDragging = true;
             draggingHandle = handle;
             startLinearTransform(evt);

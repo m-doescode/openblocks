@@ -108,9 +108,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionUndo->setEnabled(false);
     ui->actionRedo->setEnabled(false);
 
-    undoManager.SetUndoStateListener([&](bool canUndo, bool canRedo) {
-        ui->actionUndo->setEnabled(canUndo);
-        ui->actionRedo->setEnabled(canRedo);
+    undoManager.SetUndoStateListener([&]() {
+        updateToolbars();
     });
 }
 
@@ -234,6 +233,11 @@ void MainWindow::connectActionHandlers() {
         gDataModel->Init();
         ui->explorerView->updateRoot(gDataModel);
 
+        // Reset running state
+        placeDocument->setRunState(RUN_STOPPED);
+        undoManager.Reset();
+        updateToolbars();
+
         // Baseplate
         gWorkspace()->AddChild(placeDocument->placeWidget->lastPart = Part::New({
             .position = glm::vec3(0, -5, 0),
@@ -279,6 +283,7 @@ void MainWindow::connectActionHandlers() {
 
         // Reset running state
         placeDocument->setRunState(RUN_STOPPED);
+        undoManager.Reset();
         updateToolbars();
     });
 
@@ -546,6 +551,9 @@ void MainWindow::updateToolbars() {
     ui->actionRunSimulation->setEnabled(placeDocument->runState() != RUN_RUNNING);
     ui->actionPauseSimulation->setEnabled(placeDocument->runState() == RUN_RUNNING);
     ui->actionStopSimulation->setEnabled(placeDocument->runState() != RUN_STOPPED);
+
+    ui->actionUndo->setEnabled(undoManager.CanUndo() && placeDocument->runState() == RUN_STOPPED);
+    ui->actionRedo->setEnabled(undoManager.CanRedo() && placeDocument->runState() == RUN_STOPPED);
 }
 
 std::optional<std::string> MainWindow::openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title) {

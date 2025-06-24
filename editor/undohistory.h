@@ -38,7 +38,7 @@ struct UndoStateSelectionChanged {
 
 typedef std::variant<UndoStatePropertyChanged, UndoStateInstanceCreated, UndoStateInstanceRemoved, UndoStateInstanceReparented, UndoStateSelectionChanged> UndoStateChange;
 typedef std::vector<UndoStateChange> UndoState;
-typedef std::function<void(bool canUndo, bool canRedo)> UndoStateChangedListener;
+typedef std::function<void()> UndoStateChangedListener;
 
 class UndoHistory  {
     // Ignore PushState requests
@@ -53,6 +53,9 @@ public:
     void PushState(UndoState);
     void Undo();
     void Redo();
+    void Reset();
+    inline bool CanUndo() { return !undoHistory.empty(); }
+    inline bool CanRedo() { return !redoHistory.empty(); }
 
     void SetUndoStateListener(UndoStateChangedListener listener);
 };

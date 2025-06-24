@@ -124,8 +124,6 @@ SurfaceType Part::surfaceFromFace(NormalId face) {
 }
 
 float Part::GetSurfaceParamA(Vector3 face) {
-    // printVec(face);
-    // printf("Enum: %d\n", faceFromNormal(face));
     switch (faceFromNormal(face)) {
         case Top: return topParamA;
         case Bottom: return bottomParamA;
