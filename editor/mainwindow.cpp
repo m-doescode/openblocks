@@ -126,9 +126,10 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
     if (result == QMessageBox::Cancel) return evt->ignore();
     if (result == QMessageBox::Save) {
         std::optional<std::string> path;
-        if (!gDataModel->HasFile())
+        if (!gDataModel->HasFile()) {
             path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
-        if (!path || path == "") return evt->ignore();
+            if (!path || path == "") return evt->ignore();
+        }
 
         gDataModel->SaveToFile(path);
     }
@@ -214,9 +215,10 @@ void MainWindow::connectActionHandlers() {
         if (result == QMessageBox::Cancel) return;
         if (result == QMessageBox::Save) {
             std::optional<std::string> path;
-            if (!gDataModel->HasFile())
+            if (!gDataModel->HasFile()) {
                 path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
-            if (!path || path == "") return;
+                if (!path || path == "") return;
+            }
     
             gDataModel->SaveToFile(path);
         }
@@ -253,9 +255,10 @@ void MainWindow::connectActionHandlers() {
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {
         std::optional<std::string> path;
-        if (!editModeDataModel->HasFile())
+        if (!editModeDataModel->HasFile()) {
             path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + editModeDataModel->name));
-        if (!editModeDataModel->HasFile() && (!path || path == "")) return;
+            if (!path || path == "") return;
+        }
 
         editModeDataModel->SaveToFile(path);
     });
@@ -500,9 +503,10 @@ void MainWindow::openFile(std::string path) {
     if (result == QMessageBox::Cancel) return;
     if (result == QMessageBox::Save) {
         std::optional<std::string> path;
-        if (!gDataModel->HasFile())
+        if (!gDataModel->HasFile()) {
             path = openFileDialog("Openblocks Level (*.obl)", ".obl", QFileDialog::AcceptSave, QString::fromStdString("Save " + gDataModel->name));
-        if (!path || path == "") return;
+            if (!path || path == "") return;
+        }
 
         gDataModel->SaveToFile(path);
     }
