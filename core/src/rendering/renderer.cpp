@@ -21,6 +21,7 @@
 #include "math_helper.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
+#include "rendering/texture.h"
 #include "rendering/torus.h"
 #include "shader.h"
 #include "mesh.h"
@@ -41,13 +42,18 @@ Shader* identityShader = NULL;
 Shader* ghostShader = NULL;
 Shader* wireframeShader = NULL;
 Shader* outlineShader = NULL;
+Shader* fontShader = NULL;
 extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
+Texture* fontTexture = NULL;
 
+bool debugRendererEnabled = false;
 bool wireframeRendering = false;
 
-static int viewportWidth, viewportHeight;
+int viewportWidth, viewportHeight;
+
+void renderDebugInfo();
 
 void renderInit(GLFWwindow* window, int width, int height) {
     viewportWidth = width, viewportHeight = height;
@@ -59,6 +65,8 @@ void renderInit(GLFWwindow* window, int width, int height) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    fontTexture = new Texture("assets/textures/debugfnt.bmp", GL_RGB);
 
     skyboxTexture = new Skybox({
         "assets/textures/skybox/null_plainsky512_lf.jpg",
@@ -79,6 +87,7 @@ void renderInit(GLFWwindow* window, int width, int height) {
     ghostShader = new Shader("assets/shaders/ghost.vs", "assets/shaders/ghost.fs");
     wireframeShader = new Shader("assets/shaders/wireframe.vs", "assets/shaders/wireframe.fs");
     outlineShader = new Shader("assets/shaders/outline.vs", "assets/shaders/outline.fs");
+    fontShader = new Shader("assets/shaders/font.vs", "assets/shaders/font.fs");
 }
 
 void renderParts() {
@@ -639,10 +648,16 @@ void render(GLFWwindow* window) {
     renderRotationArcs();
     if (wireframeRendering)
         renderWireframe();
+    if (debugRendererEnabled)
+        renderDebugInfo();
     // TODO: Make this a debug flag
     // renderAABB();
 }
 
 void setViewport(int width, int height) {
     viewportWidth = width, viewportHeight = height;
+}
+
+void setDebugRendererEnabled(bool enabled) {
+    debugRendererEnabled = enabled;
 }

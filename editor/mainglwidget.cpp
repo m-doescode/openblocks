@@ -524,6 +524,12 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         lastPart->name = "Part" + std::to_string(partId++);
         M_mainWindow->undoManager.PushState({ UndoStateInstanceCreated { lastPart, gWorkspace() } });
     }
+
+    if (evt->key() == Qt::Key_BracketLeft) {
+        static bool debugRenderEnabled;
+        debugRenderEnabled = !debugRenderEnabled;
+        setDebugRendererEnabled(debugRenderEnabled);
+    }
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {

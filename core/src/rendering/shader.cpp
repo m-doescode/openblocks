@@ -107,3 +107,7 @@ void Shader::set(std::string key, glm::mat3 value) {
 void Shader::set(std::string key, glm::mat4 value) {
     glUniformMatrix4fv(glGetUniformLocation(id, key.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
+
+int Shader::getAttribute(std::string key) {
+    return glGetAttribLocation(id, key.c_str());
+}
