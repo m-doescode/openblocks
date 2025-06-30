@@ -100,6 +100,10 @@ void Shader::set(std::string key, glm::vec3 value) {
     glUniform3f(glGetUniformLocation(id, key.c_str()), value.x, value.y, value.z);
 }
 
+void Shader::set(std::string key, glm::vec4 value) {
+    glUniform4f(glGetUniformLocation(id, key.c_str()), value.x, value.y, value.z, value.w);
+}
+
 void Shader::set(std::string key, glm::mat3 value) {
     glUniformMatrix3fv(glGetUniformLocation(id, key.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }

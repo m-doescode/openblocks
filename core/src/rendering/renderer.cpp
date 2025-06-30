@@ -32,6 +32,7 @@
 #include "skybox.h"
 #include "enum/surface.h"
 #include "texture3d.h"
+#include "timeutil.h"
 
 #include "renderer.h"
 
@@ -331,7 +332,7 @@ void renderHandles() {
     glDisable(GL_CULL_FACE);
 
     identityShader->use();
-    identityShader->set("aColor", glm::vec3(0.f, 1.f, 1.f));
+    identityShader->set("aColor", glm::vec4(0.f, 1.f, 1.f, 1.f));
     
     for (auto face : HandleFace::Faces) {
         CFrame cframe = getHandleCFrame(face);
@@ -634,9 +635,12 @@ void addDebugRenderCFrame(CFrame frame, Color3 color) {
     DEBUG_CFRAMES.push_back(std::make_pair(frame, color));
 }
 
+tu_time_t renderTime;
 void render(GLFWwindow* window) {
+    tu_time_t startTime = tu_clock_micros();
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
     renderSkyBox();
     renderHandles();
@@ -652,6 +656,7 @@ void render(GLFWwindow* window) {
         renderDebugInfo();
     // TODO: Make this a debug flag
     // renderAABB();
+    renderTime = tu_clock_micros() - startTime;
 }
 
 void setViewport(int width, int height) {

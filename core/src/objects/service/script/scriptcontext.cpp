@@ -93,8 +93,11 @@ void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
     lua_pop(state, 1); // pop sleepingThreads
 }
 
+tu_time_t schedTime;
 void ScriptContext::RunSleepingThreads() {
-    for (size_t i = 0; i < sleepingThreads.size();) {
+    tu_time_t startTime = tu_clock_micros();
+    size_t i;
+    for (i = 0; i < sleepingThreads.size();) {
         bool deleted = false;
 
         SleepingThread sleep = sleepingThreads[i];
@@ -127,6 +130,8 @@ void ScriptContext::RunSleepingThreads() {
         if (!deleted)
             i++;
     }
+    if (i > 0)
+        schedTime = tu_clock_micros() - startTime;
 }
 
 std::string ScriptContext::RegisterScriptSource(std::shared_ptr<Script> script) {

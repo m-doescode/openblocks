@@ -7,6 +7,7 @@
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
 #include "physics/util.h"
+#include "timeutil.h"
 #include <memory>
 #include <reactphysics3d/collision/CollisionCallback.h>
 #include <reactphysics3d/collision/OverlapCallback.h>
@@ -144,7 +145,9 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
     part->rigidBody->setUserData(&*part);
 }
 
+tu_time_t physTime;
 void Workspace::PhysicsStep(float deltaTime) {
+    tu_time_t startTime = tu_clock_micros();
     // Step the simulation a few steps
     physicsWorld->update(std::min(deltaTime / 2, (1/60.f)));
 
@@ -180,6 +183,8 @@ void Workspace::PhysicsStep(float deltaTime) {
                 parent.value()->Destroy();
         }
     }
+
+    physTime = tu_clock_micros() - startTime;
 }
 
 
