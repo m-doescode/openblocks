@@ -7,7 +7,7 @@ void UndoHistory::PushState(UndoState state) {
     redoHistory = {};
 
     if (maxBufferSize != -1 && (int)undoHistory.size() > maxBufferSize)
-        undoHistory.erase(undoHistory.begin(), undoHistory.begin()+maxBufferSize-(int)undoHistory.size()-1);
+        undoHistory.pop_front();
 
     undoHistory.push_back(state);
     undoStateListener();
