@@ -24,7 +24,6 @@ void Weld::buildJoint() {
     if ((!GetParent() || GetParent().value()->GetClass() != &JointsService::TYPE) && !workspace()) return;
 
     std::shared_ptr<Workspace> workspace = workspaceOfPart(part0.lock()).value();
-    if (!workspace->physicsWorld) return;
 
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
@@ -40,7 +39,7 @@ void Weld::buildJoint() {
 // !!! REMINDER: This has to be called manually when parts are destroyed/removed from the workspace, or joints will linger
 void Weld::breakJoint() {
     // If the joint doesn't exist, or its workspace expired (not our problem anymore), then no need to do anything
-    if (!this->joint || jointWorkspace.expired() || !jointWorkspace.lock()->physicsWorld) return;
+    if (!this->joint || jointWorkspace.expired()) return;
 
     jointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
     this->joint = nullptr;

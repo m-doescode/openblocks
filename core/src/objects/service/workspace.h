@@ -2,6 +2,7 @@
 
 #include "objects/annotation.h"
 #include "objects/base/service.h"
+#include "utils.h"
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <reactphysics3d/body/RigidBody.h>
@@ -50,7 +51,7 @@ class PhysicsEventListener : public rp::EventListener {
 class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     AUTOGEN_PREAMBLE
     
-    rp::PhysicsWorld* physicsWorld = nullptr;
+    rp::PhysicsWorld* notnull physicsWorld;
     static rp::PhysicsCommon* physicsCommon;
     PhysicsEventListener physicsEventListener;
 

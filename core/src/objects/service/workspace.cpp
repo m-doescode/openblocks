@@ -16,10 +16,11 @@
 rp::PhysicsCommon* Workspace::physicsCommon = new rp::PhysicsCommon;
 
 Workspace::Workspace(): Service(&TYPE), physicsEventListener(this) {
+    physicsWorld = physicsCommon->createPhysicsWorld();
 }
 
 Workspace::~Workspace() {
-    if (physicsWorld && physicsCommon)
+    if (physicsCommon)
         physicsCommon->destroyPhysicsWorld(physicsWorld);
 }
 
@@ -67,8 +68,6 @@ void Workspace::InitService() {
     if (initialized) return;
     initialized = true;
 
-    physicsWorld = physicsCommon->createPhysicsWorld();
-
     physicsWorld->setGravity(rp::Vector3(0, -196.2, 0));
     // world->setContactsPositionCorrectionTechnique(rp3d::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
     physicsWorld->setNbIterationsPositionSolver(2000);
@@ -103,8 +102,6 @@ void Workspace::InitService() {
 }
 
 void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
-    if (!physicsWorld) return;
-
     rp::Transform transform = part->cframe;
     if (!part->rigidBody) {
         part->rigidBody = physicsWorld->createRigidBody(transform);
