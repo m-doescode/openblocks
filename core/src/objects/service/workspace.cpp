@@ -2,7 +2,9 @@
 #include "datatypes/variant.h"
 #include "datatypes/ref.h"
 #include "datatypes/vector.h"
+#include "logger.h"
 #include "objects/base/instance.h"
+#include "objects/part.h"
 #include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
@@ -102,6 +104,10 @@ void Workspace::InitService() {
 }
 
 void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
+    printf("SyncPartPhysics-lck\n");
+    std::scoped_lock lock(globalPhysicsLock);
+    printf("SyncPartPhysics-post\n");
+
     rp::Transform transform = part->cframe;
     if (!part->rigidBody) {
         part->rigidBody = physicsWorld->createRigidBody(transform);
@@ -145,14 +151,26 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
 tu_time_t physTime;
 void Workspace::PhysicsStep(float deltaTime) {
     tu_time_t startTime = tu_clock_micros();
-    // Step the simulation a few steps
+
+    std::scoped_lock lock(globalPhysicsLock);
     physicsWorld->update(std::min(deltaTime / 2, (1/60.f)));
 
+    // Update queued objects
+    queueLock.lock();
+    for (QueueItem item : bodyQueue) {
+        if (item.action == QueueItem::QUEUEITEM_ADD) {
+            simulatedBodies.push_back(item.part);
+            item.part->simulationTicket = --simulatedBodies.end();
+        } else if (item.part->simulationTicket->get() != nullptr) {
+            simulatedBodies.erase(item.part->simulationTicket);
+            item.part->simulationTicket = {};
+        }
+    }
+    queueLock.unlock();
+
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
-    for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> obj = *it;
-        if (!obj->IsA<Part>()) continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(obj);
+    for (std::shared_ptr<Part> part : simulatedBodies) {
+        if (!part->rigidBody) continue;
 
         // Sync properties
         const rp::Transform& transform = part->rigidBody->getTransform();
@@ -233,6 +251,9 @@ public:
 };
 
 std::optional<const RaycastResult> Workspace::CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits) {
+    printf("Raycast-lck\n");
+    std::scoped_lock lock(globalPhysicsLock);
+    printf("Raycast-post\n");
     rp::Ray ray(glmToRp(point), glmToRp(glm::normalize(rotation)) * maxLength);
     NearestRayHit rayHit(glmToRp(point), filter);
     physicsWorld->raycast(ray, &rayHit, categoryMaskBits);
@@ -240,5 +261,30 @@ std::optional<const RaycastResult> Workspace::CastRayNearest(glm::vec3 point, gl
 }
 
 void Workspace::DestroyRigidBody(rp::RigidBody* rigidBody) {
+    std::scoped_lock lock(globalPhysicsLock);
     physicsWorld->destroyRigidBody(rigidBody);
+}
+
+void Workspace::DestroyJoint(rp::Joint* joint) {
+    std::scoped_lock lock(globalPhysicsLock);
+    physicsWorld->destroyJoint(joint);
+}
+
+rp::Joint* Workspace::CreateJoint(const rp::JointInfo& jointInfo) {
+    std::scoped_lock lock(globalPhysicsLock);
+    rp::Joint* joint = physicsWorld->createJoint(jointInfo);
+
+    return joint;
+}
+
+void Workspace::AddBody(std::shared_ptr<Part> part) {
+    queueLock.lock();
+    bodyQueue.push_back({part, QueueItem::QUEUEITEM_ADD});
+    queueLock.unlock();
+}
+
+void Workspace::RemoveBody(std::shared_ptr<Part> part) {
+    queueLock.lock();
+    bodyQueue.push_back({part, QueueItem::QUEUEITEM_REMOVE});
+    queueLock.unlock();
 }

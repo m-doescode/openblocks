@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <memory>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -9,6 +10,7 @@
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
 #include "enum/surface.h"
+#include <mutex>
 #include <optional>
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>
@@ -30,6 +32,12 @@ struct PartConstructParams {
 
 class Workspace;
 
+#ifndef __SIMULATION_TICKET
+#define __SIMULATION_TICKET
+class Part;
+typedef std::list<std::shared_ptr<Part>>::iterator SimulationTicket;
+#endif
+
 class DEF_INST_(explorer_icon="part") Part : public PVInstance {
     AUTOGEN_PREAMBLE
 protected:
@@ -50,6 +58,8 @@ protected:
     friend JointInstance;
     friend Workspace;
 
+    virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
+    virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
 public:
@@ -99,6 +109,12 @@ public:
     DEF_SIGNAL SignalSource TouchEnded;
 
     rp::RigidBody* rigidBody = nullptr;
+    SimulationTicket simulationTicket;
+    enum {
+        PART_SYNCED,
+        PART_QUEUED_ADD,
+        PART_QUEUED_REMOVE,
+    } queueState = PART_SYNCED;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
     float GetSurfaceParamA(Vector3 face);

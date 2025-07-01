@@ -34,7 +34,7 @@ void RotateV::buildJoint() {
     
     jointInfo.isCollisionEnabled = false;
 
-    this->joint = dynamic_cast<rp::HingeJoint*>(workspace->physicsWorld->createJoint(jointInfo));
+    this->joint = dynamic_cast<rp::HingeJoint*>(workspace->CreateJoint(jointInfo));
     jointWorkspace = workspace;
 
 
@@ -48,6 +48,6 @@ void RotateV::breakJoint() {
     // If the joint doesn't exist, or its workspace expired (not our problem anymore), then no need to do anything
     if (!this->joint || jointWorkspace.expired()) return;
 
-    jointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
+    jointWorkspace.lock()->DestroyJoint(this->joint);
     this->joint = nullptr;
 }

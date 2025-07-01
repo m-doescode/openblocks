@@ -32,7 +32,7 @@ void Snap::buildJoint() {
     workspace->SyncPartPhysics(part1.lock());
 
     rp::FixedJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (c0.Inverse() * c1).Position());
-    this->joint = dynamic_cast<rp::FixedJoint*>(workspace->physicsWorld->createJoint(jointInfo));
+    this->joint = dynamic_cast<rp::FixedJoint*>(workspace->CreateJoint(jointInfo));
     jointWorkspace = workspace;
 }
 
@@ -41,6 +41,6 @@ void Snap::breakJoint() {
     // If the joint doesn't exist, or its workspace expired (not our problem anymore), then no need to do anything
     if (!this->joint || jointWorkspace.expired()) return;
 
-    jointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
+    jointWorkspace.lock()->DestroyJoint(this->joint);
     this->joint = nullptr;
 }

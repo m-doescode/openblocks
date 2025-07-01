@@ -28,7 +28,7 @@ void Rotate::buildJoint() {
     workspace->SyncPartPhysics(part1.lock());
     // Do NOT use Abs() in this scenario. For some reason that breaks it
     rp::HingeJointInfo jointInfo(part0.lock()->rigidBody, part1.lock()->rigidBody, (part0.lock()->cframe * c0).Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
-    this->joint = dynamic_cast<rp::HingeJoint*>(workspace->physicsWorld->createJoint(jointInfo));
+    this->joint = dynamic_cast<rp::HingeJoint*>(workspace->CreateJoint(jointInfo));
     jointWorkspace = workspace;
 
     // part1.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b10);
@@ -42,6 +42,6 @@ void Rotate::breakJoint() {
     // If the joint doesn't exist, or its workspace expired (not our problem anymore), then no need to do anything
     if (!this->joint || jointWorkspace.expired()) return;
 
-    jointWorkspace.lock()->physicsWorld->destroyJoint(this->joint);
+    jointWorkspace.lock()->DestroyJoint(this->joint);
     this->joint = nullptr;
 }

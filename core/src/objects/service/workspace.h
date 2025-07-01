@@ -4,7 +4,9 @@
 #include "objects/base/service.h"
 #include "utils.h"
 #include <glm/ext/vector_float3.hpp>
+#include <list>
 #include <memory>
+#include <mutex>
 #include <reactphysics3d/body/RigidBody.h>
 #include <reactphysics3d/engine/EventListener.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
@@ -35,7 +37,20 @@ class Weld;
 class Rotate;
 class RotateV;
 
+#ifndef __SIMULATION_TICKET
+#define __SIMULATION_TICKET
+typedef std::list<std::shared_ptr<Part>>::iterator SimulationTicket;
+#endif
+
 typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
+
+struct QueueItem {
+    std::shared_ptr<Part> part;
+    enum {
+        QUEUEITEM_ADD,
+        QUEUEITEM_REMOVE,
+    } action;
+};
 
 class Workspace;
 class PhysicsEventListener : public rp::EventListener {
@@ -51,15 +66,11 @@ class PhysicsEventListener : public rp::EventListener {
 class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     AUTOGEN_PREAMBLE
     
-    rp::PhysicsWorld* notnull physicsWorld;
+    std::list<std::shared_ptr<Part>> simulatedBodies;
+    std::list<QueueItem> bodyQueue;
+    rp::PhysicsWorld* physicsWorld;
     static rp::PhysicsCommon* physicsCommon;
     PhysicsEventListener physicsEventListener;
-
-    friend Part;
-    friend Snap;
-    friend Weld;
-    friend Rotate;
-    friend RotateV;
 protected:
     void InitService() override;
     bool initialized = false;
@@ -68,13 +79,21 @@ public:
     Workspace();
     ~Workspace();
 
+    std::mutex globalPhysicsLock;
+    std::recursive_mutex queueLock;
+
     DEF_PROP float fallenPartsDestroyHeight = -500;
 
     // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Workspace>(); };
 
+    void AddBody(std::shared_ptr<Part> part);
+    void RemoveBody(std::shared_ptr<Part> part);
     void SyncPartPhysics(std::shared_ptr<Part> part);
     void DestroyRigidBody(rp::RigidBody* rigidBody);
+
+    rp::Joint* CreateJoint(const rp::JointInfo& jointInfo);
+    void DestroyJoint(rp::Joint* joint);
 
     void PhysicsStep(float deltaTime);
     std::optional<const RaycastResult> CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter = std::nullopt, unsigned short categoryMaskBits = 0xFFFF);

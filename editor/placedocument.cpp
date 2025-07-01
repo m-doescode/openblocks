@@ -3,21 +3,54 @@
 #include "datatypes/variant.h"
 #include "mainglwidget.h"
 #include "mainwindow.h"
-#include "objects/joint/snap.h"
-#include "objects/script.h"
 #include "objects/service/script/scriptcontext.h"
-#include "enum/surface.h"
-#include <cstdio>
 #include <memory>
+#include <mutex>
 #include <qboxlayout.h>
+#include <qcoreevent.h>
 #include <qdebug.h>
 #include <qevent.h>
+#include <qglobal.h>
 #include <qmargins.h>
 #include <qmdisubwindow.h>
 #include <qlayout.h>
 #include <qmimedata.h>
+#include <qmutex.h>
+#include <qwaitcondition.h>
+#include <thread>
 #include "../ui_mainwindow.h"
 #include "objects/service/selection.h"
+#include "timeutil.h"
+
+class PlaceDocumentPhysicsWorker {
+public:
+    std::mutex sync;
+    std::thread thread;
+    std::condition_variable runningCond;
+    bool running = false;
+    bool quit = false;
+
+    PlaceDocumentPhysicsWorker() : thread(&PlaceDocumentPhysicsWorker::doWork, this) {}
+private:
+    tu_time_t lastTime = tu_clock_micros();
+    void doWork() {
+        do {
+            tu_time_t deltaTime = tu_clock_micros() - lastTime;
+            lastTime = tu_clock_micros();
+
+            // First frame is always empty
+            if (deltaTime > 100) {
+                gWorkspace()->PhysicsStep(float(deltaTime)/1'000'000);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(33 - deltaTime/1000));
+
+            std::unique_lock lock(sync);
+            runningCond.wait(lock, [&]{ return running || quit; });
+            lock.unlock();
+        } while (!quit);
+    }
+};
 
 PlaceDocument::PlaceDocument(QWidget* parent):
     QMdiSubWindow(parent) {
@@ -28,15 +61,29 @@ PlaceDocument::PlaceDocument(QWidget* parent):
 
     _runState = RUN_STOPPED;
     updateSelectionListeners(gDataModel->GetService<Selection>());
+
+    worker = new PlaceDocumentPhysicsWorker();
 }
 
 PlaceDocument::~PlaceDocument() {
+    worker->quit = true;
+    worker->runningCond.notify_all();
+    worker->thread.join();
+}
+
+void PlaceDocument::updatePhysicsWorker() {
+    {
+        std::lock_guard lock(worker->sync);
+        worker->running = _runState == RUN_RUNNING;
+    }
+    worker->runningCond.notify_all();
 }
 
 void PlaceDocument::setRunState(RunState newState) {
     if (newState == RUN_RUNNING && _runState != RUN_RUNNING) {
         if (_runState == RUN_PAUSED) {
             _runState = RUN_RUNNING;
+            updatePhysicsWorker();
             return;
         }
 
@@ -55,6 +102,8 @@ void PlaceDocument::setRunState(RunState newState) {
         gDataModel = editModeDataModel;
         updateSelectionListeners(gDataModel->GetService<Selection>());
     }
+
+    updatePhysicsWorker();
 }
 
 void PlaceDocument::updateSelectionListeners(std::shared_ptr<Selection> selection) {
@@ -81,18 +130,12 @@ void PlaceDocument::closeEvent(QCloseEvent *closeEvent) {
 }
 
 std::shared_ptr<Part> shit;
-static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
 void PlaceDocument::timerEvent(QTimerEvent* evt) {
     if (evt->timerId() != timer.timerId()) {
         QWidget::timerEvent(evt);
         return;
     }
 
-    float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
-    lastTime = std::chrono::steady_clock::now();
-
-    if (_runState == RUN_RUNNING)
-        gWorkspace()->PhysicsStep(deltaTime);
     placeWidget->repaint();
     placeWidget->updateCycle();
     gDataModel->GetService<ScriptContext>()->RunSleepingThreads();

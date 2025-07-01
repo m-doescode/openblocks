@@ -49,6 +49,15 @@ void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std
     // TODO: Sleeping bodies that touch this one also need to be updated
 }
 
+void Part::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
+    newWorkspace->AddBody(shared<Part>());
+}
+
+void Part::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
+    if (simulationTicket->get() != nullptr)
+        oldWorkspace->RemoveBody(shared<Part>());
+}
+
 void Part::onUpdated(std::string property) {
     // Reset velocity
     if (property != "Velocity")
