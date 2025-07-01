@@ -94,7 +94,7 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
         parts[0]->size = newSize;
         parts[0]->UpdateProperty("Size");
         sendPropertyUpdatedSignal(parts[0], "Size", Variant(parts[0]->size));
-        _bounds = newSize;
+        _size = _bounds = newSize;
         return;
     }
 
@@ -116,7 +116,7 @@ void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
         sendPropertyUpdatedSignal(part, "Size", Variant(part->size));
     }
 
-    _bounds = _bounds * factor;
+    _size = _bounds = _bounds * factor;
 }
 
 std::vector<PartTransformState> PartAssembly::GetCurrentTransforms() {

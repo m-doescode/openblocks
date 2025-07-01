@@ -226,6 +226,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     if (editorToolHandles.handlesType == MoveHandles) {
         selectionAssembly.TransformBy(CFrame() + absDiff);
     } else if (editorToolHandles.handlesType == ScaleHandles) {
+        Vector3 oldSize = selectionAssembly.size();
         if (evt->modifiers() & Qt::AltModifier) {
             // If size gets too small, don't
             if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.size() + abs(draggingHandle->normal) * diff * 2.f), glm::vec3(0.001f))))
@@ -240,6 +241,9 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
             selectionAssembly.TransformBy(CFrame() + absDiff * 0.5f);
             selectionAssembly.Scale(selectionAssembly.size() + abs(draggingHandle->normal) * diff, diff > 0);
         }
+
+        if (snappingFactor() > 0 && oldSize != selectionAssembly.size() && mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/switch.wav"))
+            playSound("./assets/excluded/switch.wav");
     }
 }
 
