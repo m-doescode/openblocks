@@ -110,11 +110,7 @@ public:
 
     rp::RigidBody* rigidBody = nullptr;
     SimulationTicket simulationTicket;
-    enum {
-        PART_SYNCED,
-        PART_QUEUED_ADD,
-        PART_QUEUED_REMOVE,
-    } queueState = PART_SYNCED;
+    bool rigidBodyDirty = true;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
     float GetSurfaceParamA(Vector3 face);

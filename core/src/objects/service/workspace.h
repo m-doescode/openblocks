@@ -71,6 +71,8 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     rp::PhysicsWorld* physicsWorld;
     static rp::PhysicsCommon* physicsCommon;
     PhysicsEventListener physicsEventListener;
+
+    void updatePartPhysics(std::shared_ptr<Part> part);
 protected:
     void InitService() override;
     bool initialized = false;
@@ -89,8 +91,8 @@ public:
 
     void AddBody(std::shared_ptr<Part> part);
     void RemoveBody(std::shared_ptr<Part> part);
-    void SyncPartPhysics(std::shared_ptr<Part> part);
     void DestroyRigidBody(rp::RigidBody* rigidBody);
+    void SyncPartPhysics(std::shared_ptr<Part> part);
 
     rp::Joint* CreateJoint(const rp::JointInfo& jointInfo);
     void DestroyJoint(rp::Joint* joint);

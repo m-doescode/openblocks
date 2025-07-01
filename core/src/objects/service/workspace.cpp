@@ -84,7 +84,6 @@ void Workspace::InitService() {
         std::shared_ptr<Instance> obj = *it;
         if (!obj->IsA<Part>()) continue;
         std::shared_ptr<Part> part = obj->CastTo<Part>().expect();
-        this->SyncPartPhysics(part);
         part->MakeJoints();
     }
 
@@ -103,11 +102,7 @@ void Workspace::InitService() {
     }
 }
 
-void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
-    printf("SyncPartPhysics-lck\n");
-    std::scoped_lock lock(globalPhysicsLock);
-    printf("SyncPartPhysics-post\n");
-
+void Workspace::updatePartPhysics(std::shared_ptr<Part> part) {
     rp::Transform transform = part->cframe;
     if (!part->rigidBody) {
         part->rigidBody = physicsWorld->createRigidBody(transform);
@@ -148,6 +143,15 @@ void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
     part->rigidBody->setUserData(&*part);
 }
 
+void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
+    if (globalPhysicsLock.try_lock()) {
+        updatePartPhysics(part);
+        globalPhysicsLock.unlock();
+    } else {
+        part->rigidBodyDirty = true;
+    }
+}
+
 tu_time_t physTime;
 void Workspace::PhysicsStep(float deltaTime) {
     tu_time_t startTime = tu_clock_micros();
@@ -170,6 +174,13 @@ void Workspace::PhysicsStep(float deltaTime) {
 
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
     for (std::shared_ptr<Part> part : simulatedBodies) {
+        // If the part's body is dirty, update it now instead
+        if (part->rigidBodyDirty) {
+            updatePartPhysics(part);
+            part->rigidBodyDirty = false;
+            continue;
+        }
+
         if (!part->rigidBody) continue;
 
         // Sync properties
@@ -251,9 +262,7 @@ public:
 };
 
 std::optional<const RaycastResult> Workspace::CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits) {
-    printf("Raycast-lck\n");
-    std::scoped_lock lock(globalPhysicsLock);
-    printf("Raycast-post\n");
+    // std::scoped_lock lock(globalPhysicsLock);
     rp::Ray ray(glmToRp(point), glmToRp(glm::normalize(rotation)) * maxLength);
     NearestRayHit rayHit(glmToRp(point), filter);
     physicsWorld->raycast(ray, &rayHit, categoryMaskBits);
@@ -280,6 +289,7 @@ rp::Joint* Workspace::CreateJoint(const rp::JointInfo& jointInfo) {
 void Workspace::AddBody(std::shared_ptr<Part> part) {
     queueLock.lock();
     bodyQueue.push_back({part, QueueItem::QUEUEITEM_ADD});
+    part->rigidBodyDirty = true;
     queueLock.unlock();
 }
 
