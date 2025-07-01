@@ -4,6 +4,7 @@
 #include "mainglwidget.h"
 #include "mainwindow.h"
 #include "objects/service/script/scriptcontext.h"
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <qboxlayout.h>
@@ -43,7 +44,7 @@ private:
                 gWorkspace()->PhysicsStep(float(deltaTime)/1'000'000);
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(33 - deltaTime/1000));
+            std::this_thread::sleep_for(std::chrono::microseconds(16'667 - deltaTime));
 
             std::unique_lock lock(sync);
             runningCond.wait(lock, [&]{ return running || quit; });
