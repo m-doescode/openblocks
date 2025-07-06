@@ -3,6 +3,7 @@
 #include <qdialogbuttonbox.h>
 #include <qnamespace.h>
 #include <qplaintextedit.h>
+#include <qfile.h>
 
 class LicenseDialog : public QDialog {
 public:
