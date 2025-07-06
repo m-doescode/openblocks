@@ -1,5 +1,5 @@
 #include "rendering/shader.h"
-#include "rendering/texture3d.h"
+#include "rendering/texture.h"
 #include "timeutil.h"
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -7,7 +7,7 @@
 #include <string>
 
 extern int viewportWidth, viewportHeight;
-extern Texture3D* fontTexture;
+extern Texture* fontTexture;
 extern Shader* fontShader;
 extern Shader* identityShader;
 
