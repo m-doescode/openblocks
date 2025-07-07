@@ -12,7 +12,7 @@ Color3::Color3(const glm::vec3& vec) : r(std::clamp(vec.x, 0.f, 1.f)), g(std::cl
 Color3::~Color3() = default;
 
 const std::string Color3::ToString() const {
-    return std::to_string(int(r*256)) + ", " + std::to_string(int(g*256)) + ", " + std::to_string(int(b*256));
+    return std::to_string(int(r*255)) + ", " + std::to_string(int(g*255)) + ", " + std::to_string(int(b*255));
 }
 
 Color3::operator glm::vec3() const { return glm::vec3(r, g, b); };
