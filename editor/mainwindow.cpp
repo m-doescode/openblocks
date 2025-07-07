@@ -572,15 +572,26 @@ std::optional<std::string> MainWindow::openFileDialog(QString filter, QString de
     return dialog.selectedFiles().front().toStdString();
 }
 
+ScriptDocument* MainWindow::findScriptWindow(std::shared_ptr<Script> script) {
+    for (QMdiSubWindow* window : ui->mdiArea->subWindowList()) {
+        ScriptDocument* doc = dynamic_cast<ScriptDocument*>(window);
+        if (doc == nullptr) continue;
+
+        if (doc->getScript() == script)
+            return doc;
+    }
+    return nullptr;
+}
+
 void MainWindow::openScriptDocument(std::shared_ptr<Script> script) {
     // Document already exists, don't open it
-    if (scriptDocuments.count(script) > 0) {
-        ui->mdiArea->setActiveSubWindow(scriptDocuments[script]);
+    ScriptDocument* doc = findScriptWindow(script);
+    if (doc != nullptr) {
+        ui->mdiArea->setActiveSubWindow(doc);
         return;
     }
 
-    ScriptDocument* doc = new ScriptDocument(script);
-    scriptDocuments[script] = doc;
+    doc = new ScriptDocument(script);
     doc->setAttribute(Qt::WA_DeleteOnClose, true);
     ui->mdiArea->addSubWindow(doc);
     ui->mdiArea->setActiveSubWindow(doc);
@@ -588,12 +599,10 @@ void MainWindow::openScriptDocument(std::shared_ptr<Script> script) {
 }
 
 void MainWindow::closeScriptDocument(std::shared_ptr<Script> script) {
-    if (scriptDocuments.count(script) == 0) return;
-
-    ScriptDocument* doc = scriptDocuments[script];
+    ScriptDocument* doc = findScriptWindow(script);
+    if (doc == nullptr) return; // Script is not open
     ui->mdiArea->removeSubWindow(doc);
     ui->mdiArea->activeSubWindow()->showMaximized();
-    scriptDocuments.erase(script);
     doc->deleteLater();
 }
 

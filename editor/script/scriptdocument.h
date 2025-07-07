@@ -15,4 +15,6 @@ class ScriptDocument : public QMdiSubWindow {
 public:
     ScriptDocument(std::shared_ptr<Script> script, QWidget* parent = nullptr);
     ~ScriptDocument() override;
+
+    inline std::shared_ptr<Script> getScript() { return script; }
 };

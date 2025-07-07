@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <qfiledialog.h>
+#include <qmdisubwindow.h>
 
 enum SelectedTool {
     TOOL_SELECT,
@@ -67,10 +68,10 @@ public:
     friend PlaceDocument;
 private:
     PlaceDocument* placeDocument;
-    std::map<std::shared_ptr<Script>, ScriptDocument*> scriptDocuments;
 
     void updateToolbars();
     void closeEvent(QCloseEvent* evt) override;
+    ScriptDocument* findScriptWindow(std::shared_ptr<Script>);
 
     void connectActionHandlers();
     
