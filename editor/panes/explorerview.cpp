@@ -15,7 +15,7 @@
 
 ExplorerView::ExplorerView(QWidget* parent):
     QTreeView(parent),
-    model(ExplorerModel(std::dynamic_pointer_cast<Instance>(gDataModel))),
+    model(ExplorerModel(std::dynamic_pointer_cast<Instance>(gDataModel), this)),
     contextMenu(this) {
 
     this->setModel(&model);

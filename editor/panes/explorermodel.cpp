@@ -1,10 +1,14 @@
 #include "explorermodel.h"
 #include "common.h"
+#include "mainwindow.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
+#include "undohistory.h"
 #include <qicon.h>
 #include <qmimedata.h>
 #include <QWidget>
+
+#define M_mainWindow dynamic_cast<MainWindow*>(dynamic_cast<QWidget*>(dynamic_cast<QObject*>(this)->parent())->window())
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
 
@@ -216,10 +220,14 @@ bool ExplorerModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         return true;
     }
 
+    UndoState historyState;
     std::shared_ptr<Instance> parentInst = fromIndex(parent);
     for (std::shared_ptr<Instance> instance : slot->instances) {
+        historyState.push_back(UndoStateInstanceReparented { instance, instance->GetParent().value_or(nullptr), parentInst });
         instance->SetParent(parentInst);
     }
+
+    M_mainWindow->undoManager.PushState(historyState);
 
     delete slot;
     return true;
