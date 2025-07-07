@@ -391,14 +391,16 @@ void MainWindow::connectActionHandlers() {
         auto model = Model::New();
         std::shared_ptr<Instance> firstParent;
         
+        bool done = false;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (auto object : selection->Get()) {
             if (firstParent == nullptr && object->GetParent().has_value()) firstParent = object->GetParent().value();
             historyState.push_back(UndoStateInstanceReparented { object, object->GetParent().value(), model });
             object->SetParent(model);
+            done = true;
         }
 
-        if (model->GetChildren().size() == 0)
+        if (!done)
             return;
 
         // Technically not how it works in the actual studio, but it's not an API-breaking change
@@ -408,6 +410,7 @@ void MainWindow::connectActionHandlers() {
         model->SetParent(firstParent);
 
         historyState.push_back(UndoStateSelectionChanged { selection->Get(), { model } });
+        undoManager.PushState(historyState);
         selection->Set({ model });
         playSound("./assets/excluded/electronicpingshort.wav");
     });
@@ -416,10 +419,12 @@ void MainWindow::connectActionHandlers() {
         UndoState historyState;
         std::vector<std::shared_ptr<Instance>> newSelection;
 
+        bool done = false;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (auto model : selection->Get()) {
             // Not a model, skip
             if (!model->IsA<Model>()) { newSelection.push_back(model); continue; }
+            done = true;
 
             for (auto object : model->GetChildren()) {
                 historyState.push_back(UndoStateInstanceReparented { object, object->GetParent().value(), model->GetParent().value() });
@@ -431,7 +436,11 @@ void MainWindow::connectActionHandlers() {
             model->SetParent(std::nullopt);
         }
 
+        if (!done)
+            return;
+
         historyState.push_back(UndoStateSelectionChanged { selection->Get(), newSelection });
+        undoManager.PushState(historyState);
         selection->Set(newSelection);
         playSound("./assets/excluded/electronicpingshort.wav");
     });
