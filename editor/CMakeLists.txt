@@ -98,20 +98,21 @@ add_custom_command(
 if (WIN32)
     #include("${QT_DEPLOY_SUPPORT}")
 
-    # TODO: Add other translations
-    add_custom_command(
-        TARGET editor POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:editor> --translations en --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --plugindir $<TARGET_FILE_DIR:editor>/qtplugins
-    )
-    # No sense adding opengl-sw given that hardware acceleration is necessary, anyway
-    # Also don't want to clutter with plugins, add only needed ones
-
     # Copy over QScintilla DLLs
     # TODO: Use a better approach?
     add_custom_command(
         TARGET editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${QSCINTILLA_DLLS} $<TARGET_FILE_DIR:editor>
     )
+
+    # TODO: Add other translations
+    add_custom_command(
+        TARGET editor POST_BUILD
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:editor> ${QSCINTILLA_DLLS} --dir $<TARGET_FILE_DIR:editor> --translations en --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --plugindir $<TARGET_FILE_DIR:editor>/qtplugins
+    )
+    # No sense adding opengl-sw given that hardware acceleration is necessary, anyway
+    # Also don't want to clutter with plugins, add only needed ones
+
 
     # Copy qt.conf to override default plugins location
     add_custom_command(
