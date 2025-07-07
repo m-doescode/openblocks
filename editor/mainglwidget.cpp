@@ -496,6 +496,7 @@ void MainGLWidget::buildContextMenu() {
 
 static int moveZ = 0;
 static int moveX = 0;
+static int moveYw = 0; // World Y
 
 static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
 void MainGLWidget::updateCycle() {
@@ -506,6 +507,8 @@ void MainGLWidget::updateCycle() {
         camera.processMovement(moveZ == 1 ? DIRECTION_FORWARD : DIRECTION_BACKWARDS, deltaTime);
     if (moveX)
         camera.processMovement(moveX == 1 ? DIRECTION_LEFT : DIRECTION_RIGHT, deltaTime);
+    if (moveYw)
+        camera.processMovement(moveYw == 1 ? DIRECTION_UP : DIRECTION_DOWN, deltaTime);
 
 }
 
@@ -516,6 +519,9 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     
     if (evt->key() == Qt::Key_A) moveX = 1;
     else if (evt->key() == Qt::Key_D) moveX = -1;
+
+    if (evt->key() == Qt::Key_E) moveYw = 1;
+    else if (evt->key() == Qt::Key_Q) moveYw = -1;
 
     if (evt->key() == Qt::Key_F) {
         gWorkspace()->AddChild(lastPart = Part::New({
@@ -539,6 +545,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {
     if (evt->key() == Qt::Key_W || evt->key() == Qt::Key_S) moveZ = 0;
     else if (evt->key() == Qt::Key_A || evt->key() == Qt::Key_D) moveX = 0;
+    else if (evt->key() == Qt::Key_E || evt->key() == Qt::Key_Q) moveYw = 0;
 }
 
 MainWindow* MainGLWidget::mainWindow() {
