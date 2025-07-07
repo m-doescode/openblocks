@@ -165,9 +165,9 @@ void Workspace::PhysicsStep(float deltaTime) {
         if (item.action == QueueItem::QUEUEITEM_ADD) {
             simulatedBodies.push_back(item.part);
             item.part->simulationTicket = --simulatedBodies.end();
-        } else if (item.part->simulationTicket->get() != nullptr) {
-            simulatedBodies.erase(item.part->simulationTicket);
-            item.part->simulationTicket = {};
+        } else if (item.part->simulationTicket.has_value()) {
+            simulatedBodies.erase(item.part->simulationTicket.value());
+            item.part->simulationTicket = std::nullopt;
         }
     }
     queueLock.unlock();

@@ -54,7 +54,7 @@ void Part::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspa
 }
 
 void Part::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
-    if (simulationTicket->get() != nullptr)
+    if (simulationTicket.has_value())
         oldWorkspace->RemoveBody(shared<Part>());
 }
 

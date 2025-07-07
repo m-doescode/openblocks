@@ -109,7 +109,7 @@ public:
     DEF_SIGNAL SignalSource TouchEnded;
 
     rp::RigidBody* rigidBody = nullptr;
-    SimulationTicket simulationTicket;
+    std::optional<SimulationTicket> simulationTicket;
     bool rigidBodyDirty = true;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
