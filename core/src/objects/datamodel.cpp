@@ -21,12 +21,8 @@ DataModel::DataModel()
 }
 
 void DataModel::Init(bool runMode) {
-    // Create the workspace if it doesn't exist
-    if (this->services.count("Workspace") == 0) {
-        this->services["Workspace"] = std::make_shared<Workspace>();
-        AddChild(this->services["Workspace"]);
-    }
-
+    // Create default services
+    GetService<Workspace>();
     GetService<ServerScriptService>();
     
     // Init all services
