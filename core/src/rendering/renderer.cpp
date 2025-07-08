@@ -4,11 +4,13 @@
 #include <cmath>
 #include <cstdio>
 #include <glm/ext.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
 #include <utility>
@@ -21,6 +23,7 @@
 #include "math_helper.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
+#include "rendering/mesh2d.h"
 #include "rendering/texture.h"
 #include "rendering/torus.h"
 #include "shader.h"
@@ -44,10 +47,12 @@ Shader* ghostShader = NULL;
 Shader* wireframeShader = NULL;
 Shader* outlineShader = NULL;
 Shader* fontShader = NULL;
+Shader* generic2dShader = NULL;
 extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
 Texture* fontTexture = NULL;
+Mesh2D* rect2DMesh = NULL;
 
 bool debugRendererEnabled = false;
 bool wireframeRendering = false;
@@ -55,6 +60,7 @@ bool wireframeRendering = false;
 int viewportWidth, viewportHeight;
 
 void renderDebugInfo();
+void drawRect(int x, int y, int width, int height, glm::vec3 color);
 
 void renderInit(GLFWwindow* window, int width, int height) {
     viewportWidth = width, viewportHeight = height;
@@ -90,6 +96,20 @@ void renderInit(GLFWwindow* window, int width, int height) {
     wireframeShader = new Shader("assets/shaders/wireframe.vs", "assets/shaders/wireframe.fs");
     outlineShader = new Shader("assets/shaders/outline.vs", "assets/shaders/outline.fs");
     fontShader = new Shader("assets/shaders/font.vs", "assets/shaders/font.fs");
+    generic2dShader = new Shader("assets/shaders/generic2d.vs", "assets/shaders/generic2d.fs");
+
+    // Create mesh for 2d rectangle
+    float rectVerts[] = {
+        0.0, 0.0,    0.0, 0.0,
+        1.0, 0.0,    1.0, 0.0,
+        1.0, 1.0,    1.0, 1.0,
+
+        1.0, 1.0,    1.0, 1.0,
+        0.0, 1.0,    0.0, 1.0,
+        0.0, 0.0,    0.0, 0.0,
+    };
+
+    rect2DMesh = new Mesh2D(6, rectVerts);
 }
 
 void renderParts() {
@@ -330,28 +350,15 @@ void renderHandles() {
     }
 
     // 2d square overlay
-    glDisable(GL_CULL_FACE);
-
-    identityShader->use();
-    identityShader->set("aColor", glm::vec4(0.f, 1.f, 1.f, 1.f));
-    
     for (auto face : HandleFace::Faces) {
         CFrame cframe = getHandleCFrame(face);
+
         glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
-
-        if (screenPos.z < 0) continue;
-        glm::vec3 ndcCoords = screenPos / screenPos.w;
-
-        float rad = 5;
-        float xRad = rad * 1/viewportWidth;
-        float yRad = rad * 1/viewportHeight;
-
-        glBegin(GL_QUADS);
-            glVertex3f(ndcCoords.x - xRad, ndcCoords.y - yRad, 0);
-            glVertex3f(ndcCoords.x + xRad, ndcCoords.y - yRad, 0);
-            glVertex3f(ndcCoords.x + xRad, ndcCoords.y + yRad, 0);
-            glVertex3f(ndcCoords.x - xRad, ndcCoords.y + yRad, 0);
-        glEnd();
+        screenPos /= screenPos.w;
+        screenPos += 1; screenPos /= 2; screenPos.y = 1 - screenPos.y; screenPos *= glm::vec4(glm::vec2(viewportWidth, viewportHeight), 1, 1);
+        printVec((glm::vec3)screenPos);
+        
+        drawRect(screenPos.x - 3, screenPos.y - 3, 6, 6, glm::vec3(0, 1, 1));
     }
 }
 
@@ -658,6 +665,22 @@ void render(GLFWwindow* window) {
     // TODO: Make this a debug flag
     // renderAABB();
     renderTime = tu_clock_micros() - startTime;
+}
+
+void drawRect(int x, int y, int width, int height, glm::vec3 color) {
+    // GL_CULL_FACE has to be disabled as we are flipping the order of the vertices here, besides we don't really care about it
+    glDisable(GL_CULL_FACE);
+    glm::mat4 model(1.0f); // Same applies to this VV
+    // Make sure to cast these to floats, as mat4<i> is a different type that is not compatible
+    glm::mat4 proj = glm::ortho(0.f, (float)viewportWidth, (float)viewportHeight, 0.f, -1.f, 1.f);
+    model = glm::translate(model, glm::vec3(x, y, 0.0f));
+    model = glm::scale(model, glm::vec3(width, height, 1.0f));
+    generic2dShader->use();
+    generic2dShader->set("aColor", color);
+    generic2dShader->set("projection", proj);
+    generic2dShader->set("model", model);
+    rect2DMesh->bind();
+    glDrawArrays(GL_TRIANGLES, 0, rect2DMesh->vertexCount);
 }
 
 void setViewport(int width, int height) {
