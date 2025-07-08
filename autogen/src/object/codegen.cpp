@@ -79,7 +79,7 @@ static void writePropertySetHandler(std::ofstream& out, ClassAnalysis state) {
         std::string subtype = parseWeakPtr(prop.backingFieldType);
 
         if (prop.flags & PropertyFlag_Readonly) {
-            out << "\n        return AssignToReadOnlyMember(GetClass()->className, name)";
+            out << "\n        return AssignToReadOnlyMember(GetClass()->className, name);";
         } else if (prop.cframeMember == CFrameMember_Position) {
             out << "\n        this->" << prop.fieldName << " = this->" << prop.fieldName << ".Rotation() + value.get<Vector3>();";
         }  else if (prop.cframeMember == CFrameMember_Rotation) {

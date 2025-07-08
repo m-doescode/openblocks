@@ -7,6 +7,7 @@
 #include "objects/service/script/serverscriptservice.h"
 #include "datatypes/variant.h"
 #include "objects/service/workspace.h"
+#include "objects/service/players.h"
 #include "logger.h"
 #include "panic.h"
 #include <pugixml.hpp>
@@ -23,6 +24,7 @@ DataModel::DataModel()
 void DataModel::Init(bool runMode) {
     // Create default services
     GetService<Workspace>();
+    GetService<Players>();
     GetService<ServerScriptService>();
     
     // Init all services
