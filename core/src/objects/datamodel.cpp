@@ -32,6 +32,10 @@ void DataModel::Init(bool runMode) {
         service->InitService();
         if (runMode) service->OnRun();
     }
+
+    if (runMode) {
+        GetService<Players>()->createLocalPlayer(0);
+    }
 }
 
 void DataModel::SaveToFile(std::optional<std::string> path) {
