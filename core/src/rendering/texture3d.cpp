@@ -17,8 +17,8 @@ Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned i
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
     // Interpolation
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // stbi_set_flip_vertically_on_load(true);
     int width, height, nrChannels;
@@ -32,6 +32,7 @@ Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned i
 
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, format, tileWidth, tileHeight, /* no of layers= */ tileCount, 0, format,
                  GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     stbi_image_free(data);
 }
