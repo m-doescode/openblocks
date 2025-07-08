@@ -4,7 +4,7 @@
 #include "objects/base/service.h"
 #include "objects/player.h"
 
-class DEF_INST_SERVICE Players : public Service {
+class DEF_INST_SERVICE_(explorer_icon="players") Players : public Service {
     AUTOGEN_PREAMBLE
 protected:
     void InitService() override;
