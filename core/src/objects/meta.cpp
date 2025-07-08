@@ -13,6 +13,7 @@
 #include "objects/service/script/serverscriptservice.h"
 #include "objects/service/selection.h"
 #include "objects/service/workspace.h"
+#include "objects/service/players.h"
 #include "objects/datamodel.h"
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
@@ -32,6 +33,7 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     // Services
 
     { "Workspace", &Workspace::TYPE },
+    { "Players", &Players::TYPE },
     { "JointsService", &JointsService::TYPE },
     { "ScriptContext", &ScriptContext::TYPE },
     { "ServerScriptService", &ServerScriptService::TYPE },
