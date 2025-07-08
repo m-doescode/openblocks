@@ -21,7 +21,7 @@ std::string getProgramDataDir() {
         homedir = getpwuid(getuid())->pw_dir;
     }
 
-    return std::string(homedir) + "/openblocks";
+    return std::string(homedir) + "/.local/share/openblocks";
 }
 
 void displayErrorMessage(std::string message) {
