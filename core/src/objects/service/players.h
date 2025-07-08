@@ -14,11 +14,12 @@ public:
     ~Players();
 
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Players>(); };
-    std::shared_ptr<Player> createLocalPlayer(int userId);
+
+    std::optional<std::shared_ptr<Player>> createLocalPlayer(int userId);
+    void removeLocalPlayer();
 
     DEF_PROP_CATEGORY(DATA)
-    DEF_PROP_(readonly,no_save)
-    int numPlayers = 0;
+    DEF_PROP_(readonly,no_save) int numPlayers = 0;
     DEF_PROP int maxPlayers = 10;
-    DEF_PROP std::weak_ptr<Player> localPlayer;
+    DEF_PROP_(readonly,no_save) std::weak_ptr<Player> localPlayer;
 };

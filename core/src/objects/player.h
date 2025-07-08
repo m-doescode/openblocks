@@ -5,7 +5,7 @@
 #include "objects/model.h"
 #include <memory>
 
-class DEF_INST_(not_creatable) Player : public Instance {
+class DEF_INST_() Player : public Instance {
     AUTOGEN_PREAMBLE
 
 public:

@@ -3,6 +3,8 @@
 #include "objects/datamodel.h"
 #include "objects/player.h"
 #include <memory>
+#include <string>
+#include <iostream>
 
 int numPlayers;
 int maxPlayers;
@@ -22,10 +24,18 @@ void Players::InitService() {
     }
 }
 
-std::shared_ptr<Player> Players::createLocalPlayer(int userId) {
+std::optional<std::shared_ptr<Player>> Players::createLocalPlayer(int userId) {
+    if (!dataModel()) return std::nullopt;
     std::shared_ptr<Player> newPlr = Player::New();
     newPlr->name = "Player"+std::to_string(userId);
     newPlr->userId = userId;
-    dataModel().value()->GetService<Players>()->AddChild(newPlr);
+    this->localPlayer = newPlr;
+    this->AddChild(newPlr);
     return newPlr;
+}
+
+void Players::removeLocalPlayer() {
+    if (!this->localPlayer.lock()) return;
+    this->localPlayer.lock()->Destroy();
+    this->localPlayer = std::weak_ptr<Player>();
 }
