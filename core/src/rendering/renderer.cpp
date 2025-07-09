@@ -23,6 +23,7 @@
 #include "math_helper.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
+#include "rendering/font.h"
 #include "rendering/mesh2d.h"
 #include "rendering/texture.h"
 #include "rendering/torus.h"
@@ -46,13 +47,15 @@ Shader* identityShader = NULL;
 Shader* ghostShader = NULL;
 Shader* wireframeShader = NULL;
 Shader* outlineShader = NULL;
-Shader* fontShader = NULL;
+Shader* debugFontShader = NULL;
 Shader* generic2dShader = NULL;
 extern Camera camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
-Texture* fontTexture = NULL;
+Texture* debugFontTexture = NULL;
 Mesh2D* rect2DMesh = NULL;
+
+std::shared_ptr<Font> sansSerif;
 
 bool debugRendererEnabled = false;
 bool wireframeRendering = false;
@@ -74,7 +77,7 @@ void renderInit(GLFWwindow* window, int width, int height) {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    fontTexture = new Texture("assets/textures/debugfnt.bmp", GL_RGB);
+    debugFontTexture = new Texture("assets/textures/debugfnt.bmp", GL_RGB);
 
     skyboxTexture = new Skybox({
         "assets/textures/skybox/null_plainsky512_lf.jpg",
@@ -95,7 +98,7 @@ void renderInit(GLFWwindow* window, int width, int height) {
     ghostShader = new Shader("assets/shaders/ghost.vs", "assets/shaders/ghost.fs");
     wireframeShader = new Shader("assets/shaders/wireframe.vs", "assets/shaders/wireframe.fs");
     outlineShader = new Shader("assets/shaders/outline.vs", "assets/shaders/outline.fs");
-    fontShader = new Shader("assets/shaders/font.vs", "assets/shaders/font.fs");
+    debugFontShader = new Shader("assets/shaders/debug/debugfont.vs", "assets/shaders/debug/debugfont.fs");
     generic2dShader = new Shader("assets/shaders/generic2d.vs", "assets/shaders/generic2d.fs");
 
     // Create mesh for 2d rectangle
@@ -110,6 +113,10 @@ void renderInit(GLFWwindow* window, int width, int height) {
     };
 
     rect2DMesh = new Mesh2D(6, rectVerts);
+
+    // Initialize fonts
+    fontInit();
+    sansSerif = loadFont("LiberationSans-Regular.ttf");
 }
 
 void renderParts() {
@@ -356,7 +363,6 @@ void renderHandles() {
         glm::vec4 screenPos = projection * view * glm::vec4((glm::vec3)cframe.Position(), 1.0f);
         screenPos /= screenPos.w;
         screenPos += 1; screenPos /= 2; screenPos.y = 1 - screenPos.y; screenPos *= glm::vec4(glm::vec2(viewportWidth, viewportHeight), 1, 1);
-        printVec((glm::vec3)screenPos);
         
         drawRect(screenPos.x - 3, screenPos.y - 3, 6, 6, glm::vec3(0, 1, 1));
     }
@@ -664,6 +670,7 @@ void render(GLFWwindow* window) {
         renderDebugInfo();
     // TODO: Make this a debug flag
     // renderAABB();
+
     renderTime = tu_clock_micros() - startTime;
 }
 

@@ -7,19 +7,19 @@
 #include <string>
 
 extern int viewportWidth, viewportHeight;
-extern Texture* fontTexture;
-extern Shader* fontShader;
+extern Texture* debugFontTexture;
+extern Shader* debugFontShader;
 extern Shader* identityShader;
 
 void drawChar(char c, int x, int y, float scale=1.f) {
-    fontShader->use();
-    fontTexture->activate(1);
-    fontShader->set("fontTex", 1);
+    debugFontShader->use();
+    debugFontTexture->activate(1);
+    debugFontShader->set("fontTex", 1);
 
-    fontShader->set("charIndex", (int)c);
+    debugFontShader->set("charIndex", (int)c);
 
     // https://stackoverflow.com/a/10631263
-    int tex = fontShader->getAttribute("aTexCoord");
+    int tex = debugFontShader->getAttribute("aTexCoord");
 
     y = viewportHeight - y - 16*scale;
     float x0 = float(x)/viewportWidth, y0 = float(y)/viewportHeight, x1 = ((float)x + 8*scale)/viewportWidth, y1 = ((float)y + 16*scale)/viewportHeight;
