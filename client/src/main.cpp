@@ -34,7 +34,7 @@ int main() {
     glewInit();
 
     gDataModel->Init();
-    renderInit(window, 1200, 900);
+    renderInit(1200, 900);
 
     // Baseplate
     gWorkspace()->AddChild(Part::New({
@@ -66,7 +66,7 @@ int main() {
         
         processInput(window);
         gWorkspace()->PhysicsStep(deltaTime);
-        render(window);
+        render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -1,5 +1,4 @@
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <GL/gl.h>
 #include <cmath>
 #include <cstdio>
@@ -65,7 +64,7 @@ int viewportWidth, viewportHeight;
 void renderDebugInfo();
 void drawRect(int x, int y, int width, int height, glm::vec3 color);
 
-void renderInit(GLFWwindow* window, int width, int height) {
+void renderInit(int width, int height) {
     viewportWidth = width, viewportHeight = height;
     glViewport(0, 0, width, height);
 
@@ -650,7 +649,7 @@ void addDebugRenderCFrame(CFrame frame, Color3 color) {
 }
 
 tu_time_t renderTime;
-void render(GLFWwindow* window) {
+void render() {
     tu_time_t startTime = tu_clock_micros();
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
