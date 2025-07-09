@@ -35,7 +35,7 @@ MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent), contextMenu(
 
 void MainGLWidget::initializeGL() {
     glewInit();
-    renderInit(NULL, width(), height());
+    renderInit(width(), height());
 }
 
 inline void playSound(QString path) {
@@ -63,7 +63,7 @@ extern std::weak_ptr<Part> draggingObject;
 extern std::optional<HandleFace> draggingHandle;
 extern Shader* shader;
 void MainGLWidget::paintGL() {
-    ::render(NULL);
+    ::render();
 }
 
 bool isMouseRightDragging = false;
