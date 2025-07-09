@@ -577,6 +577,7 @@ void renderRotationArcs() {
     handleShader->set("viewPos", camera.cameraPos);
 
     PartAssembly assembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
+    if (assembly.size() == Vector3::ZERO) return; // No parts are selected
 
     for (HandleFace face : HandleFace::Faces) {
         if (glm::any(glm::lessThan(face.normal, glm::vec3(0)))) continue;
