@@ -9,3 +9,4 @@ reactphysics3d
 pugixml
 luajit
 qscintilla
+freetype2
