@@ -105,11 +105,7 @@ void ScriptContext::RunSleepingThreads() {
             // Time args
             lua_pushnumber(sleep.thread, float(tu_clock_micros() - sleep.timeYieldedWhen) / 1'000'000);
             lua_pushnumber(sleep.thread, float(tu_clock_micros()) / 1'000'000);
-            int status = lua_resume(sleep.thread, 2);
-            if (status > LUA_YIELD) {
-                Logger::error(lua_tostring(sleep.thread, -1));
-                lua_pop(sleep.thread, 1); // Pop return value
-            }
+            lua_resume(sleep.thread, 2);
 
             // Remove thread
             deleted = true;
@@ -132,23 +128,6 @@ void ScriptContext::RunSleepingThreads() {
     }
     if (i > 0)
         schedTime = tu_clock_micros() - startTime;
-}
-
-std::string ScriptContext::RegisterScriptSource(std::shared_ptr<Script> script) {
-    // If it has already been registered, reference it here
-    for (auto& [id, script2] : scriptSources) {
-        if (!script2.expired() && script2.lock() == script)
-            return "=f" + std::to_string(id);
-    }
-
-    int id = lastScriptSourceId++;
-    scriptSources[id] = script;
-    return "=f" + std::to_string(id);
-}
-
-std::weak_ptr<Script> ScriptContext::GetScriptFromSource(std::string source) {
-    int id = std::stoi(source.c_str() + 2);
-    return scriptSources[id];
 }
 
 // https://www.lua.org/source/5.1/lbaselib.c.html
