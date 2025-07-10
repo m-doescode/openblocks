@@ -6,7 +6,7 @@
 #include <memory>
 #include <optional>
 #include "objects/base/instance.h"
-#include "lua.h" // IWYU pragma: keep
+#include "luaapis.h" // IWYU pragma: keep
 #include "objects/base/member.h"
 #include <pugixml.hpp>
 
