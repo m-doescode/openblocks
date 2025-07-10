@@ -45,7 +45,7 @@ public:
 
 class LuaSignalConnection : public SignalConnection {
     lua_State* state;
-    int function, thread;
+    int function;
 
     friend Signal;
 protected:

@@ -7,6 +7,9 @@
 #include <memory>
 #include <vector>
 
+int signalcall_wrapper(lua_State*);
+int script_errhandler(lua_State*); // extern
+
 SignalSource::SignalSource() : std::shared_ptr<Signal>(std::make_shared<Signal>()) {}
 SignalSource::~SignalSource() = default;
 
@@ -22,16 +25,13 @@ LuaSignalConnection::LuaSignalConnection(lua_State* L, std::weak_ptr<Signal> par
 
     // https://stackoverflow.com/a/31952046/16255372
 
-    // Save function and current thread so they don't get GC'd
+    // Save function so it doesn't get GC'd
     function = luaL_ref(L, LUA_REGISTRYINDEX);
-    lua_pushthread(L);
-    thread = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 LuaSignalConnection::~LuaSignalConnection() {
     // Remove LuaSignalConnectionthread so that it can get properly GC'd
     luaL_unref(state, LUA_REGISTRYINDEX, function);
-    luaL_unref(state, LUA_REGISTRYINDEX, thread);
 }
 
 #if 0
@@ -58,18 +58,31 @@ void LuaSignalConnection::Call(std::vector<Variant> args) {
 
     // Push function
     lua_rawgeti(thread, LUA_REGISTRYINDEX, function);
+    lua_pushcclosure(thread, signalcall_wrapper, 1); // Push our own wrapper
 
     for (Variant arg : args) {
         arg.PushLuaValue(thread);
     }
 
-    int status = lua_resume(thread, args.size());
-    if (status > LUA_YIELD) {
-        Logger::error(lua_tostring(thread, -1));
-        lua_pop(thread, 1); // Pop return value
-    }
+    lua_resume(thread, args.size());
 
     lua_pop(state, 1); // Pop thread
+}
+
+int signalcall_wrapper(lua_State* L) {
+    int nargs = lua_gettop(L);
+
+    // Push error handler and move to bottom
+    lua_pushcfunction(L, script_errhandler);
+    lua_insert(L, 1);
+
+    // Push function and move to bottom (after error handler)
+    lua_pushvalue(L, lua_upvalueindex(1));
+    lua_insert(L, 2);
+
+    lua_pcall(L, nargs, 0, 1);
+
+    return 0;
 }
 
 //
@@ -152,11 +165,7 @@ void Signal::Fire(std::vector<Variant> args) {
             arg.PushLuaValue(thread);
         }
 
-        int status = lua_resume(thread, args.size());
-        if (status > LUA_YIELD) {
-            Logger::error(lua_tostring(thread, -1));
-            lua_pop(thread, 1); // Pop return value
-        }
+        lua_resume(thread, args.size());
 
         // Remove thread from registry
         luaL_unref(thread, LUA_REGISTRYINDEX, threadId);
