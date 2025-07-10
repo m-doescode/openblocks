@@ -14,26 +14,14 @@
 #include <qglobal.h>
 #include <qlayout.h>
 #include <qtextformat.h>
-#include "mainwindow.h"
-#include "objects/script.h"
-#include "datatypes/variant.h"
 #include <QPalette>
 #include <QStyleHints>
+#include "mainwindow.h"
+#include "editorcommon.h"
+#include "objects/script.h"
+#include "datatypes/variant.h"
 
 QsciAPIs* makeApis(QsciLexer*);
-
-inline bool isDarkMode() {
-    // https://stackoverflow.com/a/78854851/16255372
-    #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-        const auto scheme = QGuiApplication::styleHints()->colorScheme();
-        return scheme == Qt::ColorScheme::Dark;
-    #else
-        const QPalette defaultPalette;
-        const auto text = defaultPalette.color(QPalette::WindowText);
-        const auto window = defaultPalette.color(QPalette::Window);
-        return text.lightness() > window.lightness();
-    #endif // QT_VERSION
-}
 
 std::map<int, const QColor> DARK_MODE_COLOR_SCHEME = {{
     {QsciLexerLua::Comment, QColor("#808080")},
