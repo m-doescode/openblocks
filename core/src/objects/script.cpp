@@ -13,6 +13,8 @@
 
 int script_wait(lua_State*);
 int script_delay(lua_State*);
+int script_wrapper(lua_State*);
+int script_errhandler(lua_State*);
 
 Script::Script(): Instance(&TYPE) {
     source = "print(\"Hello, world!\")";
@@ -52,41 +54,11 @@ void Script::Run() {
 
     lua_pop(Lt, 1); // _G
 
-    // Load source and push onto thread stack as function ptr
-    // luaL_loadstring(Lt, source.c_str());
-    luaL_loadbuffer(Lt, source.c_str(), source.size(), scriptContext->RegisterScriptSource(shared<Script>()).c_str());
-    
-    int status = lua_resume(Lt, 0);
-    if (status > LUA_YIELD) {
-        lua_Debug dbg;
-        lua_getstack(Lt, 1, &dbg);
-        lua_getinfo(Lt, "S", &dbg);
+    // Load source and push onto thread stack as upvalue for wrapper closure
+    luaL_loadbuffer(Lt, source.c_str(), source.size(), this->GetFullName().c_str());
+    lua_pushcclosure(Lt, script_wrapper, 1);
 
-        std::weak_ptr<Script> source = scriptContext->GetScriptFromSource(dbg.source);
-
-        std::string errorMessage = lua_tostring(Lt, -1);
-        if (!source.expired())
-            errorMessage = source.lock()->GetFullName() + errorMessage.substr(errorMessage.find(':'));
-
-        Logger::error(errorMessage);
-        lua_pop(Lt, 1); // Pop return value
-
-        Logger::traceStart();
-
-        int stack = 1;
-        while (lua_getstack(Lt, stack++, &dbg)) {
-            lua_getinfo(Lt, "nlSu", &dbg);
-            
-            std::weak_ptr<Script> source = scriptContext->GetScriptFromSource(dbg.source);
-            if (source.expired()) {
-                Logger::trace(dbg.source, dbg.currentline);
-            } else {
-                Logger::trace(source.lock()->GetFullName(), dbg.currentline, &source);
-            }
-        }
-
-        Logger::traceEnd();
-    }
+    lua_resume(Lt, 0);
 
     lua_pop(L, 1); // Pop the thread
 }
@@ -121,5 +93,35 @@ int script_delay(lua_State* L) {
     // Schedule next run
     scriptContext->PushThreadSleep(Lt, secs);
 
+    return 0;
+}
+
+int script_wrapper(lua_State* L) {
+    lua_pushcfunction(L, script_errhandler);
+    lua_pushvalue(L, lua_upvalueindex(1));
+    lua_pcall(L, 0, 0, -2);
+    return 0;
+}
+
+int script_errhandler(lua_State* L) {
+    std::string errorMessage = lua_tostring(L, -1);
+    Logger::error(errorMessage);
+
+    // Traceback
+
+    Logger::traceStart();
+
+    lua_Debug dbg;
+    int stack = 1;
+    while (lua_getstack(L, stack++, &dbg)) {
+        lua_getinfo(L, "nlSu", &dbg);
+        if (strcmp(dbg.what, "C") == 0)
+            continue; // Ignore C frames
+
+        Logger::trace(dbg.source, dbg.currentline);
+    }
+
+    Logger::traceEnd();
+    
     return 0;
 }
