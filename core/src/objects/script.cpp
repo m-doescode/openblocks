@@ -1,5 +1,6 @@
 #include "script.h"
 #include "common.h"
+#include "lauxlib.h"
 #include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
@@ -13,8 +14,9 @@
 
 int script_wait(lua_State*);
 int script_delay(lua_State*);
-int script_wrapper(lua_State*);
 int script_errhandler(lua_State*);
+
+const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
 
 Script::Script(): Instance(&TYPE) {
     source = "print(\"Hello, world!\")";
@@ -55,6 +57,9 @@ void Script::Run() {
 
     lua_pop(Lt, 1); // _G
 
+    // Push wrapper as thread function
+    luaL_loadbuffer(Lt, WRAPPER_SRC, strlen(WRAPPER_SRC), "=PCALL_WRAPPER");
+
     // Load source code and push onto thread as upvalue for wrapper
     int status = luaL_loadbuffer(Lt, source.c_str(), source.size(), this->GetFullName().c_str());
     if (status != LUA_OK) {
@@ -65,9 +70,11 @@ void Script::Run() {
         return;
     }
 
-    // Push wrapper as thread function
-    lua_pushcclosure(Lt, script_wrapper, 1);
+    // Push our error handler and then generate the wrapped function
+    lua_pushcfunction(Lt, script_errhandler);
+    lua_call(Lt, 2, 1);
 
+    // Resume the thread
     lua_resume(Lt, 0);
 
     lua_pop(L, 1); // Pop the thread
@@ -107,13 +114,6 @@ int script_delay(lua_State* L) {
     return 0;
 }
 
-int script_wrapper(lua_State* L) {
-    lua_pushcfunction(L, script_errhandler);
-    lua_pushvalue(L, lua_upvalueindex(1));
-    lua_pcall(L, 0, 0, -2);
-    return 0;
-}
-
 int script_errhandler(lua_State* L) {
     std::string errorMessage = lua_tostring(L, -1);
     Logger::error(errorMessage);
@@ -126,8 +126,9 @@ int script_errhandler(lua_State* L) {
     int stack = 1;
     while (lua_getstack(L, stack++, &dbg)) {
         lua_getinfo(L, "nlSu", &dbg);
-        if (strcmp(dbg.what, "C") == 0)
-            continue; // Ignore C frames
+        // Ignore C frames and internal wrappers
+        if (strcmp(dbg.what, "C") == 0 || strcmp(dbg.source, "=PCALL_WRAPPER") == 0)
+            continue;
 
         Logger::trace(dbg.source, dbg.currentline);
     }
