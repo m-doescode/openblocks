@@ -25,13 +25,18 @@ LuaSignalConnection::LuaSignalConnection(lua_State* L, std::weak_ptr<Signal> par
 
     // https://stackoverflow.com/a/31952046/16255372
 
-    // Save function so it doesn't get GC'd
+    // Save function and current thread so they don't get GC'd
     function = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_pushthread(L);
+    // For posterity, since I accidentally removed this once, the parent thread must not be 
+    // deleted because it may (likely) contain upvalues that the handler references
+    thread = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 LuaSignalConnection::~LuaSignalConnection() {
     // Remove LuaSignalConnectionthread so that it can get properly GC'd
     luaL_unref(state, LUA_REGISTRYINDEX, function);
+    luaL_unref(state, LUA_REGISTRYINDEX, thread);
 }
 
 #if 0
