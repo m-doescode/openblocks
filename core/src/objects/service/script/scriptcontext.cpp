@@ -46,6 +46,7 @@ void ScriptContext::InitService() {
     Vector3::PushLuaLibrary(state);
     CFrame::PushLuaLibrary(state);
     Color3::PushLuaLibrary(state);
+    Instance::PushLuaLibrary(state);
 
     // TODO: custom os library
 

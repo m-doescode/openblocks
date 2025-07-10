@@ -95,6 +95,7 @@ public:
 
     // Instance is abstract, so it should not implement GetClass directly
     virtual const InstanceType* GetClass() = 0;
+    static void PushLuaLibrary(lua_State*); // Defined in lua/instancelib.cpp
     bool SetParent(std::optional<std::shared_ptr<Instance>> newParent);
     std::optional<std::shared_ptr<Instance>> GetParent();
     bool IsParentLocked();

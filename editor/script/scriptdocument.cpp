@@ -71,7 +71,7 @@ class ObLuaLexer : public QsciLexerLua {
                 //"foreach foreachi getn "
 
                 // Openblocks extensions
-                "shared require game workspace "
+                "shared require game workspace Instance Instance.new "
 
                 "_G _VERSION getfenv getmetatable ipairs loadstring "
                 "next pairs pcall rawequal rawget rawset select "
