@@ -151,7 +151,8 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     scintilla->setCaretForegroundColor(palette().text().color());
     scintilla->setFont(font);
     scintilla->setTabWidth(4);
-
+    scintilla->setEolMode(QsciScintilla::EolUnix); // LF endings
+    
     scintilla->setText(QString::fromStdString(script->source));
 
     ObLuaLexer* lexer = new ObLuaLexer;
