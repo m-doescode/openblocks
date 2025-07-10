@@ -1,7 +1,7 @@
 #include "signal.h"
 #include "datatypes/base.h"
 #include "variant.h"
-#include "lua.h" // IWYU pragma: keep
+#include "luaapis.h" // IWYU pragma: keep
 #include <cstdio>
 #include <pugixml.hpp>
 #include <memory>

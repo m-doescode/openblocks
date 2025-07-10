@@ -6,7 +6,7 @@
 #include "timeutil.h"
 #include <ctime>
 #include <string>
-#include "lua.h" // IWYU pragma: keep
+#include "luaapis.h" // IWYU pragma: keep
 
 static int g_print(lua_State*);
 static int g_require(lua_State*);

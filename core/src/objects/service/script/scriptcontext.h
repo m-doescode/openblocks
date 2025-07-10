@@ -2,7 +2,7 @@
 
 #include "objects/annotation.h"
 #include "objects/base/service.h"
-#include "lua.h" // IWYU pragma: keep
+#include "luaapis.h" // IWYU pragma: keep
 #include <memory>
 #include <vector>
 
