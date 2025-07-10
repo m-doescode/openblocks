@@ -16,6 +16,7 @@ int script_wait(lua_State*);
 int script_delay(lua_State*);
 int script_errhandler(lua_State*);
 
+// TODO: Move this to a shared header
 const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
 
 Script::Script(): Instance(&TYPE) {

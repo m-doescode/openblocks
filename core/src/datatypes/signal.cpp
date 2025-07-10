@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-int signalcall_wrapper(lua_State*);
+extern const char* WRAPPER_SRC; // TODO: Move this to a shared header
 int script_errhandler(lua_State*); // extern
 
 SignalSource::SignalSource() : std::shared_ptr<Signal>(std::make_shared<Signal>()) {}
@@ -56,9 +56,15 @@ static void stackdump(lua_State* L) {
 void LuaSignalConnection::Call(std::vector<Variant> args) {
     lua_State* thread = lua_newthread(state);
 
-    // Push function
+    // Push wrapepr as thread function
+    luaL_loadbuffer(thread, WRAPPER_SRC, strlen(WRAPPER_SRC), "=PCALL_WRAPPER");
+
+    // Push function as upvalue for wrapper
     lua_rawgeti(thread, LUA_REGISTRYINDEX, function);
-    lua_pushcclosure(thread, signalcall_wrapper, 1); // Push our own wrapper
+
+    // Also push our error handler and generate wrapped function
+    lua_pushcfunction(thread, script_errhandler);
+    lua_call(thread, 2, 1);
 
     for (Variant arg : args) {
         arg.PushLuaValue(thread);
@@ -67,22 +73,6 @@ void LuaSignalConnection::Call(std::vector<Variant> args) {
     lua_resume(thread, args.size());
 
     lua_pop(state, 1); // Pop thread
-}
-
-int signalcall_wrapper(lua_State* L) {
-    int nargs = lua_gettop(L);
-
-    // Push error handler and move to bottom
-    lua_pushcfunction(L, script_errhandler);
-    lua_insert(L, 1);
-
-    // Push function and move to bottom (after error handler)
-    lua_pushvalue(L, lua_upvalueindex(1));
-    lua_insert(L, 2);
-
-    lua_pcall(L, nargs, 0, 1);
-
-    return 0;
 }
 
 //
