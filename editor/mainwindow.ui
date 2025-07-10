@@ -306,8 +306,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="edit-select">
-     <normaloff>assets/icons/editor/drag.png</normaloff>assets/icons/editor/drag.png</iconset>
+    <iconset theme="edit-select"/>
    </property>
    <property name="text">
     <string>Select Objects</string>
