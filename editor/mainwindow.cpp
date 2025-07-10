@@ -74,10 +74,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionRedo->setShortcuts({QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")});
 
     QIcon::setThemeSearchPaths(QIcon::themeSearchPaths() + QStringList { "./assets/icons" });
+
+    // Force theme under windows
+    #ifdef _WIN32
+    QIcon::setThemeName("editor");
+    #else
     if (isDarkMode())
         QIcon::setFallbackThemeName("editor-dark");
     else
-        QIcon::setThemeName("editor");
+        QIcon::setFallbackThemeName("editor");
+    #endif
 
     // qApp->setStyle(QStyleFactory::create("fusion"));
     defaultMessageHandler = qInstallMessageHandler(logQtMessage);
