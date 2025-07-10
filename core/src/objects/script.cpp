@@ -27,6 +27,7 @@ void Script::Run() {
     std::shared_ptr<ScriptContext> scriptContext = dataModel().value()->GetService<ScriptContext>();
 
     lua_State* L = scriptContext->state;
+    int top = lua_gettop(L);
 
     // Create thread
     this->thread = lua_newthread(L);
@@ -54,13 +55,23 @@ void Script::Run() {
 
     lua_pop(Lt, 1); // _G
 
-    // Load source and push onto thread stack as upvalue for wrapper closure
-    luaL_loadbuffer(Lt, source.c_str(), source.size(), this->GetFullName().c_str());
+    // Load source code and push onto thread as upvalue for wrapper
+    int status = luaL_loadbuffer(Lt, source.c_str(), source.size(), this->GetFullName().c_str());
+    if (status != LUA_OK) {
+        // Failed to parse/load chunk
+        Logger::error(lua_tostring(Lt, -1));
+
+        lua_settop(L, top);
+        return;
+    }
+
+    // Push wrapper as thread function
     lua_pushcclosure(Lt, script_wrapper, 1);
 
     lua_resume(Lt, 0);
 
     lua_pop(L, 1); // Pop the thread
+    lua_settop(L, top);
 }
 
 void Script::Stop() {
