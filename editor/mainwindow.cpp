@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "script/commandedit.h"
 #include "common.h"
 #include "aboutdialog.h"
 #include "logger.h"
@@ -14,6 +15,7 @@
 #include <qevent.h>
 #include <qglobal.h>
 #include <qkeysequence.h>
+#include <qlabel.h>
 #include <qmessagebox.h>
 #include <qmimedata.h>
 #include <qnamespace.h>
@@ -117,6 +119,8 @@ MainWindow::MainWindow(QWidget *parent)
     undoManager.SetUndoStateListener([&]() {
         updateToolbars();
     });
+
+    setUpCommandBar();
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
@@ -140,6 +144,14 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
         gDataModel->SaveToFile(path);
     }
     #endif
+}
+
+void MainWindow::setUpCommandBar() {
+    CommandEdit* commandEdit;
+    QToolBar* commandBar = ui->commandBar;
+    commandBar->layout()->setSpacing(5);
+    commandBar->addWidget(new QLabel(tr("Command ")));
+    commandBar->addWidget(commandEdit = new CommandEdit());
 }
 
 void MainWindow::connectActionHandlers() {

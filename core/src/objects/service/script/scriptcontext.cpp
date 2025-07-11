@@ -1,8 +1,11 @@
 #include "scriptcontext.h"
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
+#include "datatypes/ref.h"
 #include "datatypes/vector.h"
 #include "logger.h"
+#include "objects/datamodel.h"
+#include "objects/service/workspace.h"
 #include "timeutil.h"
 #include <ctime>
 #include <string>
@@ -10,6 +13,8 @@
 
 const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
 
+int g_wait(lua_State*);
+int g_delay(lua_State*);
 static int g_print(lua_State*);
 static int g_require(lua_State*);
 static const struct luaL_Reg luaglobals [] = {
@@ -49,6 +54,25 @@ void ScriptContext::InitService() {
     CFrame::PushLuaLibrary(state);
     Color3::PushLuaLibrary(state);
     Instance::PushLuaLibrary(state);
+
+    // Add other globals
+    lua_getglobal(state, "_G");
+
+    InstanceRef(dataModel().value()).PushLuaValue(state);
+    lua_setfield(state, -2, "game");
+
+    InstanceRef(dataModel().value()->GetService<Workspace>()).PushLuaValue(state);
+    lua_setfield(state, -2, "workspace");
+
+    lua_pushlightuserdata(state, this);
+    lua_pushcclosure(state, g_wait, 1);
+    lua_setfield(state, -2, "wait");
+
+    lua_pushlightuserdata(state, this);
+    lua_pushcclosure(state, g_delay, 1);
+    lua_setfield(state, -2, "delay");
+
+    lua_pop(state, 1); // _G
 
     // Add wrapper function
     luaL_loadbuffer(state, WRAPPER_SRC, strlen(WRAPPER_SRC), "=PCALL_WRAPPER");
@@ -167,4 +191,33 @@ static int g_require(lua_State* L) {
     if (nargs < 1) return luaL_error(L, "expected argument module");
 
     return luaL_error(L, "require is not yet implemented");
+}
+
+int g_wait(lua_State* L) {
+    ScriptContext* scriptContext = (ScriptContext*)lua_touserdata(L, lua_upvalueindex(1));
+    float secs = lua_gettop(L) == 0 ? 0.03 : std::max(luaL_checknumber(L, 1), 0.03);
+    if (lua_gettop(L) > 0) lua_pop(L, 1); // pop secs
+
+    scriptContext->PushThreadSleep(L, secs);
+
+    // Yield
+    return lua_yield(L, 0);
+}
+
+int g_delay(lua_State* L) {
+    ScriptContext* scriptContext = (ScriptContext*)lua_touserdata(L, lua_upvalueindex(1));
+    float secs = std::max(luaL_checknumber(L, 1), 0.03);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    lua_State* Lt = lua_newthread(L); // Create a new thread
+    // I think this is memory abuse??
+    // Wouldn't popping the thread in this case make it eligible for garbage collection?
+    lua_pop(L, 1); // pop the newly created thread so that xmove moves func instead of it into itself
+    lua_xmove(L, Lt, 1); // move func
+    lua_pop(L, 1); // pop secs
+
+    // Schedule next run
+    scriptContext->PushThreadSleep(Lt, secs);
+
+    return 0;
 }

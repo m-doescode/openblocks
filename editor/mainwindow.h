@@ -69,11 +69,11 @@ public:
 private:
     PlaceDocument* placeDocument;
 
+    void setUpCommandBar();
+    void connectActionHandlers();
     void updateToolbars();
     void closeEvent(QCloseEvent* evt) override;
     ScriptDocument* findScriptWindow(std::shared_ptr<Script>);
-
-    void connectActionHandlers();
     
     std::optional<std::string> openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title = "");
 };
