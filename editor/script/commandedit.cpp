@@ -22,6 +22,9 @@ void CommandEdit::executeCommand() {
     // Output
     Logger::infof("> %s", command.c_str());
 
+    // Select all so that the user can type over it
+    this->selectAll();
+
     // Execute via Lua
     auto context = gDataModel->GetService<ScriptContext>();
     lua_State* L = context->state;
