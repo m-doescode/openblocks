@@ -16,9 +16,6 @@ int script_wait(lua_State*);
 int script_delay(lua_State*);
 int script_errhandler(lua_State*);
 
-// TODO: Move this to a shared header
-const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
-
 Script::Script(): Instance(&TYPE) {
     source = "print(\"Hello, world!\")";
 }
@@ -59,7 +56,7 @@ void Script::Run() {
     lua_pop(Lt, 1); // _G
 
     // Push wrapper as thread function
-    luaL_loadbuffer(Lt, WRAPPER_SRC, strlen(WRAPPER_SRC), "=PCALL_WRAPPER");
+    lua_getfield(Lt, LUA_REGISTRYINDEX, "LuaPCallWrapper");
 
     // Load source code and push onto thread as upvalue for wrapper
     int status = luaL_loadbuffer(Lt, source.c_str(), source.size(), this->GetFullName().c_str());

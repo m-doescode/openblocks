@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-extern const char* WRAPPER_SRC; // TODO: Move this to a shared header
 int script_errhandler(lua_State*); // extern
 
 SignalSource::SignalSource() : std::shared_ptr<Signal>(std::make_shared<Signal>()) {}
@@ -62,7 +61,7 @@ void LuaSignalConnection::Call(std::vector<Variant> args) {
     lua_State* thread = lua_newthread(state);
 
     // Push wrapepr as thread function
-    luaL_loadbuffer(thread, WRAPPER_SRC, strlen(WRAPPER_SRC), "=PCALL_WRAPPER");
+    lua_getfield(thread, LUA_REGISTRYINDEX, "LuaPCallWrapper");
 
     // Push function as upvalue for wrapper
     lua_rawgeti(thread, LUA_REGISTRYINDEX, function);
