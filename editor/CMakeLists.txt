@@ -38,6 +38,8 @@ set(PROJECT_SOURCES
         panes/outputtextview.cpp
         script/scriptdocument.h
         script/scriptdocument.cpp
+        script/commandedit.h
+        script/commandedit.cpp
         aboutdialog.ui
         aboutdialog.h
         aboutdialog.cpp
