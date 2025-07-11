@@ -17,13 +17,14 @@ int g_wait(lua_State*);
 int g_delay(lua_State*);
 static int g_print(lua_State*);
 static int g_require(lua_State*);
-static const struct luaL_Reg luaglobals [] = {
+static const luaL_Reg luaglobals [] = {
     {"print", g_print},
     {"require", g_require},
     {NULL, NULL} /* end of array */
 };
 
 std::string unsafe_globals[] = {
+    // Todo implement our own "safe" setfenv/getfenv
     "loadfile", "loadstring", "load", "dofile", "getfenv", "setfenv"
 };
 
@@ -159,6 +160,27 @@ void ScriptContext::RunSleepingThreads() {
     }
     if (i > 0)
         schedTime = tu_clock_micros() - startTime;
+}
+
+void ScriptContext::NewEnvironment(lua_State* L) {
+    lua_newtable(L); // Env table
+    lua_newtable(L); // Metatable
+
+    // Push __index
+    lua_pushvalue(L, LUA_GLOBALSINDEX);
+    lua_setfield(L, -2, "__index");
+
+    // Push __metatable
+    lua_pushstring(L, "metatable is locked");
+    lua_setfield(L, -2, "__metatable");
+
+    // Copy metatable and set the env table's metatable
+    lua_pushvalue(L, -1);
+    lua_setmetatable(L, -3);
+
+    // Remainder on stack:
+    // 1. Env table
+    // 2. Metatable
 }
 
 // https://www.lua.org/source/5.1/lbaselib.c.html

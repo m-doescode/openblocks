@@ -32,5 +32,8 @@ public:
     void PushThreadSleep(lua_State* thread, float delay);
     void RunSleepingThreads();
 
+    // Generates an environment with a metatable and pushes it both the env table and metatable in order onto the stack
+    void NewEnvironment(lua_State* state);
+
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<ScriptContext>(); };
 };

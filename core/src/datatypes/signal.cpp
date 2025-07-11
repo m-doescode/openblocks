@@ -38,25 +38,6 @@ LuaSignalConnection::~LuaSignalConnection() {
     luaL_unref(state, LUA_REGISTRYINDEX, thread);
 }
 
-#if 0
-static void stackdump(lua_State* L) {
-    printf("%d\n", lua_gettop(L));
-    fflush(stdout);
-    lua_getfield(L, LUA_GLOBALSINDEX, "tostring");
-    for (int i = lua_gettop(L)-1; i >= 1; i--) {
-        lua_pushvalue(L, -1);
-        lua_pushvalue(L, i);
-        lua_call(L, 1, 1);
-        const char* str = lua_tostring(L, -1);
-        lua_pop(L, 1);
-        printf("%s: %s\n", lua_typename(L, lua_type(L, i)), str);
-    }
-    lua_pop(L, 1);
-    printf("\n\n");
-    fflush(stdout);
-}
-#endif
-
 void LuaSignalConnection::Call(std::vector<Variant> args) {
     lua_State* thread = lua_newthread(state);
 
