@@ -8,6 +8,8 @@
 #include <string>
 #include "luaapis.h" // IWYU pragma: keep
 
+const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
+
 static int g_print(lua_State*);
 static int g_require(lua_State*);
 static const struct luaL_Reg luaglobals [] = {
@@ -47,6 +49,10 @@ void ScriptContext::InitService() {
     CFrame::PushLuaLibrary(state);
     Color3::PushLuaLibrary(state);
     Instance::PushLuaLibrary(state);
+
+    // Add wrapper function
+    luaL_loadbuffer(state, WRAPPER_SRC, strlen(WRAPPER_SRC), "=PCALL_WRAPPER");
+    lua_setfield(state, LUA_REGISTRYINDEX, "LuaPCallWrapper");
 
     // TODO: custom os library
 
