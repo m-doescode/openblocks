@@ -15,7 +15,6 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QTime>
-#include <cfloat>
 #include <cmath>
 #include <functional>
 #include <qapplication.h>
@@ -23,6 +22,14 @@
 #include <qevent.h>
 #include <qnamespace.h>
 #include <qtreewidget.h>
+
+QDoubleSpinBox* makeDoubleSpinBox(QWidget* parent = nullptr) {
+    QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
+    spinBox->setMaximum(INFINITY);
+    spinBox->setMinimum(-INFINITY);
+    spinBox->setDecimals(4);
+    return spinBox;
+}
 
 class PropertiesItemDelegate : public QStyledItemDelegate {
     PropertiesView* view;
@@ -64,7 +71,7 @@ public:
                 Vector3 vector = currentValue.get<Vector3>();
                 float value = componentName == "X" ? vector.X() : componentName == "Y" ? vector.Y() : componentName == "Z" ? vector.Z() : 0;
 
-                QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
+                QDoubleSpinBox* spinBox = makeDoubleSpinBox(parent);
                 spinBox->setValue(value);
 
                 return spinBox;
@@ -75,9 +82,9 @@ public:
 
         if (meta.type.descriptor == &FLOAT_TYPE) {
             QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
-            spinBox->setValue(currentValue.get<float>());
             spinBox->setMinimum(-INFINITY);
             spinBox->setMaximum(INFINITY);
+            spinBox->setValue(currentValue.get<float>());
 
             if (meta.flags & PROP_UNIT_FLOAT) {
                 spinBox->setMinimum(0);
@@ -221,7 +228,8 @@ public:
                 : componentName == "Z" ? Vector3(prev.X(), prev.Y(), value) : prev;
 
                 inst->SetProperty(propertyName, newVector).expect();
-                view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Vector3::TYPE, newVector);
+                // SetProperty above already causes the composite to be rebuilt. So we get rid of it here to prevent errors
+                // view->rebuildCompositeProperty(view->itemFromIndex(index.parent()), &Vector3::TYPE, newVector);
                 return;
             }
 
