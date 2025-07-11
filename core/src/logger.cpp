@@ -9,7 +9,6 @@
 
 static std::ofstream logStream;
 static std::vector<Logger::LogListener> logListeners;
-static std::vector<Logger::TraceLogListener> traceLogListeners;
 std::string Logger::currentLogDir = "NULL";
 
 void Logger::init() {
@@ -28,7 +27,7 @@ void Logger::finish() {
     logStream.close();
 }
 
-void Logger::log(std::string message, Logger::LogLevel logLevel) {
+void Logger::log(std::string message, Logger::LogLevel logLevel, ScriptSource source) {
     std::string logLevelStr = logLevel == Logger::LogLevel::INFO ? "INFO" : 
         logLevel == Logger::LogLevel::DEBUG ? "DEBUG" :
         logLevel == Logger::LogLevel::TRACE ? "TRACE" :
@@ -44,7 +43,7 @@ void Logger::log(std::string message, Logger::LogLevel logLevel) {
     printf("%s\n", formattedLogLine.c_str());
 
     for (Logger::LogListener listener : logListeners) {
-        listener(logLevel, message);
+        listener(logLevel, message, source);
     }
 
     if (logLevel == Logger::LogLevel::FATAL_ERROR) {
@@ -52,20 +51,6 @@ void Logger::log(std::string message, Logger::LogLevel logLevel) {
     }
 }
 
-void Logger::trace(std::string source, int line, void* userData) {
-    std::string message = "'" + source + "' Line " + std::to_string(line);
-
-    log(message, Logger::LogLevel::TRACE);
-
-    for (Logger::TraceLogListener listener : traceLogListeners) {
-        listener(message, source, line, userData);
-    }
-}
-
 void Logger::addLogListener(Logger::LogListener listener) {
     logListeners.push_back(listener);
-}
-
-void Logger::addLogListener(Logger::TraceLogListener listener) {
-    traceLogListeners.push_back(listener);
 }

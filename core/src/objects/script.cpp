@@ -118,7 +118,7 @@ int script_errhandler(lua_State* L) {
 
     // Traceback
 
-    Logger::traceStart();
+    Logger::trace("Stack start");
 
     lua_Debug dbg;
     int stack = 1;
@@ -128,10 +128,10 @@ int script_errhandler(lua_State* L) {
         if (strcmp(dbg.what, "C") == 0 || strcmp(dbg.source, "=PCALL_WRAPPER") == 0)
             continue;
 
-        Logger::trace(dbg.source, dbg.currentline);
+        Logger::scriptLogf("'%s', Line %d", Logger::LogLevel::TRACE, {}, dbg.source, dbg.currentline);
     }
 
-    Logger::traceEnd();
+    Logger::trace("Stack end");
     
     return 0;
 }

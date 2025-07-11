@@ -1,8 +1,10 @@
 #pragma once
 
-#include <format>
 #include <functional>
+#include <memory>
 #include <string>
+
+class Script;
 
 namespace Logger {
     enum class LogLevel {
@@ -14,34 +16,39 @@ namespace Logger {
         FATAL_ERROR,
     };
 
-    typedef std::function<void(LogLevel logLevel, std::string message)> LogListener;
-    typedef std::function<void(std::string message, std::string source, int line, void* userData)> TraceLogListener;
+    struct ScriptSource {
+        std::shared_ptr<Script> script;
+        int line;
+    };
+
+    typedef std::function<void(LogLevel logLevel, std::string message, ScriptSource source)> LogListener;
 
     extern std::string currentLogDir;
 
     void init();
     void finish();
     void addLogListener(LogListener);
-    void addLogListener(TraceLogListener);
 
-    void log(std::string message, LogLevel logLevel);
+    void log(std::string message, LogLevel logLevel, ScriptSource source = {});
     inline void info(std::string message) { log(message, LogLevel::INFO); }
     inline void debug(std::string message) { log(message, LogLevel::DEBUG); }
     inline void warning(std::string message) { log(message, LogLevel::WARNING); }
     inline void error(std::string message) { log(message, LogLevel::ERROR); }
     inline void fatalError(std::string message) { log(message, LogLevel::FATAL_ERROR); }
+    inline void trace(std::string message) { log(message, LogLevel::TRACE); };
 
-    inline void traceStart() { log("Stack start", LogLevel::TRACE); }
-    inline void traceEnd() { log("Stack end", LogLevel::TRACE); }
-    void trace(std::string source, int line, void* userData = nullptr);
+    template <typename ...Args>
+    void scriptLogf(std::string format, LogLevel logLevel, ScriptSource source, Args&&... args) {
+        char message[200];
+        sprintf(message, format.c_str(), args...);
+        log(message, logLevel, source);
+    }
 
     template <typename ...Args>
     void logf(std::string format, LogLevel logLevel, Args&&... args) {
-        char message[200];
-        sprintf(message, format.c_str(), args...);
-        log(message, logLevel);
+        scriptLogf(format, logLevel, {}, args...);
     }
-    
+
     template <typename ...Args> inline void infof(std::string format, Args&&... args) { logf(format, LogLevel::INFO, args...); }
     template <typename ...Args> inline void debugf(std::string format, Args&&... args) { logf(format, LogLevel::DEBUG, args...); }
     template <typename ...Args> inline void warningf(std::string format, Args&&... args) { logf(format, LogLevel::WARNING, args...); }

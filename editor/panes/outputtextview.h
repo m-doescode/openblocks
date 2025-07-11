@@ -14,8 +14,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
 
-    void handleLog(Logger::LogLevel, std::string);
-    void handleLogTrace(std::string, std::string, int, void*);
+    void handleLog(Logger::LogLevel, std::string, Logger::ScriptSource source);
 
     std::map<int, std::weak_ptr<Script>> stackTraceScripts;
     int stackTraceScriptsLastId = 0;
