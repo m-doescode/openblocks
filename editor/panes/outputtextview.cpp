@@ -1,4 +1,5 @@
 #include "outputtextview.h"
+#include "logger.h"
 #include "mainwindow.h"
 #include "objects/script.h"
 #include "panes/outputtextview.h"
@@ -12,8 +13,7 @@
 #include <string>
 
 OutputTextView::OutputTextView(QWidget* parent) : QTextEdit(parent) {
-    Logger::addLogListener(std::bind(&OutputTextView::handleLog, this, std::placeholders::_1, std::placeholders::_2));
-    Logger::addLogListener(std::bind(&OutputTextView::handleLogTrace, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    Logger::addLogListener(std::bind(&OutputTextView::handleLog, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     ensureCursorVisible();
 
     QFont font("");
@@ -36,12 +36,8 @@ OutputTextView::OutputTextView(QWidget* parent) : QTextEdit(parent) {
 
 OutputTextView::~OutputTextView() = default;
 
-void OutputTextView::handleLog(Logger::LogLevel logLevel, std::string message) {
+void OutputTextView::handleLog(Logger::LogLevel logLevel, std::string message, Logger::ScriptSource source) {
     if (logLevel == Logger::LogLevel::DEBUG) return;
-
-    // Skip if trace, as that is handled by handleLogTrace
-    if (logLevel == Logger::LogLevel::TRACE && !message.starts_with("Stack"))
-        return;
 
     // https://stackoverflow.com/a/61722734/16255372
     moveCursor(QTextCursor::MoveOperation::End);
@@ -58,21 +54,10 @@ void OutputTextView::handleLog(Logger::LogLevel logLevel, std::string message) {
         format.setFontWeight(QFont::Bold);
     }
 
-    cursor.insertText(message.c_str(), format);
-    cursor.insertText("\n", QTextCharFormat());
-}
-
-void OutputTextView::handleLogTrace(std::string message, std::string source, int line, void* userData) {
-    std::weak_ptr<Script>* script = (std::weak_ptr<Script>*)userData;
-
-    // https://stackoverflow.com/a/61722734/16255372
-    QTextCursor cursor = textCursor();
-    QTextCharFormat format = cursor.charFormat();
-    format.setForeground(QColor(0, 127, 255));
-
-    if (userData != nullptr && !script->expired()) {
+    // Add anchor point if source is provided
+    if (source.script != nullptr) {
         int id = stackTraceScriptsLastId++;
-        stackTraceScripts[id] = *script;
+        stackTraceScripts[id] = source.script;
 
         format.setAnchor(true);
         format.setAnchorHref(QString::number(id));
