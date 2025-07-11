@@ -3,6 +3,8 @@
 #include <qlineedit.h>
 #include <vector>
 
+struct lua_State;
+
 class CommandEdit : public QLineEdit {
     Q_OBJECT
 
@@ -10,6 +12,7 @@ class CommandEdit : public QLineEdit {
     int historyIndex = 0;
 
     void executeCommand();
+    void getOrCreateEnvironment(lua_State* L);
 public:
     CommandEdit(QWidget* parent = nullptr);
     ~CommandEdit();

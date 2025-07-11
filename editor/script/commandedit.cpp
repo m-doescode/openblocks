@@ -1,5 +1,6 @@
 #include "commandedit.h"
 #include "common.h"
+#include "logger.h"
 #include "lua.h"
 #include "objects/service/script/scriptcontext.h"
 #include "luaapis.h" // IWYU pragma: keep
@@ -18,12 +19,20 @@ CommandEdit::~CommandEdit() = default;
 void CommandEdit::executeCommand() {
     std::string command = this->text().toStdString();
     
+    // Output
+    Logger::infof("> %s", command.c_str());
+
     // Execute via Lua
     auto context = gDataModel->GetService<ScriptContext>();
     lua_State* L = context->state;
 
     int top = lua_gettop(L);
     lua_State* Lt = lua_newthread(L);
+
+    lua_pushthread(Lt); // Push thread
+    getOrCreateEnvironment(Lt);
+    lua_setfenv(Lt, -2); // Set env of current thread
+    lua_pop(Lt, 1); // Pop thread
 
     // Push wrapper as thread function
     lua_getfield(Lt, LUA_REGISTRYINDEX, "LuaPCallWrapper");
@@ -54,6 +63,33 @@ void CommandEdit::executeCommand() {
         commandHistory.push_back(command);
     }
 };
+
+// Gets the command bar environment from the registry, or creates a new one and registers it
+void CommandEdit::getOrCreateEnvironment(lua_State* L) {
+    auto context = gDataModel->GetService<ScriptContext>();
+
+    // Try to find existing environment
+    lua_getfield(L, LUA_REGISTRYINDEX, "commandBarEnv");
+    if (!lua_isnil(L, -1))
+        return; // Return the found environment
+    lua_pop(L, 1); // Pop nil
+
+    // Initialize script globals
+    context->NewEnvironment(L); // Pushes envtable, metatable
+
+    // Set source in metatable
+    lua_pushstring(L, "commandbar");
+    lua_setfield(L, -2, "source");
+
+    lua_pop(L, 1); // Pop metatable
+
+    // Register it
+    lua_pushvalue(L, -1); // Copy
+    lua_setfield(L, LUA_REGISTRYINDEX, "commandBarEnv");
+
+    // Remainder on stack:
+    // 1. Env table
+}
 
 void CommandEdit::keyPressEvent(QKeyEvent* evt) {
     switch (evt->key()) {
