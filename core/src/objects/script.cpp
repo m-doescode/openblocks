@@ -31,13 +31,22 @@ void Script::Run() {
     this->thread = lua_newthread(L);
     lua_State* Lt = thread;
 
+    lua_pushthread(Lt); // Push thread for later*
+
     // Initialize script globals
-    lua_getglobal(Lt, "_G");
+    scriptContext->NewEnvironment(Lt); // Pushes envtable, metatable
+
+    // Set script in metatable source
+    InstanceRef(shared_from_this()).PushLuaValue(Lt);
+    lua_setfield(Lt, -2, "source");
+
+    lua_pop(Lt, 1); // Pop metatable
 
     InstanceRef(shared_from_this()).PushLuaValue(Lt);
     lua_setfield(Lt, -2, "script");
 
-    lua_pop(Lt, 1); // _G
+    lua_setfenv(Lt, -2); // *Set env of current thread
+    lua_pop(Lt, 1); // Pop thread
 
     // Push wrapper as thread function
     lua_getfield(Lt, LUA_REGISTRYINDEX, "LuaPCallWrapper");
