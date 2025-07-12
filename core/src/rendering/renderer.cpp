@@ -21,6 +21,7 @@
 #include "handles.h"
 #include "math_helper.h"
 #include "objects/hint.h"
+#include "objects/message.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/font.h"
@@ -658,27 +659,23 @@ void renderMessages() {
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 
-    // Render hints
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        if (it->GetClass() != &Hint::TYPE) continue;
-        std::shared_ptr<Hint> message = it->CastTo<Hint>().expect();
-
-        drawRect(0, 0, viewportWidth, 20, glm::vec4(0,0,0,1));
-        float textWidth = calcTextWidth(sansSerif, message->text);
-        drawText(sansSerif, message->text, (viewportWidth - textWidth) / 2, 0);
-    }
-
-    // Render messages
-    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        if (it->GetClass() != &Message::TYPE) continue;
+        if (!it->IsA<Message>()) continue;
         std::shared_ptr<Message> message = it->CastTo<Message>().expect();
 
-        // Don't draw if text is empty
-        if (message->text == "") continue;
-
-        drawRect(0, 0, viewportWidth, viewportHeight, glm::vec4(0.5));
         float textWidth = calcTextWidth(sansSerif, message->text);
-        drawText(sansSerif, message->text, ((float)viewportWidth - textWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2);
+
+        // Render hint
+        if (message->GetClass() == &Hint::TYPE) {
+            drawRect(0, 0, viewportWidth, 20, glm::vec4(0,0,0,1));
+            drawText(sansSerif, message->text, (viewportWidth - textWidth) / 2, 0);
+        } else {
+            // Don't draw if text is empty
+            if (message->text == "") continue;
+
+            drawRect(0, 0, viewportWidth, viewportHeight, glm::vec4(0.5));
+            drawText(sansSerif, message->text, ((float)viewportWidth - textWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2);
+        }
     }
 }
 
