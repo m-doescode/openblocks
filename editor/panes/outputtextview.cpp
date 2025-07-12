@@ -1,7 +1,6 @@
 #include "outputtextview.h"
 #include "logger.h"
 #include "mainwindow.h"
-#include "objects/script.h"
 #include "panes/outputtextview.h"
 #include <QEvent>
 #include <QTextEdit>
