@@ -32,11 +32,6 @@ void CommandEdit::executeCommand() {
     int top = lua_gettop(L);
     lua_State* Lt = lua_newthread(L);
 
-    lua_pushthread(Lt); // Push thread
-    getOrCreateEnvironment(Lt);
-    lua_setfenv(Lt, -2); // Set env of current thread
-    lua_pop(Lt, 1); // Pop thread
-
     // Push wrapper as thread function
     lua_getfield(Lt, LUA_REGISTRYINDEX, "LuaPCallWrapper");
 
@@ -50,9 +45,13 @@ void CommandEdit::executeCommand() {
         return;
     }
 
+    getOrCreateEnvironment(Lt);
+    lua_setfenv(Lt, -2); // Set env of loaded function
+
     // Push our error handler and then generate the wrapped function
     lua_pushcfunction(Lt, script_errhandler);
     lua_call(Lt, 2, 1);
+
 
     // Resume the thread
     lua_resume(Lt, 0);

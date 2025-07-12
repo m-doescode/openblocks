@@ -1,5 +1,6 @@
 #include "script.h"
 #include "common.h"
+#include "datatypes/variant.h"
 #include "lauxlib.h"
 #include "logger.h"
 #include "objects/base/instance.h"
@@ -31,23 +32,6 @@ void Script::Run() {
     this->thread = lua_newthread(L);
     lua_State* Lt = thread;
 
-    lua_pushthread(Lt); // Push thread for later*
-
-    // Initialize script globals
-    scriptContext->NewEnvironment(Lt); // Pushes envtable, metatable
-
-    // Set script in metatable source
-    InstanceRef(shared_from_this()).PushLuaValue(Lt);
-    lua_setfield(Lt, -2, "source");
-
-    lua_pop(Lt, 1); // Pop metatable
-
-    InstanceRef(shared_from_this()).PushLuaValue(Lt);
-    lua_setfield(Lt, -2, "script");
-
-    lua_setfenv(Lt, -2); // *Set env of current thread
-    lua_pop(Lt, 1); // Pop thread
-
     // Push wrapper as thread function
     lua_getfield(Lt, LUA_REGISTRYINDEX, "LuaPCallWrapper");
 
@@ -60,6 +44,21 @@ void Script::Run() {
         lua_settop(L, top);
         return;
     }
+
+    // Initialize script globals
+    scriptContext->NewEnvironment(Lt); // Pushes envtable, metatable
+
+    // Set script in metatable source
+    InstanceRef(shared_from_this()).PushLuaValue(Lt);
+    lua_setfield(Lt, -2, "source");
+
+    lua_pop(Lt, 1); // Pop metatable
+
+    // Set script in environment
+    InstanceRef(shared_from_this()).PushLuaValue(Lt);
+    lua_setfield(Lt, -2, "script");
+
+    lua_setfenv(Lt, -2); // Set env of loaded function
 
     // Push our error handler and then generate the wrapped function
     lua_pushcfunction(Lt, script_errhandler);
@@ -74,6 +73,34 @@ void Script::Run() {
 
 void Script::Stop() {
     // TODO:
+}
+
+static std::shared_ptr<Script> getfsource(lua_State* L, lua_Debug* dbg) {
+    int top = lua_gettop(L);
+
+    lua_getinfo(L, "f", dbg);
+    lua_getfenv(L, -1); // Get fenv of stack pos
+    if (lua_isnil(L, -1)) { // No env could be found
+        lua_settop(L, top);
+        return nullptr;
+    }
+
+    // Get source from metatable
+    lua_getmetatable(L, -1);
+    lua_getfield(L, -1, "source");
+
+    auto result = InstanceRef::FromLuaValue(L, -1);
+    if (!result) {
+        lua_settop(L, top);
+        return nullptr;
+    }
+
+    lua_settop(L, top);
+
+    std::shared_ptr<Instance> ref = result.expect().get<InstanceRef>();
+    if (!ref->IsA<Script>()) return nullptr;
+
+    return ref->CastTo<Script>().expect();
 }
 
 int script_errhandler(lua_State* L) {
@@ -92,7 +119,10 @@ int script_errhandler(lua_State* L) {
         if (strcmp(dbg.what, "C") == 0 || strcmp(dbg.source, "=PCALL_WRAPPER") == 0)
             continue;
 
-        Logger::scriptLogf("'%s', Line %d", Logger::LogLevel::TRACE, {}, dbg.source, dbg.currentline);
+        // Find script source
+        std::shared_ptr<Script> source = getfsource(L, &dbg);
+
+        Logger::scriptLogf("'%s', Line %d", Logger::LogLevel::TRACE, {source, dbg.currentline}, dbg.source, dbg.currentline);
     }
 
     Logger::trace("Stack end");
