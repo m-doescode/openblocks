@@ -20,6 +20,7 @@
 #include "datatypes/vector.h"
 #include "handles.h"
 #include "math_helper.h"
+#include "objects/hint.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/font.h"
@@ -62,7 +63,8 @@ bool wireframeRendering = false;
 int viewportWidth, viewportHeight;
 
 void renderDebugInfo();
-void drawRect(int x, int y, int width, int height, glm::vec3 color);
+void drawRect(int x, int y, int width, int height, glm::vec4 color);
+inline void drawRect(int x, int y, int width, int height, glm::vec3 color) { return drawRect(x, y, width, height, glm::vec4(color, 1)); };
 
 void renderInit(int width, int height) {
     viewportWidth = width, viewportHeight = height;
@@ -649,6 +651,37 @@ void addDebugRenderCFrame(CFrame frame, Color3 color) {
     DEBUG_CFRAMES.push_back(std::make_pair(frame, color));
 }
 
+void renderMessages() {
+    glDisable(GL_DEPTH_TEST);
+    // glEnable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+
+    // Render hints
+    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+        if (it->GetClass() != &Hint::TYPE) continue;
+        std::shared_ptr<Hint> message = it->CastTo<Hint>().expect();
+
+        drawRect(0, 0, viewportWidth, 20, glm::vec4(0,0,0,1));
+        float textWidth = calcTextWidth(sansSerif, message->text);
+        drawText(sansSerif, message->text, (viewportWidth - textWidth) / 2, 0);
+    }
+
+    // Render messages
+    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+        if (it->GetClass() != &Message::TYPE) continue;
+        std::shared_ptr<Message> message = it->CastTo<Message>().expect();
+
+        // Don't draw if text is empty
+        if (message->text == "") continue;
+
+        drawRect(0, 0, viewportWidth, viewportHeight, glm::vec4(0.5));
+        float textWidth = calcTextWidth(sansSerif, message->text);
+        drawText(sansSerif, message->text, ((float)viewportWidth - textWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2);
+    }
+}
+
 tu_time_t renderTime;
 void render() {
     tu_time_t startTime = tu_clock_micros();
@@ -668,13 +701,14 @@ void render() {
         renderWireframe();
     if (debugRendererEnabled)
         renderDebugInfo();
+    renderMessages();
     // TODO: Make this a debug flag
     // renderAABB();
 
     renderTime = tu_clock_micros() - startTime;
 }
 
-void drawRect(int x, int y, int width, int height, glm::vec3 color) {
+void drawRect(int x, int y, int width, int height, glm::vec4 color) {
     // GL_CULL_FACE has to be disabled as we are flipping the order of the vertices here, besides we don't really care about it
     glDisable(GL_CULL_FACE);
     glm::mat4 model(1.0f); // Same applies to this VV

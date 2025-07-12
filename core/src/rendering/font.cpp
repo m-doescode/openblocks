@@ -63,7 +63,8 @@ std::shared_ptr<Font> loadFont(std::string fontName) {
 
     std::shared_ptr<Font> font = std::make_shared<Font>();
 
-    FT_Set_Pixel_Sizes(face, 0, 48);
+    FT_Set_Pixel_Sizes(face, 0, 16);
+    font->height = face->size->metrics.y_ppem;
 
     // Load each glyph
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -131,7 +132,7 @@ void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, fl
         Character ch = font->characters[c];
 
         float xpos = x + ch.bearing.x * scale;
-        float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+        float ypos = viewportHeight - y - font->height - (ch.size.y - ch.bearing.y) * scale;
 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
@@ -159,4 +160,17 @@ void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, fl
         x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
     }
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+float calcTextWidth(std::shared_ptr<Font> font, std::string text, float scale) {
+    float x = 0;
+    // iterate through all characters
+    for (size_t i = 0; i < text.size(); i++) {
+        unsigned char c = text[i];
+        Character ch = font->characters[c];
+
+        x += (ch.advance >> 6) * scale;
+    }
+
+    return x;
 }

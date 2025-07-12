@@ -1,9 +1,11 @@
 #include "meta.h"
 #include "objects/folder.h"
+#include "objects/hint.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/joint/rotate.h"
 #include "objects/joint/rotatev.h"
 #include "objects/joint/weld.h"
+#include "objects/message.h"
 #include "objects/service/jointsservice.h"
 #include "objects/model.h"
 #include "objects/part.h"
@@ -27,6 +29,8 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "JointInstance", &JointInstance::TYPE },
     { "Script", &Script::TYPE },
     { "Model", &Model::TYPE },
+    { "Message", &Message::TYPE },
+    { "Hint", &Hint::TYPE },
     // { "Folder", &Folder::TYPE },
 
     // Services

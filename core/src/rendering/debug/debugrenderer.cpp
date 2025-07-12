@@ -11,6 +11,8 @@ extern Texture* debugFontTexture;
 extern Shader* debugFontShader;
 extern Shader* identityShader;
 
+void drawRect(int x, int y, int width, int height, glm::vec4 color);
+
 void drawChar(char c, int x, int y, float scale=1.f) {
     debugFontShader->use();
     debugFontTexture->activate(1);
@@ -39,22 +41,6 @@ void drawString(std::string str, int x, int y, float scale=1.f) {
         char c = str[i];
         drawChar(c, x+i*8*scale, y, scale);
     }
-}
-
-void drawRect(int x, int y, int w, int h, glm::vec4 color) {
-    identityShader->use();
-    identityShader->set("aColor", color);
-
-    float x0 = 2*float(x)/viewportWidth-1, y0 = 2*float(y)/viewportHeight-1, x1 = 2*float(x + w)/viewportWidth-1, y1 = 2*float(y + h)/viewportHeight-1;
-    float tmp;
-    tmp = -y0, y0 = -y1, y1 = tmp;
-
-    glBegin(GL_QUADS);
-        glVertex3f(x0, y0, 0);
-        glVertex3f(x1, y0, 0);
-        glVertex3f(x1, y1, 0);
-        glVertex3f(x0, y1, 0);
-    glEnd();
 }
 
 static tu_time_t lastTime;

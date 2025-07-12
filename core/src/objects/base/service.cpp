@@ -4,7 +4,7 @@
 #include "panic.h"
 #include <memory>
 
-Service::Service(const InstanceType* type) : Instance(type){}
+Service::Service(const InstanceType* type) : Instance(type) {}
 
 // Fail if parented to non-datamodel, otherwise lock parent
 void Service::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
