@@ -60,7 +60,7 @@ void OutputTextView::handleLog(Logger::LogLevel logLevel, std::string message, L
         stackTraceScripts[id] = source.script;
 
         format.setAnchor(true);
-        format.setAnchorHref(QString::number(id));
+        format.setAnchorHref(QString::number(id) + ":" + QString::number(source.line));
     }
 
     cursor.insertText(message.c_str(), format);
@@ -72,11 +72,13 @@ void OutputTextView::mousePressEvent(QMouseEvent *e) {
     QString anchor = anchorAt(e->pos());
     if (anchor == "" || e->modifiers() & Qt::AltModifier) return QTextEdit::mousePressEvent(e);
 
-    auto script = stackTraceScripts[anchor.toInt()];
+    int idx = anchor.indexOf(":");
+    int id = anchor.mid(0, idx).toInt(), line = anchor.mid(idx+1).toInt();
+    auto script = stackTraceScripts[id];
     if (script.expired()) return QTextEdit::mousePressEvent(e);
 
     MainWindow* mainWnd = dynamic_cast<MainWindow*>(window());
-    mainWnd->openScriptDocument(script.lock());
+    mainWnd->openScriptDocument(script.lock(), line);
 }
 
 void OutputTextView::mouseReleaseEvent(QMouseEvent *e) {

@@ -179,6 +179,13 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
 ScriptDocument::~ScriptDocument() {
 }
 
+void ScriptDocument::moveCursor(int line) {
+    if (line == -1) return;
+
+    int lineLength = scintilla->lineLength(line-1);
+    scintilla->setCursorPosition(line-1, lineLength-1);
+}
+
 QsciAPIs* makeApis(QsciLexer* lexer) {
     QsciAPIs* apis = new QsciAPIs(lexer);
 

@@ -17,4 +17,5 @@ public:
     ~ScriptDocument() override;
 
     inline std::shared_ptr<Script> getScript() { return script; }
+    void moveCursor(int line);
 };

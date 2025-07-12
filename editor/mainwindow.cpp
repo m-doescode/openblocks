@@ -610,19 +610,23 @@ ScriptDocument* MainWindow::findScriptWindow(std::shared_ptr<Script> script) {
     return nullptr;
 }
 
-void MainWindow::openScriptDocument(std::shared_ptr<Script> script) {
+void MainWindow::openScriptDocument(std::shared_ptr<Script> script, int line) {
     // Document already exists, don't open it
     ScriptDocument* doc = findScriptWindow(script);
     if (doc != nullptr) {
         ui->mdiArea->setActiveSubWindow(doc);
+        doc->setFocus();
+        if (line > -1) doc->moveCursor(line);
         return;
     }
 
     doc = new ScriptDocument(script);
     doc->setAttribute(Qt::WA_DeleteOnClose, true);
+    if (line > -1) doc->moveCursor(line);
     ui->mdiArea->addSubWindow(doc);
     ui->mdiArea->setActiveSubWindow(doc);
     doc->showMaximized();
+    doc->setFocus();
 }
 
 void MainWindow::closeScriptDocument(std::shared_ptr<Script> script) {

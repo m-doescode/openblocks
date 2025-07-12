@@ -58,7 +58,7 @@ public:
     GridSnappingMode snappingMode;
     bool editSoundEffects = true;
 
-    void openScriptDocument(std::shared_ptr<Script>);
+    void openScriptDocument(std::shared_ptr<Script>, int line = -1);
     void closeScriptDocument(std::shared_ptr<Script>);
 
     void openFile(std::string path);
