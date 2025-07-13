@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "objects/base/instance.h"
 #include "objects/part/part.h"
+#include "objects/part/wedgepart.h"
 #include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
@@ -81,6 +82,9 @@ void Workspace::InitService() {
     // physicsWorld->setSleepAngularVelocity(5);
 
     physicsWorld->setEventListener(&physicsEventListener);
+
+    // Create meshes
+    WedgePart::createWedgeShape(physicsCommon);
 
     // Sync all parts
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {

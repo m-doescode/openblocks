@@ -8,7 +8,9 @@ class DEF_INST WedgePart : public BasePart {
 
 protected:
     void updateCollider(rp::PhysicsCommon* common) override;
+    static void createWedgeShape(rp::PhysicsCommon* common);
 
+    friend Workspace;
 public:
     WedgePart();
     WedgePart(PartConstructParams params);
