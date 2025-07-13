@@ -22,6 +22,7 @@
 #include "math_helper.h"
 #include "objects/hint.h"
 #include "objects/message.h"
+#include "objects/part/wedgepart.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/font.h"
@@ -121,30 +122,54 @@ void renderInit(int width, int height) {
     sansSerif = loadFont("LiberationSans-Regular.ttf");
 }
 
+static void renderPart(std::shared_ptr<BasePart> part) {
+    glm::mat4 model = part->cframe;
+    // if (part->name == "camera") model = camera.getLookAt();
+    model = glm::scale(model, (glm::vec3)part->size);
+    shader->set("model", model);
+    shader->set("material", Material {
+        .diffuse = part->color,
+        .specular = glm::vec3(0.5f, 0.5f, 0.5f),
+        .shininess = 16.0f,
+    });
+    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+    shader->set("normalMatrix", normalMatrix);
+    shader->set("texScale", part->size);
+    shader->set("transparency", part->transparency);
+
+    shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
+    shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", (int)part->topSurface);
+    shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", (int)part->backSurface);
+    shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", (int)part->leftSurface);
+    shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", (int)part->bottomSurface);
+    shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", (int)part->frontSurface);
+
+    if (part->IsA<WedgePart>()) {
+        glFrontFace(GL_CCW);
+        WEDGE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, WEDGE_MESH->vertexCount);
+    } else {
+        glFrontFace(GL_CW);
+        CUBE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
+    }
+}
+
 void renderParts() {
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     shader->use();
-    // shader->set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-    // shader->set("lightColor",  glm::vec3(1.0f, 1.0f, 1.0f));
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
     glm::mat4 view = camera.getLookAt();
     shader->set("projection", projection);
     shader->set("view", view);
-    // shader->set("material", Material {
-    //     // .ambient = glm::vec3(1.0f, 0.5f, 0.31f),
-    //     .diffuse = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    //     .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-    //     .shininess = 16.0f,
-    // });
     shader->set("sunLight", DirLight {
         .direction = glm::vec3(-0.2f, -1.0f, -0.3f),
         .ambient = glm::vec3(0.2f, 0.2f, 0.2f),
@@ -152,15 +177,6 @@ void renderParts() {
         .specular = glm::vec3(1.0f, 1.0f, 1.0f),
     });
     shader->set("numPointLights", 0);
-    // shader->set("pointLights[0]", PointLight {
-    //     .position = lightPos,
-    //     .ambient = glm::vec3(0.4f, 0.4f, 0.4f),
-    //     .diffuse = glm::vec3(1.0f, 1.0f, 1.0f),
-    //     .specular = glm::vec3(1.0f, 1.0f, 1.0f),
-    //     .constant = 1.0,
-    //     .linear = 0.9,
-    //     .quadratic = 0.32,
-    // });
     studsTexture->activate(0);
     shader->set("studs", 0);
 
@@ -172,36 +188,14 @@ void renderParts() {
     // Sort by nearest
     std::map<float, std::shared_ptr<BasePart>> sorted;
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> inst = *it;
-        if (inst->GetClass()->className != "Part") continue;
-        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
+        if (!it->IsA<BasePart>()) continue;
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(*it);
+
         if (part->transparency > 0.00001) {
             float distance = glm::length(glm::vec3(Vector3(camera.cameraPos) - part->position()));
             sorted[distance] = part;
         } else {
-            glm::mat4 model = part->cframe;
-            // if (part->name == "camera") model = camera.getLookAt();
-            model = glm::scale(model, (glm::vec3)part->size);
-            shader->set("model", model);
-            shader->set("material", Material {
-                .diffuse = part->color,
-                .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-                .shininess = 16.0f,
-            });
-            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-            shader->set("normalMatrix", normalMatrix);
-            shader->set("texScale", part->size);
-            shader->set("transparency", part->transparency);
-
-            shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", (int)part->topSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", (int)part->backSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", (int)part->leftSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", (int)part->bottomSurface);
-            shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", (int)part->frontSurface);
-
-            CUBE_MESH->bind();
-            glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
+            renderPart(part);
         }
     }
 
@@ -209,29 +203,7 @@ void renderParts() {
     // According to LearnOpenGL, std::map automatically sorts its contents.
     for (std::map<float, std::shared_ptr<BasePart>>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); it++) {
         std::shared_ptr<BasePart> part = it->second;
-        glm::mat4 model = part->cframe;
-        // if (part->name == "camera") model = camera.getLookAt();
-        model = glm::scale(model, (glm::vec3)part->size);
-        shader->set("model", model);
-        shader->set("material", Material {
-            .diffuse = part->color,
-            .specular = glm::vec3(0.5f, 0.5f, 0.5f),
-            .shininess = 16.0f,
-        });
-        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        shader->set("normalMatrix", normalMatrix);
-        shader->set("texScale", part->size);
-        shader->set("transparency", part->transparency);
-
-        shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", (int)part->topSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Back) + "]", (int)part->backSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Left) + "]", (int)part->leftSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", (int)part->bottomSurface);
-        shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", (int)part->frontSurface);
-
-        CUBE_MESH->bind();
-        glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);
+        renderPart(part);
     }
 }
 

@@ -19,7 +19,7 @@
 #include <memory>
 #include <optional>
 
-BasePart::BasePart(const InstanceType* type): BasePart(type, PartConstructParams { .size = glm::vec3(2, 1.2, 4), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
+BasePart::BasePart(const InstanceType* type): BasePart(type, PartConstructParams { .size = glm::vec3(4, 1.2, 2), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
 BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInstance(type), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
