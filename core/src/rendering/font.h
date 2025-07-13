@@ -16,10 +16,11 @@ struct Character {
 struct Font {
     unsigned int height;
     Character characters[128];
+    Character strokeCharacters[128];
 };
 
 void fontInit();
 void fontFinish();
 std::shared_ptr<Font> loadFont(std::string fontName);
-void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, float scale=1.f, glm::vec3 color = glm::vec3(1,1,1));
+void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, float scale=1.f, glm::vec3 color = glm::vec3(1,1,1), bool drawStroke = false);
 float calcTextWidth(std::shared_ptr<Font> font, std::string text, float scale = 1.f);
