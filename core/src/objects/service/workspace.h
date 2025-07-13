@@ -7,6 +7,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <reactphysics3d/body/RigidBody.h>
 #include <reactphysics3d/engine/EventListener.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
@@ -52,6 +53,15 @@ struct QueueItem {
     } action;
 };
 
+struct ContactItem {
+    std::shared_ptr<Part> part0;
+    std::shared_ptr<Part> part1;
+    enum {
+        CONTACTITEM_TOUCHED,
+        CONTACTITEM_TOUCHENDED,
+    } action;
+};
+
 class Workspace;
 class PhysicsEventListener : public rp::EventListener {
     friend Workspace;
@@ -66,8 +76,12 @@ class PhysicsEventListener : public rp::EventListener {
 class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     AUTOGEN_PREAMBLE
     
+    friend PhysicsEventListener;
+    
     std::list<std::shared_ptr<Part>> simulatedBodies;
     std::list<QueueItem> bodyQueue;
+    std::queue<ContactItem> contactQueue;
+    std::mutex contactQueueLock;
     rp::PhysicsWorld* physicsWorld;
     static rp::PhysicsCommon* physicsCommon;
     PhysicsEventListener physicsEventListener;
@@ -97,6 +111,7 @@ public:
     rp::Joint* CreateJoint(const rp::JointInfo& jointInfo);
     void DestroyJoint(rp::Joint* joint);
 
+    void ProcessContactEvents();
     void PhysicsStep(float deltaTime);
     std::optional<const RaycastResult> CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter = std::nullopt, unsigned short categoryMaskBits = 0xFFFF);
 };

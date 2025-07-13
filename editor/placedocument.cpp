@@ -140,6 +140,7 @@ void PlaceDocument::timerEvent(QTimerEvent* evt) {
     placeWidget->repaint();
     placeWidget->updateCycle();
     gDataModel->GetService<ScriptContext>()->RunSleepingThreads();
+    gDataModel->GetService<Workspace>()->ProcessContactEvents();
 }
 
 

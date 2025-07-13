@@ -29,26 +29,28 @@ Workspace::~Workspace() {
 PhysicsEventListener::PhysicsEventListener(Workspace* parent) : workspace(parent) {}
 
 void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& data) {
+    workspace->contactQueueLock.lock();
     for (size_t i = 0; i < data.getNbContactPairs(); i++) {
         auto pair = data.getContactPair(i);
         auto type = pair.getEventType();
         if (type == rp::CollisionCallback::ContactPair::EventType::ContactStay) continue;
 
-        auto part0 = reinterpret_cast<Part*>(pair.getBody1()->getUserData())->shared<Part>();
-        auto part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
+        if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStay)
+            continue;
 
-        if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart) {
-            part0->Touched->Fire({ (Variant)InstanceRef(part1) });
-            part1->Touched->Fire({ (Variant)InstanceRef(part0) });
-        } else if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit) {
-            part0->TouchEnded->Fire({ (Variant)InstanceRef(part1) });
-            part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
-        }
+        ContactItem contact;
+        contact.part0 = reinterpret_cast<Part*>(pair.getBody1()->getUserData())->shared<Part>();
+        contact.part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
+        contact.action = type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart ? ContactItem::CONTACTITEM_TOUCHED : ContactItem::CONTACTITEM_TOUCHENDED;
+
+        workspace->contactQueue.push(contact);
     }
+    workspace->contactQueueLock.unlock();
 }
 
 void PhysicsEventListener::onTrigger(const rp::OverlapCallback::CallbackData& data) {
-for (size_t i = 0; i < data.getNbOverlappingPairs(); i++) {
+    workspace->contactQueueLock.lock();
+    for (size_t i = 0; i < data.getNbOverlappingPairs(); i++) {
         auto pair = data.getOverlappingPair(i);
         auto type = pair.getEventType();
         if (type == rp::OverlapCallback::OverlapPair::EventType::OverlapStay) continue;
@@ -64,6 +66,7 @@ for (size_t i = 0; i < data.getNbOverlappingPairs(); i++) {
             part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
         }
     }
+    workspace->contactQueueLock.unlock();
 }
 
 void Workspace::InitService() {
@@ -141,6 +144,22 @@ void Workspace::updatePartPhysics(std::shared_ptr<Part> part) {
     // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
 
     part->rigidBody->setUserData(&*part);
+}
+
+void Workspace::ProcessContactEvents() {
+    contactQueueLock.lock();
+    while (!contactQueue.empty()) {
+        ContactItem& contact = contactQueue.front();
+        contactQueue.pop();
+        if (contact.action == ContactItem::CONTACTITEM_TOUCHED) {
+            contact.part0->Touched->Fire({ (Variant)InstanceRef(contact.part1) });
+            contact.part1->Touched->Fire({ (Variant)InstanceRef(contact.part0) });
+        } else if (contact.action == ContactItem::CONTACTITEM_TOUCHENDED) {
+            contact.part0->TouchEnded->Fire({ (Variant)InstanceRef(contact.part1) });
+            contact.part1->TouchEnded->Fire({ (Variant)InstanceRef(contact.part0) });
+        }
+    }
+    contactQueueLock.unlock();
 }
 
 void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
