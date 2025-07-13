@@ -59,7 +59,7 @@ void MainGLWidget::resizeGL(int w, int h) {
 glm::vec2 firstPoint;
 glm::vec2 secondPoint;
 
-extern std::weak_ptr<Part> draggingObject;
+extern std::weak_ptr<BasePart> draggingObject;
 extern std::optional<HandleFace> draggingHandle;
 extern Shader* shader;
 void MainGLWidget::paintGL() {
@@ -125,7 +125,7 @@ std::vector<PartTransformState> initialTransforms;
 
 bool tryMouseContextMenu = false;
 bool isMouseDragging = false;
-std::weak_ptr<Part> draggingObject;
+std::weak_ptr<BasePart> draggingObject;
 std::optional<HandleFace> draggingHandle;
 Vector3 initialHitPos;
 Vector3 initialHitNormal;
@@ -396,7 +396,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
         if (!rayHit || !partFromBody(rayHit->body)) { selection->Set({}); return; }
-        std::shared_ptr<Part> part = partFromBody(rayHit->body);
+        std::shared_ptr<BasePart> part = partFromBody(rayHit->body);
         if (part->locked) { selection->Set({}); return; }
 
         std::shared_ptr<PVInstance> selObject = part;

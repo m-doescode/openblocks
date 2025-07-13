@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "rendering/renderer.h"
 #include "common.h"
 
@@ -15,7 +15,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void resizeCallback(GLFWwindow* window, int width, int height);
 
-std::shared_ptr<Part> lastPart;
+std::shared_ptr<BasePart> lastPart;
 
 int main() {
     Logger::init();
@@ -58,7 +58,7 @@ int main() {
 
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         gWorkspace()->SyncPartPhysics(part);
     }
 

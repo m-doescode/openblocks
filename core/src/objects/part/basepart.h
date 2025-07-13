@@ -14,7 +14,7 @@
 #include <optional>
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>
-#include "annotation.h"
+#include "objects/annotation.h"
 #include "objects/pvinstance.h"
 
 namespace rp = reactphysics3d;
@@ -34,11 +34,11 @@ class Workspace;
 
 #ifndef __SIMULATION_TICKET
 #define __SIMULATION_TICKET
-class Part;
-typedef std::list<std::shared_ptr<Part>>::iterator SimulationTicket;
+class BasePart;
+typedef std::list<std::shared_ptr<BasePart>>::iterator SimulationTicket;
 #endif
 
-class DEF_INST_(explorer_icon="part") Part : public PVInstance {
+class DEF_INST_ABSTRACT_(explorer_icon="part") BasePart : public PVInstance {
     AUTOGEN_PREAMBLE
 protected:
     // Joints where this part is Part0
@@ -50,10 +50,10 @@ protected:
     void untrackJoint(std::shared_ptr<JointInstance>);
 
     SurfaceType surfaceFromFace(NormalId);
-    bool checkJointContinuity(std::shared_ptr<Part>);
-    bool checkJointContinuityUp(std::shared_ptr<Part>);
-    bool checkJointContinuityDown(std::shared_ptr<Part>);
-    bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart); 
+    bool checkJointContinuity(std::shared_ptr<BasePart>);
+    bool checkJointContinuityUp(std::shared_ptr<BasePart>);
+    bool checkJointContinuityDown(std::shared_ptr<BasePart>);
+    bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<BasePart> otherPart); 
 
     friend JointInstance;
     friend Workspace;
@@ -62,6 +62,9 @@ protected:
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
+
+    BasePart(const InstanceType*);
+    BasePart(const InstanceType*, PartConstructParams params);
 public:
     DEF_PROP_CATEGORY(DATA)
     DEF_PROP_(on_update=onUpdated) Vector3 velocity;
@@ -116,13 +119,7 @@ public:
     float GetSurfaceParamA(Vector3 face);
     float GetSurfaceParamB(Vector3 face);
 
-    Part();
-    Part(PartConstructParams params);
-    ~Part() override;
-
-    static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
-    static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Part>(); };
+    ~BasePart() override;
 
     inline Vector3 position() { return cframe.Position(); }
 

@@ -105,7 +105,7 @@ However, Autogen cannot tell where this class came from to automatically include
 block via `__AUTOGEN_EXTRA_INCLUDES__`:
 
     #ifdef __AUTOGEN_EXTRA_INCLUDES__
-    #include "objects/part.h"
+    #include "objects/part/part.h"
     #endif
 
     class Part;

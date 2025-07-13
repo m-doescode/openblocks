@@ -32,7 +32,7 @@ enum FilterResult {
     PASS, // The object is transparent, ignore it
 };
 
-class Part;
+class BasePart;
 class Snap;
 class Weld;
 class Rotate;
@@ -40,13 +40,13 @@ class RotateV;
 
 #ifndef __SIMULATION_TICKET
 #define __SIMULATION_TICKET
-typedef std::list<std::shared_ptr<Part>>::iterator SimulationTicket;
+typedef std::list<std::shared_ptr<BasePart>>::iterator SimulationTicket;
 #endif
 
-typedef std::function<FilterResult(std::shared_ptr<Part>)> RaycastFilter;
+typedef std::function<FilterResult(std::shared_ptr<BasePart>)> RaycastFilter;
 
 struct QueueItem {
-    std::shared_ptr<Part> part;
+    std::shared_ptr<BasePart> part;
     enum {
         QUEUEITEM_ADD,
         QUEUEITEM_REMOVE,
@@ -54,8 +54,8 @@ struct QueueItem {
 };
 
 struct ContactItem {
-    std::shared_ptr<Part> part0;
-    std::shared_ptr<Part> part1;
+    std::shared_ptr<BasePart> part0;
+    std::shared_ptr<BasePart> part1;
     enum {
         CONTACTITEM_TOUCHED,
         CONTACTITEM_TOUCHENDED,
@@ -78,7 +78,7 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     
     friend PhysicsEventListener;
     
-    std::list<std::shared_ptr<Part>> simulatedBodies;
+    std::list<std::shared_ptr<BasePart>> simulatedBodies;
     std::list<QueueItem> bodyQueue;
     std::queue<ContactItem> contactQueue;
     std::mutex contactQueueLock;
@@ -86,7 +86,7 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     static rp::PhysicsCommon* physicsCommon;
     PhysicsEventListener physicsEventListener;
 
-    void updatePartPhysics(std::shared_ptr<Part> part);
+    void updatePartPhysics(std::shared_ptr<BasePart> part);
 protected:
     void InitService() override;
     bool initialized = false;
@@ -103,10 +103,10 @@ public:
     // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Workspace>(); };
 
-    void AddBody(std::shared_ptr<Part> part);
-    void RemoveBody(std::shared_ptr<Part> part);
+    void AddBody(std::shared_ptr<BasePart> part);
+    void RemoveBody(std::shared_ptr<BasePart> part);
     void DestroyRigidBody(rp::RigidBody* rigidBody);
-    void SyncPartPhysics(std::shared_ptr<Part> part);
+    void SyncPartPhysics(std::shared_ptr<BasePart> part);
 
     rp::Joint* CreateJoint(const rp::JointInfo& jointInfo);
     void DestroyJoint(rp::Joint* joint);

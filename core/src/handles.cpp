@@ -27,11 +27,11 @@ static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 
 static rp3d::PhysicsCommon common;
 static rp3d::PhysicsWorld* world = common.createPhysicsWorld();
 
-std::shared_ptr<Part> getHandleAdornee() {
+std::shared_ptr<BasePart> getHandleAdornee() {
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
     for (std::weak_ptr<Instance> inst : selection->Get()) {
-        if (!inst.expired() && inst.lock()->IsA<Part>())
-            return inst.lock()->CastTo<Part>().expect();
+        if (!inst.expired() && inst.lock()->IsA<BasePart>())
+            return inst.lock()->CastTo<BasePart>().expect();
     }
 
     return {};
@@ -82,8 +82,8 @@ static int getAABBOfSelection(glm::vec3& pos, glm::vec3& size, glm::vec3& min, g
     int count = 0;
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
     for (std::weak_ptr<Instance> inst : selection->Get()) {
-        if (inst.expired() || !inst.lock()->IsA<Part>()) continue;
-        std::shared_ptr<Part> part = inst.lock()->CastTo<Part>().expect();
+        if (inst.expired() || !inst.lock()->IsA<BasePart>()) continue;
+        std::shared_ptr<BasePart> part = inst.lock()->CastTo<BasePart>().expect();
 
         if (count == 0)
             min = part->position(), max = part->position();
@@ -99,12 +99,12 @@ static int getAABBOfSelection(glm::vec3& pos, glm::vec3& size, glm::vec3& min, g
     return count;
 }
 
-static std::shared_ptr<Part> getFirstSelectedPart() {
+static std::shared_ptr<BasePart> getFirstSelectedPart() {
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
     for (std::weak_ptr<Instance> inst : selection->Get()) {
-        if (inst.expired() || !inst.lock()->IsA<Part>()) continue;
+        if (inst.expired() || !inst.lock()->IsA<BasePart>()) continue;
         
-        return inst.lock()->CastTo<Part>().expect();
+        return inst.lock()->CastTo<BasePart>().expect();
     }
 
     return {};

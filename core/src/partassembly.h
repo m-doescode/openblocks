@@ -4,12 +4,12 @@
 #include <memory>
 #include <vector>
 
-class Part;
+class BasePart;
 class Instance;
 class Selection;
 
 struct PartTransformState {
-    std::shared_ptr<Part> part;
+    std::shared_ptr<BasePart> part;
     Vector3 size;
     CFrame cframe;
 };
@@ -19,9 +19,9 @@ class PartAssembly {
     Vector3 _bounds;
     Vector3 _size;
 
-    std::vector<std::shared_ptr<Part>> parts;
+    std::vector<std::shared_ptr<BasePart>> parts;
 public:
-    PartAssembly(std::vector<std::shared_ptr<Part>>, bool worldMode = false);
+    PartAssembly(std::vector<std::shared_ptr<BasePart>>, bool worldMode = false);
 
     static PartAssembly FromSelection(std::vector<std::shared_ptr<Instance>> selection);
     static PartAssembly FromSelection(std::shared_ptr<Selection> selection);

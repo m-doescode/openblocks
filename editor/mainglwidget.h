@@ -1,7 +1,7 @@
 #ifndef MAINGLWIDGET_H
 #define MAINGLWIDGET_H
 
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "qevent.h"
 #include <QOpenGLWidget>
 #include <QWidget>
@@ -15,7 +15,7 @@ class MainGLWidget : public QOpenGLWidget {
 public:
     MainGLWidget(QWidget *parent = nullptr);
     void updateCycle();
-    std::shared_ptr<Part> lastPart;
+    std::shared_ptr<BasePart> lastPart;
 
     void buildContextMenu();
 protected:

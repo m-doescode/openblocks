@@ -4,7 +4,7 @@
 #include "objects/datamodel.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/service/jointsservice.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "objects/service/workspace.h"
 #include <memory>
 #include <reactphysics3d/constraint/FixedJoint.h>

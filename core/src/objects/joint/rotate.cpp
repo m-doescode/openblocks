@@ -1,6 +1,6 @@
 #include "rotate.h"
 #include "objects/service/jointsservice.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
 #include <reactphysics3d/constraint/HingeJoint.h>

@@ -43,6 +43,36 @@ static float CUBE_VERTICES[] = {
 
 };
 
+static float WEDGE_VERTICES[] = {
+    // positions                     // normals                  // texture coords
+
+        0.5, 0.5, 0.5,  -0.0, -0.0, 1.0,        0.625, 0.75,
+        -0.5, -0.5, 0.5,        -0.0, -0.0, 1.0,        0.375, 1.0,
+        0.5, -0.5, 0.5, -0.0, -0.0, 1.0,        0.375, 0.75,
+        -0.5, -0.5, 0.5,        -1.0, -0.0, -0.0,       0.375, 0.0,
+        -0.5, 0.5, 0.5, -1.0, -0.0, -0.0,       0.625, 0.0,
+        -0.5, -0.5, -0.5,       -1.0, -0.0, -0.0,       0.375, 0.25,
+        0.5, -0.5, -0.5,        -0.0, -1.0, -0.0,       0.375, 0.5,
+        -0.5, -0.5, 0.5,        -0.0, -1.0, -0.0,       0.125, 0.75,
+        -0.5, -0.5, -0.5,       -0.0, -1.0, -0.0,       0.125, 0.5,
+        0.5, -0.5, -0.5,        1.0, -0.0, -0.0,        0.375, 0.5,
+        0.5, 0.5, 0.5,  1.0, -0.0, -0.0,        0.625, 0.75,
+        0.5, -0.5, 0.5, 1.0, -0.0, -0.0,        0.375, 0.75,
+        -0.5, 0.5, 0.5, -0.0, 0.7071, -0.7071,  0.875, 0.75,
+        0.5, -0.5, -0.5,        -0.0, 0.7071, -0.7071,  0.375, 0.5,
+        -0.5, -0.5, -0.5,       -0.0, 0.7071, -0.7071,  0.375, 0.25,
+        0.5, 0.5, 0.5,  -0.0, -0.0, 1.0,        0.625, 0.75,
+        -0.5, 0.5, 0.5, -0.0, -0.0, 1.0,        0.625, 1.0,
+        -0.5, -0.5, 0.5,        -0.0, -0.0, 1.0,        0.375, 1.0,
+        0.5, -0.5, -0.5,        -0.0, -1.0, -0.0,       0.375, 0.5,
+        0.5, -0.5, 0.5, -0.0, -1.0, -0.0,       0.375, 0.75,
+        -0.5, -0.5, 0.5,        -0.0, -1.0, -0.0,       0.125, 0.75,
+        -0.5, 0.5, 0.5, -0.0, 0.7071, -0.7071,  0.875, 0.75,
+        0.5, 0.5, 0.5,  -0.0, 0.7071, -0.7071,  0.625, 0.75,
+        0.5, -0.5, -0.5,        -0.0, 0.7071, -0.7071,  0.375, 0.5,
+
+};
+
 static float SPHERE_VERTICES[] = {
     // positions                     // normals                  // texture coords
 
@@ -1730,6 +1760,7 @@ static float CYLINDER_VERTICES[] = {
 };
 
 Mesh* CUBE_MESH;
+Mesh* WEDGE_MESH;
 Mesh* SPHERE_MESH;
 Mesh* ARROW_MESH;
 Mesh* OUTLINE_MESH;
@@ -1737,6 +1768,7 @@ Mesh* CYLINDER_MESH;
 
 void initMeshes() {
     CUBE_MESH = new Mesh(sizeof(CUBE_VERTICES) / sizeof(float) / 8, CUBE_VERTICES);
+    WEDGE_MESH = new Mesh(sizeof(WEDGE_VERTICES) / sizeof(float) / 8, WEDGE_VERTICES);
     SPHERE_MESH = new Mesh(sizeof(SPHERE_VERTICES) / sizeof(float) / 8, SPHERE_VERTICES);
     ARROW_MESH = new Mesh(sizeof(ARROW_VERTICES) / sizeof(float) / 8, ARROW_VERTICES);
     OUTLINE_MESH = new Mesh(sizeof(OUTLINE_VERTICES) / sizeof(float) / 8, OUTLINE_VERTICES);

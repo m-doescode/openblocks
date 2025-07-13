@@ -4,7 +4,7 @@
 #include "datatypes/vector.h"
 #include "logger.h"
 #include "objects/base/instance.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
@@ -39,8 +39,8 @@ void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& 
             continue;
 
         ContactItem contact;
-        contact.part0 = reinterpret_cast<Part*>(pair.getBody1()->getUserData())->shared<Part>();
-        contact.part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
+        contact.part0 = reinterpret_cast<BasePart*>(pair.getBody1()->getUserData())->shared<BasePart>();
+        contact.part1 = reinterpret_cast<BasePart*>(pair.getBody2()->getUserData())->shared<BasePart>();
         contact.action = type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart ? ContactItem::CONTACTITEM_TOUCHED : ContactItem::CONTACTITEM_TOUCHENDED;
 
         workspace->contactQueue.push(contact);
@@ -55,8 +55,8 @@ void PhysicsEventListener::onTrigger(const rp::OverlapCallback::CallbackData& da
         auto type = pair.getEventType();
         if (type == rp::OverlapCallback::OverlapPair::EventType::OverlapStay) continue;
 
-        auto part0 = reinterpret_cast<Part*>(pair.getBody1()->getUserData())->shared<Part>();
-        auto part1 = reinterpret_cast<Part*>(pair.getBody2()->getUserData())->shared<Part>();
+        auto part0 = reinterpret_cast<BasePart*>(pair.getBody1()->getUserData())->shared<BasePart>();
+        auto part1 = reinterpret_cast<BasePart*>(pair.getBody2()->getUserData())->shared<BasePart>();
 
         if (type == reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStart) {
             part0->Touched->Fire({ (Variant)InstanceRef(part1) });
@@ -85,8 +85,8 @@ void Workspace::InitService() {
     // Sync all parts
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
         std::shared_ptr<Instance> obj = *it;
-        if (!obj->IsA<Part>()) continue;
-        std::shared_ptr<Part> part = obj->CastTo<Part>().expect();
+        if (!obj->IsA<BasePart>()) continue;
+        std::shared_ptr<BasePart> part = obj->CastTo<BasePart>().expect();
         part->MakeJoints();
     }
 
@@ -105,7 +105,7 @@ void Workspace::InitService() {
     }
 }
 
-void Workspace::updatePartPhysics(std::shared_ptr<Part> part) {
+void Workspace::updatePartPhysics(std::shared_ptr<BasePart> part) {
     rp::Transform transform = part->cframe;
     if (!part->rigidBody) {
         part->rigidBody = physicsWorld->createRigidBody(transform);
@@ -162,7 +162,7 @@ void Workspace::ProcessContactEvents() {
     contactQueueLock.unlock();
 }
 
-void Workspace::SyncPartPhysics(std::shared_ptr<Part> part) {
+void Workspace::SyncPartPhysics(std::shared_ptr<BasePart> part) {
     if (globalPhysicsLock.try_lock()) {
         updatePartPhysics(part);
         globalPhysicsLock.unlock();
@@ -192,7 +192,7 @@ void Workspace::PhysicsStep(float deltaTime) {
     queueLock.unlock();
 
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
-    for (std::shared_ptr<Part> part : simulatedBodies) {
+    for (std::shared_ptr<BasePart> part : simulatedBodies) {
         // If the part's body is dirty, update it now instead
         if (part->rigidBodyDirty) {
             updatePartPhysics(part);
@@ -261,7 +261,7 @@ class NearestRayHit : public rp::RaycastCallback {
             return 1;
         }
 
-        std::shared_ptr<Part> part = partFromBody(raycastInfo.body);
+        std::shared_ptr<BasePart> part = partFromBody(raycastInfo.body);
         FilterResult result = filter.value()(part);
         if (result == FilterResult::BLOCK) {
             nearestHit = std::nullopt;
@@ -305,14 +305,14 @@ rp::Joint* Workspace::CreateJoint(const rp::JointInfo& jointInfo) {
     return joint;
 }
 
-void Workspace::AddBody(std::shared_ptr<Part> part) {
+void Workspace::AddBody(std::shared_ptr<BasePart> part) {
     queueLock.lock();
     bodyQueue.push_back({part, QueueItem::QUEUEITEM_ADD});
     part->rigidBodyDirty = true;
     queueLock.unlock();
 }
 
-void Workspace::RemoveBody(std::shared_ptr<Part> part) {
+void Workspace::RemoveBody(std::shared_ptr<BasePart> part) {
     queueLock.lock();
     bodyQueue.push_back({part, QueueItem::QUEUEITEM_REMOVE});
     queueLock.unlock();

@@ -31,9 +31,9 @@
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
-#include "../camera.h"
-#include "../common.h"
-#include "../objects/part.h"
+#include "camera.h"
+#include "common.h"
+#include "objects/part/part.h"
 #include "skybox.h"
 #include "enum/surface.h"
 #include "texture3d.h"
@@ -170,11 +170,11 @@ void renderParts() {
     shader->set("viewPos", camera.cameraPos);
 
     // Sort by nearest
-    std::map<float, std::shared_ptr<Part>> sorted;
+    std::map<float, std::shared_ptr<BasePart>> sorted;
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
         std::shared_ptr<Instance> inst = *it;
         if (inst->GetClass()->className != "Part") continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         if (part->transparency > 0.00001) {
             float distance = glm::length(glm::vec3(Vector3(camera.cameraPos) - part->position()));
             sorted[distance] = part;
@@ -207,8 +207,8 @@ void renderParts() {
 
     // TODO: Same as todo in src/physics/simulation.cpp
     // According to LearnOpenGL, std::map automatically sorts its contents.
-    for (std::map<float, std::shared_ptr<Part>>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); it++) {
-        std::shared_ptr<Part> part = it->second;
+    for (std::map<float, std::shared_ptr<BasePart>>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); it++) {
+        std::shared_ptr<BasePart> part = it->second;
         glm::mat4 model = part->cframe;
         // if (part->name == "camera") model = camera.getLookAt();
         model = glm::scale(model, (glm::vec3)part->size);
@@ -268,7 +268,7 @@ void renderSurfaceExtras() {
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
         std::shared_ptr<Instance> inst = *it;
         if (!inst->IsA("Part")) continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         for (int i = 0; i < 6; i++) {
             NormalId face = (NormalId)i;
             SurfaceType type = part->GetSurfaceFromFace(face);
@@ -396,7 +396,7 @@ void renderAABB() {
     // Sort by nearest
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         glm::mat4 model = CFrame::IDENTITY + part->cframe.Position();
         printf("AABB is supposedly (%f, %f, %f)\n", part->GetAABB().X(), part->GetAABB().Y(), part->GetAABB().Z());
         model = glm::scale(model, (glm::vec3)part->GetAABB());
@@ -436,7 +436,7 @@ void renderWireframe() {
     // Sort by nearest
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         glm::mat4 model = part->cframe;
         model = glm::scale(model, (glm::vec3)part->size);
         wireframeShader->set("model", model);
@@ -478,8 +478,8 @@ void renderOutlines() {
 
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
     for (auto inst : selection->Get()) {
-        if (inst->GetClass() != &Part::TYPE) continue;
-        std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(inst);
+        if (inst->GetClass() != &BasePart::TYPE) continue;
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
 
         if (first)
             min = part->position(), max = part->position();

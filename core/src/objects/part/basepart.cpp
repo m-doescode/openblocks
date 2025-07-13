@@ -1,5 +1,5 @@
-#include "part.h"
-#include "base/instance.h"
+#include "basepart.h"
+#include "objects/base/instance.h"
 #include "common.h"
 #include "datatypes/base.h"
 #include "datatypes/cframe.h"
@@ -19,15 +19,14 @@
 #include <memory>
 #include <optional>
 
-Part::Part(): Part(PartConstructParams { .size = glm::vec3(2, 1.2, 4), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
+BasePart::BasePart(const InstanceType* type): BasePart(type, PartConstructParams { .size = glm::vec3(2, 1.2, 4), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
 }
 
-Part::Part(PartConstructParams params): PVInstance(&TYPE), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
-                                        size(params.size), color(params.color), anchored(params.anchored), locked(params.locked) {                      
-    
+BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInstance(type), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
+                                        size(params.size), color(params.color), anchored(params.anchored), locked(params.locked) {
 }
 
-Part::~Part() {
+BasePart::~BasePart() {
     // This relies on physicsCommon still existing. Be very careful.
     if (this->rigidBody && workspace()) {
         workspace().value()->DestroyRigidBody(rigidBody);
@@ -36,12 +35,12 @@ Part::~Part() {
 }
 
 
-void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
+void BasePart::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
     if (this->rigidBody)
         this->rigidBody->setIsActive(workspace().has_value());
 
     if (workspace())
-        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
+        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 
     // Destroy joints
     if (!workspace()) BreakJoints();
@@ -49,22 +48,22 @@ void Part::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std
     // TODO: Sleeping bodies that touch this one also need to be updated
 }
 
-void Part::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
-    newWorkspace->AddBody(shared<Part>());
+void BasePart::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
+    newWorkspace->AddBody(shared<BasePart>());
 }
 
-void Part::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
+void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
     if (simulationTicket.has_value())
-        oldWorkspace->RemoveBody(shared<Part>());
+        oldWorkspace->RemoveBody(shared<BasePart>());
 }
 
-void Part::onUpdated(std::string property) {
+void BasePart::onUpdated(std::string property) {
     // Reset velocity
     if (property != "Velocity")
         velocity = Vector3::ZERO;
 
     if (workspace())
-        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<Part>(this->shared_from_this()));
+        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 
     // When position/rotation/size is manually edited, break all joints, they don't apply anymore
     if (property != "Anchored")
@@ -88,7 +87,7 @@ static Vector3 verts[8] {
     {1, 1, 1},
 };
 
-Vector3 Part::GetAABB() {
+Vector3 BasePart::GetAABB() {
     Vector3 min(0, 0, 0);
     Vector3 max(0, 0, 0);
     for (Vector3 vert : verts) {
@@ -99,7 +98,7 @@ Vector3 Part::GetAABB() {
     return (min - max).Abs() / 2;
 }
 
-void Part::BreakJoints() {
+void BasePart::BreakJoints() {
     for (std::weak_ptr<JointInstance> joint : primaryJoints) {
         if (joint.expired()) continue;
         joint.lock()->Destroy();
@@ -120,7 +119,7 @@ static Vector3 FACES[6] = {
     {0, 0, -1},
 };
 
-SurfaceType Part::surfaceFromFace(NormalId face) {
+SurfaceType BasePart::surfaceFromFace(NormalId face) {
     switch (face) {
         case Top: return topSurface;
         case Bottom: return bottomSurface;
@@ -132,7 +131,7 @@ SurfaceType Part::surfaceFromFace(NormalId face) {
     return SurfaceType::Smooth; // Unreachable
 }
 
-float Part::GetSurfaceParamA(Vector3 face) {
+float BasePart::GetSurfaceParamA(Vector3 face) {
     switch (faceFromNormal(face)) {
         case Top: return topParamA;
         case Bottom: return bottomParamA;
@@ -144,7 +143,7 @@ float Part::GetSurfaceParamA(Vector3 face) {
     return 0; // Unreachable
 }
 
-float Part::GetSurfaceParamB(Vector3 face) {
+float BasePart::GetSurfaceParamB(Vector3 face) {
     switch (faceFromNormal(face)) {
         case Top: return topParamB;
         case Bottom: return bottomParamB;
@@ -156,14 +155,14 @@ float Part::GetSurfaceParamB(Vector3 face) {
     return 0; // Unreachable
 }
 
-bool Part::checkJointContinuity(std::shared_ptr<Part> otherPart) {
+bool BasePart::checkJointContinuity(std::shared_ptr<BasePart> otherPart) {
     // Make sure that the two parts don't depend on one another
 
     return checkJointContinuityUp(otherPart) && checkJointContinuityDown(otherPart);
 }
 
-bool Part::checkJointContinuityDown(std::shared_ptr<Part> otherPart) {
-    if (shared<Part>() == otherPart) return false;
+bool BasePart::checkJointContinuityDown(std::shared_ptr<BasePart> otherPart) {
+    if (shared<BasePart>() == otherPart) return false;
     for (auto joint : primaryJoints) {
         if (joint.expired() || joint.lock()->part1.expired()) continue;
         if (!joint.lock()->part1.lock()->checkJointContinuityDown(otherPart))
@@ -172,8 +171,8 @@ bool Part::checkJointContinuityDown(std::shared_ptr<Part> otherPart) {
     return true;
 }
 
-bool Part::checkJointContinuityUp(std::shared_ptr<Part> otherPart) {
-    if (shared<Part>() == otherPart) return false;
+bool BasePart::checkJointContinuityUp(std::shared_ptr<BasePart> otherPart) {
+    if (shared<BasePart>() == otherPart) return false;
     for (auto joint : secondaryJoints) {
         if (joint.expired() || joint.lock()->part0.expired()) continue;
         if (!joint.lock()->part0.lock()->checkJointContinuityUp(otherPart))
@@ -182,7 +181,7 @@ bool Part::checkJointContinuityUp(std::shared_ptr<Part> otherPart) {
     return true;
 }
 
-bool Part::checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<Part> otherPart) {
+bool BasePart::checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<BasePart> otherPart) {
     Vector3 farCorner0 = surfaceFrame.Inverse() * otherPart->cframe * (Vector3::ONE * (otherPart->size / 2.f));
     Vector3 farCorner1 = surfaceFrame.Inverse() * otherPart->cframe * (-Vector3::ONE * (otherPart->size / 2.f));
     
@@ -218,7 +217,7 @@ std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType 
     return std::nullopt;
 }
 
-void Part::MakeJoints() {
+void BasePart::MakeJoints() {
     // Algorithm: Find nearby parts
     // Make sure parts are not dependant on each other (via primary/secondaryJoints)
     // Find matching surfaces (surface normal dot product < -0.999)
@@ -233,8 +232,8 @@ void Part::MakeJoints() {
     for (auto it = workspace().value()->GetDescendantsStart(); it != workspace().value()->GetDescendantsEnd(); it++) {
         std::shared_ptr<Instance> obj = *it;
         if (obj == shared_from_this()) continue; // Skip ourselves
-        if (obj->GetClass()->className != "Part") continue; // TODO: Replace this with a .IsA call instead of comparing the class name directly
-        std::shared_ptr<Part> otherPart = obj->CastTo<Part>().expect();
+        if (!obj->IsA<BasePart>()) continue;
+        std::shared_ptr<BasePart> otherPart = obj->CastTo<BasePart>().expect();
 
         for (Vector3 myFace : FACES) {
             Vector3 myWorldNormal = cframe.Rotation() * myFace;
@@ -278,8 +277,8 @@ void Part::MakeJoints() {
                 auto joint_ = makeJointFromSurfaces(mySurface, otherSurface);
                 if (!joint_) continue;
                 std::shared_ptr<JointInstance> joint = joint_.value();
-                joint->part0 = shared<Part>();
-                joint->part1 = otherPart->shared<Part>();
+                joint->part0 = shared<BasePart>();
+                joint->part1 = otherPart->shared<BasePart>();
                 joint->c0 = contact0;
                 joint->c1 = contact1;
                 dataModel().value()->GetService<JointsService>()->AddChild(joint);
@@ -291,7 +290,7 @@ void Part::MakeJoints() {
     }
 }
 
-void Part::trackJoint(std::shared_ptr<JointInstance> joint) {
+void BasePart::trackJoint(std::shared_ptr<JointInstance> joint) {
     if (!joint->part0.expired() && joint->part0.lock() == shared_from_this()) {
         for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {
             // Clean expired refs
@@ -325,7 +324,7 @@ void Part::trackJoint(std::shared_ptr<JointInstance> joint) {
     }
 }
 
-void Part::untrackJoint(std::shared_ptr<JointInstance> joint) {
+void BasePart::untrackJoint(std::shared_ptr<JointInstance> joint) {
     for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {
         // Clean expired refs
         if (it->expired() || it->lock() == joint) {

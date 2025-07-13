@@ -1,7 +1,7 @@
 #pragma once
 
 #include "datatypes/cframe.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include <array>
 #include <memory>
 
@@ -36,7 +36,7 @@ struct Handles {
     bool worldMode = false;
 };
 
-std::shared_ptr<Part> getHandleAdornee();
+std::shared_ptr<BasePart> getHandleAdornee();
 CFrame getHandleCFrame(HandleFace face);
 CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos);
 Vector3 handleSize(HandleFace face);

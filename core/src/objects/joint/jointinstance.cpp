@@ -4,7 +4,7 @@
 #include "datatypes/ref.h"
 #include "objects/datamodel.h"
 #include "objects/service/jointsservice.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "objects/service/workspace.h"
 #include <memory>
 #include <reactphysics3d/constraint/FixedJoint.h>
@@ -54,6 +54,6 @@ void JointInstance::onUpdated(std::string property) {
     oldPart1 = part1;
 }
 
-std::optional<std::shared_ptr<Workspace>> JointInstance::workspaceOfPart(std::shared_ptr<Part> part) {
+std::optional<std::shared_ptr<Workspace>> JointInstance::workspaceOfPart(std::shared_ptr<BasePart> part) {
     return part->workspace();
 }

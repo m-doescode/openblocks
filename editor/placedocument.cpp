@@ -130,7 +130,7 @@ void PlaceDocument::closeEvent(QCloseEvent *closeEvent) {
     closeEvent->ignore();
 }
 
-std::shared_ptr<Part> shit;
+std::shared_ptr<BasePart> shit;
 void PlaceDocument::timerEvent(QTimerEvent* evt) {
     if (evt->timerId() != timer.timerId()) {
         QWidget::timerEvent(evt);
@@ -148,7 +148,7 @@ void PlaceDocument::init() {
     timer.start(33, this);
     placeWidget->buildContextMenu();
 
-    std::shared_ptr<Part> lastPart;
+    std::shared_ptr<BasePart> lastPart;
     // Baseplate
     gWorkspace()->AddChild(lastPart = Part::New({
         .position = glm::vec3(0, -5, 0),

@@ -7,7 +7,7 @@
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <glm/ext.hpp>
-#include "objects/part.h"
+#include "objects/part/part.h"
 
 namespace rp = reactphysics3d;
 
@@ -32,8 +32,8 @@ inline glm::quat rpToGlm(rp::Quaternion quat) {
 }
 
 // Make this std::optional
-inline std::shared_ptr<Part> partFromBody(rp::Body* body) {
-    Part* raw = reinterpret_cast<Part*>(body->getUserData());
-    std::shared_ptr<Part> shared = std::dynamic_pointer_cast<Part>(raw->shared_from_this());    
+inline std::shared_ptr<BasePart> partFromBody(rp::Body* body) {
+    BasePart* raw = reinterpret_cast<BasePart*>(body->getUserData());
+    std::shared_ptr<BasePart> shared = std::dynamic_pointer_cast<BasePart>(raw->shared_from_this());    
     return shared;
 }

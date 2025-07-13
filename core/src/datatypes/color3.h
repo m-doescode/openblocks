@@ -14,6 +14,7 @@ class DEF_DATA Color3 {
 
 public:
     DEF_DATA_CTOR Color3(float r, float g, float b);
+    Color3();
     Color3(const glm::vec3&);
     virtual ~Color3();
 

@@ -5,13 +5,13 @@
 #include "datatypes/vector.h"
 #include "math_helper.h"
 #include "objects/base/instance.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "objects/service/selection.h"
 #include <glm/common.hpp>
 #include <memory>
 #include <vector>
 
-PartAssembly::PartAssembly(std::vector<std::shared_ptr<Part>> parts, bool worldMode) : parts(parts) {
+PartAssembly::PartAssembly(std::vector<std::shared_ptr<BasePart>> parts, bool worldMode) : parts(parts) {
     if (parts.size() == 0) return;
     if (parts.size() == 1 && !worldMode) {
         _assemblyOrigin = parts[0]->cframe;
@@ -36,19 +36,19 @@ PartAssembly::PartAssembly(std::vector<std::shared_ptr<Part>> parts, bool worldM
 }
 
 PartAssembly PartAssembly::FromSelection(std::vector<std::shared_ptr<Instance>> newSelection) {
-    std::vector<std::shared_ptr<Part>> selection;
+    std::vector<std::shared_ptr<BasePart>> selection;
 
     for (std::shared_ptr<Instance> obj : newSelection) {
         if (!obj->IsA<PVInstance>()) continue;
 
-        if (obj->IsA<Part>())
-            selection.push_back(obj->CastTo<Part>().expect());
+        if (obj->IsA<BasePart>())
+            selection.push_back(obj->CastTo<BasePart>().expect());
 
         // Add object descendants
         for (DescendantsIterator it = obj->GetDescendantsStart(); it != obj->GetDescendantsEnd(); it++) {
-            if (!(*it)->IsA<Part>()) continue;
+            if (!(*it)->IsA<BasePart>()) continue;
 
-            selection.push_back((*it)->CastTo<Part>().expect());
+            selection.push_back((*it)->CastTo<BasePart>().expect());
         }
     }
 

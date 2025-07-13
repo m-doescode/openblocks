@@ -8,7 +8,7 @@
 #include "objects/message.h"
 #include "objects/service/jointsservice.h"
 #include "objects/model.h"
-#include "objects/part.h"
+#include "objects/part/part.h"
 #include "objects/joint/snap.h"
 #include "objects/script.h"
 #include "objects/service/script/scriptcontext.h"
@@ -21,6 +21,7 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Instance", &Instance::TYPE },
     { "DataModel", &DataModel::TYPE },
 
+    { "BasePart", &BasePart::TYPE },
     { "Part", &Part::TYPE },
     { "Snap", &Snap::TYPE },
     { "Weld", &Weld::TYPE },
