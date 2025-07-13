@@ -12,6 +12,8 @@
 #include "enum/surface.h"
 #include <mutex>
 #include <optional>
+#include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include <vector>
 #include "objects/annotation.h"
@@ -62,6 +64,8 @@ protected:
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
     void onUpdated(std::string);
+
+    virtual void updateCollider(rp::PhysicsCommon* common) = 0;
 
     BasePart(const InstanceType*);
     BasePart(const InstanceType*, PartConstructParams params);

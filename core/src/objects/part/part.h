@@ -6,6 +6,9 @@
 class DEF_INST Part : public BasePart {
     AUTOGEN_PREAMBLE
 
+protected:
+    void updateCollider(rp::PhysicsCommon* common) override;
+
 public:
     Part();
     Part(PartConstructParams params);

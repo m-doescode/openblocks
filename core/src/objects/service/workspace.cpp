@@ -113,18 +113,7 @@ void Workspace::updatePartPhysics(std::shared_ptr<BasePart> part) {
         part->rigidBody->setTransform(transform);
     }
 
-    rp::BoxShape* shape = physicsCommon->createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
-
-    // Recreate the rigidbody if the shape changes
-    if (part->rigidBody->getNbColliders() > 0
-        && dynamic_cast<rp::BoxShape*>(part->rigidBody->getCollider(0)->getCollisionShape())->getHalfExtents() != shape->getHalfExtents()) {
-        // TODO: This causes Touched to get called twice. Fix this.
-        part->rigidBody->removeCollider(part->rigidBody->getCollider(0));
-        part->rigidBody->addCollider(shape, rp::Transform());
-    }
-
-    if (part->rigidBody->getNbColliders() == 0)
-        part->rigidBody->addCollider(shape, rp::Transform());
+    part->updateCollider(physicsCommon);
 
     part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
     part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
