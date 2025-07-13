@@ -194,12 +194,12 @@ void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, fl
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-float calcTextWidth(std::shared_ptr<Font> font, std::string text, float scale) {
+float calcTextWidth(std::shared_ptr<Font> font, std::string text, float scale, bool stroke) {
     float x = 0;
     // iterate through all characters
     for (size_t i = 0; i < text.size(); i++) {
         unsigned char c = text[i];
-        Character ch = font->characters[c];
+        Character ch = stroke ? font->strokeCharacters[c] : font->characters[c];
 
         x += (ch.advance >> 6) * scale;
     }

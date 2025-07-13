@@ -673,8 +673,10 @@ void renderMessages() {
             // Don't draw if text is empty
             if (message->text == "") continue;
 
+            float strokedTextWidth = calcTextWidth(sansSerif, message->text, true);
             drawRect(0, 0, viewportWidth, viewportHeight, glm::vec4(0.5));
-            drawText(sansSerif, message->text, ((float)viewportWidth - textWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2);
+            drawText(sansSerif, message->text, ((float)viewportWidth - textWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2, 1.f, glm::vec3(0), true);
+            drawText(sansSerif, message->text, ((float)viewportWidth - strokedTextWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2, 1.f, glm::vec3(1), false);
         }
     }
 }

@@ -23,4 +23,4 @@ void fontInit();
 void fontFinish();
 std::shared_ptr<Font> loadFont(std::string fontName);
 void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, float scale=1.f, glm::vec3 color = glm::vec3(1,1,1), bool drawStroke = false);
-float calcTextWidth(std::shared_ptr<Font> font, std::string text, float scale = 1.f);
+float calcTextWidth(std::shared_ptr<Font> font, std::string text, float scale = 1.f, bool stroke = false);
