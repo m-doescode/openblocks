@@ -6,6 +6,7 @@
 #include "objects/joint/rotatev.h"
 #include "objects/joint/weld.h"
 #include "objects/message.h"
+#include "objects/part/wedgepart.h"
 #include "objects/service/jointsservice.h"
 #include "objects/model.h"
 #include "objects/part/part.h"
@@ -23,6 +24,7 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
 
     { "BasePart", &BasePart::TYPE },
     { "Part", &Part::TYPE },
+    { "WedgePart", &WedgePart::TYPE },
     { "Snap", &Snap::TYPE },
     { "Weld", &Weld::TYPE },
     { "Rotate", &Rotate::TYPE },
