@@ -78,6 +78,7 @@ void renderInit(int width, int height) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
+    glFrontFace(GL_CW);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -147,11 +148,9 @@ static void renderPart(std::shared_ptr<BasePart> part) {
 
     PartType shape = part->IsA<Part>() ? part->CastTo<Part>().expect()->shape : PartType::Block;
     if (part->IsA<WedgePart>()) {
-        glFrontFace(GL_CCW);
         WEDGE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, WEDGE_MESH->vertexCount);
     } else if (shape == PartType::Ball) { // Part
-        glFrontFace(GL_CCW);
         SPHERE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, SPHERE_MESH->vertexCount);
     } else if (shape == PartType::Block) {
@@ -226,7 +225,6 @@ void renderSurfaceExtras() {
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -267,7 +265,6 @@ void renderSurfaceExtras() {
 void renderSkyBox() {
     glDepthMask(GL_FALSE);
     glCullFace(GL_FRONT);
-    glFrontFace(GL_CW);
 
     skyboxShader->use();
 
@@ -294,7 +291,6 @@ void renderHandles() {
 
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW); // This is right... Probably.....
     
     // Use shader
     handleShader->use();
@@ -432,7 +428,6 @@ void renderOutlines() {
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -496,7 +491,6 @@ void renderSelectionAssembly() {
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -584,7 +578,6 @@ std::vector<std::pair<CFrame, Color3>> DEBUG_CFRAMES;
 void renderDebugCFrames() {
     glDepthMask(GL_TRUE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW); // This is right... Probably.....
     
     // Use shader
     handleShader->use();

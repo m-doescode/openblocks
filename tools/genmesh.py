@@ -58,7 +58,7 @@ for line in file:
 
     if line.startswith('f '):
         verts = line.split(' ')[1:]
-        for vert in verts:
+        for vert in reversed(verts):
             coords, uv, normal = vert.split('/')
             coords, uv, normal = int(coords), int(uv), int(normal)
             coords, uv, normal = vert_coords[coords-1], vert_uvs[uv-1], vert_norms[normal-1]
