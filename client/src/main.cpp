@@ -24,6 +24,9 @@ int main() {
 
     glfwInit();
     glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE); // Valid only in OpenGL 3.2+, see: https://stackoverflow.com/a/70519392/16255372
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     GLFWwindow *window = glfwCreateWindow(1200, 900, "OpenBlocks Client ALPHA", NULL, NULL);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -148,6 +151,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     }
 }
 
+bool doDebugRender = false;
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         gWorkspace()->AddChild(lastPart = Part::New({
@@ -191,6 +195,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_M && action == GLFW_PRESS) mode = 0;
     if (key == GLFW_KEY_E && action == GLFW_PRESS) mode = 1; // Enlarge
     if (key == GLFW_KEY_R && action == GLFW_PRESS) mode = 2;
+
+    if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_PRESS) setDebugRendererEnabled(doDebugRender = !doDebugRender);
 }
 
 void resizeCallback(GLFWwindow* window, int width, int height) {
