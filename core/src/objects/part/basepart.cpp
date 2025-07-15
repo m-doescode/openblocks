@@ -155,6 +155,10 @@ float BasePart::GetSurfaceParamB(Vector3 face) {
     return 0; // Unreachable
 }
 
+Vector3 BasePart::GetEffectiveSize() {
+    return size;
+}
+
 bool BasePart::checkJointContinuity(std::shared_ptr<BasePart> otherPart) {
     // Make sure that the two parts don't depend on one another
 

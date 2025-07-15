@@ -18,6 +18,7 @@
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
 #include "datatypes/vector.h"
+#include "enum/part.h"
 #include "handles.h"
 #include "math_helper.h"
 #include "objects/hint.h"
@@ -124,8 +125,8 @@ void renderInit(int width, int height) {
 
 static void renderPart(std::shared_ptr<BasePart> part) {
     glm::mat4 model = part->cframe;
-    // if (part->name == "camera") model = camera.getLookAt();
-    model = glm::scale(model, (glm::vec3)part->size);
+    Vector3 size = part->GetEffectiveSize();
+    model = glm::scale(model, (glm::vec3)size);
     shader->set("model", model);
     shader->set("material", Material {
         .diffuse = part->color,
@@ -134,7 +135,7 @@ static void renderPart(std::shared_ptr<BasePart> part) {
     });
     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
     shader->set("normalMatrix", normalMatrix);
-    shader->set("texScale", part->size);
+    shader->set("texScale", size);
     shader->set("transparency", part->transparency);
 
     shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
@@ -144,11 +145,16 @@ static void renderPart(std::shared_ptr<BasePart> part) {
     shader->set("surfaces[" + std::to_string(NormalId::Bottom) + "]", (int)part->bottomSurface);
     shader->set("surfaces[" + std::to_string(NormalId::Front) + "]", (int)part->frontSurface);
 
+    PartType shape = part->IsA<Part>() ? part->CastTo<Part>().expect()->shape : PartType::Block;
     if (part->IsA<WedgePart>()) {
         glFrontFace(GL_CCW);
         WEDGE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, WEDGE_MESH->vertexCount);
-    } else {
+    } else if (shape == PartType::Ball) { // Part
+        glFrontFace(GL_CCW);
+        SPHERE_MESH->bind();
+        glDrawArrays(GL_TRIANGLES, 0, SPHERE_MESH->vertexCount);
+    } else if (shape == PartType::Block) {
         glFrontFace(GL_CW);
         CUBE_MESH->bind();
         glDrawArrays(GL_TRIANGLES, 0, CUBE_MESH->vertexCount);

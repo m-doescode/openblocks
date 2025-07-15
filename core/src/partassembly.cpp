@@ -90,7 +90,7 @@ void PartAssembly::TransformBy(CFrame transform) {
 }
 
 void PartAssembly::Scale(Vector3 newSize, bool scaleUp) {
-    if (parts.size() == 1) {
+    if (parts.size() == 1 && (!parts[0]->IsA<Part>() || parts[0]->CastTo<Part>().expect()->shape != PartType::Ball)) {
         parts[0]->size = newSize;
         parts[0]->UpdateProperty("Size");
         sendPropertyUpdatedSignal(parts[0], "Size", Variant(parts[0]->size));

@@ -122,6 +122,7 @@ public:
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
     float GetSurfaceParamA(Vector3 face);
     float GetSurfaceParamB(Vector3 face);
+    virtual Vector3 GetEffectiveSize();
 
     ~BasePart() override;
 
