@@ -9,6 +9,7 @@ const int FaceBack = 2;
 const int FaceLeft = 3;	
 const int FaceBottom = 4;
 const int FaceFront	= 5;
+const int FaceNone	= 6;
 
 const int SurfaceSmooth = 0;
 const int SurfaceGlue = 1;
@@ -31,6 +32,8 @@ uniform mat4 projection;
 uniform int surfaces[6];
 uniform vec3 texScale;
 
+const float faceThreshold = sqrt(2)/2;
+
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
@@ -38,12 +41,20 @@ void main()
     lPos = aPos;
     vNormal = normalMatrix * aNormal;
     lNormal = aNormal;
-    int vFace = aNormal == vec3(0,1,0) ? FaceTop :
-            aNormal == vec3(0, -1, 0) ? FaceBottom :
-            aNormal == vec3(1, 0, 0) ? FaceRight :
-            aNormal == vec3(-1, 0, 0) ? FaceLeft :
-            aNormal == vec3(0, 0, -1) ? FaceFront :
-            aNormal == vec3(0, 0, 1) ? FaceBack : -1;
+    int vFace = FaceNone;
+
+    if (dot(vec3(0, 1, 0), aNormal) > faceThreshold)
+        vFace = FaceTop;
+    else if (dot(vec3(0, -1, 0), aNormal) > faceThreshold)
+        vFace = FaceBottom;
+    else if (dot(vec3(1, 0, 0), aNormal) > faceThreshold)
+        vFace = FaceRight;
+    else if (dot(vec3(-1, 0, 0), aNormal) > faceThreshold)
+        vFace = FaceLeft;
+    else if (dot(vec3(0, 0, -1), aNormal) > faceThreshold)
+        vFace = FaceFront;
+    else if (dot(vec3(0, 0, 1), aNormal) > faceThreshold)
+        vFace = FaceBack;
 
     vSurfaceZ = surfaces[vFace];
     if (surfaces[vFace] > SurfaceUniversal) vSurfaceZ = 0;
