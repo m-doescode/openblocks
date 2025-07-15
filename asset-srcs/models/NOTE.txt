@@ -1,0 +1,9 @@
+sphere.obj was made by subdividing a cube, unwrapping it using cube projection, and then using the "To-sphere" tool in Blender to fully smoothen it out.
+Make sure you select "shade smooth" before exporting!
+
+Other settings:
+    Up axis: Y
+    Forward axis: -Z
+
+The winding order in .obj files is always counter-clockwise, so my script (genmesh.py) uses reversed() to reverse this and homogenous the winding order
+across meshes
