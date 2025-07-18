@@ -75,6 +75,7 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     void updatePartPhysics(std::shared_ptr<Part> part);
 protected:
     void InitService() override;
+    void OnRun() override;
     bool initialized = false;
 
 public:

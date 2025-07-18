@@ -78,12 +78,13 @@ void Workspace::InitService() {
     // physicsWorld->setSleepAngularVelocity(5);
 
     physicsWorld->setEventListener(&physicsEventListener);
+}
 
-    // Sync all parts
+void Workspace::OnRun() {
+    // Make joints
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> obj = *it;
-        if (!obj->IsA<Part>()) continue;
-        std::shared_ptr<Part> part = obj->CastTo<Part>().expect();
+        if (!it->IsA<Part>()) continue;
+        std::shared_ptr<Part> part = it->CastTo<Part>().expect();
         part->MakeJoints();
     }
 
