@@ -85,12 +85,13 @@ void Workspace::InitService() {
 
     // Create meshes
     WedgePart::createWedgeShape(physicsCommon);
+}
 
-    // Sync all parts
+void Workspace::OnRun() {
+    // Make joints
     for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> obj = *it;
-        if (!obj->IsA<BasePart>()) continue;
-        std::shared_ptr<BasePart> part = obj->CastTo<BasePart>().expect();
+        if (!it->IsA<BasePart>()) continue;
+        std::shared_ptr<BasePart> part = it->CastTo<BasePart>().expect();
         part->MakeJoints();
     }
 
