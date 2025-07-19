@@ -1,0 +1,5 @@
+#include "version.h"
+
+const char* BUILD_COMMIT_HASH = "@GIT_COMMIT_HASH@"; // Commit hash of the current build
+const char* BUILD_VERSION = "@GIT_VERSION@"; // Short form of the build version v1.2.3
+const char* BUILD_VERSION_LONG = "@GIT_VERSION_LONG@"; // Long form of the build version v1.2.3-12-g1234567

@@ -17,7 +17,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LUAJIT REQUIRED luajit)
 link_directories(${LUAJIT_LIBRARY_DIRS})
 
-# Run autogen
+### Autogen
 file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/objects/*.h" "src/datatypes/*.h" "src/enum/*.h")
 
 # https://cmake.org/cmake/help/book/mastering-cmake/chapter/Custom%20Commands.html
@@ -36,12 +36,18 @@ foreach (SRC ${AUTOGEN_SOURCES})
     list(APPEND AUTOGEN_OUTS "${OUT_PATH}")
 endforeach()
 
+### /Autogen
+
+# Add version info into the build
+include(gitversion)
+
 add_custom_target(autogen_build ALL
     DEPENDS ${AUTOGEN_OUTS}
 )
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 list(APPEND SOURCES ${AUTOGEN_OUTS})
+list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/src/version.cpp)
 add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_directories(openblocks PUBLIC ${LUAJIT_LIBRARY_DIRS})
