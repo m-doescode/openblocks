@@ -1,5 +1,6 @@
 #include "aboutdialog.h"
 #include "./ui_aboutdialog.h"
+#include "version.h"
 #include <qdialogbuttonbox.h>
 #include <qnamespace.h>
 #include <qplaintextedit.h>
@@ -40,6 +41,9 @@ AboutDialog::AboutDialog(QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->titleString->setText(QString() + "Openblocks Engine " + BUILD_VERSION);
+    ui->versionString->setText(BUILD_VERSION_LONG);
+    
     connect(ui->viewLicense, &QLabel::linkActivated, [this]() {
         (new LicenseDialog(this))->open();
     });

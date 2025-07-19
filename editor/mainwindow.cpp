@@ -10,6 +10,7 @@
 #include "placedocument.h"
 #include "script/scriptdocument.h"
 #include "undohistory.h"
+#include "version.h"
 #include <memory>
 #include <qclipboard.h>
 #include <qevent.h>
@@ -72,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     setMouseTracking(true);
+
+    setWindowTitle(QString() + "Openblocks Editor " + BUILD_VERSION);
 
     ui->actionRedo->setShortcuts({QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")});
 

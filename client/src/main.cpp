@@ -3,6 +3,7 @@
 #include "objects/part/part.h"
 #include "rendering/renderer.h"
 #include "common.h"
+#include "version.h"
 
 void errorCatcher(int id, const char* str);
 
@@ -22,12 +23,14 @@ int main() {
 
     glfwSetErrorCallback(errorCatcher);
 
+    std::string title = std::string() + "Openblocks Client " + BUILD_VERSION;
+
     glfwInit();
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE); // Valid only in OpenGL 3.2+, see: https://stackoverflow.com/a/70519392/16255372
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    GLFWwindow *window = glfwCreateWindow(1200, 900, "OpenBlocks Client ALPHA", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1200, 900, title.c_str(), NULL, NULL);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
