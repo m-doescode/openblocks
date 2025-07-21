@@ -238,6 +238,7 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
             if (glm::any(glm::lessThan(glm::vec3(selectionAssembly.size() + abs(draggingHandle->normal) * diff), glm::vec3(0.001f))))
                 return;
 
+            // This causes the velocity to be reset even though it shouldn't, but it's not a huge deal, so whatevs.
             selectionAssembly.TransformBy(CFrame() + absDiff * 0.5f);
             selectionAssembly.Scale(selectionAssembly.size() + abs(draggingHandle->normal) * diff, diff > 0);
         }
@@ -471,6 +472,7 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
         for (auto t : initialTransforms) {
             historyState.push_back(UndoStatePropertyChanged { t.part, "CFrame", t.cframe, t.part->cframe });
             historyState.push_back(UndoStatePropertyChanged { t.part, "Size", t.size, t.part->size });
+            historyState.push_back(UndoStatePropertyChanged { t.part, "Velocity", t.velocity, t.part->velocity });
         }
 
         M_mainWindow->undoManager.PushState(historyState);

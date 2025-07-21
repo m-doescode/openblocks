@@ -11,6 +11,7 @@ class Selection;
 struct PartTransformState {
     std::shared_ptr<BasePart> part;
     Vector3 size;
+    Vector3 velocity;
     CFrame cframe;
 };
 

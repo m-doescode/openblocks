@@ -58,15 +58,13 @@ void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
 }
 
 void BasePart::onUpdated(std::string property) {
-    // Reset velocity
-    if (property != "Velocity")
-        velocity = Vector3::ZERO;
+    bool reset = property == "Position" || property == "Rotation" || property == "CFrame" || property == "Size" || property == "Shape";
 
     if (workspace())
         workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 
     // When position/rotation/size is manually edited, break all joints, they don't apply anymore
-    if (property != "Anchored")
+    if (reset)
         BreakJoints();
 }
 

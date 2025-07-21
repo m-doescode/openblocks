@@ -68,7 +68,9 @@ void PartAssembly::SetCollisionsEnabled(bool enabled) {
 void PartAssembly::SetOrigin(CFrame newOrigin) {
     for (auto part : parts) {
         part->cframe = newOrigin * (_assemblyOrigin.Inverse() * part->cframe);
+        part->velocity = 0; // Reset velocity
         part->UpdateProperty("CFrame");
+        part->UpdateProperty("Velocity");
         // sendPropertyUpdatedSignal(part, "CFrame", Variant(part->cframe));
     }
 
@@ -78,12 +80,15 @@ void PartAssembly::SetOrigin(CFrame newOrigin) {
 void PartAssembly::TransformBy(CFrame transform) {
     for (auto part : parts) {
         part->cframe = transform * part->cframe;
+        part->velocity = 0; // Reset velocity
         part->UpdateProperty("CFrame");
         part->UpdateProperty("Position");
         part->UpdateProperty("Rotation");
+        part->UpdateProperty("Velocity");
         sendPropertyUpdatedSignal(part, "CFrame", Variant(part->cframe));
         sendPropertyUpdatedSignal(part, "Position", Variant(part->cframe));
         sendPropertyUpdatedSignal(part, "Rotation", Variant(part->cframe));
+        sendPropertyUpdatedSignal(part, "Velocity", Variant(part->cframe));
     }
 
     _assemblyOrigin = transform * _assemblyOrigin;
@@ -127,6 +132,7 @@ std::vector<PartTransformState> PartAssembly::GetCurrentTransforms() {
         t.part = part;
         t.cframe = part->cframe;
         t.size = part->size;
+        t.velocity = part->velocity;
         transforms.push_back(t);
     }
 
