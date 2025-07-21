@@ -8,6 +8,7 @@
 #include "./ui_mainwindow.h"
 #include "mainglwidget.h"
 #include "datatypes/vector.h"
+#include "enum/surface.h"
 #include "handles.h"
 #include "logger.h"
 #include "mainwindow.h"
@@ -420,16 +421,14 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             Vector3 localNormal = part->cframe.Inverse().Rotation() * rayHit->worldNormal;
             NormalId face = faceFromNormal(localNormal);
             SurfaceType surface = SurfaceType(mainWindow()->selectedTool - TOOL_SMOOTH);
+            std::string surfacePropertyName = EnumType::NormalId.FromValue(face)->Name() + "Surface";
 
-            switch (face) {
-                case Right: part->rightSurface = surface; break;
-                case Top: part->topSurface = surface; break;
-                case Back: part->backSurface = surface; break;
-                case Left: part->leftSurface = surface; break;
-                case Bottom: part->bottomSurface = surface; break;
-                case Front: part->frontSurface = surface; break;
-                default: return;
-            }
+            // Get old surface and set new surface
+            EnumItem newSurface = EnumType::SurfaceType.FromValue((int)surface).value();
+            EnumItem oldSurface = part->GetProperty(surfacePropertyName).expect().get<EnumItem>();
+            part->SetProperty(surfacePropertyName, newSurface).expect();
+
+            M_mainWindow->undoManager.PushState({UndoStatePropertyChanged { part, surfacePropertyName, oldSurface, newSurface }});
 
             if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
                 playSound("./assets/excluded/electronicpingshort.wav");
