@@ -1,20 +1,27 @@
 # Building on Linux
 
-For pre-requisite packages, check [deps.txt](./deps.txt)
+You will need to install Qt beforehand. All other packages will automatically be obtained through CPM.
 
-If your distribution does not provide ReactPhysics3D, you will have to build (and install) it yourself prior to this step
+ccache is highly recommended.
 
 Use the following to generate the build files:
 
     cmake -Bbuild .
 
+> [!NOTE]  
+> Add -DCMAKE_BUILD_TYPE=Release to produce a release build
+
 Then build the project using:
 
     cmake --build build
 
+The compiled binaries should then be located in `./build/bin/` and should be ready for redistribution without any further work.
+
+If any of the compilation steps fail, or the binaries fail to execute, please create an issue so that this can be corrected.
+
 # Building on Windows
 
-The project will be built using VCPKG and MSVC
+The process is very similar on Windows
 
 ## Pre-requisites
 
@@ -34,16 +41,18 @@ Once in the directory, add Qt to the `CMAKE_PREFIX_PATH` variable (for instance,
 
     set CMAKE_PREFIX_PATH=C:\Qt\6.8.3\msvc2022_64
 
-Now, generate the build files with cmake via the vcpkg preset:
+Now, generate the build files:
 
-    cmake -Bbuild . --preset vcpkg
+    cmake -Bbuild .
 
-Then, finally, build in release mode\*:
+Then, finally build:
 
-    cmake --build build --config Release
+    cmake --build build
 
-The compiled binaries should then be placed in `./build/bin/` and should be ready for redistribution without any further work.
+> [!NOTE]
+> To build in release mode, add -DCMAKE_BUILD_TYPE=Release to the configure (first) command,
+> and add --config Release to the build (second) command
+
+The compiled binaries should then be located in `./build/bin/[Debug|Release]` and should be ready for redistribution without any further work.
 
 If any of the compilation steps fail, or the binaries fail to execute, please create an issue so that this can be corrected.
-
-\* Release mode is necessary as debug mode copies DLLs that are not linked to the output binary
