@@ -110,7 +110,7 @@ if (WIN32)
     # TODO: Add other translations
     add_custom_command(
         TARGET editor POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:editor> ${QSCINTILLA_DLLS} --dir $<TARGET_FILE_DIR:editor> --translations en --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --plugindir $<TARGET_FILE_DIR:editor>/qtplugins
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:editor> ${QSCINTILLA_DLLS} --release --dir $<TARGET_FILE_DIR:editor> --translations en --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --plugindir $<TARGET_FILE_DIR:editor>/qtplugins
     )
     # No sense adding opengl-sw given that hardware acceleration is necessary, anyway
     # Also don't want to clutter with plugins, add only needed ones
