@@ -1,21 +1,4 @@
-find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-
-find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
-
-find_package(OpenGL)
-find_package(glm CONFIG REQUIRED)
-find_package(ReactPhysics3D REQUIRED)
-find_package(pugixml 1.15 REQUIRED)
-find_package(Freetype)
-
-find_package(Stb REQUIRED)
-include_directories(${Stb_INCLUDE_DIR})
-
-# PkgConfig packages
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LUAJIT REQUIRED luajit)
-link_directories(${LUAJIT_LIBRARY_DIRS})
+include(${CMAKE_CURRENT_SOURCE_DIR}/deps.cmake)
 
 ### Autogen
 file(GLOB_RECURSE AUTOGEN_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/objects/*.h" "src/datatypes/*.h" "src/enum/*.h")
@@ -51,8 +34,8 @@ list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/src/version.cpp)
 add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_directories(openblocks PUBLIC ${LUAJIT_LIBRARY_DIRS})
-target_link_libraries(openblocks ${GLEW_LIBRARIES} ${LUAJIT_LIBRARIES} OpenGL::GL ReactPhysics3D::ReactPhysics3D pugixml::pugixml Freetype::Freetype)
-target_include_directories(openblocks PUBLIC "src" "../include" ${LUAJIT_INCLUDE_DIRS})
+target_link_libraries(openblocks libglew_static reactphysics3d pugixml::pugixml Freetype::Freetype glm::glm libluajit ${LuaJIT_LIBRARIES})
+target_include_directories(openblocks PUBLIC "src" "../include" ${ReactPhysics3D_SOURCE_DIR}/include ${LUAJIT_INCLUDE_DIRS} ${stb_SOURCE_DIR} ${glew_SOURCE_DIR}/include)
 add_dependencies(openblocks autogen_build autogen)
 
 # Windows-specific dependencies

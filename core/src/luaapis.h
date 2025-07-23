@@ -6,6 +6,8 @@ extern "C" {
     #include <lua.h>
 }
 
+LUALIB_API void *(luaL_testudata) (lua_State *L, int ud, const char *tname);
+
 inline const char* x_luaL_udatatname (lua_State *L, int ud) {
   void *p = lua_touserdata(L, ud);
   if (p != NULL) {
@@ -17,3 +19,5 @@ inline const char* x_luaL_udatatname (lua_State *L, int ud) {
   }
   return NULL;
 }
+
+#define LUA_OK 0

@@ -2,7 +2,6 @@ opengl (Linux: glvnd, Windows: [built-in/none])
 glfw
 glew
 glm
-sdl2
 stb
 qt6
 reactphysics3d
