@@ -13,6 +13,7 @@ WedgePart::WedgePart(PartConstructParams params): BasePart(&TYPE, params) {
 }
 
 void WedgePart::updateCollider(rp::PhysicsCommon* common) {
+    Logger::fatalError("Wedges are currently disabled! Please do not use them or your editor may crash\n");
     rp::ConvexMeshShape* shape = common->createConvexMeshShape(wedgePhysMesh, glmToRp(size * glm::vec3(0.5f)));
 
     // Recreate the rigidbody if the shape changes
@@ -87,5 +88,5 @@ void WedgePart::createWedgeShape(rp::PhysicsCommon* common) {
     
     // Create the convex mesh
     std::vector<rp3d::Message> messages;
-    wedgePhysMesh = common->createConvexMesh(polygonVertexArray, messages);
+    // wedgePhysMesh = common->createConvexMesh(polygonVertexArray, messages);
 }

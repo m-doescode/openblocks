@@ -107,7 +107,7 @@ void ExplorerView::buildContextMenu() {
     contextMenu.addMenu(insertObjectMenu);
 
     for (const auto& [_, type] : INSTANCE_MAP) {
-        if (type->flags & INSTANCE_NOTCREATABLE || !type->constructor) continue;
+        if (type->flags & (INSTANCE_NOTCREATABLE | INSTANCE_HIDDEN) || !type->constructor) continue;
 
         QAction* instAction = new QAction(model.iconOf(type), QString::fromStdString(type->className));
         insertObjectMenu->addAction(instAction);

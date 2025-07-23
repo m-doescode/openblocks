@@ -3,7 +3,7 @@
 #include "basepart.h"
 #include "objects/annotation.h"
 
-class DEF_INST WedgePart : public BasePart {
+class DEF_INST_(hidden) WedgePart : public BasePart {
     AUTOGEN_PREAMBLE
 
 protected:
