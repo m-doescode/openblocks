@@ -47,5 +47,3 @@ The compiled binaries should then be placed in `./build/bin/` and should be read
 If any of the compilation steps fail, or the binaries fail to execute, please create an issue so that this can be corrected.
 
 \* Release mode is necessary as debug mode copies DLLs that are not linked to the output binary
-
-DEVELOPER NOTE: AKA Not for you. If you get CUSTOM COMMAND BUILD errors just keep rerunning build

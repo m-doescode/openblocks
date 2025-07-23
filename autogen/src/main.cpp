@@ -26,6 +26,7 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     std::string srcRootStr = string_of(srcRoot);
     std::string srcPathStr = string_of(srcPath);
     std::string outPathStr = string_of(outPath);
+    std::string logFileStr = outPathStr + ".log";
 
     const char* cargs[] = { "-xc++", "-std=c++17", "-I", srcRootStr.c_str(), "-D__AUTOGEN__", 0 };
     // THANK YOU SO MUCH THIS STACKOVERFLOW ANSWER IS SO HELPFUL
@@ -42,16 +43,23 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
         return 1;
     }
 
+    // We write to a special log file instead of stdout/stderr to
+    // 1. avoid confusion
+    // 2. prevent MSBuild from reading the word "error" and detecting there's a problem with the program (there isn't)
+    FILE* logout = fopen(logFileStr.c_str(), "w");
+    
     // Print errors
     int ndiags = clang_getNumDiagnostics(unit);
     for (int i = 0; i < ndiags; i++) {
         CXDiagnostic diag = clang_getDiagnostic(unit, i);
         CXString str = clang_formatDiagnostic(diag, 0);
-        fprintf(stderr, "diag: %s\n", clang_getCString(str));
+        fprintf(logout, "diag: %s\n", clang_getCString(str));
 
         clang_disposeString(str);
         clang_disposeDiagnostic(diag);
     }
+
+    fclose(logout);
 
     CXCursor cursor = clang_getTranslationUnitCursor(unit);
 
@@ -104,5 +112,7 @@ int main(int argc, char** argv) {
     fs::path srcPath = argv[2];
     fs::path outPath = argv[3];
 
+    // fprintf(stderr, "Some error here\n");
+    // return 0;
     return processHeader(srcRoot, srcPath, outPath);
 }
