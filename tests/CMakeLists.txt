@@ -1,0 +1,7 @@
+function (create_test TEST_NAME)
+    set(TARGET_NAME test_${TEST_NAME})
+    add_executable(${TARGET_NAME} ${ARGN})
+    target_link_libraries(${TARGET_NAME} PRIVATE openblocks)
+    add_dependencies(${TARGET_NAME} openblocks)
+    add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME})
+endfunction ()
