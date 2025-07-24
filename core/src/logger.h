@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <ostream>
 #include <string>
 
 class Script;
@@ -26,8 +27,10 @@ namespace Logger {
     extern std::string currentLogDir;
 
     void init();
+    void initTest(std::stringstream* out); // Testing only!
     void finish();
     void addLogListener(LogListener);
+    void resetLogListeners(); // Testing only!
 
     void log(std::string message, LogLevel logLevel, ScriptSource source = {});
     inline void info(std::string message) { log(message, LogLevel::INFO); }

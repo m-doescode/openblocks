@@ -10,6 +10,7 @@
 static std::ofstream logStream;
 static std::vector<Logger::LogListener> logListeners;
 std::string Logger::currentLogDir = "NULL";
+static std::stringstream* rawOutputBuffer = nullptr;
 
 void Logger::init() {
     initProgramLogsDir();
@@ -20,6 +21,12 @@ void Logger::init() {
 
     logStream = std::ofstream(currentLogDir = (getProgramLogsDir() + "/" + fileName));
     Logger::debug("Logger initialized");
+}
+
+// Initializes the logger in a "void" mode for testing.
+// It is not necessary to call Logger::finish
+void Logger::initTest(std::stringstream* outputBuffer) {
+    rawOutputBuffer = outputBuffer;
 }
 
 void Logger::finish() {
@@ -41,6 +48,7 @@ void Logger::log(std::string message, Logger::LogLevel logLevel, ScriptSource so
 
     logStream << formattedLogLine << std::endl;
     printf("%s\n", formattedLogLine.c_str());
+    if (rawOutputBuffer != nullptr) *rawOutputBuffer << logLevelStr << ": " << message << "\n";
 
     for (Logger::LogListener listener : logListeners) {
         listener(logLevel, message, source);
@@ -53,4 +61,8 @@ void Logger::log(std::string message, Logger::LogLevel logLevel, ScriptSource so
 
 void Logger::addLogListener(Logger::LogListener listener) {
     logListeners.push_back(listener);
+}
+
+void Logger::resetLogListeners() {
+    logListeners.clear();
 }
