@@ -43,6 +43,8 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
         return 1;
     }
 
+    fs::create_directories(outPath.parent_path()); // Make sure generated dir exists before we try writing to it
+
     // We write to a special log file instead of stdout/stderr to
     // 1. avoid confusion
     // 2. prevent MSBuild from reading the word "error" and detecting there's a problem with the program (there isn't)
@@ -73,8 +75,6 @@ int processHeader(fs::path srcRoot, fs::path srcPath, fs::path outPath) {
     object::analyzeClasses(cursor, srcRootStr, &objectAnlyState);
     data::analyzeClasses(cursor, srcRootStr, &dataAnlyState);
     enum_::analyzeClasses(cursor, srcRootStr, &enumAnlyState);
-
-    fs::create_directories(outPath.parent_path()); // Make sure generated dir exists before we try writing to it
 
     printf("[AUTOGEN] Generating file %s...\n", relpathStr.c_str());
     std::ofstream outStream(outPathStr);
