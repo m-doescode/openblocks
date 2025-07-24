@@ -10,6 +10,7 @@ else()
 endif()
 
 set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
+set(USE_CCACHE ON)
 
 add_subdirectory(autogen)
 
