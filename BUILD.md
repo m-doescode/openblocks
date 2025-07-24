@@ -1,6 +1,6 @@
 # Building on Linux
 
-You will need to install Qt beforehand. All other packages will automatically be obtained through CPM.
+You will need to install Qt and LLVM/libclang beforehand. All other packages will automatically be obtained through CPM.
 
 ccache is highly recommended.
 
@@ -29,6 +29,7 @@ The process is very similar on Windows
 * Qt 6.8.3 or higher, with MSVC toolchain
 * CMake
 * Git (for cloning the repo, optional)
+* LLVM/libclang 18.1.8+ (from https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/LLVM-18.1.8-win64.exe)
 * QScintilla already built (see [docs/qscintilla.md](./docs/qscintilla.md)) *\*likely temporary\**
 
 To start, clone the repository:
