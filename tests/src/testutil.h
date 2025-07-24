@@ -13,6 +13,9 @@
 
 #define DATAMODEL_REF std::shared_ptr<DataModel>
 
+#define TU_TIME_EXPOSE_TEST
+#define TT_ADVANCETIME(secs) tu_set_override(tu_clock_micros() + secs * 1'000'000);
+
 #include <cstdio>
 #include <cstring>
 
