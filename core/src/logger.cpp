@@ -16,8 +16,9 @@ void Logger::init() {
     initProgramLogsDir();
 
     const auto now = std::chrono::system_clock::now();
+    const auto nows = std::chrono::floor<std::chrono::seconds>(now);
 
-    std::string fileName = std::format("log_{0:%Y%m%d}_{0:%H%M%S}.txt", now);
+    std::string fileName = std::format("log_{0:%Y%m%d}_{0:%H%M%S}.txt", nows);
 
     logStream = std::ofstream(currentLogDir = (getProgramLogsDir() + "/" + fileName));
     Logger::debug("Logger initialized");
