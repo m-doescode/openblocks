@@ -91,7 +91,7 @@ int main() {
 }
 
 void errorCatcher(int id, const char* str) {
-    Logger::fatalErrorf("GLFW Error: [{}] {}", id, str);
+    Logger::fatalErrorf("GLFW Error: [%d] %s", id, str);
 }
 
 float lastTime;
