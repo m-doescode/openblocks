@@ -1,6 +1,6 @@
 opengl (Linux: glvnd, Windows: [built-in/none])
 glfw
-glew
+glad
 glm
 stb
 qt6

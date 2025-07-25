@@ -3,6 +3,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/deps.cmake)
 ## Sources
 set(SOURCES
     src/stb.cpp
+    src/glad.cpp
+
     src/ptr_helpers.h
     src/enum/part.h
     src/enum/surface.cpp
@@ -195,8 +197,8 @@ list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/src/version.cpp)
 add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_directories(openblocks PUBLIC ${LUAJIT_LIBRARY_DIRS})
-target_link_libraries(openblocks libglew_static reactphysics3d pugixml::pugixml Freetype::Freetype glm::glm libluajit ${LuaJIT_LIBRARIES})
-target_include_directories(openblocks PUBLIC "src" "../include" ${ReactPhysics3D_SOURCE_DIR}/include ${LUAJIT_INCLUDE_DIRS} ${stb_SOURCE_DIR} ${glew_SOURCE_DIR}/include)
+target_link_libraries(openblocks reactphysics3d pugixml::pugixml Freetype::Freetype glm::glm libluajit ${LuaJIT_LIBRARIES})
+target_include_directories(openblocks PUBLIC "src" "../include" "${CMAKE_SOURCE_DIR}/external/glad" ${ReactPhysics3D_SOURCE_DIR}/include ${LUAJIT_INCLUDE_DIRS} ${stb_SOURCE_DIR})
 add_dependencies(openblocks autogen_build autogen)
 
 # Windows-specific dependencies

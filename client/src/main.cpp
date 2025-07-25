@@ -1,6 +1,8 @@
-#include <GL/glew.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include "logger.h"
 #include "objects/part/part.h"
+#include "panic.h"
 #include "rendering/renderer.h"
 #include "common.h"
 #include "version.h"
@@ -37,7 +39,13 @@ int main() {
     glfwSetFramebufferSizeCallback(window, resizeCallback);
 
     glfwMakeContextCurrent(window);
-    glewInit();
+    int version = gladLoadGL(glfwGetProcAddress);
+    if (version == 0) {
+        Logger::fatalError("Failed to initialize OpenGL context");
+        panic();
+    } else {
+        Logger::debugf("Initialized GL context version %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+    }
 
     gDataModel->Init();
     renderInit(1200, 900);

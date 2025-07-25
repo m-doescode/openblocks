@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+#include <glad/gl.h>
 #include <glm/common.hpp>
 #include <glm/vector_relational.hpp>
 #include <memory>
@@ -35,7 +35,13 @@ MainGLWidget::MainGLWidget(QWidget* parent): QOpenGLWidget(parent), contextMenu(
 }
 
 void MainGLWidget::initializeGL() {
-    glewInit();
+    int version = gladLoaderLoadGL();
+    if (version == 0) {
+        Logger::fatalError("Failed to initialize OpenGL context");
+        panic();
+    } else {
+        Logger::debugf("Initialized GL context version %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+    }
     renderInit(width(), height());
 }
 

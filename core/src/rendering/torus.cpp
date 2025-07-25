@@ -1,7 +1,7 @@
 #include "torus.h"
 #include <cmath>
 
-#include <GL/glew.h>
+#include <glad/gl.h>
 
 #define PI 3.1415926535f
 

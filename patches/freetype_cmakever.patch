@@ -1,0 +1,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 28dc3b3f6..37fd14713 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -85,7 +85,8 @@
+ # FreeType explicitly marks the API to be exported and relies on the compiler
+ # to hide all other symbols. CMake supports a C_VISBILITY_PRESET property
+ # starting with 2.8.12.
+-cmake_minimum_required(VERSION 2.8.12)
++# cmake_minimum_required(VERSION 2.8.12)
++cmake_minimum_required(VERSION 3.5)
+ 
+ if (NOT CMAKE_VERSION VERSION_LESS 3.3)
+   # Allow symbol visibility settings also on static libraries. CMake < 3.3

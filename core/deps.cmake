@@ -1,7 +1,6 @@
 
 include(CPM)
 
-CPMAddPackage("gh:Perlmint/glew-cmake#glew-cmake-2.2.0")
 CPMAddPackage("gh:g-truc/glm#1.0.1")
 CPMAddPackage(NAME reactphysics3d GITHUB_REPOSITORY "DanielChappuis/reactphysics3d" VERSION 0.10.2 PATCHES ${CMAKE_SOURCE_DIR}/patches/std_chrono.patch)
 # https://github.com/StereoKit/StereoKit/blob/0be056efebcee5e58ad1438f4cf6dfdb942f6cf9/CMakeLists.txt#L205
@@ -13,6 +12,7 @@ CPMAddPackage(
     GIT_REPOSITORY https://github.com/aseprite/freetype2.git
     GIT_TAG VER-2-10-0
     VERSION 2.10.0
+    PATCHES ${CMAKE_SOURCE_DIR}/patches/freetype_cmakever.patch
 )
 
 if (freetype_ADDED)

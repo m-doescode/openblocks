@@ -1,8 +1,7 @@
 #include "rendering/shader.h"
 #include "rendering/texture.h"
 #include "timeutil.h"
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include <glad/gl.h>
 #include <glm/ext/vector_float4.hpp>
 #include <string>
 
