@@ -20,12 +20,11 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-enable_testing()
-add_subdirectory(tests)
-
 add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(editor)
 
 
-install(FILES $<TARGET_RUNTIME_DLLS:editor> TYPE BIN)
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests )
+enable_testing()
+add_subdirectory(tests)

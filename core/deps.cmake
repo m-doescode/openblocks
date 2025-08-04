@@ -1,6 +1,10 @@
 
 include(CPM)
 
+# Some packages will build helper binaries. This keeps them out of our own build output
+set (PREV_BIN_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+unset (CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+
 CPMAddPackage("gh:g-truc/glm#1.0.1")
 CPMAddPackage(NAME reactphysics3d GITHUB_REPOSITORY "DanielChappuis/reactphysics3d" VERSION 0.10.2 PATCHES ${CMAKE_SOURCE_DIR}/patches/std_chrono.patch)
 # https://github.com/StereoKit/StereoKit/blob/0be056efebcee5e58ad1438f4cf6dfdb942f6cf9/CMakeLists.txt#L205
@@ -22,3 +26,5 @@ endif()
 CPMAddPackage("gh:nothings/stb#8cfb1605c02aee9fb6eb5d8ea559017745bd9a16") # 2.14
 CPMAddPackage("gh:WohlSoft/LuaJIT#a5da8f4a31972b74254f00969111b8b7a07cf584") # v2.1
 set(LUAJIT_INCLUDE_DIRS ${LuaJIT_SOURCE_DIR}/src)
+
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PREV_BIN_PATH})
