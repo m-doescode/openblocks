@@ -39,16 +39,20 @@ qt_add_executable(editor MANUAL_FINALIZATION ${PROJECT_SOURCES})
 target_include_directories(editor PRIVATE .)
 target_link_libraries(editor PRIVATE openblocks Qt6::Widgets Qt6::OpenGLWidgets ${QSCINTILLA_LIBRARY})
 
-# Copy assets
-add_custom_command(
-        TARGET editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_SOURCE_DIR}/assets
-                $<TARGET_FILE_DIR:editor>/assets)
+set_target_properties(editor PROPERTIES
+    WIN32_EXECUTABLE ON
+)
 
 # Copy Qt files
 if (WIN32)
     #include("${QT_DEPLOY_SUPPORT}")
+
+    # Copy assets
+    add_custom_command(
+        TARGET editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:editor>/assets)
 
     # Copy over QScintilla DLLs
     # TODO: Use a better approach?
