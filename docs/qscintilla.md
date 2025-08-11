@@ -4,7 +4,7 @@ To do this, first download the source archive from [`https://www.riverbankcomput
 
 Next, launch the *x64 Native Tools Command Prompt for VS 2022*, and cd into the directory that you extracted the archive to
 
-Now, run `qmake` from your Qt's bin directory to configure it
+Now, run `qmake src` from your Qt's bin directory to configure it
 
 Once that's done, build and install the project using `nmake install`
 
