@@ -12,3 +12,13 @@ if(WIN32)
             ${CMAKE_SOURCE_DIR}/assets
             $<TARGET_FILE_DIR:client>/assets)
 endif()
+
+set_target_properties(client PROPERTIES
+    WIN32_EXECUTABLE ON
+)
+
+# https://stackoverflow.com/a/73899349/16255372
+if (WIN32)
+    # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
+    target_link_options(client PRIVATE "/ENTRY:mainCRTStartup")
+endif()
