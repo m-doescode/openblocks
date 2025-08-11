@@ -37,7 +37,7 @@ set(PROJECT_SOURCES
 
 qt_add_executable(editor MANUAL_FINALIZATION ${PROJECT_SOURCES})
 target_include_directories(editor PRIVATE .)
-target_link_libraries(editor PRIVATE openblocks Qt6::Widgets Qt6::OpenGLWidgets ${QSCINTILLA_LIBRARY})
+target_link_libraries(editor PRIVATE openblocks Qt6::Widgets Qt6::OpenGLWidgets ${QSCINTILLA_LIBRARY} miniaudio)
 
 set_target_properties(editor PROPERTIES
     WIN32_EXECUTABLE ON

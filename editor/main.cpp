@@ -9,6 +9,9 @@
 #include <QSurfaceFormat>
 #include <qfont.h>
 #include <qsurfaceformat.h>
+#include <miniaudio.h>
+
+ma_engine miniaudio;
 
 int main(int argc, char *argv[])
 {
@@ -23,10 +26,17 @@ int main(int argc, char *argv[])
 
     Logger::init();
 
+    ma_result res = ma_engine_init(NULL, &miniaudio);
+    if (res != MA_SUCCESS) {
+        Logger::fatalErrorf("Failed to initialize Miniaudio withe error [%d]", res);
+        panic();
+    }
+
     MainWindow w;
     w.show();
     int result = a.exec();
 
+    ma_engine_uninit(&miniaudio);
     Logger::finish();
     return result;
 }

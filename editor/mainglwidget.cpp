@@ -2,8 +2,8 @@
 #include <glm/common.hpp>
 #include <glm/vector_relational.hpp>
 #include <memory>
+#include <miniaudio.h>
 #include <qnamespace.h>
-#include <qsoundeffect.h>
 #include <string>
 #include "./ui_mainwindow.h"
 #include "mainglwidget.h"
@@ -45,12 +45,10 @@ void MainGLWidget::initializeGL() {
     renderInit(width(), height());
 }
 
+extern ma_engine miniaudio;
 inline void playSound(QString path) {
-    return; // TODO: Fix pulseaudio bug causing stutters
-    QSoundEffect *sound = new QSoundEffect;
-    sound->setSource(QUrl::fromLocalFile(path));
-    sound->play();
-    sound->connect(sound, &QSoundEffect::playingChanged, [=]() { /* Thank you QSound source code! */ sound->deleteLater(); return false; });
+    ma_engine_stop(&miniaudio);
+    ma_engine_play_sound(&miniaudio, path.toStdString().c_str(), NULL);
 }
 
 extern int vpx, vpy;

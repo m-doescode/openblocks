@@ -20,13 +20,13 @@
 #include <qmessagebox.h>
 #include <qmimedata.h>
 #include <qnamespace.h>
-#include <qsoundeffect.h>
 #include <qstylefactory.h>
 #include <qstylehints.h>
 #include <qmdisubwindow.h>
 #include <pugixml.hpp>
 #include <qtextcursor.h>
 #include <qtextedit.h>
+#include <miniaudio.h>
 #include <vector>
 
 #ifdef _NDEBUG
@@ -58,12 +58,9 @@ void logQtMessage(QtMsgType type, const QMessageLogContext &context, const QStri
     // if (defaultMessageHandler) defaultMessageHandler(type, context, msg);
 }
 
+extern ma_engine miniaudio;
 inline void playSound(QString path) {
-    return; // TODO: Fix pulseaudio bug causing stutters
-    QSoundEffect *sound = new QSoundEffect;
-    sound->setSource(QUrl::fromLocalFile(path));
-    sound->play();
-    sound->connect(sound, &QSoundEffect::playingChanged, [=]() { /* Thank you QSound source code! */ sound->deleteLater(); return false; });
+    ma_engine_play_sound(&miniaudio, path.toStdString().c_str(), NULL);
 }
 
 MainWindow::MainWindow(QWidget *parent)

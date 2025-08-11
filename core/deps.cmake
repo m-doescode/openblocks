@@ -27,4 +27,6 @@ CPMAddPackage("gh:nothings/stb#8cfb1605c02aee9fb6eb5d8ea559017745bd9a16") # 2.14
 CPMAddPackage("gh:WohlSoft/LuaJIT#a5da8f4a31972b74254f00969111b8b7a07cf584") # v2.1
 set(LUAJIT_INCLUDE_DIRS ${LuaJIT_SOURCE_DIR}/src)
 
+CPMAddPackage("gh:mackron/miniaudio#0.11.22")
+
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PREV_BIN_PATH})
