@@ -59,6 +59,7 @@ void logQtMessage(QtMsgType type, const QMessageLogContext &context, const QStri
 }
 
 inline void playSound(QString path) {
+    return; // TODO: Fix pulseaudio bug causing stutters
     QSoundEffect *sound = new QSoundEffect;
     sound->setSource(QUrl::fromLocalFile(path));
     sound->play();
