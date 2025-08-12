@@ -7,6 +7,7 @@
 #include <QStyleFactory>
 #include <QBasicTimer>
 #include <QSurfaceFormat>
+#include <cstdio>
 #include <qfont.h>
 #include <qsurfaceformat.h>
 #include <miniaudio.h>
@@ -15,6 +16,15 @@ ma_engine miniaudio;
 
 int main(int argc, char *argv[])
 {
+    Logger::init();
+
+    // Has to happen before Qt application initializes or we get an error in WASAPI initialization
+    ma_result res = ma_engine_init(NULL, &miniaudio);
+    if (res != MA_SUCCESS) {
+        Logger::fatalErrorf("Failed to initialize Miniaudio withe error [%d]", res);
+        panic();
+    }
+
     QSurfaceFormat format;
     format.setSamples(4);
     format.setRenderableType(QSurfaceFormat::OpenGL);
@@ -23,14 +33,6 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     QApplication a(argc, argv);
-
-    Logger::init();
-
-    ma_result res = ma_engine_init(NULL, &miniaudio);
-    if (res != MA_SUCCESS) {
-        Logger::fatalErrorf("Failed to initialize Miniaudio withe error [%d]", res);
-        panic();
-    }
 
     MainWindow w;
     w.show();
