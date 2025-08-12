@@ -37,6 +37,8 @@ PATHS
   /usr/local/lib
   /usr/local/lib/qt6
   /usr/lib
+  /usr/lib64
+  /usr/lib32
   ${VCPKG_INSTALLED_DIR}/x64-windows/lib
 )
 
@@ -50,6 +52,8 @@ PATHS
   $ENV{LIB_DIR}/lib
   /usr/local/lib
   /usr/local/lib/qt6
+  /usr/lib64
+  /usr/lib32
   /usr/lib
   ${QSCINTILLA_LIB_DIR}
   ${VCPKG_INSTALLED_DIR}/x64-windows/lib
