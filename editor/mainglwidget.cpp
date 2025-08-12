@@ -4,6 +4,7 @@
 #include <memory>
 #include <miniaudio.h>
 #include <qnamespace.h>
+#include <qguiapplication.h>
 #include <string>
 #include "./ui_mainwindow.h"
 #include "mainglwidget.h"
@@ -76,11 +77,14 @@ bool isMouseRightDragging = false;
 QPoint lastMousePos;
 void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
     if (!isMouseRightDragging) return;
-    
-    camera.processRotation(evt->pos().x() - lastMousePos.x(), evt->pos().y() - lastMousePos.y());
-    lastMousePos = evt->pos();
 
-    // QCursor::setPos(lastMousePos);
+    camera.processRotation(evt->pos().x() - lastMousePos.x(), evt->pos().y() - lastMousePos.y());
+    
+    // Does not work on Wayland. Find an alternative
+    if (QGuiApplication::platformName() != "wayland")
+        QCursor::setPos(mapToGlobal(lastMousePos));
+    else
+        lastMousePos = evt->pos();
 }
 
 
@@ -328,6 +332,7 @@ std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
 }
 
 void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
+    if (isMouseRightDragging) return; // Don't change the cursor while it is intentionally blank
     QPoint position = evt->pos();
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
@@ -380,6 +385,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     case Qt::RightButton: {
         lastMousePos = evt->pos();
         isMouseRightDragging = true;
+        setCursor(Qt::BlankCursor);
         return;
     // Clicking on objects
     } case Qt::LeftButton: {
@@ -469,6 +475,7 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     isMouseDragging = false;
     draggingObject = {};
     draggingHandle = std::nullopt;
+    setCursor(Qt::ArrowCursor);
 
     if (!initialTransforms.empty()) {
         UndoState historyState;
