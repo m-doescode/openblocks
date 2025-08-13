@@ -2,8 +2,11 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+set(QT_VERSION_MAJOR 6)
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets REQUIRED)
 find_package(QScintilla6 REQUIRED)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/deps.cmake)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -37,7 +40,7 @@ set(PROJECT_SOURCES
 
 qt_add_executable(editor MANUAL_FINALIZATION ${PROJECT_SOURCES})
 target_include_directories(editor PRIVATE .)
-target_link_libraries(editor PRIVATE openblocks Qt6::Widgets Qt6::OpenGLWidgets ${QSCINTILLA_LIBRARY} miniaudio)
+target_link_libraries(editor PRIVATE openblocks Qt6::Widgets Qt6::OpenGLWidgets ${QSCINTILLA_LIBRARY} miniaudio QCursorConstraints)
 
 set_target_properties(editor PROPERTIES
     WIN32_EXECUTABLE ON

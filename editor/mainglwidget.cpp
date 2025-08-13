@@ -3,6 +3,7 @@
 #include <glm/vector_relational.hpp>
 #include <memory>
 #include <miniaudio.h>
+#include <qcursorconstraints.h>
 #include <qnamespace.h>
 #include <qguiapplication.h>
 #include <string>
@@ -74,17 +75,11 @@ void MainGLWidget::paintGL() {
 }
 
 bool isMouseRightDragging = false;
-QPoint lastMousePos;
+QPoint mouseLockedPos;
 void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
     if (!isMouseRightDragging) return;
 
-    camera.processRotation(evt->pos().x() - lastMousePos.x(), evt->pos().y() - lastMousePos.y());
-    
-    // Does not work on Wayland. Find an alternative
-    if (QGuiApplication::platformName() != "wayland")
-        QCursor::setPos(mapToGlobal(lastMousePos));
-    else
-        lastMousePos = evt->pos();
+    camera.processRotation(evt->pos().x() - mouseLockedPos.x(), evt->pos().y() - mouseLockedPos.y());
 }
 
 
@@ -383,9 +378,10 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     switch(evt->button()) {
     // Camera drag
     case Qt::RightButton: {
-        lastMousePos = evt->pos();
+        mouseLockedPos = evt->pos();
         isMouseRightDragging = true;
         setCursor(Qt::BlankCursor);
+        QCursorConstraints::lockCursor(window()->windowHandle());
         return;
     // Clicking on objects
     } case Qt::LeftButton: {
@@ -470,6 +466,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
 }
 
 void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
+    QCursorConstraints::unlockCursor(window()->windowHandle());
     // if (isMouseDragging) draggingObject.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
     isMouseRightDragging = false;
     isMouseDragging = false;

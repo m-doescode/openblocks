@@ -11,6 +11,7 @@
 #include <qfont.h>
 #include <qsurfaceformat.h>
 #include <miniaudio.h>
+#include <qcursorconstraints.h>
 
 ma_engine miniaudio;
 
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     QApplication a(argc, argv);
+    QCursorConstraints::init();
 
     MainWindow w;
     w.show();
