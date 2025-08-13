@@ -76,8 +76,8 @@ void Workspace::InitService() {
 
     physicsWorld->setGravity(rp::Vector3(0, -196.2, 0));
     // world->setContactsPositionCorrectionTechnique(rp3d::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
-    physicsWorld->setNbIterationsPositionSolver(2000);
-    physicsWorld->setNbIterationsVelocitySolver(2000);
+    // physicsWorld->setNbIterationsPositionSolver(2000);
+    // physicsWorld->setNbIterationsVelocitySolver(2000);
     // physicsWorld->setSleepLinearVelocity(10);
     // physicsWorld->setSleepAngularVelocity(5);
 
