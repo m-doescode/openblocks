@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-class DEF_INST_SERVICE Selection : public Service {
+class DEF_INST_SERVICE_(hidden) Selection : public Service {
     AUTOGEN_PREAMBLE
 private:
     std::vector<std::shared_ptr<Instance>> selection;

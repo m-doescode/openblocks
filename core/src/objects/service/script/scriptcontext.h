@@ -15,7 +15,7 @@ struct SleepingThread {
 
 class Script;
 
-class DEF_INST_SERVICE ScriptContext : public Service {
+class DEF_INST_SERVICE_(hidden) ScriptContext : public Service {
     AUTOGEN_PREAMBLE
 
     std::vector<SleepingThread> sleepingThreads;

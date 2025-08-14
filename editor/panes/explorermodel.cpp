@@ -8,6 +8,10 @@
 #include <qmimedata.h>
 #include <QWidget>
 
+#ifdef _NDEBUG
+#define NDEBUG
+#endif
+
 #define M_mainWindow dynamic_cast<MainWindow*>(dynamic_cast<QWidget*>(dynamic_cast<QObject*>(this)->parent())->window())
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model
@@ -49,8 +53,14 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
         ? static_cast<Instance*>(parent.internalPointer())
         : rootItem.get();
 
+#ifdef NDEBUG
     if (parentItem->GetChildren().size() >= (size_t)row && !(parentItem->GetChildren()[row]->GetClass()->flags & INSTANCE_HIDDEN))
         return createIndex(row, column, parentItem->GetChildren()[row].get());
+#else
+    // Don't hide in debug builds
+    if (parentItem->GetChildren().size() >= (size_t)row)
+        return createIndex(row, column, parentItem->GetChildren()[row].get());
+#endif
     return {};
 }
 
@@ -97,7 +107,15 @@ int ExplorerModel::rowCount(const QModelIndex &parent) const {
         ? static_cast<Instance*>(parent.internalPointer())
         : rootItem.get();
 
+#ifdef NDEBUG
+    // Trim trailing hidden items as they make the branches look weird
+    int count = parentItem->GetChildren().size();
+    while (count > 0 && parentItem->GetChildren()[count-1]->GetClass()->flags & INSTANCE_HIDDEN) count--;
+    return count;
+#else
+    // Don't hide in debug builds
     return parentItem->GetChildren().size();
+#endif
 }
 
 int ExplorerModel::columnCount(const QModelIndex &parent) const {
