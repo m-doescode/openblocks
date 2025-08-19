@@ -68,7 +68,7 @@ void Bool_PushLuaValue(Variant self, lua_State* L) {
 result<Variant, LuaCastError> Bool_FromLuaValue(lua_State* L, int idx) {
     if (!lua_isboolean(L, idx))
         return LuaCastError(lua_typename(L, idx), "boolean");
-    return Variant(lua_toboolean(L, idx));
+    return Variant((bool)lua_toboolean(L, idx));
 }
 
 const TypeDesc BOOL_TYPE {
