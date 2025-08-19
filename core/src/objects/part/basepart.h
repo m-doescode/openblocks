@@ -32,7 +32,7 @@ struct PartConstructParams {
     bool locked = false;
 };
 
-class Workspace;
+class PhysWorld;
 
 class DEF_INST_ABSTRACT_(explorer_icon="part") BasePart : public PVInstance {
     AUTOGEN_PREAMBLE
@@ -52,7 +52,7 @@ protected:
     bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<BasePart> otherPart); 
 
     friend JointInstance;
-    friend Workspace;
+    friend PhysWorld;
 
     virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;

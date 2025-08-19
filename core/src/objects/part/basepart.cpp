@@ -29,8 +29,7 @@ BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInst
 BasePart::~BasePart() {
     // This relies on physicsCommon still existing. Be very careful.
     if (this->rigidBody && workspace()) {
-        workspace().value()->DestroyRigidBody(rigidBody);
-        this->rigidBody = nullptr;
+        workspace().value()->RemoveBody(shared<BasePart>());
     }
 }
 
@@ -53,6 +52,7 @@ void BasePart::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWor
 }
 
 void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
+    oldWorkspace->RemoveBody(shared<BasePart>());
 }
 
 void BasePart::onUpdated(std::string property) {

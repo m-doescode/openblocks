@@ -57,6 +57,9 @@ set(SOURCES
     src/rendering/font.h
     src/rendering/defaultmeshes.h
     src/rendering/texture3d.cpp
+    src/physics/util.h
+    src/physics/world.h
+    src/physics/world.cpp
     src/logger.cpp
     src/handles.h
     src/timeutil.h
@@ -126,7 +129,6 @@ set(SOURCES
     src/panic.h
     src/lua/instancelib.cpp
     src/timeutil.cpp
-    src/physics/util.h
     src/luaapis.h
     src/math_helper.h
 )
