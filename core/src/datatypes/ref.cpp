@@ -151,9 +151,9 @@ static int inst_index(lua_State* L) {
     }
 
     // Look for child
-    std::optional<std::shared_ptr<Instance>> child = inst->FindFirstChild(key);
+    nullable std::shared_ptr<Instance> child = inst->FindFirstChild(key);
     if (child) {
-        InstanceRef(child.value()).PushLuaValue(L);
+        InstanceRef(child).PushLuaValue(L);
         return 1;
     }
 
@@ -173,7 +173,7 @@ static int inst_newindex(lua_State* L) {
     if (meta->flags & PROP_READONLY)
         return luaL_error(L, "'%s' of %s is read-only", key.c_str(), inst->GetClass()->className.c_str());
     if (key == "Parent" && inst->IsParentLocked())
-        return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent().value()->name.c_str() : "NULL", inst->GetClass()->className.c_str());
+        return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent()->name.c_str() : "NULL", inst->GetClass()->className.c_str());
 
     // TODO: Make this work for enums, this is not a solution!!
     result<Variant, LuaCastError> value = meta->type.descriptor->fromLuaValue(L, -1);

@@ -412,9 +412,9 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
 
         // Traverse to the root model
         if (~evt->modifiers() & Qt::AltModifier) {
-            std::optional<std::shared_ptr<Instance>> nextParent = selObject->GetParent();
-            while (nextParent.value() && nextParent.value()->IsA("Model")) {
-                selObject = std::dynamic_pointer_cast<PVInstance>(nextParent.value()); nextParent = selObject->GetParent();
+            nullable std::shared_ptr<Instance> nextParent = selObject->GetParent();
+            while (nextParent && nextParent->IsA("Model")) {
+                selObject = std::dynamic_pointer_cast<PVInstance>(nextParent); nextParent = selObject->GetParent();
             }
         }
 

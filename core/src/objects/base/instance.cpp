@@ -44,21 +44,16 @@ Instance::Instance(const InstanceType* type) {
 Instance::~Instance () {
 }
 
-template <typename T>
-std::weak_ptr<T> optional_to_weak(std::optional<std::shared_ptr<T>> a) {
-    return a ? a.value() : std::weak_ptr<T>();
-}
-
 // TODO: Test this
-bool Instance::ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent) {
-    for (std::optional<std::shared_ptr<Instance>> currentParent = newParent; currentParent.has_value(); currentParent = currentParent.value()->GetParent()) {
-        if (currentParent.value() == this->shared_from_this())
+bool Instance::ancestryContinuityCheck(nullable std::shared_ptr<Instance> newParent) {
+    for (std::shared_ptr<Instance> currentParent = newParent; currentParent != nullptr; currentParent = currentParent->GetParent()) {
+        if (currentParent == this->shared_from_this())
             return false;
     }
     return true;
 }
 
-bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
+bool Instance::SetParent(nullable std::shared_ptr<Instance> newParent) {
     if (this->parentLocked || !ancestryContinuityCheck(newParent))
         return false;
 
@@ -70,10 +65,10 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
         oldParent->children.erase(std::find(oldParent->children.begin(), oldParent->children.end(), this->shared_from_this()));
     }
     // Add ourselves to the new parent
-    if (newParent.has_value()) {
-        newParent.value()->children.push_back(this->shared_from_this());
+    if (newParent != nullptr) {
+        newParent->children.push_back(this->shared_from_this());
     }
-    this->parent = optional_to_weak(newParent);
+    this->parent = newParent;
     // TODO: Add code for sending signals for parent updates
     // TODO: Yeahhh maybe this isn't the best way of doing this?
     if (hierarchyPostUpdateHandler.has_value()) hierarchyPostUpdateHandler.value()(this->shared_from_this(), lastParent, newParent);
@@ -85,21 +80,21 @@ bool Instance::SetParent(std::optional<std::shared_ptr<Instance>> newParent) {
     return true;
 }
 
-void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedChild, std::optional<std::shared_ptr<Instance>> newParent) {
+void Instance::updateAncestry(nullable std::shared_ptr<Instance> updatedChild, nullable std::shared_ptr<Instance> newParent) {
     auto oldDataModel = _dataModel;
     auto oldWorkspace = _workspace;
 
     // Update parent data model and workspace, if applicable
-    if (GetParent()) {
-        this->_dataModel = GetParent().value()->GetClass() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent().value()) : GetParent().value()->_dataModel;
-        this->_workspace = GetParent().value()->GetClass() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent().value()) : GetParent().value()->_workspace;
+    if (GetParent() != nullptr) {
+        this->_dataModel = GetParent()->GetClass() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
+        this->_workspace = GetParent()->GetClass() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
     } else {
         this->_dataModel = {};
         this->_workspace = {};
     }
 
     OnAncestryChanged(updatedChild, newParent);
-    AncestryChanged->Fire({updatedChild.has_value() ? InstanceRef(updatedChild.value()) : InstanceRef(), newParent.has_value() ? InstanceRef(newParent.value()) : InstanceRef()});
+    AncestryChanged->Fire({updatedChild != nullptr ? InstanceRef(updatedChild) : InstanceRef(), newParent != nullptr ? InstanceRef(newParent) : InstanceRef()});
 
     // Old workspace used to exist, and workspaces differ
     if (!oldWorkspace.expired() && oldWorkspace != _workspace) {
@@ -108,7 +103,7 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
 
     // New workspace exists, and workspaces differ
     if (!_workspace.expired() && (_workspace != oldWorkspace)) {
-        OnWorkspaceAdded(!oldWorkspace.expired() ? std::make_optional(oldWorkspace.lock()) : std::nullopt, _workspace.lock());
+        OnWorkspaceAdded(oldWorkspace.expired() ? nullptr : oldWorkspace.lock(), _workspace.lock());
     }
 
     // Update ancestry in descendants
@@ -117,23 +112,22 @@ void Instance::updateAncestry(std::optional<std::shared_ptr<Instance>> updatedCh
     }
 }
 
-std::optional<std::shared_ptr<DataModel>> Instance::dataModel() {
-    return (_dataModel.expired()) ? std::nullopt : std::make_optional(_dataModel.lock());
+nullable std::shared_ptr<DataModel> Instance::dataModel() {
+    return _dataModel.expired() ? nullptr : _dataModel.lock();
 }
 
-std::optional<std::shared_ptr<Workspace>> Instance::workspace() {
-    return (_workspace.expired()) ? std::nullopt : std::make_optional(_workspace.lock());
+nullable std::shared_ptr<Workspace> Instance::workspace() {
+    return _workspace.expired() ? nullptr : _workspace.lock();
 }
 
-std::optional<std::shared_ptr<Instance>> Instance::GetParent() {
-    if (parent.expired()) return std::nullopt;
-    return parent.lock();
+nullable std::shared_ptr<Instance> Instance::GetParent() {
+    return parent.expired() ? nullptr : parent.lock();
 }
 
 void Instance::Destroy() {
     if (parentLocked) return;
     // TODO: Implement proper distruction stuff
-    SetParent(std::nullopt);
+    SetParent(nullptr);
     parentLocked = true;
 }
 
@@ -143,12 +137,12 @@ bool Instance::IsA(std::string className) {
     return cur != nullptr;
 }
 
-std::optional<std::shared_ptr<Instance>> Instance::FindFirstChild(std::string name) {
+nullable std::shared_ptr<Instance> Instance::FindFirstChild(std::string name) {
     for (auto child : children) {
         if (child->name == name)
             return child;
     }
-    return std::nullopt;
+    return nullptr;
 }
 
 static std::shared_ptr<Instance> DUMMY_INSTANCE;
@@ -164,15 +158,15 @@ bool Instance::IsParentLocked() {
     return this->parentLocked;
 }
 
-void Instance::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
+void Instance::OnParentUpdated(nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent) {
     // Empty stub
 }
 
-void Instance::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
+void Instance::OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) {
     // Empty stub
 }
 
-void Instance::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
+void Instance::OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
     // Empty stub
 }
 
@@ -230,7 +224,7 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyVa
         this->name = (std::string)value.get<std::string>();
     } else if (name == "Parent") {
         std::weak_ptr<Instance> ref = value.get<InstanceRef>();
-        SetParent(ref.expired() ? std::nullopt : std::make_optional(ref.lock()));
+        SetParent(ref.expired() ? nullptr : ref.lock());
     } else if (name == "ClassName") {
         return AssignToReadOnlyMember(GetClass()->className, name);
     } else {
@@ -430,9 +424,9 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
     }
 
     // If we've hit the end of this item's children, move one up
-    while (current->GetParent() && current->GetParent().value()->GetChildren().size() <= size_t(siblingIndex.back() + 1)) {
+    while (current->GetParent() != nullptr && current->GetParent()->GetChildren().size() <= size_t(siblingIndex.back() + 1)) {
         siblingIndex.pop_back();
-        current = current->GetParent().value();
+        current = current->GetParent();
 
         // But not if one up is null or the root element
         if (!current->GetParent() || current == root) {
@@ -443,12 +437,12 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
 
     // Now move to the next sibling
     siblingIndex.back()++;
-    current = current->GetParent().value()->GetChildren()[siblingIndex.back()];
+    current = current->GetParent()->GetChildren()[siblingIndex.back()];
 
     return *this;
 }
 
-std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
+nullable std::shared_ptr<Instance> Instance::Clone(RefStateClone state) {
     if (state == nullptr) state = std::make_shared<__RefStateClone>();
     std::shared_ptr<Instance> newInstance = GetClass()->constructor();
 
@@ -494,9 +488,9 @@ std::optional<std::shared_ptr<Instance>> Instance::Clone(RefStateClone state) {
 
     // Clone children
     for (std::shared_ptr<Instance> child : GetChildren()) {
-        std::optional<std::shared_ptr<Instance>> clonedChild = child->Clone(state);
+        nullable std::shared_ptr<Instance> clonedChild = child->Clone(state);
         if (clonedChild)
-            newInstance->AddChild(clonedChild.value());
+            newInstance->AddChild(clonedChild);
     }
 
     return newInstance;
@@ -521,12 +515,12 @@ std::vector<std::pair<std::string, std::shared_ptr<Instance>>> Instance::GetRefe
 
 std::string Instance::GetFullName() {
     std::string currentName = name;
-    std::optional<std::shared_ptr<Instance>> currentParent = GetParent();
+    nullable std::shared_ptr<Instance> currentParent = GetParent();
 
-    while (currentParent.has_value() && !currentParent.value()->IsA("DataModel")) {
-        currentName = currentParent.value()->name + "." + currentName;
+    while (currentParent && !currentParent->IsA("DataModel")) {
+        currentName = currentParent->name + "." + currentName;
 
-        currentParent = currentParent.value()->GetParent();
+        currentParent = currentParent->GetParent();
     }
 
     return currentName;

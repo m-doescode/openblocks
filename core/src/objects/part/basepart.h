@@ -54,9 +54,9 @@ protected:
     friend JointInstance;
     friend PhysWorld;
 
-    virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
+    virtual void OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
-    void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) override;
+    void OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) override;
     void onUpdated(std::string);
 
     virtual void updateCollider(rp::PhysicsCommon* common) = 0;

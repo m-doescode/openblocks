@@ -8,9 +8,8 @@
 #include <memory>
 
 class Instance;
-// typedef std::function<void(std::shared_ptr<Instance> element, std::optional<std::shared_ptr<Instance>> newParent)> HierarchyUpdateHandler;
-typedef std::function<void(std::shared_ptr<Instance> object, std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent)> HierarchyPreUpdateHandler;
-typedef std::function<void(std::shared_ptr<Instance> object, std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent)> HierarchyPostUpdateHandler;
+typedef std::function<void(std::shared_ptr<Instance> object, nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent)> HierarchyPreUpdateHandler;
+typedef std::function<void(std::shared_ptr<Instance> object, nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent)> HierarchyPostUpdateHandler;
 typedef std::function<void(std::shared_ptr<Instance> instance, std::string property, Variant newValue)> PropertyUpdateHandler;
 
 // TEMPORARY COMMON DATA FOR VARIOUS INTERNAL COMPONENTS

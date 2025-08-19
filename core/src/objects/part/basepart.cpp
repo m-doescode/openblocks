@@ -14,7 +14,6 @@
 #include "objects/joint/snap.h"
 #include "rendering/renderer.h"
 #include "enum/surface.h"
-#include <cstdio>
 #include <glm/common.hpp>
 #include <memory>
 #include <optional>
@@ -28,18 +27,18 @@ BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInst
 
 BasePart::~BasePart() {
     // This relies on physicsCommon still existing. Be very careful.
-    if (this->rigidBody && workspace()) {
-        workspace().value()->RemoveBody(shared<BasePart>());
+    if (this->rigidBody && workspace() != nullptr) {
+        workspace()->RemoveBody(shared<BasePart>());
     }
 }
 
 
-void BasePart::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent) {
+void BasePart::OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) {
     if (this->rigidBody)
-        this->rigidBody->setIsActive(workspace().has_value());
+        this->rigidBody->setIsActive(workspace() != nullptr);
 
-    if (workspace())
-        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
+    if (workspace() != nullptr)
+        workspace()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 
     // Destroy joints
     if (!workspace()) BreakJoints();
@@ -47,7 +46,7 @@ void BasePart::OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child,
     // TODO: Sleeping bodies that touch this one also need to be updated
 }
 
-void BasePart::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
+void BasePart::OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) {
     newWorkspace->AddBody(shared<BasePart>());
 }
 
@@ -58,8 +57,8 @@ void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
 void BasePart::onUpdated(std::string property) {
     bool reset = property == "Position" || property == "Rotation" || property == "CFrame" || property == "Size" || property == "Shape";
 
-    if (workspace())
-        workspace().value()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
+    if (workspace() != nullptr)
+        workspace()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 
     // When position/rotation/size is manually edited, break all joints, they don't apply anymore
     if (reset)
@@ -204,7 +203,7 @@ bool BasePart::checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 
     return horizOverlap && vertOverlap;
 }
 
-std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType a, SurfaceType b) {
+nullable std::shared_ptr<JointInstance> makeJointFromSurfaces(SurfaceType a, SurfaceType b) {
     if (a == SurfaceType::Weld || b == SurfaceType::Weld || a == SurfaceType::Glue || b == SurfaceType::Glue) return Weld::New();
     if ((a == SurfaceType::Studs && (b == SurfaceType::Inlet || b == SurfaceType::Universal))
     || (a == SurfaceType::Inlet && (b == SurfaceType::Studs || b == SurfaceType::Universal))
@@ -214,7 +213,7 @@ std::optional<std::shared_ptr<JointInstance>> makeJointFromSurfaces(SurfaceType 
         return Rotate::New();
     if (a == SurfaceType::Motor)
         return RotateV::New();
-    return std::nullopt;
+    return nullptr;
 }
 
 void BasePart::MakeJoints() {
@@ -229,7 +228,7 @@ void BasePart::MakeJoints() {
 
     // TEMPORARY
     // TODO: Use more efficient algorithm to *actually* find nearby parts)
-    for (auto it = workspace().value()->GetDescendantsStart(); it != workspace().value()->GetDescendantsEnd(); it++) {
+    for (auto it = workspace()->GetDescendantsStart(); it != workspace()->GetDescendantsEnd(); it++) {
         std::shared_ptr<Instance> obj = *it;
         if (obj == shared_from_this()) continue; // Skip ourselves
         if (!obj->IsA<BasePart>()) continue;
@@ -276,12 +275,12 @@ void BasePart::MakeJoints() {
 
                 auto joint_ = makeJointFromSurfaces(mySurface, otherSurface);
                 if (!joint_) continue;
-                std::shared_ptr<JointInstance> joint = joint_.value();
+                std::shared_ptr<JointInstance> joint = joint_;
                 joint->part0 = shared<BasePart>();
                 joint->part1 = otherPart->shared<BasePart>();
                 joint->c0 = contact0;
                 joint->c1 = contact1;
-                dataModel().value()->GetService<JointsService>()->AddChild(joint);
+                dataModel()->GetService<JointsService>()->AddChild(joint);
                 joint->UpdateProperty("Part0");
 
                 Logger::debugf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());

@@ -42,7 +42,7 @@ void Workspace::OnRun() {
         joint->UpdateProperty("Part0");
     }
 
-    for (auto obj : dataModel().value()->GetService<JointsService>()->GetChildren()) {
+    for (auto obj : dataModel()->GetService<JointsService>()->GetChildren()) {
         if (!obj->IsA<JointInstance>()) continue;
         std::shared_ptr<JointInstance> joint = obj->CastTo<JointInstance>().expect();
         joint->UpdateProperty("Part0");
@@ -63,8 +63,8 @@ void Workspace::PhysicsStep(float deltaTime) {
             part->Destroy();
 
             // If the parent of the part is a Model, destroy it too
-            if (parent.has_value() && parent.value()->IsA("Model"))
-                parent.value()->Destroy();
+            if (parent != nullptr && parent->IsA("Model"))
+                parent->Destroy();
         }
     }
 }

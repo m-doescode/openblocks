@@ -107,14 +107,14 @@ result<std::shared_ptr<Service>, NoSuchService> DataModel::GetService(std::strin
     return std::dynamic_pointer_cast<Service>(services[className]);
 }
 
-result<std::optional<std::shared_ptr<Service>>, NoSuchService> DataModel::FindService(std::string className) {
+result<nullable std::shared_ptr<Service>, NoSuchService> DataModel::FindService(std::string className) {
     if (!INSTANCE_MAP[className] || (INSTANCE_MAP[className]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
         return NoSuchService(className);
     }
 
     if (services.count(className) != 0)
-        return std::make_optional(std::dynamic_pointer_cast<Service>(services[className]));
-    return (std::optional<std::shared_ptr<Service>>)std::nullopt;
+        return std::dynamic_pointer_cast<Service>(services[className]);
+    return nullptr;
 }
 
 std::shared_ptr<DataModel> DataModel::CloneModel() {
@@ -166,11 +166,11 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
         if (!result)
             continue;
 
-        newModel->AddChild(result.value());
+        newModel->AddChild(result);
 
         // Special case: Ignore instances parented to DataModel which are not services
         if (child->GetClass()->flags & INSTANCE_SERVICE) {
-            newModel->services[child->GetClass()->className] = std::dynamic_pointer_cast<Service>(result.value());            
+            newModel->services[child->GetClass()->className] = std::dynamic_pointer_cast<Service>(result);
         }
     }
 

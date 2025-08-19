@@ -31,5 +31,5 @@ public:
 
     void init();
 
-    void setSelected(std::optional<std::shared_ptr<Instance>> instance);
+    void setSelected(nullable std::shared_ptr<Instance> instance);
 };

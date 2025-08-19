@@ -14,7 +14,7 @@ void ServerScriptService::InitService() {
 }
 
 void ServerScriptService::OnRun() {
-    auto workspace = dataModel().value()->GetService<Workspace>();
+    auto workspace = dataModel()->GetService<Workspace>();
     for (auto it = workspace->GetDescendantsStart(); it != workspace->GetDescendantsEnd(); it++) {
         if (!it->IsA<Script>()) continue;
         it->CastTo<Script>().expect()->Run();

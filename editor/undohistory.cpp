@@ -27,7 +27,7 @@ void UndoHistory::Undo() {
             // The old value used to be valid, so it still should be...
             v->affectedInstance->SetProperty(v->property, v->oldValue).expect();
         } else if (auto v = std::get_if<UndoStateInstanceCreated>(&change)) {
-            v->instance->SetParent(std::nullopt);
+            v->instance->SetParent(nullptr);
         } else if (auto v = std::get_if<UndoStateInstanceRemoved>(&change)) {
             v->instance->SetParent(v->oldParent);
         } else if (auto v = std::get_if<UndoStateInstanceReparented>(&change)) {
@@ -57,7 +57,7 @@ void UndoHistory::Redo() {
         } else if (auto v = std::get_if<UndoStateInstanceCreated>(&change)) {
             v->instance->SetParent(v->newParent);
         } else if (auto v = std::get_if<UndoStateInstanceRemoved>(&change)) {
-            v->instance->SetParent(std::nullopt);
+            v->instance->SetParent(nullptr);
         } else if (auto v = std::get_if<UndoStateInstanceReparented>(&change)) {
             v->instance->SetParent(v->newParent);
         } else if (auto v = std::get_if<UndoStateSelectionChanged>(&change)) {

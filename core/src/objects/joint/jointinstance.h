@@ -23,9 +23,9 @@ protected:
     // The workspace the joint was created in, if it exists
     std::weak_ptr<Workspace> jointWorkspace;
 
-    void OnAncestryChanged(std::optional<std::shared_ptr<Instance>>, std::optional<std::shared_ptr<Instance>>) override;
+    void OnAncestryChanged(nullable std::shared_ptr<Instance>, nullable std::shared_ptr<Instance>) override;
 
-    std::optional<std::shared_ptr<Workspace>> workspaceOfPart(std::shared_ptr<BasePart>);
+    nullable std::shared_ptr<Workspace> workspaceOfPart(std::shared_ptr<BasePart>);
     void onUpdated(std::string property);
     virtual void buildJoint() = 0;
     virtual void breakJoint() = 0;

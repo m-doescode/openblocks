@@ -6,7 +6,7 @@
 class DEF_INST_SERVICE_(hidden) JointsService : public Service {
     AUTOGEN_PREAMBLE
 private:
-    std::optional<std::shared_ptr<Workspace>> jointWorkspace();
+    nullable std::shared_ptr<Workspace> jointWorkspace();
 protected:
     void InitService() override;
     bool initialized = false;

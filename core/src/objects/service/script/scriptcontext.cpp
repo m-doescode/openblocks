@@ -59,10 +59,10 @@ void ScriptContext::InitService() {
     // Add other globals
     lua_getglobal(state, "_G");
 
-    InstanceRef(dataModel().value()).PushLuaValue(state);
+    InstanceRef(dataModel()).PushLuaValue(state);
     lua_setfield(state, -2, "game");
 
-    InstanceRef(dataModel().value()->GetService<Workspace>()).PushLuaValue(state);
+    InstanceRef(dataModel()->GetService<Workspace>()).PushLuaValue(state);
     lua_setfield(state, -2, "workspace");
 
     lua_pushlightuserdata(state, this);

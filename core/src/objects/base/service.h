@@ -13,7 +13,7 @@ protected:
     virtual void InitService();
     virtual void OnRun();
 
-    void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) override;
+    void OnParentUpdated(nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent) override;
 
     friend class DataModel;
 };

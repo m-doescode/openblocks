@@ -403,8 +403,8 @@ void MainWindow::connectActionHandlers() {
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
-            historyState.push_back(UndoStateInstanceRemoved { inst.lock(), inst.lock()->GetParent().value() });
-            inst.lock()->SetParent(std::nullopt);
+            historyState.push_back(UndoStateInstanceRemoved { inst.lock(), inst.lock()->GetParent() });
+            inst.lock()->SetParent(nullptr);
         }
         selection->Set({});
         historyState.push_back(UndoStateSelectionChanged {selection->Get(), {}});
@@ -433,9 +433,9 @@ void MainWindow::connectActionHandlers() {
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (std::weak_ptr<Instance> inst : selection->Get()) {
             if (inst.expired()) continue;
-            historyState.push_back(UndoStateInstanceRemoved { inst.lock(), inst.lock()->GetParent().value() });
+            historyState.push_back(UndoStateInstanceRemoved { inst.lock(), inst.lock()->GetParent() });
             inst.lock()->Serialize(rootDoc);
-            inst.lock()->SetParent(std::nullopt);
+            inst.lock()->SetParent(nullptr);
         }
         selection->Set({});
         historyState.push_back(UndoStateSelectionChanged {selection->Get(), {}});
@@ -502,8 +502,8 @@ void MainWindow::connectActionHandlers() {
         bool done = false;
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         for (auto object : selection->Get()) {
-            if (firstParent == nullptr && object->GetParent().has_value()) firstParent = object->GetParent().value();
-            historyState.push_back(UndoStateInstanceReparented { object, object->GetParent().value(), model });
+            if (!firstParent && object->GetParent() != nullptr) firstParent = object->GetParent();
+            historyState.push_back(UndoStateInstanceReparented { object, object->GetParent(), model });
             object->SetParent(model);
             done = true;
         }
@@ -535,13 +535,13 @@ void MainWindow::connectActionHandlers() {
             done = true;
 
             for (auto object : model->GetChildren()) {
-                historyState.push_back(UndoStateInstanceReparented { object, object->GetParent().value(), model->GetParent().value() });
+                historyState.push_back(UndoStateInstanceReparented { object, object->GetParent(), model->GetParent() });
                 object->SetParent(model->GetParent());
                 newSelection.push_back(object);
             }
 
-            historyState.push_back(UndoStateInstanceRemoved { model, model->GetParent().value() });
-            model->SetParent(std::nullopt);
+            historyState.push_back(UndoStateInstanceRemoved { model, model->GetParent() });
+            model->SetParent(nullptr);
         }
 
         if (!done)

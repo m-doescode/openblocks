@@ -333,11 +333,11 @@ void PropertiesView::drawBranches(QPainter *painter, const QRect &rect, const QM
     QTreeWidget::drawBranches(painter, rect, index);
 }
 
-void PropertiesView::setSelected(std::optional<std::shared_ptr<Instance>> instance) {
+void PropertiesView::setSelected(nullable std::shared_ptr<Instance> instance) {
     clear();
     currentInstance = {};
     if (!instance) return;
-    std::shared_ptr<Instance> inst = instance.value();
+    std::shared_ptr<Instance> inst = instance;
     currentInstance = inst;
 
     std::map<PropertyCategory, QTreeWidgetItem*> propertyCategories;

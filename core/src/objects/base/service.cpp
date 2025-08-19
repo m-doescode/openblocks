@@ -7,9 +7,9 @@
 Service::Service(const InstanceType* type) : Instance(type) {}
 
 // Fail if parented to non-datamodel, otherwise lock parent
-void Service::OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent) {
-    if (!newParent || newParent.value()->GetClass() != &DataModel::TYPE) {
-        Logger::fatalErrorf("Service %s was parented to object of type %s", GetClass()->className.c_str(), newParent ? newParent.value()->GetClass()->className.c_str() : "NULL");
+void Service::OnParentUpdated(nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent) {
+    if (!newParent || newParent->GetClass() != &DataModel::TYPE) {
+        Logger::fatalErrorf("Service %s was parented to object of type %s", GetClass()->className.c_str(), newParent ? newParent->GetClass()->className.c_str() : "NULL");
         panic();
     }
 

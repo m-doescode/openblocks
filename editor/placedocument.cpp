@@ -70,7 +70,7 @@ void PlaceDocument::updateSelectionListeners(std::shared_ptr<Selection> selectio
     selectionConnection = selection->SelectionChanged->Connect([selection, mainWnd](std::vector<Variant> _){
         // Update properties
         if (selection->Get().size() != 1)
-            mainWnd->ui->propertiesView->setSelected(std::nullopt);
+            mainWnd->ui->propertiesView->setSelected(nullptr);
         else
             mainWnd->ui->propertiesView->setSelected(selection->Get()[0]);
 

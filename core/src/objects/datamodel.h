@@ -29,7 +29,7 @@ public:
     static inline std::shared_ptr<DataModel> New() { return std::make_shared<DataModel>(); };
 
     result<std::shared_ptr<Service>, NoSuchService> GetService(std::string className);
-    result<std::optional<std::shared_ptr<Service>>, NoSuchService> FindService(std::string className);
+    result<nullable std::shared_ptr<Service>, NoSuchService> FindService(std::string className);
 
     template <typename T>
     std::shared_ptr<T> GetService() {
@@ -38,10 +38,10 @@ public:
     }
 
     template <typename T>
-    std::optional<std::shared_ptr<T>> FindService() {
+    nullable std::shared_ptr<T> FindService() {
         auto result = FindService(T::TYPE.className).expect("FindService<T>() was called with a non-service instance type");
-        if (!result) return std::nullopt;
-        return std::dynamic_pointer_cast<T>(result.value());
+        if (!result) return nullptr;
+        return std::dynamic_pointer_cast<T>(result);
     }
 
     // Saving/loading

@@ -17,7 +17,7 @@ JointInstance::JointInstance(const InstanceType* type): Instance(type) {
 JointInstance::~JointInstance() {
 }
 
-void JointInstance::OnAncestryChanged(std::optional<std::shared_ptr<Instance>>, std::optional<std::shared_ptr<Instance>>) {
+void JointInstance::OnAncestryChanged(nullable std::shared_ptr<Instance>, nullable std::shared_ptr<Instance>) {
     // Destroy and rebuild the joint, it's the simplest solution that actually works
 
     breakJoint();
@@ -54,6 +54,6 @@ void JointInstance::onUpdated(std::string property) {
     oldPart1 = part1;
 }
 
-std::optional<std::shared_ptr<Workspace>> JointInstance::workspaceOfPart(std::shared_ptr<BasePart> part) {
+nullable std::shared_ptr<Workspace> JointInstance::workspaceOfPart(std::shared_ptr<BasePart> part) {
     return part->workspace();
 }

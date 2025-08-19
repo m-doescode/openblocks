@@ -23,7 +23,7 @@ Script::~Script() {
 }
 
 void Script::Run() {
-    std::shared_ptr<ScriptContext> scriptContext = dataModel().value()->GetService<ScriptContext>();
+    std::shared_ptr<ScriptContext> scriptContext = dataModel()->GetService<ScriptContext>();
 
     lua_State* L = scriptContext->state;
     int top = lua_gettop(L);

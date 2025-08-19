@@ -18,8 +18,8 @@ void JointsService::InitService() {
     }
 }
 
-std::optional<std::shared_ptr<Workspace>> JointsService::jointWorkspace() {
-    if (!dataModel()) return std::nullopt;
+nullable std::shared_ptr<Workspace> JointsService::jointWorkspace() {
+    if (!dataModel()) return nullptr;
 
-    return dataModel().value()->FindService<Workspace>();
+    return dataModel()->FindService<Workspace>();
 }

@@ -16,6 +16,7 @@
 #include "error/result.h"
 #include "member.h"
 #include "objects/base/refstate.h"
+#include "utils.h"
 
 class Instance;
 typedef std::shared_ptr<Instance>(*InstanceConstructor)();
@@ -59,8 +60,8 @@ private:
     std::weak_ptr<DataModel> _dataModel;
     std::weak_ptr<Workspace> _workspace;
 
-    bool ancestryContinuityCheck(std::optional<std::shared_ptr<Instance>> newParent);
-    void updateAncestry(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
+    bool ancestryContinuityCheck(nullable std::shared_ptr<Instance> newParent);
+    void updateAncestry(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent);
 
     friend JointInstance; // This isn't ideal, but oh well
 protected:
@@ -75,17 +76,17 @@ protected:
     virtual void InternalUpdateProperty(std::string name);
     virtual std::vector<std::string> InternalGetProperties();
 
-    virtual void OnParentUpdated(std::optional<std::shared_ptr<Instance>> oldParent, std::optional<std::shared_ptr<Instance>> newParent);
-    virtual void OnAncestryChanged(std::optional<std::shared_ptr<Instance>> child, std::optional<std::shared_ptr<Instance>> newParent);
-    virtual void OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWorkspace, std::shared_ptr<Workspace> newWorkspace);
+    virtual void OnParentUpdated(nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent);
+    virtual void OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent);
+    virtual void OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace);
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace);
 
     // The root data model this object is a descendant of
-    std::optional<std::shared_ptr<DataModel>> dataModel();
+    nullable std::shared_ptr<DataModel> dataModel();
     // The root workspace this object is a descendant of
     // NOTE: This value is not necessarily present if dataModel is present
     // Objects under services other than workspace will NOT have this field set
-    std::optional<std::shared_ptr<Workspace>> workspace();
+    nullable std::shared_ptr<Workspace> workspace();
 public:
     const static InstanceType TYPE;
     std::string name;
@@ -96,8 +97,8 @@ public:
     // Instance is abstract, so it should not implement GetClass directly
     virtual const InstanceType* GetClass() = 0;
     static void PushLuaLibrary(lua_State*); // Defined in lua/instancelib.cpp
-    bool SetParent(std::optional<std::shared_ptr<Instance>> newParent);
-    std::optional<std::shared_ptr<Instance>> GetParent();
+    bool SetParent(nullable std::shared_ptr<Instance> newParent);
+    nullable std::shared_ptr<Instance> GetParent();
     bool IsParentLocked();
     inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
     void Destroy();
@@ -111,7 +112,7 @@ public:
     DescendantsIterator GetDescendantsEnd();
     // Utility functions
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
-    std::optional<std::shared_ptr<Instance>> FindFirstChild(std::string);
+    nullable std::shared_ptr<Instance> FindFirstChild(std::string);
     std::string GetFullName();
 
     // Properties
@@ -136,7 +137,7 @@ public:
     // Serialization
     void Serialize(pugi::xml_node parent, RefStateSerialize state = {});
     static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node, RefStateDeserialize state = {});
-    std::optional<std::shared_ptr<Instance>> Clone(RefStateClone state = {});
+    nullable std::shared_ptr<Instance> Clone(RefStateClone state = {});
 };
 
 // https://gist.github.com/jeetsukumaran/307264
@@ -158,7 +159,7 @@ public:
 
     self_type operator++(int _);
 private:
-    std::optional<std::shared_ptr<Instance>> root;
+    nullable std::shared_ptr<Instance> root;
     std::shared_ptr<Instance> current;
     std::vector<int> siblingIndex;
 };

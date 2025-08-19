@@ -21,9 +21,9 @@ void Weld::buildJoint() {
     if (part0.expired() || part1.expired() || part0.lock() == part1.lock() || !workspaceOfPart(part0.lock()) || workspaceOfPart(part0.lock()) != workspaceOfPart(part1.lock())) return;
 
     // Don't build the joint if we're not part of either a workspace or JointsService
-    if ((!GetParent() || GetParent().value()->GetClass() != &JointsService::TYPE) && !workspace()) return;
+    if ((!GetParent() || GetParent()->GetClass() != &JointsService::TYPE) && workspace() != nullptr) return;
 
-    std::shared_ptr<Workspace> workspace = workspaceOfPart(part0.lock()).value();
+    std::shared_ptr<Workspace> workspace = workspaceOfPart(part0.lock());
 
     // Update Part1's rotation and cframe prior to creating the joint as reactphysics3d locks rotation based on how it
     // used to be rather than specifying an anchor rotation, so whatever.
