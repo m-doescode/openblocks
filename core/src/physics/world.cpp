@@ -4,15 +4,19 @@
 #include "objects/joint/jointinstance.h"
 #include "objects/part/basepart.h"
 #include "physics/util.h"
+#include <reactphysics3d/constraint/FixedJoint.h>
+#include "reactphysics3d/constraint/HingeJoint.h"
 #include "timeutil.h"
+#include <memory>
+#include "objects/service/workspace.h"
 
-rp3d::PhysicsCommon physicsCommon;
+rp::PhysicsCommon physicsCommon;
 
 PhysWorld::PhysWorld() : physicsEventListener(this) {
     worldImpl = physicsCommon.createPhysicsWorld();
 
     worldImpl->setGravity(rp::Vector3(0, -196.2, 0));
-    // world->setContactsPositionCorrectionTechnique(rp3d::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
+    // world->setContactsPositionCorrectionTechnique(rp::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
     // physicsWorld->setNbIterationsPositionSolver(2000);
     // physicsWorld->setNbIterationsVelocitySolver(2000);
     // physicsWorld->setSleepLinearVelocity(10);
@@ -191,4 +195,40 @@ std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rot
     NearestRayHit rayHit(glmToRp(point), filter);
     worldImpl->raycast(ray, &rayHit, categoryMaskBits);
     return rayHit.getNearestHit();
+}
+
+PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) {
+    // error checking
+    if (part0->rigidBody == nullptr
+        || part1->rigidBody == nullptr
+        || !part0->workspace()
+        || !part1->workspace()
+        || part0->workspace()->physicsWorld != shared_from_this()
+        || part1->workspace()->physicsWorld != shared_from_this()
+    ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
+
+    if (PhysJointGlueInfo* info = dynamic_cast<PhysJointGlueInfo*>(&type)) {
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint));
+    } else if (PhysJointWeldInfo* info = dynamic_cast<PhysJointWeldInfo*>(&type)) {
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint));
+    } else if (PhysJointSnapInfo* info = dynamic_cast<PhysJointSnapInfo*>(&type)) {
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint));
+    } else if (PhysJointHingeInfo* info = dynamic_cast<PhysJointHingeInfo*>(&type)) {
+        return worldImpl->createJoint(rp::HingeJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint, info->rotationAxis));
+    } else if (PhysJointMotorInfo* info = dynamic_cast<PhysJointMotorInfo*>(&type)) {
+        auto implInfo = rp::HingeJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint, info->rotationAxis);
+        implInfo.isCollisionEnabled = false;
+        return worldImpl->createJoint(implInfo);
+
+        // part1.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b10);
+        // part1.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
+        // part0.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b01);
+        // part0.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b01);
+    }
+
+    panic(); // Unreachable
+}
+
+void PhysWorld::destroyJoint(PhysJoint joint) {
+
 }

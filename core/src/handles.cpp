@@ -24,8 +24,8 @@ std::array<HandleFace, 6> HandleFace::Faces { HandleFace::XPos, HandleFace::XNeg
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 // Shitty solution
-static rp3d::PhysicsCommon common;
-static rp3d::PhysicsWorld* world = common.createPhysicsWorld();
+static rp::PhysicsCommon common;
+static rp::PhysicsWorld* world = common.createPhysicsWorld();
 
 std::shared_ptr<BasePart> getHandleAdornee() {
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
@@ -52,15 +52,15 @@ CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
     return adornee->cframe.Rotation() + newPartPos;
 }
 
-std::optional<HandleFace> raycastHandle(rp3d::Ray ray) {
+std::optional<HandleFace> raycastHandle(rp::Ray ray) {
     for (HandleFace face : HandleFace::Faces) {
         CFrame cframe = getHandleCFrame(face);
         // Implement manual detection via boxes instead of... this shit
         // This code also hardly works, and is not good at all... Hooo nope.
-        rp3d::RigidBody* body = world->createRigidBody(CFrame::IDENTITY + cframe.Position());
-        body->addCollider(common.createBoxShape((cframe.Rotation() * Vector3(handleSize(face) / 2.f)).Abs()), rp3d::Transform::identity());
+        rp::RigidBody* body = world->createRigidBody(CFrame::IDENTITY + cframe.Position());
+        body->addCollider(common.createBoxShape((cframe.Rotation() * Vector3(handleSize(face) / 2.f)).Abs()), rp::Transform::identity());
 
-        rp3d::RaycastInfo info;
+        rp::RaycastInfo info;
         if (body->raycast(ray, info)) {
             world->destroyRigidBody(body);
             return face;

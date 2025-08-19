@@ -51,6 +51,7 @@ void BasePart::OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace
 }
 
 void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
+    BreakJoints();
     oldWorkspace->RemoveBody(shared<BasePart>());
 }
 
@@ -282,8 +283,6 @@ void BasePart::MakeJoints() {
                 joint->c1 = contact1;
                 dataModel()->GetService<JointsService>()->AddChild(joint);
                 joint->UpdateProperty("Part0");
-
-                Logger::debugf("Made joint between %s and %s!\n", name.c_str(), otherPart->name.c_str());
             }
         }
     }

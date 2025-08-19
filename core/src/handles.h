@@ -40,7 +40,7 @@ std::shared_ptr<BasePart> getHandleAdornee();
 CFrame getHandleCFrame(HandleFace face);
 CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos);
 Vector3 handleSize(HandleFace face);
-std::optional<HandleFace> raycastHandle(rp3d::Ray ray);
+std::optional<HandleFace> raycastHandle(rp::Ray ray);
 
 // Gets the cframe of the handle local to the center of the selected objects
 CFrame getLocalHandleCFrame(HandleFace face);

@@ -10,10 +10,7 @@ namespace reactphysics3d { class FixedJoint; }
 class DEF_INST Weld : public JointInstance {
     AUTOGEN_PREAMBLE
 
-    reactphysics3d::FixedJoint* joint = nullptr;
-
     virtual void buildJoint() override;
-    virtual void breakJoint() override;
 public:
     Weld();
     ~Weld();

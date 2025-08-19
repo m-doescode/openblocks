@@ -68,14 +68,3 @@ void Workspace::PhysicsStep(float deltaTime) {
         }
     }
 }
-
-void Workspace::DestroyJoint(rp::Joint* joint) {
-    // physicsWorld->destroyJoint(joint);
-}
-
-rp::Joint* Workspace::CreateJoint(const rp::JointInfo& jointInfo) {
-    // rp::Joint* joint = physicsWorld->createJoint(jointInfo);
-
-    // return joint;
-    return nullptr;
-}

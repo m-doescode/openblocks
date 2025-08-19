@@ -87,6 +87,6 @@ void WedgePart::createWedgeShape(rp::PhysicsCommon* common) {
     rp::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
     
     // Create the convex mesh
-    std::vector<rp3d::Message> messages;
+    std::vector<rp::Message> messages;
     // wedgePhysMesh = common->createConvexMesh(polygonVertexArray, messages);
 }

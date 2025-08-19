@@ -10,10 +10,7 @@ namespace reactphysics3d { class HingeJoint; }
 class DEF_INST Rotate : public JointInstance {
     AUTOGEN_PREAMBLE
 
-    reactphysics3d::HingeJoint* joint = nullptr;
-
     virtual void buildJoint() override;
-    virtual void breakJoint() override;
 public:
     Rotate();
     ~Rotate();

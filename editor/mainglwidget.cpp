@@ -323,7 +323,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
     if (!editorToolHandles.active) return std::nullopt;
-    return ::raycastHandle(rp3d::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
+    return ::raycastHandle(rp::Ray(glmToRp(camera.cameraPos), glmToRp(glm::normalize(pointDir)) * 50000));
 }
 
 void MainGLWidget::handleCursorChange(QMouseEvent* evt) {

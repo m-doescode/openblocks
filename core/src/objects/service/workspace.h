@@ -32,6 +32,7 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     std::mutex contactQueueLock;
 
     std::shared_ptr<PhysWorld> physicsWorld;
+    friend PhysWorld;
 protected:
     void InitService() override;
     void OnRun() override;
@@ -52,8 +53,8 @@ public:
     inline void RemoveBody(std::shared_ptr<BasePart> part) { physicsWorld->removeBody(part); }
     void SyncPartPhysics(std::shared_ptr<BasePart> part);
 
-    rp::Joint* CreateJoint(const rp::JointInfo& jointInfo);
-    void DestroyJoint(rp::Joint* joint);
+    inline PhysJoint CreateJoint(PhysJointInfo& info, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) { return physicsWorld->createJoint(info, part0, part1); }
+    inline void DestroyJoint(PhysJoint joint) { physicsWorld->destroyJoint(joint); }
 
     void PhysicsStep(float deltaTime);
     inline std::optional<const RaycastResult> CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter = std::nullopt, unsigned short categoryMaskBits = 0xFFFF) { return physicsWorld->castRay(point, rotation, maxLength, filter, categoryMaskBits); }
