@@ -157,12 +157,7 @@ void Workspace::ProcessContactEvents() {
 }
 
 void Workspace::SyncPartPhysics(std::shared_ptr<BasePart> part) {
-    if (globalPhysicsLock.try_lock()) {
-        updatePartPhysics(part);
-        globalPhysicsLock.unlock();
-    } else {
-        part->rigidBodyDirty = true;
-    }
+    updatePartPhysics(part);
 }
 
 tu_time_t physTime;
@@ -172,28 +167,8 @@ void Workspace::PhysicsStep(float deltaTime) {
     std::scoped_lock lock(globalPhysicsLock);
     physicsWorld->update(std::min(deltaTime / 2, (1/60.f)));
 
-    // Update queued objects
-    queueLock.lock();
-    for (QueueItem item : bodyQueue) {
-        if (item.action == QueueItem::QUEUEITEM_ADD) {
-            simulatedBodies.push_back(item.part);
-            item.part->simulationTicket = --simulatedBodies.end();
-        } else if (item.part->simulationTicket.has_value()) {
-            simulatedBodies.erase(item.part->simulationTicket.value());
-            item.part->simulationTicket = std::nullopt;
-        }
-    }
-    queueLock.unlock();
-
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
     for (std::shared_ptr<BasePart> part : simulatedBodies) {
-        // If the part's body is dirty, update it now instead
-        if (part->rigidBodyDirty) {
-            updatePartPhysics(part);
-            part->rigidBodyDirty = false;
-            continue;
-        }
-
         if (!part->rigidBody) continue;
 
         // Sync properties
@@ -300,14 +275,10 @@ rp::Joint* Workspace::CreateJoint(const rp::JointInfo& jointInfo) {
 }
 
 void Workspace::AddBody(std::shared_ptr<BasePart> part) {
-    queueLock.lock();
-    bodyQueue.push_back({part, QueueItem::QUEUEITEM_ADD});
-    part->rigidBodyDirty = true;
-    queueLock.unlock();
+    simulatedBodies.push_back(part);
 }
 
 void Workspace::RemoveBody(std::shared_ptr<BasePart> part) {
-    queueLock.lock();
-    bodyQueue.push_back({part, QueueItem::QUEUEITEM_REMOVE});
-    queueLock.unlock();
+    auto it = std::find(simulatedBodies.begin(), simulatedBodies.end(), part);
+    simulatedBodies.erase(it);
 }

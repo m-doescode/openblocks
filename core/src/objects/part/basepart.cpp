@@ -53,8 +53,6 @@ void BasePart::OnWorkspaceAdded(std::optional<std::shared_ptr<Workspace>> oldWor
 }
 
 void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
-    if (simulationTicket.has_value())
-        oldWorkspace->RemoveBody(shared<BasePart>());
 }
 
 void BasePart::onUpdated(std::string property) {

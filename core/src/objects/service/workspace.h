@@ -38,11 +38,6 @@ class Weld;
 class Rotate;
 class RotateV;
 
-#ifndef __SIMULATION_TICKET
-#define __SIMULATION_TICKET
-typedef std::list<std::shared_ptr<BasePart>>::iterator SimulationTicket;
-#endif
-
 typedef std::function<FilterResult(std::shared_ptr<BasePart>)> RaycastFilter;
 
 struct QueueItem {
@@ -79,7 +74,6 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     friend PhysicsEventListener;
     
     std::list<std::shared_ptr<BasePart>> simulatedBodies;
-    std::list<QueueItem> bodyQueue;
     std::queue<ContactItem> contactQueue;
     std::mutex contactQueueLock;
     rp::PhysicsWorld* physicsWorld;

@@ -34,12 +34,6 @@ struct PartConstructParams {
 
 class Workspace;
 
-#ifndef __SIMULATION_TICKET
-#define __SIMULATION_TICKET
-class BasePart;
-typedef std::list<std::shared_ptr<BasePart>>::iterator SimulationTicket;
-#endif
-
 class DEF_INST_ABSTRACT_(explorer_icon="part") BasePart : public PVInstance {
     AUTOGEN_PREAMBLE
 protected:
@@ -117,8 +111,6 @@ public:
     DEF_SIGNAL SignalSource TouchEnded;
 
     rp::RigidBody* rigidBody = nullptr;
-    std::optional<SimulationTicket> simulationTicket;
-    bool rigidBodyDirty = true;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
     float GetSurfaceParamA(Vector3 face);

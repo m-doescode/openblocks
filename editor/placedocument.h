@@ -13,7 +13,6 @@
 #include <type_traits>
 
 class Selection;
-class PlaceDocumentPhysicsWorker;
 
 enum RunState {
     RUN_STOPPED,
@@ -25,14 +24,10 @@ class PlaceDocument : public QMdiSubWindow {
     QBasicTimer timer;
     RunState _runState;
 
-    PlaceDocumentPhysicsWorker* worker;
-
     std::weak_ptr<SignalConnection> selectionConnection;
 
     void timerEvent(QTimerEvent*) override;
     void updateSelectionListeners(std::shared_ptr<Selection>);
-
-    void updatePhysicsWorker();
 public:
     MainGLWidget* placeWidget;
     PlaceDocument(QWidget* parent = nullptr);
