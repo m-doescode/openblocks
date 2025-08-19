@@ -7,7 +7,6 @@ class DEF_INST_(hidden) WedgePart : public BasePart {
     AUTOGEN_PREAMBLE
 
 protected:
-    void updateCollider(rp::PhysicsCommon* common) override;
     static void createWedgeShape(rp::PhysicsCommon* common);
 
     friend Workspace;

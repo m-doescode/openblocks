@@ -27,15 +27,14 @@ BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInst
 
 BasePart::~BasePart() {
     // This relies on physicsCommon still existing. Be very careful.
-    if (this->rigidBody && workspace() != nullptr) {
+    if (workspace() != nullptr) {
         workspace()->RemoveBody(shared<BasePart>());
     }
 }
 
 
 void BasePart::OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) {
-    if (this->rigidBody)
-        this->rigidBody->setIsActive(workspace() != nullptr);
+    this->rigidBody.setActive(workspace() != nullptr);
 
     if (workspace() != nullptr)
         workspace()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));

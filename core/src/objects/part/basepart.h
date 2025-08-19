@@ -1,6 +1,5 @@
 #pragma once
 
-#include <list>
 #include <memory>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -10,16 +9,10 @@
 #include "datatypes/vector.h"
 #include "objects/base/instance.h"
 #include "enum/surface.h"
-#include <mutex>
-#include <optional>
-#include <reactphysics3d/body/RigidBody.h>
-#include <reactphysics3d/engine/PhysicsCommon.h>
-#include <reactphysics3d/reactphysics3d.h>
 #include <vector>
 #include "objects/annotation.h"
 #include "objects/pvinstance.h"
-
-namespace rp = reactphysics3d;
+#include "physics/world.h"
 
 // For easy construction from C++. Maybe should be removed?
 struct PartConstructParams {
@@ -58,8 +51,6 @@ protected:
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) override;
     void onUpdated(std::string);
-
-    virtual void updateCollider(rp::PhysicsCommon* common) = 0;
 
     BasePart(const InstanceType*);
     BasePart(const InstanceType*, PartConstructParams params);
@@ -110,7 +101,7 @@ public:
     DEF_SIGNAL SignalSource Touched;
     DEF_SIGNAL SignalSource TouchEnded;
 
-    rp::RigidBody* rigidBody = nullptr;
+    PhysRigidBody rigidBody;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
     float GetSurfaceParamA(Vector3 face);

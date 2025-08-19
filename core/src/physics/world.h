@@ -1,6 +1,8 @@
 #pragma once
 
 #include "datatypes/vector.h"
+#include "enum/part.h"
+#include "reactphysics3d/body/RigidBody.h"
 #include <functional>
 #include <list>
 #include <memory>
@@ -53,6 +55,21 @@ class PhysJoint {
     friend PhysWorld;
 public:
     inline PhysJoint() {}
+};
+
+class PhysRigidBody {
+    rp::RigidBody* rigidBody = nullptr;
+    inline PhysRigidBody(rp::RigidBody* rigidBody) : rigidBody(rigidBody) {}
+    Vector3 _lastSize;
+    PartType _lastShape;
+
+    friend PhysWorld;
+public:
+    inline PhysRigidBody() {}
+
+    inline void setActive(bool active) { if (!rigidBody) return; rigidBody->setIsActive(active); }
+    inline void setCollisionsEnabled(bool enabled) { if (!rigidBody) return; rigidBody->getCollider(0)->setIsWorldQueryCollider(enabled); }
+    void updateCollider(std::shared_ptr<BasePart>);
 };
 
 class PhysWorld : public std::enable_shared_from_this<PhysWorld> {

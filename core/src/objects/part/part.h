@@ -6,11 +6,7 @@
 
 class DEF_INST Part : public BasePart {
     AUTOGEN_PREAMBLE
-
-    PartType _lastShape;
-    Vector3 _lastSize;
 protected:
-    void updateCollider(rp::PhysicsCommon* common) override;
 
 public:
     Part();

@@ -5,7 +5,7 @@
 #include "objects/part/basepart.h"
 #include "physics/util.h"
 #include <reactphysics3d/constraint/FixedJoint.h>
-#include "reactphysics3d/constraint/HingeJoint.h"
+#include <reactphysics3d/constraint/HingeJoint.h>
 #include "timeutil.h"
 #include <memory>
 #include "objects/service/workspace.h"
@@ -78,12 +78,12 @@ void PhysWorld::step(float deltaTime) {
 
     // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
     for (std::shared_ptr<BasePart> part : simulatedBodies) {
-        if (!part->rigidBody) continue;
+        if (!part->rigidBody.rigidBody) continue;
 
         // Sync properties
-        const rp::Transform& transform = part->rigidBody->getTransform();
+        const rp::Transform& transform = part->rigidBody.rigidBody->getTransform();
         part->cframe = CFrame(transform);
-        part->velocity = part->rigidBody->getLinearVelocity();
+        part->velocity = part->rigidBody.rigidBody->getLinearVelocity();
 
         // part->rigidBody->enableGravity(true);
         // RotateV/Motor joint
@@ -93,7 +93,7 @@ void PhysWorld::step(float deltaTime) {
             std::shared_ptr<JointInstance> motor = joint.lock()->CastTo<JointInstance>().expect();
             float rate = motor->part0.lock()->GetSurfaceParamB(-motor->c0.LookVector().Unit()) * 30;
             // part->rigidBody->enableGravity(false);
-            part->rigidBody->setAngularVelocity(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate);
+            part->rigidBody.rigidBody->setAngularVelocity(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate);
         }
     }
 
@@ -111,32 +111,32 @@ void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
 
 void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
     rp::Transform transform = part->cframe;
-    if (!part->rigidBody) {
-        part->rigidBody = worldImpl->createRigidBody(transform);
+    if (!part->rigidBody.rigidBody) {
+        part->rigidBody.rigidBody = worldImpl->createRigidBody(transform);
     } else {
-        part->rigidBody->setTransform(transform);
+        part->rigidBody.rigidBody->setTransform(transform);
     }
 
-    part->updateCollider(&physicsCommon);
+    part->rigidBody.updateCollider(part);
 
-    part->rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
-    part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
+    part->rigidBody.rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
+    part->rigidBody.rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
 
-    part->rigidBody->getCollider(0)->setIsSimulationCollider(part->canCollide);
-    part->rigidBody->getCollider(0)->setIsTrigger(!part->canCollide);
+    part->rigidBody.rigidBody->getCollider(0)->setIsSimulationCollider(part->canCollide);
+    part->rigidBody.rigidBody->getCollider(0)->setIsTrigger(!part->canCollide);
 
-    rp::Material& material = part->rigidBody->getCollider(0)->getMaterial();
+    rp::Material& material = part->rigidBody.rigidBody->getCollider(0)->getMaterial();
     material.setFrictionCoefficient(0.35);
     material.setMassDensity(1.f);
 
     //https://github.com/DanielChappuis/reactphysics3d/issues/170#issuecomment-691514860
-    part->rigidBody->updateMassFromColliders();
-    part->rigidBody->updateLocalInertiaTensorFromColliders();
+    part->rigidBody.rigidBody->updateMassFromColliders();
+    part->rigidBody.rigidBody->updateLocalInertiaTensorFromColliders();
 
-    part->rigidBody->setLinearVelocity(part->velocity);
+    part->rigidBody.rigidBody->setLinearVelocity(part->velocity);
     // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
 
-    part->rigidBody->setUserData(&*part);
+    part->rigidBody.rigidBody->setUserData(&*part);
 }
 
 // Ray-casting
@@ -199,8 +199,8 @@ std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rot
 
 PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) {
     // error checking
-    if (part0->rigidBody == nullptr
-        || part1->rigidBody == nullptr
+    if (part0->rigidBody.rigidBody == nullptr
+        || part1->rigidBody.rigidBody == nullptr
         || !part0->workspace()
         || !part1->workspace()
         || part0->workspace()->physicsWorld != shared_from_this()
@@ -208,15 +208,15 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
     ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
 
     if (PhysJointGlueInfo* info = dynamic_cast<PhysJointGlueInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint));
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint));
     } else if (PhysJointWeldInfo* info = dynamic_cast<PhysJointWeldInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint));
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint));
     } else if (PhysJointSnapInfo* info = dynamic_cast<PhysJointSnapInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint));
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint));
     } else if (PhysJointHingeInfo* info = dynamic_cast<PhysJointHingeInfo*>(&type)) {
-        return worldImpl->createJoint(rp::HingeJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint, info->rotationAxis));
+        return worldImpl->createJoint(rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint, info->rotationAxis));
     } else if (PhysJointMotorInfo* info = dynamic_cast<PhysJointMotorInfo*>(&type)) {
-        auto implInfo = rp::HingeJointInfo(part0->rigidBody, part1->rigidBody, info->anchorPoint, info->rotationAxis);
+        auto implInfo = rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint, info->rotationAxis);
         implInfo.isCollisionEnabled = false;
         return worldImpl->createJoint(implInfo);
 
@@ -230,5 +230,30 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
 }
 
 void PhysWorld::destroyJoint(PhysJoint joint) {
+    worldImpl->destroyJoint(joint.joint);
+}
 
+void PhysRigidBody::updateCollider(std::shared_ptr<BasePart> bPart) {
+    if (std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(bPart)) {
+        rp::CollisionShape* physShape;
+        if (part->shape == PartType::Ball) {
+            physShape = physicsCommon.createSphereShape(glm::min(part->size.X(), part->size.Y(), part->size.Z()) * 0.5f);
+        } else if (part->shape == PartType::Block) {
+            physShape = physicsCommon.createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
+        }
+
+        // Recreate the rigidbody if the shape changes
+        if (rigidBody->getNbColliders() > 0 && (_lastShape != part->shape || _lastSize != part->size)) {
+            // TODO: This causes Touched to get called twice. Fix this.
+            rigidBody->removeCollider(rigidBody->getCollider(0));
+            rigidBody->addCollider(physShape, rp::Transform());
+        }
+
+        if (rigidBody->getNbColliders() == 0)
+            rigidBody->addCollider(physShape, rp::Transform());
+
+
+        _lastShape = part->shape;
+        _lastSize = part->size;
+    }
 }

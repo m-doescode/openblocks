@@ -61,7 +61,7 @@ PartAssembly PartAssembly::FromSelection(std::shared_ptr<Selection> selection) {
 
 void PartAssembly::SetCollisionsEnabled(bool enabled) {
     for (auto part : parts) {
-        part->rigidBody->getCollider(0)->setIsWorldQueryCollider(enabled);
+        part->rigidBody.setCollisionsEnabled(enabled);
     }
 }
 

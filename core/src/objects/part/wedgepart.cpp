@@ -12,21 +12,21 @@ WedgePart::WedgePart(PartConstructParams params): BasePart(&TYPE, params) {
     
 }
 
-void WedgePart::updateCollider(rp::PhysicsCommon* common) {
-    Logger::fatalError("Wedges are currently disabled! Please do not use them or your editor may crash\n");
-    rp::ConvexMeshShape* shape = common->createConvexMeshShape(wedgePhysMesh, glmToRp(size * glm::vec3(0.5f)));
+// void WedgePart::updateCollider(rp::PhysicsCommon* common) {
+//     Logger::fatalError("Wedges are currently disabled! Please do not use them or your editor may crash\n");
+//     rp::ConvexMeshShape* shape = common->createConvexMeshShape(wedgePhysMesh, glmToRp(size * glm::vec3(0.5f)));
 
-    // Recreate the rigidbody if the shape changes
-    if (rigidBody->getNbColliders() > 0
-        && dynamic_cast<rp::ConvexMeshShape*>(rigidBody->getCollider(0)->getCollisionShape())->getScale() != shape->getScale()) {
-        // TODO: This causes Touched to get called twice. Fix this.
-        rigidBody->removeCollider(rigidBody->getCollider(0));
-        rigidBody->addCollider(shape, rp::Transform());
-    }
+//     // Recreate the rigidbody if the shape changes
+//     if (rigidBody->getNbColliders() > 0
+//         && dynamic_cast<rp::ConvexMeshShape*>(rigidBody->getCollider(0)->getCollisionShape())->getScale() != shape->getScale()) {
+//         // TODO: This causes Touched to get called twice. Fix this.
+//         rigidBody->removeCollider(rigidBody->getCollider(0));
+//         rigidBody->addCollider(shape, rp::Transform());
+//     }
 
-    if (rigidBody->getNbColliders() == 0)
-        rigidBody->addCollider(shape, rp::Transform());
-}
+//     if (rigidBody->getNbColliders() == 0)
+//         rigidBody->addCollider(shape, rp::Transform());
+// }
 
 void WedgePart::createWedgeShape(rp::PhysicsCommon* common) {
     // https://www.reactphysics3d.com/documentation/index.html#creatingbody
