@@ -7,6 +7,7 @@
 #include "objects/datamodel.h"
 #include "objects/service/workspace.h"
 #include "timeutil.h"
+#include <chrono>
 #include <ctime>
 #include <string>
 #include "luaapis.h" // IWYU pragma: keep
@@ -15,6 +16,7 @@ const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) loc
 
 int g_wait(lua_State*);
 int g_delay(lua_State*);
+int g_tick(lua_State*);
 static int g_print(lua_State*);
 static int g_require(lua_State*);
 static const luaL_Reg luaglobals [] = {
@@ -72,6 +74,9 @@ void ScriptContext::InitService() {
     lua_pushlightuserdata(state, this);
     lua_pushcclosure(state, g_delay, 1);
     lua_setfield(state, -2, "delay");
+
+    lua_pushcclosure(state, g_tick, 0);
+    lua_setfield(state, -2, "tick");
 
     lua_pop(state, 1); // _G
 
@@ -242,4 +247,14 @@ int g_delay(lua_State* L) {
     scriptContext->PushThreadSleep(Lt, secs);
 
     return 0;
+}
+
+int g_tick(lua_State* L) {
+    std::chrono::time_point now_local = std::chrono::current_zone()->to_local(std::chrono::system_clock::now());
+    std::chrono::microseconds us = std::chrono::duration_cast<std::chrono::microseconds>(now_local.time_since_epoch());
+    uint64_t _10millis = us.count() / 100;
+    double secs = (double)_10millis / 10000;
+
+    lua_pushnumber(L, secs);
+    return 1;
 }
