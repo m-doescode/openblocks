@@ -12,6 +12,8 @@
 #include "undohistory.h"
 #include "version.h"
 #include <memory>
+#include <QToolButton>
+#include <QSettings>
 #include <qclipboard.h>
 #include <qevent.h>
 #include <qglobal.h>
@@ -27,6 +29,7 @@
 #include <qtextcursor.h>
 #include <qtextedit.h>
 #include <miniaudio.h>
+#include <qtoolbutton.h>
 #include <vector>
 
 #ifdef _NDEBUG
@@ -67,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    loadState();
+
     gDataModel->Init();
 
     ui->setupUi(this);
@@ -102,6 +107,28 @@ MainWindow::MainWindow(QWidget *parent)
 
     connectActionHandlers();
 
+    // Add open recents menu
+    refreshRecentsMenu();
+    for (QObject* child : ui->fileTools->children()) {
+        if (auto toolButton = dynamic_cast<QToolButton*>(child)) {
+            if (toolButton->defaultAction() != ui->actionOpen) continue;
+
+            // https://stackoverflow.com/a/12283957/16255372
+            // https://stackoverflow.com/a/5365184/16255372
+
+            toolButton->setMenu(recentsMenu);
+            toolButton->setPopupMode(QToolButton::MenuButtonPopup);
+        }
+    }
+
+    // Add open recents dropdown to file menu
+    auto actions = ui->menuFile->actions();
+    for (int i = 0; i < actions.size(); i++) {
+        if (actions[i] != ui->actionOpen) continue;
+
+        ui->menuFile->insertMenu((i+1) < actions.size() ? actions[i+1] : nullptr, recentsMenu);
+    }
+
     // ui->explorerView->Init(ui);
     placeDocument = new PlaceDocument(this);
     placeDocument->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -125,6 +152,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
+    saveState();
     #ifdef NDEBUG
     // Ask if the user wants to save their changes
     // https://stackoverflow.com/a/33890731
@@ -145,6 +173,64 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
         gDataModel->SaveToFile(path);
     }
     #endif
+}
+
+void MainWindow::refreshRecentsMenu() {
+    if (!recentsMenu) recentsMenu = new QMenu();
+
+    recentsMenu->setTitle("Recent files...");
+
+    recentsMenu->clear(); // Actions not shown in any other menu are automatically deleted
+    for (QString item : recentFiles) {
+        QAction* itemAction = new QAction();
+        itemAction->setText(item.split('/').last());
+        recentsMenu->addAction(itemAction);
+        
+        connect(itemAction, &QAction::triggered, [item, this]{
+            if (!QFile::exists(item)) {
+                QMessageBox::warning(this, "File not found", "The file '" + item + "' could not longer be found at that location.");
+                return;
+            }
+
+            std::shared_ptr<DataModel> newModel = DataModel::LoadFromFile(item.toStdString());
+            editModeDataModel = newModel;
+            gDataModel = newModel;
+            newModel->Init();
+            ui->explorerView->updateRoot(newModel);
+
+            // Reset running state
+            placeDocument->setRunState(RUN_STOPPED);
+            undoManager.Reset();
+            updateToolbars();
+            pushRecentFile(item);
+        });
+    }
+
+    if (recentsMenu->isEmpty()) {
+        QAction* emptyAction = new QAction("No recents");
+        emptyAction->setEnabled(false);
+        recentsMenu->addAction(emptyAction);
+    }
+}
+
+void MainWindow::loadState() {
+    QSettings settings("openblocks");
+    recentFiles = settings.value("recentFiles").toStringList();
+}
+
+void MainWindow::saveState() {
+    QSettings settings("openblocks");
+    settings.setValue("recentFiles", recentFiles);
+}
+
+void MainWindow::pushRecentFile(QString file) {
+    // https://www.walletfox.com/course/qtopenrecentfiles.php
+    recentFiles.removeAll(file);
+    recentFiles.prepend(file);
+    while (recentFiles.size() > 10) recentFiles.removeLast();
+
+    refreshRecentsMenu();
+    saveState();
 }
 
 void MainWindow::setUpCommandBar() {
@@ -280,6 +366,7 @@ void MainWindow::connectActionHandlers() {
         }
 
         editModeDataModel->SaveToFile(path);
+        if (path) pushRecentFile(QString::fromStdString(path.value()));
     });
 
     connect(ui->actionSaveAs, &QAction::triggered, this, [&]() {
@@ -287,6 +374,7 @@ void MainWindow::connectActionHandlers() {
         if (!path || path == "") return;
 
         editModeDataModel->SaveToFile(path);
+        if (path) pushRecentFile(QString::fromStdString(path.value()));
     });
 
     connect(ui->actionOpen, &QAction::triggered, this, [&]() {
@@ -307,6 +395,7 @@ void MainWindow::connectActionHandlers() {
         placeDocument->setRunState(RUN_STOPPED);
         undoManager.Reset();
         updateToolbars();
+        if (path) pushRecentFile(QString::fromStdString(path.value()));
     });
 
     connect(ui->actionDelete, &QAction::triggered, this, [&]() {

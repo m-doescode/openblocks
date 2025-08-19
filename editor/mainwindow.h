@@ -64,10 +64,18 @@ public:
     void openFile(std::string path);
 
     Ui::MainWindow *ui;
+    
+    QMenu* recentsMenu = nullptr;
+    QStringList recentFiles;
+    void refreshRecentsMenu();
+    void pushRecentFile(QString);
 
+    void loadState();
+    void saveState();
+    
     friend PlaceDocument;
 private:
-    PlaceDocument* placeDocument;
+    PlaceDocument* placeDocument = nullptr;
 
     void setUpCommandBar();
     void connectActionHandlers();
