@@ -8,10 +8,6 @@
 #include <glm/ext/scalar_common.hpp>
 #include <memory>
 #include <optional>
-#include <reactphysics3d/collision/RaycastInfo.h>
-#include <reactphysics3d/engine/PhysicsCommon.h>
-#include <reactphysics3d/engine/PhysicsWorld.h>
-#include <reactphysics3d/mathematics/Transform.h>
 
 HandleFace HandleFace::XPos(0, glm::vec3(1,0,0));
 HandleFace HandleFace::XNeg(1, glm::vec3(-1,0,0));
@@ -22,10 +18,6 @@ HandleFace HandleFace::ZNeg(5, glm::vec3(0,0,-1));
 std::array<HandleFace, 6> HandleFace::Faces { HandleFace::XPos, HandleFace::XNeg, HandleFace::YPos, HandleFace::YNeg, HandleFace::ZPos, HandleFace::ZNeg };
 
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
-
-// Shitty solution
-static rp::PhysicsCommon common;
-static rp::PhysicsWorld* world = common.createPhysicsWorld();
 
 std::shared_ptr<BasePart> getHandleAdornee() {
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
@@ -52,21 +44,17 @@ CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
     return adornee->cframe.Rotation() + newPartPos;
 }
 
-std::optional<HandleFace> raycastHandle(rp::Ray ray) {
+std::optional<HandleFace> raycastHandle(Vector3 rayStart, Vector3 rayEnd) {
     for (HandleFace face : HandleFace::Faces) {
         CFrame cframe = getHandleCFrame(face);
-        // Implement manual detection via boxes instead of... this shit
-        // This code also hardly works, and is not good at all... Hooo nope.
-        rp::RigidBody* body = world->createRigidBody(CFrame::IDENTITY + cframe.Position());
-        body->addCollider(common.createBoxShape((cframe.Rotation() * Vector3(handleSize(face) / 2.f)).Abs()), rp::Transform::identity());
 
-        rp::RaycastInfo info;
-        if (body->raycast(ray, info)) {
-            world->destroyRigidBody(body);
+        Vector3 halfSize = (cframe.Rotation() * Vector3(handleSize(face) / 2.f)).Abs();
+        Vector3 minB = cframe.Position() - halfSize, maxB = cframe.Position() + halfSize;
+
+        glm::vec3 hitPoint;
+        bool hit = HitBoundingBox(minB, maxB, rayStart, (rayEnd - rayStart).Unit(), hitPoint);
+        if (hit)
             return face;
-        }
-
-        world->destroyRigidBody(body);
     }
 
     return std::nullopt;
