@@ -45,6 +45,9 @@ CFrame partCFrameFromHandlePos(HandleFace face, Vector3 newPos) {
 }
 
 std::optional<HandleFace> raycastHandle(Vector3 rayStart, Vector3 rayEnd) {
+    std::optional<HandleFace> closestFace = {};
+    float closestDistance = -1;
+
     for (HandleFace face : HandleFace::Faces) {
         CFrame cframe = getHandleCFrame(face);
 
@@ -53,11 +56,13 @@ std::optional<HandleFace> raycastHandle(Vector3 rayStart, Vector3 rayEnd) {
 
         glm::vec3 hitPoint;
         bool hit = HitBoundingBox(minB, maxB, rayStart, (rayEnd - rayStart).Unit(), hitPoint);
-        if (hit)
-            return face;
+        float distance = ((Vector3)hitPoint - rayStart).Magnitude();
+
+        if (hit && (closestDistance == -1 || distance < closestDistance))
+            closestFace = face, closestDistance = distance;
     }
 
-    return std::nullopt;
+    return closestFace;
 }
 
 Vector3 handleSize(HandleFace face) {
