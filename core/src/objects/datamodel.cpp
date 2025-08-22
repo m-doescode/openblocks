@@ -20,6 +20,12 @@ DataModel::DataModel()
     this->name = "Place";
 }
 
+DataModel::~DataModel() {
+#ifndef NDEBUG
+    printf("Datamodel successfully destroyed\n");
+#endif
+}
+
 void DataModel::Init(bool runMode) {
     // Create default services
     GetService<Workspace>();

@@ -32,10 +32,6 @@
 #include <qtoolbutton.h>
 #include <vector>
 
-#ifdef _NDEBUG
-#define NDEBUG
-#endif
-
 bool worldSpaceTransforms = false;
 
 inline bool isDarkMode() {

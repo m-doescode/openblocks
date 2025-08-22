@@ -8,10 +8,6 @@
 #include <qmimedata.h>
 #include <QWidget>
 
-#ifdef _NDEBUG
-#define NDEBUG
-#endif
-
 #define M_mainWindow dynamic_cast<MainWindow*>(dynamic_cast<QWidget*>(dynamic_cast<QObject*>(this)->parent())->window())
 
 // https://doc.qt.io/qt-6/qtwidgets-itemviews-simpletreemodel-example.html#testing-the-model

@@ -55,6 +55,9 @@ void PlaceDocument::setRunState(RunState newState) {
     } else if (newState == RUN_STOPPED) {
         _runState = RUN_STOPPED;
 
+#ifndef NDEBUG
+    printf("DataModel stopped. Remaning use counts (should be 1): %ld\n", gDataModel.use_count());
+#endif
         // TODO: GC: Check to make sure gDataModel gets properly garbage collected prior to this
         gDataModel = editModeDataModel;
         updateSelectionListeners(gDataModel->GetService<Selection>());

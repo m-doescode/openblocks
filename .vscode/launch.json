@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "gdb",
+            "request": "launch",
+            "name": "Debug (gdb)",
+            "program": "${workspaceFolder}/build/bin/editor",
+            "cwd": "${workspaceFolder}",
+        },
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Debug",

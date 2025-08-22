@@ -24,6 +24,7 @@ public:
     std::optional<std::string> currentFile;
 
     DataModel();
+    ~DataModel();
     void Init(bool runMode = false);
 
     static inline std::shared_ptr<DataModel> New() { return std::make_shared<DataModel>(); };

@@ -1,12 +1,7 @@
 #include "panic.h"
 
-#include <cstdlib>
 #include "logger.h"
 #include "platform.h"
-
-#ifdef _NDEBUG
-#define NDEBUG
-#endif
 
 bool trySafeAbort = false;
 void panic() {
