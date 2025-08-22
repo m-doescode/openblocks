@@ -20,7 +20,6 @@
 #include "objects/pvinstance.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
-#include "physics/util.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
 #include "datatypes/variant.h"

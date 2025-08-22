@@ -1,6 +1,5 @@
 #include "part.h"
 #include "enum/part.h"
-#include "physics/util.h"
 #include <glm/common.hpp>
 
 Part::Part(): BasePart(&TYPE) {

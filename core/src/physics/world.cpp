@@ -3,8 +3,8 @@
 #include "datatypes/vector.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/part/basepart.h"
+#include "objects/part/part.h"
 #include "physics/convert.h"
-#include "physics/util.h"
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/constraint/HingeJoint.h>
 #include <reactphysics3d/body/RigidBody.h>
@@ -176,7 +176,7 @@ class NearestRayHit : public rp::RaycastCallback {
             return 1;
         }
 
-        std::shared_ptr<BasePart> part = partFromBody(raycastInfo.body);
+        std::shared_ptr<BasePart> part = (raycastInfo.body && raycastInfo.body->getUserData() != nullptr) ? reinterpret_cast<BasePart*>(raycastInfo.body->getUserData())->shared<BasePart>() : nullptr;
         FilterResult result = filter.value()(part);
         if (result == FilterResult::BLOCK) {
             nearestHit = std::nullopt;

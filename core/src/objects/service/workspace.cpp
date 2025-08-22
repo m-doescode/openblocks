@@ -9,7 +9,6 @@
 #include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
-#include "physics/util.h"
 #include "timeutil.h"
 #include <memory>
 
