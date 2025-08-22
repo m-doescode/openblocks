@@ -1,12 +1,10 @@
 #include "cframe.h"
 #include "datatypes/vector.h"
 #include "error/data.h"
-#include "physics/util.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/matrix.hpp>
-#include <reactphysics3d/mathematics/Transform.h>
 #include "datatypes/variant.h"
 #include <pugixml.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -38,9 +36,6 @@ CFrame::CFrame(glm::vec3 translation, glm::mat3 rotation)
 CFrame::CFrame(Vector3 position, glm::quat quat)
     : translation(position)
     , rotation(quat) {
-}
-
-CFrame::CFrame(const rp::Transform& transform) : CFrame::CFrame(rpToGlm(transform.getPosition()), rpToGlm(transform.getOrientation())) {
 }
 
 glm::mat3 lookAt(Vector3 position, Vector3 lookAt, Vector3 up) {
@@ -75,10 +70,6 @@ CFrame CFrame::pointAligned(Vector3 position, Vector3 toward, Vector3 up, Vector
 CFrame::operator glm::mat4() const {
     // Always make sure to translate the position first, then rotate. Matrices work backwards
     return glm::translate(glm::mat4(1.0f), this->translation) * glm::mat4(this->rotation);
-}
-
-CFrame::operator rp::Transform() const {
-    return rp::Transform(glmToRp(translation), glmToRp(rotation));
 }
 
 Vector3 CFrame::ToEulerAnglesXYZ() {

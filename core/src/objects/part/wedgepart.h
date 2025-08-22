@@ -7,7 +7,7 @@ class DEF_INST_(hidden) WedgePart : public BasePart {
     AUTOGEN_PREAMBLE
 
 protected:
-    static void createWedgeShape(rp::PhysicsCommon* common);
+    // static void createWedgeShape(rp::PhysicsCommon* common);
 
     friend Workspace;
 public:

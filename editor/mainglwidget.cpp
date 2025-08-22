@@ -148,10 +148,10 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     
     if (!rayHit) return;
 
-    CFrame targetFrame = partFromBody(rayHit->body)->cframe;
+    CFrame targetFrame = rayHit->hitPart->cframe;
     Vector3 surfaceNormal = targetFrame.Inverse().Rotation() * rayHit->worldNormal;
     Vector3 inverseSurfaceNormal = Vector3::ONE - surfaceNormal.Abs();
-    glm::vec3 partSize = partFromBody(rayHit->body)->size;
+    glm::vec3 partSize = rayHit->hitPart->size;
     Vector3 tFormedHitPos = targetFrame * ((targetFrame.Inverse() * initialHitPos) * inverseSurfaceNormal);
     Vector3 tFormedInitialPos = targetFrame * ((targetFrame.Inverse() * initialFrame.Position()) * inverseSurfaceNormal);
     Vector3 vec = rayHit->worldPoint + (tFormedInitialPos - tFormedHitPos);
@@ -338,7 +338,7 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
     };
 
     std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-    if (rayHit && !partFromBody(rayHit->body)->locked) {
+    if (rayHit && !rayHit->hitPart->locked) {
         setCursor(Qt::OpenHandCursor);
         return;
     }
@@ -404,8 +404,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
         // raycast part
         std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
         std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-        if (!rayHit || !partFromBody(rayHit->body)) { selection->Set({}); return; }
-        std::shared_ptr<BasePart> part = partFromBody(rayHit->body);
+        if (!rayHit || !rayHit->hitPart) { selection->Set({}); return; }
+        std::shared_ptr<BasePart> part = rayHit->hitPart;
         if (part->locked) { selection->Set({}); return; }
 
         std::shared_ptr<PVInstance> selObject = part;

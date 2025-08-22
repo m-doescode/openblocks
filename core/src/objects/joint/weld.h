@@ -5,8 +5,6 @@
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-namespace reactphysics3d { class FixedJoint; }
-
 class DEF_INST Weld : public JointInstance {
     AUTOGEN_PREAMBLE
 

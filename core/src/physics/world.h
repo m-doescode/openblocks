@@ -3,6 +3,7 @@
 #include "datatypes/vector.h"
 #include "enum/part.h"
 #include "reactphysics3d/body/RigidBody.h"
+#include "utils.h"
 #include <functional>
 #include <list>
 #include <memory>
@@ -10,26 +11,7 @@
 
 namespace rp = reactphysics3d;
 
-struct RaycastResult {
-    rp::Vector3 worldPoint;
-    rp::Vector3 worldNormal;
-    rp::decimal hitFraction;
-    int triangleIndex;
-    rp::Body* body;
-    rp::Collider* collider;
-
-    RaycastResult(const rp::RaycastInfo& raycastInfo);
-};
-
-enum FilterResult {
-    TARGET, // The object is captured
-    BLOCK, // The object blocks any objects behind it, but is not captured
-    PASS, // The object is transparent, ignore it
-};
-
 class BasePart;
-typedef std::function<FilterResult(std::shared_ptr<BasePart>)> RaycastFilter;
-
 class PhysWorld;
 class PhysicsEventListener : public rp::EventListener {
     friend PhysWorld;
@@ -57,6 +39,7 @@ public:
     inline PhysJoint() {}
 };
 
+struct RaycastResult;
 class PhysRigidBody {
     rp::RigidBody* rigidBody = nullptr;
     inline PhysRigidBody(rp::RigidBody* rigidBody) : rigidBody(rigidBody) {}
@@ -64,6 +47,7 @@ class PhysRigidBody {
     PartType _lastShape;
 
     friend PhysWorld;
+    friend RaycastResult;
 public:
     inline PhysRigidBody() {}
 
@@ -71,6 +55,31 @@ public:
     inline void setCollisionsEnabled(bool enabled) { if (!rigidBody) return; rigidBody->getCollider(0)->setIsWorldQueryCollider(enabled); }
     void updateCollider(std::shared_ptr<BasePart>);
 };
+
+// // Provides internal implementation-specific values from the raycast result
+// struct RaycastResultInternal {
+//     rp::decimal hitFraction;
+//     rp::Collider* collider;
+// };
+
+struct RaycastResult {
+    Vector3 worldPoint;
+    Vector3 worldNormal;
+    int triangleIndex;
+    PhysRigidBody body;
+    nullable std::shared_ptr<BasePart> hitPart;
+
+    RaycastResult(const rp::RaycastInfo& raycastInfo);
+};
+
+enum FilterResult {
+    TARGET, // The object is captured
+    BLOCK, // The object blocks any objects behind it, but is not captured
+    PASS, // The object is transparent, ignore it
+};
+
+class BasePart;
+typedef std::function<FilterResult(std::shared_ptr<BasePart>)> RaycastFilter;
 
 class PhysWorld : public std::enable_shared_from_this<PhysWorld> {
     rp::PhysicsWorld* worldImpl;

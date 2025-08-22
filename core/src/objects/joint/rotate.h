@@ -5,8 +5,6 @@
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-namespace reactphysics3d { class HingeJoint; }
-
 class DEF_INST Rotate : public JointInstance {
     AUTOGEN_PREAMBLE
 

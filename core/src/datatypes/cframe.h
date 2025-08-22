@@ -8,8 +8,6 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/matrix.hpp>
 
-namespace reactphysics3d { class Transform; };
-
 class DEF_DATA_(name="CoordinateFrame") CFrame {
     AUTOGEN_PREAMBLE_DATA
 
@@ -24,7 +22,6 @@ public:
     DEF_DATA_CTOR CFrame();
     DEF_DATA_CTOR CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
     DEF_DATA_CTOR CFrame(Vector3 , Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
-    CFrame(const reactphysics3d::Transform&);
     CFrame(Vector3 position, glm::quat quat);
     virtual ~CFrame();
 
@@ -46,11 +43,11 @@ public:
     static void PushLuaLibrary(lua_State*);
 
     operator glm::mat4() const;
-    operator reactphysics3d::Transform() const;
 
     //inline static CFrame identity() { }
     DEF_DATA_PROP inline Vector3 Position() const { return translation; }
     DEF_DATA_PROP inline CFrame Rotation() const { return CFrame { glm::vec3(0, 0, 0), rotation }; }
+    inline glm::mat3 RotMatrix() const { return rotation; }
     DEF_DATA_METHOD CFrame Inverse() const;
     DEF_DATA_PROP inline float X() const { return translation.x; }
     DEF_DATA_PROP inline float Y() const { return translation.y; }

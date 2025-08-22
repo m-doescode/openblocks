@@ -3,7 +3,6 @@
 #include "objects/part/part.h"
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
-#include <reactphysics3d/constraint/HingeJoint.h>
 
 #define PI 3.14159
 

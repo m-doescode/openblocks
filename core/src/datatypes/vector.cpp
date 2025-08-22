@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <iomanip>
-#include <reactphysics3d/mathematics/Vector3.h>
 #include <string>
 #include <pugixml.hpp>
 #include "datatypes/base.h"
@@ -11,11 +10,8 @@
 #include "error/data.h"
 #include <sstream>
 
-namespace rp = reactphysics3d;
-
 Vector3::Vector3() : vector(glm::vec3(0, 0, 0)) {};
 Vector3::Vector3(const glm::vec3& src) : vector(src) {};
-Vector3::Vector3(const rp::Vector3& src) : vector(glm::vec3(src.x, src.y, src.z)) {};
 Vector3::Vector3(float x, const float y, float z) : vector(glm::vec3(x, y, z)) {};
 
 Vector3::~Vector3() = default;
@@ -31,7 +27,6 @@ const std::string Vector3::ToString() const {
 }
 
 Vector3::operator glm::vec3() const { return vector; };
-Vector3::operator rp::Vector3() const { return rp::Vector3(X(), Y(), Z()); };
 
 // Operators
 

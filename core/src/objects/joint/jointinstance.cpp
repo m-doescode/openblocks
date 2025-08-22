@@ -1,15 +1,11 @@
 #include "jointinstance.h"
 
-#include "datatypes/cframe.h"
 #include "datatypes/ref.h"
 #include "objects/datamodel.h"
 #include "objects/service/jointsservice.h"
-#include "objects/part/part.h"
+#include "objects/part/basepart.h"
 #include "objects/service/workspace.h"
 #include <memory>
-#include <reactphysics3d/constraint/FixedJoint.h>
-#include <reactphysics3d/engine/PhysicsWorld.h>
-#include "ptr_helpers.h"
 
 JointInstance::JointInstance(const InstanceType* type): Instance(type) {
 }

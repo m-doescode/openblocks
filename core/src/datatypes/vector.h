@@ -5,9 +5,6 @@
 #include "error/data.h"
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
-#include <reactphysics3d/mathematics/Vector3.h>
-
-// namespace reactphysics3d { class Vector3; };
 
 class DEF_DATA Vector3 {
     AUTOGEN_PREAMBLE_DATA
@@ -18,7 +15,6 @@ public:
     DEF_DATA_CTOR Vector3(float x, float y, float z);
     inline Vector3(float value) : Vector3(value, value, value) {}
     Vector3(const glm::vec3&);
-    Vector3(const reactphysics3d::Vector3&);
     virtual ~Vector3();
 
     DEF_DATA_PROP static Vector3 ZERO;
@@ -33,7 +29,6 @@ public:
     static void PushLuaLibrary(lua_State*);
 
     operator glm::vec3() const;
-    operator reactphysics3d::Vector3() const;
 
     DEF_DATA_PROP inline float X() const { return vector.x; }
     DEF_DATA_PROP inline float Y() const { return vector.y; }

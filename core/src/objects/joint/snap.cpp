@@ -8,8 +8,6 @@
 #include "objects/service/workspace.h"
 #include "physics/world.h"
 #include <memory>
-#include <reactphysics3d/constraint/FixedJoint.h>
-#include <reactphysics3d/engine/PhysicsWorld.h>
 
 Snap::Snap(): JointInstance(&TYPE) {
 }

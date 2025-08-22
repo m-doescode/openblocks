@@ -3,9 +3,11 @@
 #include "datatypes/vector.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/part/basepart.h"
+#include "physics/convert.h"
 #include "physics/util.h"
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/constraint/HingeJoint.h>
+#include <reactphysics3d/body/RigidBody.h>
 #include "timeutil.h"
 #include <memory>
 #include "objects/service/workspace.h"
@@ -82,8 +84,8 @@ void PhysWorld::step(float deltaTime) {
 
         // Sync properties
         const rp::Transform& transform = part->rigidBody.rigidBody->getTransform();
-        part->cframe = CFrame(transform);
-        part->velocity = part->rigidBody.rigidBody->getLinearVelocity();
+        part->cframe = convert<CFrame>(transform);
+        part->velocity = convert<Vector3>(part->rigidBody.rigidBody->getLinearVelocity());
 
         // part->rigidBody->enableGravity(true);
         // RotateV/Motor joint
@@ -93,7 +95,7 @@ void PhysWorld::step(float deltaTime) {
             std::shared_ptr<JointInstance> motor = joint.lock()->CastTo<JointInstance>().expect();
             float rate = motor->part0.lock()->GetSurfaceParamB(-motor->c0.LookVector().Unit()) * 30;
             // part->rigidBody->enableGravity(false);
-            part->rigidBody.rigidBody->setAngularVelocity(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate);
+            part->rigidBody.rigidBody->setAngularVelocity(convert<rp::Vector3>(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate));
         }
     }
 
@@ -110,7 +112,7 @@ void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
 }
 
 void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
-    rp::Transform transform = part->cframe;
+    rp::Transform transform = convert<rp::Transform>(part->cframe);
     if (!part->rigidBody.rigidBody) {
         part->rigidBody.rigidBody = worldImpl->createRigidBody(transform);
     } else {
@@ -133,7 +135,7 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
     part->rigidBody.rigidBody->updateMassFromColliders();
     part->rigidBody.rigidBody->updateLocalInertiaTensorFromColliders();
 
-    part->rigidBody.rigidBody->setLinearVelocity(part->velocity);
+    part->rigidBody.rigidBody->setLinearVelocity(convert<rp::Vector3>(part->velocity));
     // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
 
     part->rigidBody.rigidBody->setUserData(&*part);
@@ -143,12 +145,16 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
 
 
 RaycastResult::RaycastResult(const rp::RaycastInfo& raycastInfo)
-    : worldPoint(raycastInfo.worldPoint)
-    , worldNormal(raycastInfo.worldNormal)
-    , hitFraction(raycastInfo.hitFraction)
+    : worldPoint(convert<Vector3>(raycastInfo.worldPoint))
+    , worldNormal(convert<Vector3>(raycastInfo.worldNormal))
+    // , hitFraction(raycastInfo.hitFraction)
     , triangleIndex(raycastInfo.triangleIndex)
-    , body(raycastInfo.body)
-    , collider(raycastInfo.collider) {}
+    , body(dynamic_cast<rp::RigidBody*>(raycastInfo.body))
+    // , collider(raycastInfo.collider)
+{
+    if (body.rigidBody && body.rigidBody->getUserData() != nullptr)
+        hitPart = reinterpret_cast<BasePart*>(body.rigidBody->getUserData())->shared<BasePart>();
+}
 
 class NearestRayHit : public rp::RaycastCallback {
     rp::Vector3 startPos;
@@ -191,8 +197,8 @@ public:
 
 std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits) {
     // std::scoped_lock lock(globalPhysicsLock);
-    rp::Ray ray(glmToRp(point), glmToRp(glm::normalize((glm::vec3)rotation)) * maxLength);
-    NearestRayHit rayHit(glmToRp(point), filter);
+    rp::Ray ray(convert<rp::Vector3>(point), convert<rp::Vector3>(glm::normalize((glm::vec3)rotation)) * maxLength);
+    NearestRayHit rayHit(convert<rp::Vector3>(point), filter);
     worldImpl->raycast(ray, &rayHit, categoryMaskBits);
     return rayHit.getNearestHit();
 }
@@ -208,15 +214,15 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
     ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
 
     if (PhysJointGlueInfo* info = dynamic_cast<PhysJointGlueInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint));
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint)));
     } else if (PhysJointWeldInfo* info = dynamic_cast<PhysJointWeldInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint));
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint)));
     } else if (PhysJointSnapInfo* info = dynamic_cast<PhysJointSnapInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint));
+        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint)));
     } else if (PhysJointHingeInfo* info = dynamic_cast<PhysJointHingeInfo*>(&type)) {
-        return worldImpl->createJoint(rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint, info->rotationAxis));
+        return worldImpl->createJoint(rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint), convert<rp::Vector3>(info->rotationAxis)));
     } else if (PhysJointMotorInfo* info = dynamic_cast<PhysJointMotorInfo*>(&type)) {
-        auto implInfo = rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, info->anchorPoint, info->rotationAxis);
+        auto implInfo = rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint), convert<rp::Vector3>((info->rotationAxis)));
         implInfo.isCollisionEnabled = false;
         return worldImpl->createJoint(implInfo);
 
@@ -239,7 +245,7 @@ void PhysRigidBody::updateCollider(std::shared_ptr<BasePart> bPart) {
         if (part->shape == PartType::Ball) {
             physShape = physicsCommon.createSphereShape(glm::min(part->size.X(), part->size.Y(), part->size.Z()) * 0.5f);
         } else if (part->shape == PartType::Block) {
-            physShape = physicsCommon.createBoxShape(glmToRp(part->size * glm::vec3(0.5f)));
+            physShape = physicsCommon.createBoxShape(convert<rp::Vector3>(part->size * glm::vec3(0.5f)));
         }
 
         // Recreate the rigidbody if the shape changes
