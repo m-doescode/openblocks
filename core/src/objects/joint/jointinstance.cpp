@@ -48,6 +48,9 @@ void JointInstance::Update() {
 
     // Finally, build the joint
     buildJoint();
+
+    part0.lock()->trackJoint(shared<JointInstance>());
+    part1.lock()->trackJoint(shared<JointInstance>());
 }
 
 nullable std::shared_ptr<Workspace> JointInstance::workspaceOfPart(std::shared_ptr<BasePart> part) {

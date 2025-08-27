@@ -22,7 +22,6 @@ void Snap::buildJoint() {
     // used to be rather than specifying an anchor rotation, so whatever.
     CFrame newFrame = part0.lock()->cframe * (c0 * c1.Inverse());
     part1.lock()->cframe = newFrame;
-    part1.lock()->UpdateProperty("CFrame");
 
     PhysJointSnapInfo jointInfo((c0.Inverse() * c1).Position());
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
