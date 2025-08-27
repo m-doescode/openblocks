@@ -1,265 +1,276 @@
 #include "world.h"
-#include "datatypes/variant.h"
 #include "datatypes/vector.h"
-#include "objects/joint/jointinstance.h"
+#include "enum/part.h"
+#include "logger.h"
 #include "objects/part/basepart.h"
 #include "objects/part/part.h"
-#include "physics/convert.h"
-#include <reactphysics3d/constraint/FixedJoint.h>
-#include <reactphysics3d/constraint/HingeJoint.h>
-#include <reactphysics3d/body/RigidBody.h>
-#include "timeutil.h"
-#include <memory>
 #include "objects/service/workspace.h"
+#include "physics/convert.h"
+#include "timeutil.h"
 
-rp::PhysicsCommon physicsCommon;
+#include <Jolt/Jolt.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Core/Factory.h>
+#include <Jolt/Core/Memory.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Body/MotionType.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/EActivation.h>
+#include <Jolt/Physics/PhysicsSettings.h>
+#include <Jolt/RegisterTypes.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/Shape/SubShapeID.h>
+#include <Jolt/Physics/Body/BodyFilter.h>
+#include <Jolt/Physics/Body/BodyLockInterface.h>
+#include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
+#include <Jolt/Physics/Constraints/FixedConstraint.h>
+#include <memory>
 
-PhysWorld::PhysWorld() : physicsEventListener(this) {
-    worldImpl = physicsCommon.createPhysicsWorld();
+static JPH::TempAllocator* allocator;
+static JPH::JobSystem* jobSystem;
 
-    worldImpl->setGravity(rp::Vector3(0, -196.2, 0));
-    // world->setContactsPositionCorrectionTechnique(rp::ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS);
-    // physicsWorld->setNbIterationsPositionSolver(2000);
-    // physicsWorld->setNbIterationsVelocitySolver(2000);
-    // physicsWorld->setSleepLinearVelocity(10);
-    // physicsWorld->setSleepAngularVelocity(5);
 
-    worldImpl->setEventListener(&physicsEventListener);
+namespace Layers
+{
+	static constexpr JPH::ObjectLayer DYNAMIC = 0;
+	static constexpr JPH::ObjectLayer ANCHORED = 1;
+	static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+};
 
+namespace BPLayers
+{
+	static constexpr JPH::BroadPhaseLayer ANCHORED(0);
+	static constexpr JPH::BroadPhaseLayer DYNAMIC(1);
+	static constexpr uint NUM_LAYERS(2);
+};
+
+PhysWorld::PhysWorld() {
+    worldImpl.Init(4096, 0, 4096, 4096, broadPhaseLayerInterface, objectBroadPhasefilter, objectLayerPairFilter);
+    worldImpl.SetGravity(JPH::Vec3(0, -196, 0));
+	JPH::PhysicsSettings settings = worldImpl.GetPhysicsSettings();
+	// settings.mPointVelocitySleepThreshold = 0.04f; // Fix parts not sleeping
+    // settings.mNumVelocitySteps *= 20;
+    // settings.mNumPositionSteps *= 20;
+	worldImpl.SetPhysicsSettings(settings);
 }
 
 PhysWorld::~PhysWorld() {
-    physicsCommon.destroyPhysicsWorld(worldImpl);    
 }
 
-PhysicsEventListener::PhysicsEventListener(PhysWorld* world) : world(world) {}
+void PhysWorld::addBody(std::shared_ptr<BasePart> part) {
+    syncBodyProperties(part);
+}
 
-void PhysicsEventListener::onContact(const rp::CollisionCallback::CallbackData& data) {
-    for (size_t i = 0; i < data.getNbContactPairs(); i++) {
-        auto pair = data.getContactPair(i);
-        auto type = pair.getEventType();
-        if (type == rp::CollisionCallback::ContactPair::EventType::ContactStay) continue;
+void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
+    // TODO:
+}
 
-        auto part0 = reinterpret_cast<BasePart*>(pair.getBody1()->getUserData())->shared<BasePart>();
-        auto part1 = reinterpret_cast<BasePart*>(pair.getBody2()->getUserData())->shared<BasePart>();
-
-        if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart) {
-            part0->Touched->Fire({ (Variant)InstanceRef(part1) });
-            part1->Touched->Fire({ (Variant)InstanceRef(part0) });
-        } else if (type == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit) {
-            part0->TouchEnded->Fire({ (Variant)InstanceRef(part1) });
-            part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
+JPH::Shape* makeShape(std::shared_ptr<BasePart> basePart) {
+    if (std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(basePart)) {
+        switch (part->shape) {
+        case PartType::Block:
+            return new JPH::BoxShape(convert<JPH::Vec3>(part->size / 2.f), JPH::cDefaultConvexRadius);
+        case PartType::Ball:
+            return new JPH::SphereShape(glm::min(part->size.X(), part->size.Y(), part->size.Z()) / 2.f);
+            break;
         }
+    }
+    return nullptr;
+}
+
+void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
+    JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
+
+    JPH::EMotionType motionType = part->anchored ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+    JPH::EActivation activationMode = part->anchored ? JPH::EActivation::DontActivate : JPH::EActivation::Activate;
+    JPH::ObjectLayer objectLayer = part->anchored ? Layers::ANCHORED : Layers::DYNAMIC;
+
+    JPH::Body* body = part->rigidBody.bodyImpl;
+
+    // Generate a new rigidBody
+    if (body == nullptr) {
+        JPH::Shape* shape = makeShape(part);
+        JPH::BodyCreationSettings settings(shape, convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), motionType, objectLayer);
+        settings.mRestitution = 0.5;
+
+        body = interface.CreateBody(settings);
+        body->SetUserData((JPH::uint64)part.get());
+        part->rigidBody.bodyImpl = body;
+
+        interface.AddBody(body->GetID(), activationMode);
+        interface.SetLinearVelocity(body->GetID(), convert<JPH::Vec3>(part->velocity));
+    } else {
+        std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part);
+        bool shouldUpdateShape = (part2 != nullptr && part->rigidBody._lastShape != part2->shape) || part->rigidBody._lastSize == part->size;
+
+        if (shouldUpdateShape) {
+            // const JPH::Shape* oldShape = body->GetShape();
+            JPH::Shape* newShape = makeShape(part);
+
+            interface.SetShape(body->GetID(), newShape, true, activationMode);
+            // Seems like Jolt manages its memory for us, so we don't need the below
+            // delete oldShape;
+        }
+
+        interface.SetObjectLayer(body->GetID(), objectLayer);        
+        interface.SetMotionType(body->GetID(), motionType, activationMode);
+        interface.SetPositionRotationAndVelocity(body->GetID(), convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), convert<JPH::Vec3>(part->velocity), /* Angular velocity is NYI: */ body->GetAngularVelocity());
     }
 }
 
-void PhysicsEventListener::onTrigger(const rp::OverlapCallback::CallbackData& data) {
-    for (size_t i = 0; i < data.getNbOverlappingPairs(); i++) {
-        auto pair = data.getOverlappingPair(i);
-        auto type = pair.getEventType();
-        if (type == rp::OverlapCallback::OverlapPair::EventType::OverlapStay) continue;
+void physicsInit() {
+    JPH::RegisterDefaultAllocator();
+    JPH::Factory::sInstance = new JPH::Factory();
+    JPH::RegisterTypes();
 
-        auto part0 = reinterpret_cast<BasePart*>(pair.getBody1()->getUserData())->shared<BasePart>();
-        auto part1 = reinterpret_cast<BasePart*>(pair.getBody2()->getUserData())->shared<BasePart>();
+    allocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
+    jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+}
 
-        if (type == reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStart) {
-            part0->Touched->Fire({ (Variant)InstanceRef(part1) });
-            part1->Touched->Fire({ (Variant)InstanceRef(part0) });
-        } else if (type == reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapExit) {
-            part0->TouchEnded->Fire({ (Variant)InstanceRef(part1) });
-            part1->TouchEnded->Fire({ (Variant)InstanceRef(part0) });
-        }
-    }
+void physicsDeinit() {
+    JPH::UnregisterTypes();
+    delete JPH::Factory::sInstance;
+    JPH::Factory::sInstance = nullptr;
 }
 
 tu_time_t physTime;
 void PhysWorld::step(float deltaTime) {
     tu_time_t startTime = tu_clock_micros();
+    // Depending on the load, it may be necessary to call this with a differing collision step count
+    // 5 seems to be a good number supporting the high gravity
+    worldImpl.Update(deltaTime, 5, allocator, jobSystem);
 
-    worldImpl->update(std::min(deltaTime / 2, (1/60.f)));
-
-    // TODO: Add list of tracked parts in workspace based on their ancestry using inWorkspace property of Instance
-    for (std::shared_ptr<BasePart> part : simulatedBodies) {
-        if (!part->rigidBody.rigidBody) continue;
-
-        // Sync properties
-        const rp::Transform& transform = part->rigidBody.rigidBody->getTransform();
-        part->cframe = convert<CFrame>(transform);
-        part->velocity = convert<Vector3>(part->rigidBody.rigidBody->getLinearVelocity());
-
-        // part->rigidBody->enableGravity(true);
-        // RotateV/Motor joint
-        for (auto& joint : part->secondaryJoints) {
-            if (joint.expired() || !joint.lock()->IsA("RotateV")) continue;
-                        
-            std::shared_ptr<JointInstance> motor = joint.lock()->CastTo<JointInstance>().expect();
-            float rate = motor->part0.lock()->GetSurfaceParamB(-motor->c0.LookVector().Unit()) * 30;
-            // part->rigidBody->enableGravity(false);
-            part->rigidBody.rigidBody->setAngularVelocity(convert<rp::Vector3>(-(motor->part0.lock()->cframe * motor->c0).LookVector() * rate));
-        }
+    JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
+    JPH::BodyIDVector bodyIDs;
+    worldImpl.GetBodies(bodyIDs);
+    for (JPH::BodyID bodyID : bodyIDs) {
+        std::shared_ptr<BasePart> part = ((Instance*)interface.GetUserData(bodyID))->shared<BasePart>();
+        part->cframe = CFrame(convert<Vector3>(interface.GetPosition(bodyID)), convert<glm::quat>(interface.GetRotation(bodyID)));
     }
 
     physTime = tu_clock_micros() - startTime;
 }
-    
-void PhysWorld::addBody(std::shared_ptr<BasePart> part) {
-    simulatedBodies.push_back(part);
-}
-
-void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
-    auto it = std::find(simulatedBodies.begin(), simulatedBodies.end(), part);
-    simulatedBodies.erase(it);
-}
-
-void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
-    rp::Transform transform = convert<rp::Transform>(part->cframe);
-    if (!part->rigidBody.rigidBody) {
-        part->rigidBody.rigidBody = worldImpl->createRigidBody(transform);
-    } else {
-        part->rigidBody.rigidBody->setTransform(transform);
-    }
-
-    part->rigidBody.updateCollider(part);
-
-    part->rigidBody.rigidBody->setType(part->anchored ? rp::BodyType::STATIC : rp::BodyType::DYNAMIC);
-    part->rigidBody.rigidBody->getCollider(0)->setCollisionCategoryBits(0b11);
-
-    part->rigidBody.rigidBody->getCollider(0)->setIsSimulationCollider(part->canCollide);
-    part->rigidBody.rigidBody->getCollider(0)->setIsTrigger(!part->canCollide);
-
-    rp::Material& material = part->rigidBody.rigidBody->getCollider(0)->getMaterial();
-    material.setFrictionCoefficient(0.35);
-    material.setMassDensity(1.f);
-
-    //https://github.com/DanielChappuis/reactphysics3d/issues/170#issuecomment-691514860
-    part->rigidBody.rigidBody->updateMassFromColliders();
-    part->rigidBody.rigidBody->updateLocalInertiaTensorFromColliders();
-
-    part->rigidBody.rigidBody->setLinearVelocity(convert<rp::Vector3>(part->velocity));
-    // part->rigidBody->setMass(density * part->size.x * part->size.y * part->size.z);
-
-    part->rigidBody.rigidBody->setUserData(&*part);
-}
-
-// Ray-casting
-
-
-RaycastResult::RaycastResult(const rp::RaycastInfo& raycastInfo)
-    : worldPoint(convert<Vector3>(raycastInfo.worldPoint))
-    , worldNormal(convert<Vector3>(raycastInfo.worldNormal))
-    // , hitFraction(raycastInfo.hitFraction)
-    , triangleIndex(raycastInfo.triangleIndex)
-    , body(dynamic_cast<rp::RigidBody*>(raycastInfo.body))
-    // , collider(raycastInfo.collider)
-{
-    if (body.rigidBody && body.rigidBody->getUserData() != nullptr)
-        hitPart = reinterpret_cast<BasePart*>(body.rigidBody->getUserData())->shared<BasePart>();
-}
-
-class NearestRayHit : public rp::RaycastCallback {
-    rp::Vector3 startPos;
-    std::optional<RaycastFilter> filter;
-
-    std::optional<RaycastResult> nearestHit;
-    float nearestHitDistance = -1;
-
-    // Order is not guaranteed, so we have to figure out the nearest object using a more sophisticated algorith,
-    rp::decimal notifyRaycastHit(const rp::RaycastInfo& raycastInfo) override {
-        // If the detected object is further away than the nearest object, continue.
-        int distance = (raycastInfo.worldPoint - startPos).length();
-        if (nearestHitDistance != -1 && distance >= nearestHitDistance)
-            return 1;
-
-        if (!filter) {
-            nearestHit = raycastInfo;
-            nearestHitDistance = distance;
-            return 1;
-        }
-
-        std::shared_ptr<BasePart> part = (raycastInfo.body && raycastInfo.body->getUserData() != nullptr) ? reinterpret_cast<BasePart*>(raycastInfo.body->getUserData())->shared<BasePart>() : nullptr;
-        FilterResult result = filter.value()(part);
-        if (result == FilterResult::BLOCK) {
-            nearestHit = std::nullopt;
-            nearestHitDistance = distance;
-            return 1;
-        } else if (result == FilterResult::TARGET) {
-            nearestHit = raycastInfo;
-            nearestHitDistance = distance;
-            return 1;
-        }
-        return 1;
-    };
-
-public:
-    NearestRayHit(rp::Vector3 startPos, std::optional<RaycastFilter> filter = std::nullopt) : startPos(startPos), filter(filter) {}
-    std::optional<const RaycastResult> getNearestHit() { return nearestHit; };
-};
-
-std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits) {
-    // std::scoped_lock lock(globalPhysicsLock);
-    rp::Ray ray(convert<rp::Vector3>(point), convert<rp::Vector3>(glm::normalize((glm::vec3)rotation)) * maxLength);
-    NearestRayHit rayHit(convert<rp::Vector3>(point), filter);
-    worldImpl->raycast(ray, &rayHit, categoryMaskBits);
-    return rayHit.getNearestHit();
-}
 
 PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) {
-    // error checking
-    if (part0->rigidBody.rigidBody == nullptr
-        || part1->rigidBody.rigidBody == nullptr
+    if (part0->rigidBody.bodyImpl == nullptr
+        || part1->rigidBody.bodyImpl == nullptr
         || !part0->workspace()
         || !part1->workspace()
         || part0->workspace()->physicsWorld != shared_from_this()
         || part1->workspace()->physicsWorld != shared_from_this()
     ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
 
+    JPH::TwoBodyConstraint* constraint;
     if (PhysJointGlueInfo* info = dynamic_cast<PhysJointGlueInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint)));
+        JPH::FixedConstraintSettings settings;
+        settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
+        constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
     } else if (PhysJointWeldInfo* info = dynamic_cast<PhysJointWeldInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint)));
+        JPH::FixedConstraintSettings settings;
+        settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
+        constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
     } else if (PhysJointSnapInfo* info = dynamic_cast<PhysJointSnapInfo*>(&type)) {
-        return worldImpl->createJoint(rp::FixedJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint)));
-    } else if (PhysJointHingeInfo* info = dynamic_cast<PhysJointHingeInfo*>(&type)) {
-        return worldImpl->createJoint(rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint), convert<rp::Vector3>(info->rotationAxis)));
-    } else if (PhysJointMotorInfo* info = dynamic_cast<PhysJointMotorInfo*>(&type)) {
-        auto implInfo = rp::HingeJointInfo(part0->rigidBody.rigidBody, part1->rigidBody.rigidBody, convert<rp::Vector3>(info->anchorPoint), convert<rp::Vector3>((info->rotationAxis)));
-        implInfo.isCollisionEnabled = false;
-        return worldImpl->createJoint(implInfo);
-
-        // part1.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b10);
-        // part1.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
-        // part0.lock()->rigidBody->getCollider(0)->setCollideWithMaskBits(0b01);
-        // part0.lock()->rigidBody->getCollider(0)->setCollisionCategoryBits(0b01);
+        JPH::FixedConstraintSettings settings;
+        settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
+        constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
+    } else {
+        panic();
     }
 
-    panic(); // Unreachable
+    worldImpl.AddConstraint(constraint);
+    return { constraint };
 }
 
 void PhysWorld::destroyJoint(PhysJoint joint) {
-    worldImpl->destroyJoint(joint.joint);
+    worldImpl.RemoveConstraint(joint.jointImpl);
 }
 
-void PhysRigidBody::updateCollider(std::shared_ptr<BasePart> bPart) {
-    if (std::shared_ptr<Part> part = std::dynamic_pointer_cast<Part>(bPart)) {
-        rp::CollisionShape* physShape;
-        if (part->shape == PartType::Ball) {
-            physShape = physicsCommon.createSphereShape(glm::min(part->size.X(), part->size.Y(), part->size.Z()) * 0.5f);
-        } else if (part->shape == PartType::Block) {
-            physShape = physicsCommon.createBoxShape(convert<rp::Vector3>(part->size * glm::vec3(0.5f)));
-        }
+class PhysRayCastBodyFilter : public JPH::BodyFilter {
+    bool ShouldCollideLocked(const JPH::Body &inBody) const override {
+        std::shared_ptr<BasePart> part = ((Instance*)inBody.GetUserData())->shared<BasePart>();
 
-        // Recreate the rigidbody if the shape changes
-        if (rigidBody->getNbColliders() > 0 && (_lastShape != part->shape || _lastSize != part->size)) {
-            // TODO: This causes Touched to get called twice. Fix this.
-            rigidBody->removeCollider(rigidBody->getCollider(0));
-            rigidBody->addCollider(physShape, rp::Transform());
-        }
+        // Ignore specifically "hidden" parts from raycast
+        // TODO: Replace this with a better system... Please.
+        if (!part->rigidBody.isCollisionsEnabled()) return false;
 
-        if (rigidBody->getNbColliders() == 0)
-            rigidBody->addCollider(physShape, rp::Transform());
+        return true;
+    }
+};
 
+std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits) {
+    if (filter != std::nullopt) { Logger::fatalError("The filter property of PhysWorld::castRay is not yet implemented"); panic(); };
 
-        _lastShape = part->shape;
-        _lastSize = part->size;
+    const JPH::BodyLockInterface& lockInterface = worldImpl.GetBodyLockInterfaceNoLock();
+    const JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
+    const JPH::NarrowPhaseQuery& query = worldImpl.GetNarrowPhaseQuery();
+
+    // First we cast a ray to find a matching part
+    Vector3 end = point + rotation.Unit() * maxLength;
+    JPH::RRayCast ray { convert<JPH::Vec3>(point), convert<JPH::Vec3>(end) };
+    JPH::RayCastResult result;
+    PhysRayCastBodyFilter bodyFilter;
+    bool hitFound = query.CastRay(ray, result, {}, {}, bodyFilter);
+    
+    // No matches found, return empty
+    if (!hitFound) return std::nullopt;
+
+    // Next we cast a ray to find the hit surface and its world position and normal
+    JPH::BodyID hitBodyId = result.mBodyID;
+    std::shared_ptr<BasePart> part = ((Instance*)interface.GetUserData(hitBodyId))->shared<BasePart>();
+    const JPH::Shape* shape = interface.GetShape(hitBodyId);
+
+    // Find the hit position and hence the surface normal of the shape at that specific point
+    Vector3 hitPosition = point + rotation.Unit() * (maxLength * result.mFraction);
+    JPH::Vec3 surfaceNormal = shape->GetSurfaceNormal(result.mSubShapeID2, convert<JPH::Vec3>(part->cframe.Inverse() * hitPosition));
+    Vector3 worldNormal = part->cframe.Rotation() * convert<Vector3>(surfaceNormal);
+
+    return RaycastResult {
+        .worldPoint = hitPosition,
+        .worldNormal = worldNormal,
+        .body = lockInterface.TryGetBody(hitBodyId),
+        .hitPart = part,
+    };
+}
+
+uint BroadPhaseLayerInterface::GetNumBroadPhaseLayers() const {
+    return BPLayers::NUM_LAYERS;
+}
+
+JPH::BroadPhaseLayer BroadPhaseLayerInterface::GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const {
+    switch (inLayer) {
+        case Layers::DYNAMIC: return BPLayers::DYNAMIC;
+        case Layers::ANCHORED: return BPLayers::ANCHORED;
+        default: panic();
+    }
+}
+
+const char * BroadPhaseLayerInterface::GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const {
+    using T = JPH::BroadPhaseLayer::Type;
+    switch ((T)inLayer) {
+        case (T)BPLayers::DYNAMIC: return "DYNAMIC";
+        case (T)BPLayers::ANCHORED: return "ANCHORED";
+        default: panic();
+    }
+}
+
+bool ObjectBroadPhaseFilter::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const {
+    return true;
+}
+
+bool ObjectLayerPairFilter::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const {
+    switch (inLayer1) {
+    case Layers::DYNAMIC:
+        return true;
+    case Layers::ANCHORED:
+        return inLayer2 == Layers::DYNAMIC;
+    default:
+        panic();
     }
 }

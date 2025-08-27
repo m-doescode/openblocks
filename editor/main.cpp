@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include "logger.h"
+#include "physics/world.h"
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
@@ -18,7 +19,7 @@ ma_engine miniaudio;
 int main(int argc, char *argv[])
 {
     Logger::init();
-
+    physicsInit();
     // Has to happen before Qt application initializes or we get an error in WASAPI initialization
     ma_result res = ma_engine_init(NULL, &miniaudio);
     if (res != MA_SUCCESS) {
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     int result = a.exec();
 
     ma_engine_uninit(&miniaudio);
+    physicsDeinit();
     Logger::finish();
     return result;
 }

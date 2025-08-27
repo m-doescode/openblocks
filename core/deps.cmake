@@ -6,9 +6,7 @@ set (PREV_BIN_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 unset (CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
 CPMAddPackage("gh:g-truc/glm#1.0.1")
-CPMAddPackage(NAME reactphysics3d GITHUB_REPOSITORY "DanielChappuis/reactphysics3d" VERSION 0.10.2 PATCHES ${CMAKE_SOURCE_DIR}/patches/std_chrono.patch)
-# https://github.com/StereoKit/StereoKit/blob/0be056efebcee5e58ad1438f4cf6dfdb942f6cf9/CMakeLists.txt#L205
-set_property(TARGET reactphysics3d PROPERTY POSITION_INDEPENDENT_CODE ON)
+CPMAddPackage(NAME Jolt GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics" VERSION 5.3.0 SOURCE_SUBDIR "Build")
 CPMAddPackage("gh:zeux/pugixml@1.15")
 
 CPMAddPackage(

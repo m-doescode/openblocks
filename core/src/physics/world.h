@@ -2,26 +2,18 @@
 
 #include "datatypes/vector.h"
 #include "enum/part.h"
-#include "reactphysics3d/body/RigidBody.h"
 #include "utils.h"
 #include <functional>
 #include <list>
 #include <memory>
-#include <reactphysics3d/reactphysics3d.h>
 
-namespace rp = reactphysics3d;
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Constraints/TwoBodyConstraint.h>
 
 class BasePart;
 class PhysWorld;
-class PhysicsEventListener : public rp::EventListener {
-    friend PhysWorld;
-    PhysWorld* world;
-
-    PhysicsEventListener(PhysWorld*);
-
-    void onContact(const rp::CollisionCallback::CallbackData&) override;
-    void onTrigger(const rp::OverlapCallback::CallbackData&) override;
-};
 
 struct PhysJointInfo { virtual ~PhysJointInfo() = default; protected: PhysJointInfo() = default; };
 struct PhysJointGlueInfo : PhysJointInfo { Vector3 anchorPoint; inline PhysJointGlueInfo(Vector3 anchorPoint) : anchorPoint(anchorPoint) {} };
@@ -31,28 +23,27 @@ struct PhysJointHingeInfo : PhysJointInfo { Vector3 anchorPoint; Vector3 rotatio
 struct PhysJointMotorInfo : PhysJointInfo { Vector3 anchorPoint; Vector3 rotationAxis; inline PhysJointMotorInfo(Vector3 anchorPoint, Vector3 rotationAxis) : anchorPoint(anchorPoint), rotationAxis(rotationAxis) {} };
 
 class PhysWorld;
-class PhysJoint {
-    rp::Joint* joint;
-    inline PhysJoint(rp::Joint* joint) : joint(joint) {}
-    friend PhysWorld;
+struct PhysJoint {
 public:
-    inline PhysJoint() {}
+    JPH::TwoBodyConstraint* jointImpl;
 };
 
 struct RaycastResult;
 class PhysRigidBody {
-    rp::RigidBody* rigidBody = nullptr;
-    inline PhysRigidBody(rp::RigidBody* rigidBody) : rigidBody(rigidBody) {}
+    JPH::Body* bodyImpl = nullptr;
+    inline PhysRigidBody(JPH::Body* rigidBody) : bodyImpl(rigidBody) {}
     Vector3 _lastSize;
     PartType _lastShape;
+    bool collisionsEnabled = true;
 
     friend PhysWorld;
     friend RaycastResult;
 public:
     inline PhysRigidBody() {}
 
-    inline void setActive(bool active) { if (!rigidBody) return; rigidBody->setIsActive(active); }
-    inline void setCollisionsEnabled(bool enabled) { if (!rigidBody) return; rigidBody->getCollider(0)->setIsWorldQueryCollider(enabled); }
+    inline void setActive(bool active) { if (!bodyImpl) return; }
+    inline void setCollisionsEnabled(bool enabled) { collisionsEnabled = enabled; }
+    inline bool isCollisionsEnabled() { return collisionsEnabled; }
     void updateCollider(std::shared_ptr<BasePart>);
 };
 
@@ -65,11 +56,8 @@ public:
 struct RaycastResult {
     Vector3 worldPoint;
     Vector3 worldNormal;
-    int triangleIndex;
     PhysRigidBody body;
     nullable std::shared_ptr<BasePart> hitPart;
-
-    RaycastResult(const rp::RaycastInfo& raycastInfo);
 };
 
 enum FilterResult {
@@ -81,9 +69,25 @@ enum FilterResult {
 class BasePart;
 typedef std::function<FilterResult(std::shared_ptr<BasePart>)> RaycastFilter;
 
+class BroadPhaseLayerInterface : public JPH::BroadPhaseLayerInterface {
+    uint GetNumBroadPhaseLayers() const override;
+    JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override;
+    const char * GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override;
+};
+
+class ObjectBroadPhaseFilter : public JPH::ObjectVsBroadPhaseLayerFilter {
+    bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override;
+};
+
+class ObjectLayerPairFilter : public JPH::ObjectLayerPairFilter {
+    bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const override;
+};
+
 class PhysWorld : public std::enable_shared_from_this<PhysWorld> {
-    rp::PhysicsWorld* worldImpl;
-    PhysicsEventListener physicsEventListener;
+    BroadPhaseLayerInterface broadPhaseLayerInterface;
+    ObjectBroadPhaseFilter objectBroadPhasefilter;
+    ObjectLayerPairFilter objectLayerPairFilter;
+    JPH::PhysicsSystem worldImpl;
     std::list<std::shared_ptr<BasePart>> simulatedBodies;
 
 public:
@@ -102,3 +106,6 @@ public:
     void syncBodyProperties(std::shared_ptr<BasePart>);
     std::optional<const RaycastResult> castRay(Vector3 point, Vector3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits);
 };
+
+void physicsInit();
+void physicsDeinit();

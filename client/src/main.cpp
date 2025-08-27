@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "objects/part/part.h"
 #include "panic.h"
+#include "physics/world.h"
 #include "rendering/renderer.h"
 #include "common.h"
 #include "version.h"
@@ -47,6 +48,7 @@ int main() {
         Logger::debugf("Initialized GL context version %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
     }
 
+    physicsInit();
     gDataModel->Init();
     renderInit(1200, 900);
 
@@ -86,6 +88,7 @@ int main() {
         glfwPollEvents();
     } while(!glfwWindowShouldClose(window));
 
+    physicsDeinit();
     glfwTerminate();
     return 0;
 }

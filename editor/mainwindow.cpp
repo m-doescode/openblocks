@@ -31,6 +31,7 @@
 #include <miniaudio.h>
 #include <qtoolbutton.h>
 #include <vector>
+#include <fstream>
 
 bool worldSpaceTransforms = false;
 
