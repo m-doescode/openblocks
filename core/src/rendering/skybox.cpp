@@ -22,6 +22,7 @@ Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
 
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format,
                     GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
         stbi_image_free(data);
     }
 
@@ -31,7 +32,7 @@ Skybox::Skybox(std::array<std::string, 6> faces, unsigned int format) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     // Interpolation
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
@@ -41,5 +42,5 @@ Skybox::~Skybox() {
 
 void Skybox::activate(unsigned int textureIdx) {
     glActiveTexture(GL_TEXTURE0 + textureIdx);
-    glBindTexture(GL_TEXTURE_2D, this->ID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, this->ID);
 }
