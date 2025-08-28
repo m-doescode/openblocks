@@ -114,7 +114,7 @@ vec3 calculateReflection() {
     vec3 viewDir = normalize(viewPos - vPos);
     vec3 reflectDir = reflect(viewDir, norm);
     float fresnel = (pow(1.0-max(dot(viewDir, norm), 0.0), 5.0));
-    vec3 result = sampleSkybox() * mix(fresnel * material.specular, vec3(1.0), reflectance);
+    vec3 result = sampleSkybox() * mix(/* TEMPORARY: will be replaced by setting */ 0 * /* /TEMPORARY */ fresnel * material.specular, vec3(1.0), reflectance);
     return result;
 }
 
