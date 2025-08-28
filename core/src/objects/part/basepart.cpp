@@ -57,6 +57,12 @@ void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
 void BasePart::onUpdated(std::string property) {
     bool reset = property == "Position" || property == "Rotation" || property == "CFrame" || property == "Size" || property == "Shape";
 
+    // Sanitize size
+    // TODO: Replace this with a validator instead
+    if (property == "Size") {
+        size = glm::max((glm::vec3)size, glm::vec3(0.1f, 0.1f, 0.1f));
+    }
+    
     if (workspace() != nullptr)
         workspace()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 
