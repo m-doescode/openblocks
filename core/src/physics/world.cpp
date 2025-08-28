@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "objects/part/basepart.h"
 #include "objects/part/part.h"
+#include "objects/part/wedgepart.h"
 #include "objects/service/workspace.h"
 #include "physics/convert.h"
 #include "timeutil.h"
@@ -21,6 +22,10 @@
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
+#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/EActivation.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/RegisterTypes.h>
@@ -36,12 +41,11 @@
 static JPH::TempAllocator* allocator;
 static JPH::JobSystem* jobSystem;
 
-
 namespace Layers
 {
 	static constexpr JPH::ObjectLayer DYNAMIC = 0;
 	static constexpr JPH::ObjectLayer ANCHORED = 1;
-	static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+	// static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
 };
 
 namespace BPLayers
@@ -50,6 +54,37 @@ namespace BPLayers
 	static constexpr JPH::BroadPhaseLayer DYNAMIC(1);
 	static constexpr uint NUM_LAYERS(2);
 };
+
+static JPH::Ref<JPH::Shape> wedgeShape;
+
+void physicsInit() {
+    JPH::RegisterDefaultAllocator();
+    JPH::Factory::sInstance = new JPH::Factory();
+    JPH::RegisterTypes();
+
+    allocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
+    jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+
+    // Create special shapes
+    JPH::Array<JPH::Vec3> wedgeVerts;
+    wedgeVerts.push_back({-1, -1, -1});
+    wedgeVerts.push_back({ 1, -1, -1});
+    wedgeVerts.push_back({-1, -1,  1});
+    wedgeVerts.push_back({ 1, -1,  1});
+    wedgeVerts.push_back({ 1,  1,  1});
+    wedgeVerts.push_back({-1,  1,  1});
+    // // Invisible bevel to avoid phasing
+    // wedgeVerts.push_back({1, 1, 0.9});
+    // wedgeVerts.push_back({0, 1, 0.9});
+
+    wedgeShape = JPH::ConvexHullShapeSettings(wedgeVerts).Create().Get();	
+}
+
+void physicsDeinit() {
+    JPH::UnregisterTypes();
+    delete JPH::Factory::sInstance;
+    JPH::Factory::sInstance = nullptr;
+}
 
 PhysWorld::PhysWorld() {
     worldImpl.Init(4096, 0, 4096, 4096, broadPhaseLayerInterface, objectBroadPhasefilter, objectLayerPairFilter);
@@ -79,8 +114,11 @@ JPH::Shape* makeShape(std::shared_ptr<BasePart> basePart) {
             return new JPH::BoxShape(convert<JPH::Vec3>(part->size / 2.f), JPH::cDefaultConvexRadius);
         case PartType::Ball:
             return new JPH::SphereShape(glm::min(part->size.X(), part->size.Y(), part->size.Z()) / 2.f);
-            break;
+        case PartType::Cylinder:
+            return new JPH::RotatedTranslatedShape(JPH::Vec3(), JPH::Quat::sEulerAngles(JPH::Vec3(0, 0, JPH::JPH_PI * 0.5)), new JPH::CylinderShape(part->size.X() / 2.f, glm::min(part->size.Z(), part->size.Y()) / 2.f));
         }
+    } else if (std::shared_ptr<WedgePart> part = std::dynamic_pointer_cast<WedgePart>(basePart)) {
+        return new JPH::ScaledShape(wedgeShape, convert<JPH::Vec3>(part->size / 2.f));
     }
     return nullptr;
 }
@@ -123,21 +161,9 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
         interface.SetMotionType(body->GetID(), motionType, activationMode);
         interface.SetPositionRotationAndVelocity(body->GetID(), convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), convert<JPH::Vec3>(part->velocity), /* Angular velocity is NYI: */ body->GetAngularVelocity());
     }
-}
 
-void physicsInit() {
-    JPH::RegisterDefaultAllocator();
-    JPH::Factory::sInstance = new JPH::Factory();
-    JPH::RegisterTypes();
-
-    allocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
-    jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
-}
-
-void physicsDeinit() {
-    JPH::UnregisterTypes();
-    delete JPH::Factory::sInstance;
-    JPH::Factory::sInstance = nullptr;
+    part->rigidBody._lastSize = part->size;
+    if (std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part)) part->rigidBody._lastShape = part2->shape;
 }
 
 tu_time_t physTime;
@@ -168,15 +194,15 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
     ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
 
     JPH::TwoBodyConstraint* constraint;
-    if (PhysJointGlueInfo* info = dynamic_cast<PhysJointGlueInfo*>(&type)) {
+    if (PhysJointGlueInfo* _ = dynamic_cast<PhysJointGlueInfo*>(&type)) {
         JPH::FixedConstraintSettings settings;
         settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-    } else if (PhysJointWeldInfo* info = dynamic_cast<PhysJointWeldInfo*>(&type)) {
+    } else if (PhysJointWeldInfo* _ = dynamic_cast<PhysJointWeldInfo*>(&type)) {
         JPH::FixedConstraintSettings settings;
         settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-    } else if (PhysJointSnapInfo* info = dynamic_cast<PhysJointSnapInfo*>(&type)) {
+    } else if (PhysJointSnapInfo* _ = dynamic_cast<PhysJointSnapInfo*>(&type)) {
         JPH::FixedConstraintSettings settings;
         settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
