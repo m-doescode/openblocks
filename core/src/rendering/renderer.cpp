@@ -137,6 +137,7 @@ static void renderPart(std::shared_ptr<BasePart> part) {
     shader->set("normalMatrix", normalMatrix);
     shader->set("texScale", size);
     shader->set("transparency", part->transparency);
+    shader->set("reflectance", part->reflectance);
 
     shader->set("surfaces[" + std::to_string(NormalId::Right) + "]", (int)part->rightSurface);
     shader->set("surfaces[" + std::to_string(NormalId::Top) + "]", (int)part->topSurface);
@@ -183,11 +184,14 @@ void renderParts() {
     shader->set("numPointLights", 0);
     studsTexture->activate(0);
     shader->set("studs", 0);
+    skyboxTexture->activate(1);
+    shader->set("skybox", 1);
 
     // Pre-calculate the normal matrix for the shader
 
     // Pass in the camera position
     shader->set("viewPos", camera.cameraPos);
+    
 
     // Sort by nearest
     std::map<float, std::shared_ptr<BasePart>> sorted;

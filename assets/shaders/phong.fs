@@ -54,11 +54,14 @@ uniform int numPointLights;
 uniform DirLight sunLight;
 uniform Material material;
 uniform sampler2DArray studs;
+uniform samplerCube skybox;
 uniform float transparency;
+uniform float reflectance;
 uniform vec3 texScale;
 
-// Functions
 
+// Functions
+vec3 calculateReflection();
 vec3 calculateDirectionalLight(DirLight light);
 vec3 calculatePointLight(PointLight light);
 mat3 lookAlong(vec3 pos, vec3 forward, vec3 up);
@@ -68,6 +71,7 @@ mat3 lookAlong(vec3 pos, vec3 forward, vec3 up);
 void main() {
     vec3 result = vec3(0.0);
 
+    result += calculateReflection();
     result += calculateDirectionalLight(sunLight);
     
     for (int i = 0; i < numPointLights; i++) {
@@ -95,6 +99,25 @@ mat3 lookAlong(vec3 pos, vec3 forward, vec3 up) {
 	return mat3(s, u, f);
 }
 
+
+vec3 sampleSkybox()
+{
+    vec3 norm = normalize(vNormal);
+    vec3 viewDir = normalize(viewPos - vPos);
+    vec3 reflectDir = reflect(-viewDir, norm);
+
+    return textureLod(skybox,reflectDir, 5.0 * (1.0-material.shininess)).rgb;
+}
+
+vec3 calculateReflection() {
+    vec3 norm = normalize(vNormal);
+    vec3 viewDir = normalize(viewPos - vPos);
+    vec3 reflectDir = reflect(viewDir, norm);
+    float fresnel = (pow(1.0-max(dot(viewDir, norm), 0.0), 5.0));
+    vec3 result = sampleSkybox() * mix(fresnel * material.specular, vec3(1.0), reflectance);
+    return result;
+}
+
 vec3 calculateDirectionalLight(DirLight light) {
     // Calculate diffuse
     vec3 norm = normalize(vNormal);
@@ -105,10 +128,13 @@ vec3 calculateDirectionalLight(DirLight light) {
     vec3 viewDir = normalize(viewPos - vPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // float fresnel = (pow(1.0-max(dot(viewDir, norm), 0.0), 5.0));
     
-    vec3 ambient = light.ambient * material.diffuse;
-    vec3 diffuse = light.diffuse * diff * material.diffuse;
+    
+    vec3 ambient = light.ambient * (material.diffuse * (1.0-reflectance));
+    vec3 diffuse = light.diffuse * diff * (material.diffuse * (1.0-reflectance));
     vec3 specular = light.specular * spec * material.specular;
+    // specular += sampleSkybox() * fresnel * material.specular;
     
     return (ambient + diffuse + specular);
 }
