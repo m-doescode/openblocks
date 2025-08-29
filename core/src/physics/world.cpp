@@ -37,6 +37,7 @@
 #include <Jolt/Physics/Body/BodyLockInterface.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
+#include <cstdio>
 #include <memory>
 
 static JPH::TempAllocator* allocator;
@@ -46,14 +47,16 @@ namespace Layers
 {
 	static constexpr JPH::ObjectLayer DYNAMIC = 0;
 	static constexpr JPH::ObjectLayer ANCHORED = 1;
-	// static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+	static constexpr JPH::ObjectLayer NOCOLLIDE = 2;
+	// static constexpr JPH::ObjectLayer NUM_LAYERS = 3;
 };
 
 namespace BPLayers
 {
 	static constexpr JPH::BroadPhaseLayer ANCHORED(0);
 	static constexpr JPH::BroadPhaseLayer DYNAMIC(1);
-	static constexpr uint NUM_LAYERS(2);
+	static constexpr JPH::BroadPhaseLayer NOCOLLIDE(2);
+	static constexpr uint NUM_LAYERS(3);
 };
 
 static JPH::Ref<JPH::Shape> wedgeShape;
@@ -138,7 +141,7 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
 
     JPH::EMotionType motionType = part->anchored ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
     JPH::EActivation activationMode = part->anchored ? JPH::EActivation::DontActivate : JPH::EActivation::Activate;
-    JPH::ObjectLayer objectLayer = part->anchored ? Layers::ANCHORED : Layers::DYNAMIC;
+    JPH::ObjectLayer objectLayer = !part->canCollide ? Layers::NOCOLLIDE : (part->anchored ? Layers::ANCHORED : Layers::DYNAMIC);
 
     JPH::Body* body = part->rigidBody.bodyImpl;
 
@@ -284,6 +287,7 @@ JPH::BroadPhaseLayer BroadPhaseLayerInterface::GetBroadPhaseLayer(JPH::ObjectLay
     switch (inLayer) {
         case Layers::DYNAMIC: return BPLayers::DYNAMIC;
         case Layers::ANCHORED: return BPLayers::ANCHORED;
+        case Layers::NOCOLLIDE: return BPLayers::NOCOLLIDE;
         default: panic();
     }
 }
@@ -293,12 +297,19 @@ const char * BroadPhaseLayerInterface::GetBroadPhaseLayerName(JPH::BroadPhaseLay
     switch ((T)inLayer) {
         case (T)BPLayers::DYNAMIC: return "DYNAMIC";
         case (T)BPLayers::ANCHORED: return "ANCHORED";
+        case (T)BPLayers::NOCOLLIDE: return "NOCOLLIDE";
         default: panic();
     }
 }
 
 bool ObjectBroadPhaseFilter::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const {
-    return true;
+    using T = JPH::BroadPhaseLayer::Type;
+    switch ((T)inLayer2) {
+    case (T)BPLayers::DYNAMIC: return true;
+    case (T)BPLayers::ANCHORED: return true;
+    case (T)BPLayers::NOCOLLIDE: return false;
+    default: panic();
+    }
 }
 
 bool ObjectLayerPairFilter::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const {
@@ -307,6 +318,8 @@ bool ObjectLayerPairFilter::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::Object
         return true;
     case Layers::ANCHORED:
         return inLayer2 == Layers::DYNAMIC;
+    case Layers::NOCOLLIDE:
+        return false;
     default:
         panic();
     }
