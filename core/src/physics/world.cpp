@@ -1,4 +1,5 @@
 #include "world.h"
+#include "Jolt/Geometry/AABox.h"
 #include "datatypes/vector.h"
 #include "enum/part.h"
 #include "logger.h"
@@ -104,7 +105,16 @@ void PhysWorld::addBody(std::shared_ptr<BasePart> part) {
 }
 
 void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
-    // TODO:
+    JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
+
+    // https://jrouwe.github.io/JoltPhysics/index.html#sleeping-bodies
+    // Wake sleeping bodies in its area before removing it
+    Vector3 aabbSize = part->GetAABB();
+    interface.ActivateBodiesInAABox(JPH::AABox(convert<JPH::Vec3>(part->position() - aabbSize), convert<JPH::Vec3>(part->position() + aabbSize)), {}, {});
+
+    interface.RemoveBody(part->rigidBody.bodyImpl->GetID());
+    interface.DestroyBody(part->rigidBody.bodyImpl->GetID());
+    part->rigidBody.bodyImpl = nullptr;
 }
 
 JPH::Shape* makeShape(std::shared_ptr<BasePart> basePart) {

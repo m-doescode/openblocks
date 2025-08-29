@@ -26,7 +26,6 @@ BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInst
 }
 
 BasePart::~BasePart() {
-    // This relies on physicsCommon still existing. Be very careful.
     if (workspace() != nullptr) {
         workspace()->RemoveBody(shared<BasePart>());
     }
