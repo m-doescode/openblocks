@@ -146,6 +146,7 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
     if (body == nullptr) {
         JPH::Shape* shape = makeShape(part);
         JPH::BodyCreationSettings settings(shape, convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), motionType, objectLayer);
+        settings.mAllowDynamicOrKinematic = true;
         settings.mRestitution = 0.5;
 
         body = interface.CreateBody(settings);
