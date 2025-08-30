@@ -7,5 +7,6 @@ extern Mesh* SPHERE_MESH;
 extern Mesh* ARROW_MESH;
 extern Mesh* OUTLINE_MESH;
 extern Mesh* CYLINDER_MESH;
+extern Mesh* CYLINDER_CHEAP_MESH;
 
 void initMeshes();

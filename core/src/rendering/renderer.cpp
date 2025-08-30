@@ -128,7 +128,6 @@ static void renderPart(std::shared_ptr<BasePart> part) {
     glm::mat4 model = part->cframe;
     Vector3 size = part->GetEffectiveSize();
     model = glm::scale(model, (glm::vec3)size);
-    if (std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part)) if (part2->shape == PartType::Cylinder) model = glm::rotate(model, glm::pi<float>() * 0.5f, glm::vec3(0, 1, 0)); // Lazy hack
     shader->set("model", model);
     shader->set("material", Material {
         .diffuse = part->color,
@@ -265,8 +264,8 @@ void renderSurfaceExtras() {
             model = glm::scale(model, glm::vec3(0.4,0.4,0.4));
             ghostShader->set("model", model);
     
-            CYLINDER_MESH->bind();
-            glDrawArrays(GL_TRIANGLES, 0, CYLINDER_MESH->vertexCount);
+            CYLINDER_CHEAP_MESH->bind();
+            glDrawArrays(GL_TRIANGLES, 0, CYLINDER_CHEAP_MESH->vertexCount);
         }
     }
 }
