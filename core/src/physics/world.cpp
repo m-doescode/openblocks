@@ -36,7 +36,7 @@
 #include <Jolt/Physics/Body/BodyLockInterface.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
-#include <Jolt/Physics/Constraints/SixDOFConstraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
 #include <memory>
 
 static JPH::TempAllocator* allocator;
@@ -218,22 +218,21 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
         settings.mAxisY2 = convert<JPH::Vec3>(info->c1.UpVector());
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
     } else if (PhysRotatingJointInfo* info = dynamic_cast<PhysRotatingJointInfo*>(&type)) {
-        JPH::SixDOFConstraintSettings settings;
+        JPH::HingeConstraintSettings settings;
         settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
-        settings.mPosition1 = convert<JPH::Vec3>(info->c0.Position());
-        settings.mAxisX1 = convert<JPH::Vec3>(info->c0.RightVector());
-        settings.mAxisY1 = convert<JPH::Vec3>(info->c0.UpVector());
-        settings.mPosition2 = convert<JPH::Vec3>(info->c1.Position());
-        settings.mAxisX2 = convert<JPH::Vec3>(info->c1.RightVector());
-        settings.mAxisY2 = convert<JPH::Vec3>(info->c1.UpVector());
-        settings.MakeFixedAxis(JPH::SixDOFConstraintSettings::RotationX);
-        settings.MakeFixedAxis(JPH::SixDOFConstraintSettings::RotationY);
-        settings.MakeFixedAxis(JPH::SixDOFConstraintSettings::TranslationX);
-        settings.MakeFixedAxis(JPH::SixDOFConstraintSettings::TranslationY);
-        settings.MakeFixedAxis(JPH::SixDOFConstraintSettings::TranslationZ);
-        settings.mMotorSettings[JPH::SixDOFConstraintSettings::EAxis::RotationZ] = JPH::MotorSettings(5.f, 0.f);
+        settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
+        settings.mNormalAxis1 = convert<JPH::Vec3>(info->c0.RightVector());
+        settings.mHingeAxis1 = convert<JPH::Vec3>(info->c0.LookVector());
+        settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
+        settings.mNormalAxis2 = convert<JPH::Vec3>(info->c1.RightVector());
+        settings.mHingeAxis2 = convert<JPH::Vec3>(info->c1.LookVector());
+        // settings.mMotorSettings = JPH::MotorSettings(1.0f, 1.0f);
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-        // static_cast<JPH::SixDOFConstraint*>(constraint)->SetMotorState(JPH::SixDOFConstraintSettings::EAxis::RotationZ, JPH::EMotorState::Velocity);
+        if (info->motorized) {
+            float vel = part0->GetSurfaceParamB(-info->c0.LookVector().Unit()) * 6.28;
+            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
+            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-vel);
+        }
     } else {
         panic();
     }
