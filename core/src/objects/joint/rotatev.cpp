@@ -21,7 +21,7 @@ void RotateV::buildJoint() {
     CFrame newFrame = part0.lock()->cframe * (c0 * c1.Inverse());
     part1.lock()->cframe = newFrame;
     // Do NOT use Abs() in this scenario. For some reason that breaks it
-    PhysJointMotorInfo jointInfo((part0.lock()->cframe * c0).Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
+    PhysMotorJointInfo jointInfo((part0.lock()->cframe * c0).Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
     
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;

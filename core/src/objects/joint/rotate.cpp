@@ -20,7 +20,7 @@ void Rotate::buildJoint() {
     part1.lock()->cframe = newFrame;
 
     // Do NOT use Abs() in this scenario. For some reason that breaks it
-    PhysJointHingeInfo jointInfo((part0.lock()->cframe * c0).Position(), -(part0.lock()->cframe * c0).LookVector().Unit());
+    PhysHingeJointInfo jointInfo(c0, c1);
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;
 }

@@ -285,6 +285,10 @@ void BasePart::MakeJoints() {
                 joint->part1 = otherPart->shared<BasePart>();
                 joint->c0 = contact0;
                 joint->c1 = contact1;
+                // If both parts touch directly, this can cause friction in Rotate and RotateV joints, so we leave a little extra space
+                if (joint->IsA("Rotate") || joint->IsA("RotateV"))
+                    joint->c1 = joint->c1 + joint->c1.LookVector() * 0.02f,
+                    joint->c0 = joint->c0 - joint->c0.LookVector() * 0.02f;
                 dataModel()->GetService<JointsService>()->AddChild(joint);
                 joint->UpdateProperty("Part0");
             }

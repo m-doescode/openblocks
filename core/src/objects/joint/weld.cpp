@@ -23,7 +23,7 @@ void Weld::buildJoint() {
     CFrame newFrame = part0.lock()->cframe * (c0 * c1.Inverse());
     part1.lock()->cframe = newFrame;
 
-    PhysJointWeldInfo jointInfo((c0.Inverse() * c1).Position());
+    PhysFixedJointInfo jointInfo(c0, c1);
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;
 }

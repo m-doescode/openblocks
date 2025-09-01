@@ -1,5 +1,4 @@
 #include "world.h"
-#include "Jolt/Geometry/AABox.h"
 #include "datatypes/vector.h"
 #include "enum/part.h"
 #include "logger.h"
@@ -27,6 +26,7 @@
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+#include <Jolt/Physics/Constraints/ConeConstraint.h>
 #include <Jolt/Physics/EActivation.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/RegisterTypes.h>
@@ -37,7 +37,6 @@
 #include <Jolt/Physics/Body/BodyLockInterface.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
-#include <cstdio>
 #include <memory>
 
 static JPH::TempAllocator* allocator;
@@ -208,17 +207,24 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
     ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
 
     JPH::TwoBodyConstraint* constraint;
-    if (PhysJointGlueInfo* _ = dynamic_cast<PhysJointGlueInfo*>(&type)) {
+    if (PhysFixedJointInfo* info = dynamic_cast<PhysFixedJointInfo*>(&type)) {
         JPH::FixedConstraintSettings settings;
-        settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
+        settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
+        settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
+        settings.mAxisX1 = convert<JPH::Vec3>(info->c0.RightVector());
+        settings.mAxisY1 = convert<JPH::Vec3>(info->c0.UpVector());
+        settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
+        settings.mAxisX2 = convert<JPH::Vec3>(info->c1.RightVector());
+        settings.mAxisY2 = convert<JPH::Vec3>(info->c1.UpVector());
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-    } else if (PhysJointWeldInfo* _ = dynamic_cast<PhysJointWeldInfo*>(&type)) {
-        JPH::FixedConstraintSettings settings;
-        settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
-        constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-    } else if (PhysJointSnapInfo* _ = dynamic_cast<PhysJointSnapInfo*>(&type)) {
-        JPH::FixedConstraintSettings settings;
-        settings.mAutoDetectPoint = true; // TODO: Replace this with anchor point
+    } else if (PhysHingeJointInfo* info = dynamic_cast<PhysHingeJointInfo*>(&type)) {
+        JPH::ConeConstraintSettings settings;
+        settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
+        settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
+        settings.mTwistAxis1 = convert<JPH::Vec3>(info->c0.LookVector());
+        settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
+        settings.mTwistAxis2 = convert<JPH::Vec3>(info->c1.LookVector());
+        settings.mHalfConeAngle = 0.0f;
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
     } else {
         panic();

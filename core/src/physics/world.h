@@ -1,5 +1,6 @@
 #pragma once
 
+#include "datatypes/cframe.h"
 #include "datatypes/vector.h"
 #include "enum/part.h"
 #include "utils.h"
@@ -16,11 +17,9 @@ class BasePart;
 class PhysWorld;
 
 struct PhysJointInfo { virtual ~PhysJointInfo() = default; protected: PhysJointInfo() = default; };
-struct PhysJointGlueInfo : PhysJointInfo { Vector3 anchorPoint; inline PhysJointGlueInfo(Vector3 anchorPoint) : anchorPoint(anchorPoint) {} };
-struct PhysJointWeldInfo : PhysJointInfo { Vector3 anchorPoint; inline PhysJointWeldInfo(Vector3 anchorPoint) : anchorPoint(anchorPoint) {} };
-struct PhysJointSnapInfo : PhysJointInfo { Vector3 anchorPoint; inline PhysJointSnapInfo(Vector3 anchorPoint) : anchorPoint(anchorPoint) {} };
-struct PhysJointHingeInfo : PhysJointInfo { Vector3 anchorPoint; Vector3 rotationAxis; inline PhysJointHingeInfo(Vector3 anchorPoint, Vector3 rotationAxis) : anchorPoint(anchorPoint), rotationAxis(rotationAxis) {} };
-struct PhysJointMotorInfo : PhysJointInfo { Vector3 anchorPoint; Vector3 rotationAxis; inline PhysJointMotorInfo(Vector3 anchorPoint, Vector3 rotationAxis) : anchorPoint(anchorPoint), rotationAxis(rotationAxis) {} };
+struct PhysFixedJointInfo : PhysJointInfo { CFrame c0; CFrame c1; inline PhysFixedJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {} };
+struct PhysHingeJointInfo : PhysJointInfo { CFrame c0; CFrame c1; inline PhysHingeJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {} };
+struct PhysMotorJointInfo : PhysJointInfo { Vector3 anchorPoint; Vector3 rotationAxis; inline PhysMotorJointInfo(Vector3 anchorPoint, Vector3 rotationAxis) : anchorPoint(anchorPoint), rotationAxis(rotationAxis) {} };
 
 class PhysWorld;
 struct PhysJoint {
