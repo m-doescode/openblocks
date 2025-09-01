@@ -146,6 +146,18 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     setUpCommandBar();
+
+    #ifndef NDEBUG
+    // https://stackoverflow.com/a/17631703/16255372
+    // Add shortcut for reloading most recent file
+    QAction* reloadMostRecent = new QAction();
+    reloadMostRecent->setShortcut(Qt::Key_R | Qt::CTRL);
+    connect(reloadMostRecent, &QAction::triggered, [this, reloadMostRecent]() {
+        recentsMenu->actions()[0]->trigger();
+        removeAction(reloadMostRecent);
+    });
+    addAction(reloadMostRecent);
+    #endif
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
