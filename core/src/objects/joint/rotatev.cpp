@@ -21,8 +21,14 @@ void RotateV::buildJoint() {
     CFrame newFrame = part0.lock()->cframe * (c0 * c1.Inverse());
     part1.lock()->cframe = newFrame;
     // Do NOT use Abs() in this scenario. For some reason that breaks it
-    PhysRotatingJointInfo jointInfo(c0, c1, true);
+    float vel = part0.lock()->GetSurfaceParamB(-c0.LookVector().Unit()) * 6.28;
+    PhysRotatingJointInfo jointInfo(c0, c1, vel);
     
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;
+}
+
+void RotateV::OnPartParamsUpdated() {
+    float vel = part0.lock()->GetSurfaceParamB(-c0.LookVector().Unit()) * 6.28;
+    this->joint.setAngularVelocity(vel);
 }

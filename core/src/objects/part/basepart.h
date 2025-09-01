@@ -14,6 +14,10 @@
 #include "objects/pvinstance.h"
 #include "physics/world.h"
 
+// Common macro for part properties
+#define DEF_PROP_PHYS DEF_PROP_(on_update=onUpdated)
+#define DEF_PROP_PHYSPARAM DEF_PROP_(on_update=onParamUpdated)
+
 // For easy construction from C++. Maybe should be removed?
 struct PartConstructParams {
     Vector3 position;
@@ -51,19 +55,20 @@ protected:
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) override;
     void onUpdated(std::string);
+    void onParamUpdated(std::string);
 
     BasePart(const InstanceType*);
     BasePart(const InstanceType*, PartConstructParams params);
 public:
     DEF_PROP_CATEGORY(DATA)
-    DEF_PROP_(on_update=onUpdated) Vector3 velocity;
+    DEF_PROP_PHYS Vector3 velocity;
     [[ def_prop(name="CFrame", on_update=onUpdated), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
     CFrame cframe;
 
     DEF_PROP_CATEGORY(PART)
     // Special compatibility changes for this property were made in
     // Instance::Serialize
-    DEF_PROP_(on_update=onUpdated) Vector3 size;
+    DEF_PROP_PHYS Vector3 size;
 
     DEF_PROP_CATEGORY(APPEARANCE)
     DEF_PROP Color3 color;
@@ -71,8 +76,8 @@ public:
     DEF_PROP float reflectance = 0.f;
     
     DEF_PROP_CATEGORY(BEHAVIOR)
-    DEF_PROP_(on_update=onUpdated) bool anchored = false;
-    DEF_PROP_(on_update=onUpdated) bool canCollide = true;
+    DEF_PROP_PHYS bool anchored = false;
+    DEF_PROP_PHYS bool canCollide = true;
     DEF_PROP bool locked = false;
 
     DEF_PROP_CATEGORY(SURFACE)
@@ -84,19 +89,19 @@ public:
     DEF_PROP SurfaceType backSurface = SurfaceType::Smooth;
 
     DEF_PROP_CATEGORY(SURFACE_INPUT)
-    DEF_PROP float topParamA = -0.5;
-    DEF_PROP float bottomParamA = -0.5;
-    DEF_PROP float leftParamA = -0.5;
-    DEF_PROP float rightParamA = -0.5;
-    DEF_PROP float frontParamA = -0.5;
-    DEF_PROP float backParamA = -0.5;
+    DEF_PROP_PHYSPARAM float topParamA = -0.5;
+    DEF_PROP_PHYSPARAM float bottomParamA = -0.5;
+    DEF_PROP_PHYSPARAM float leftParamA = -0.5;
+    DEF_PROP_PHYSPARAM float rightParamA = -0.5;
+    DEF_PROP_PHYSPARAM float frontParamA = -0.5;
+    DEF_PROP_PHYSPARAM float backParamA = -0.5;
 
-    DEF_PROP float topParamB = 0.5;
-    DEF_PROP float bottomParamB = 0.5;
-    DEF_PROP float leftParamB = 0.5;
-    DEF_PROP float rightParamB = 0.5;
-    DEF_PROP float frontParamB = 0.5;
-    DEF_PROP float backParamB = 0.5;
+    DEF_PROP_PHYSPARAM float topParamB = 0.5;
+    DEF_PROP_PHYSPARAM float bottomParamB = 0.5;
+    DEF_PROP_PHYSPARAM float leftParamB = 0.5;
+    DEF_PROP_PHYSPARAM float rightParamB = 0.5;
+    DEF_PROP_PHYSPARAM float frontParamB = 0.5;
+    DEF_PROP_PHYSPARAM float backParamB = 0.5;
 
     DEF_SIGNAL SignalSource Touched;
     DEF_SIGNAL SignalSource TouchEnded;
@@ -118,3 +123,6 @@ public:
     // Calculate size of axis-aligned bounding box
     Vector3 GetAABB();
 };
+
+#undef DEF_PROP_PHYS
+#undef DEF_PROP_PHYSPARAM

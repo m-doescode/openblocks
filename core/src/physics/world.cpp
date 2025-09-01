@@ -229,9 +229,8 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
         // settings.mMotorSettings = JPH::MotorSettings(1.0f, 1.0f);
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
         if (info->motorized) {
-            float vel = part0->GetSurfaceParamB(-info->c0.LookVector().Unit()) * 6.28;
             static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
-            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-vel);
+            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
         }
     } else {
         panic();
@@ -239,6 +238,14 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
 
     worldImpl.AddConstraint(constraint);
     return { constraint };
+}
+
+// WATCH OUT! This should only be called for HingeConstraints.
+// Can't use dynamic_cast because TwoBodyConstraint is not virtual
+void PhysJoint::setAngularVelocity(float velocity) {
+    JPH::HingeConstraint* constraint = static_cast<JPH::HingeConstraint*>(jointImpl);
+    if (!constraint) return;
+    constraint->SetTargetAngularVelocity(-velocity);
 }
 
 void PhysWorld::destroyJoint(PhysJoint joint) {

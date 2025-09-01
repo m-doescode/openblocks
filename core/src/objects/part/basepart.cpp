@@ -70,6 +70,15 @@ void BasePart::onUpdated(std::string property) {
         BreakJoints();
 }
 
+void BasePart::onParamUpdated(std::string property) {
+    // Send signal to joints to update themselves
+    for (std::weak_ptr<JointInstance> joint : primaryJoints) {
+        if (joint.expired()) continue;
+
+        joint.lock()->OnPartParamsUpdated();
+    }
+}
+
 // Expands provided extents to fit point
 static void expandMaxExtents(Vector3* min, Vector3* max, Vector3 point) {
     *min = Vector3(glm::min(min->X(), point.X()), glm::min(min->Y(), point.Y()), glm::min(min->Z(), point.Z()));

@@ -17,6 +17,9 @@ void JointInstance::OnAncestryChanged(nullable std::shared_ptr<Instance>, nullab
     Update();
 }
 
+void JointInstance::OnPartParamsUpdated() {
+}
+
 void JointInstance::Update() {
     // To keep it simple compared to our previous algorithm, this one is pretty barebones:
     // 1. Every time we update, (whether our parent changed, or a property), destroy the current joints

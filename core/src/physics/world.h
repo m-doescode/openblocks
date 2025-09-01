@@ -17,13 +17,30 @@ class BasePart;
 class PhysWorld;
 
 struct PhysJointInfo { virtual ~PhysJointInfo() = default; protected: PhysJointInfo() = default; };
-struct PhysFixedJointInfo : PhysJointInfo { CFrame c0; CFrame c1; inline PhysFixedJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {} };
-struct PhysRotatingJointInfo : PhysJointInfo { CFrame c0; CFrame c1; bool motorized; inline PhysRotatingJointInfo(CFrame c0, CFrame c1, bool motorized = false) : c0(c0), c1(c1), motorized(motorized) {} };
+
+struct PhysFixedJointInfo : PhysJointInfo {
+    CFrame c0;
+    CFrame c1;
+    
+    inline PhysFixedJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {}
+};
+
+struct PhysRotatingJointInfo : PhysJointInfo {
+    CFrame c0;
+    CFrame c1;
+    bool motorized;
+    float initialVelocity;
+    
+    inline PhysRotatingJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1), motorized(false), initialVelocity(0.f){}
+    inline PhysRotatingJointInfo(CFrame c0, CFrame c1, float initialVelocity) : c0(c0), c1(c1), motorized(true), initialVelocity(initialVelocity) {}
+};
 
 class PhysWorld;
 struct PhysJoint {
 public:
     JPH::TwoBodyConstraint* jointImpl;
+
+    void setAngularVelocity(float velocity);
 };
 
 struct RaycastResult;

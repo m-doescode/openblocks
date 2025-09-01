@@ -3,7 +3,6 @@
 #include "objects/base/instance.h"
 #include "../annotation.h"
 #include <memory>
-#include <optional>
 #include "datatypes/cframe.h"
 #include "physics/world.h"
 
@@ -11,6 +10,8 @@
 #ifdef __AUTOGEN_EXTRA_INCLUDES__
 #include "objects/part/part.h"
 #endif
+
+#define DEF_PROP_PHYS DEF_PROP_(on_update=onUpdated)
 
 class BasePart;
 class Workspace;
@@ -33,12 +34,15 @@ protected:
     virtual void buildJoint() = 0;
 public:
     void Update();
+    virtual void OnPartParamsUpdated();
 
-    DEF_PROP_(on_update=onUpdated) std::weak_ptr<BasePart> part0;
-    DEF_PROP_(on_update=onUpdated) std::weak_ptr<BasePart> part1;
-    DEF_PROP_(on_update=onUpdated) CFrame c0;
-    DEF_PROP_(on_update=onUpdated) CFrame c1;
+    DEF_PROP_PHYS std::weak_ptr<BasePart> part0;
+    DEF_PROP_PHYS std::weak_ptr<BasePart> part1;
+    DEF_PROP_PHYS CFrame c0;
+    DEF_PROP_PHYS CFrame c1;
 
     JointInstance(const InstanceType*);
     ~JointInstance();
 };
+
+#undef DEF_PROP_PHYS
