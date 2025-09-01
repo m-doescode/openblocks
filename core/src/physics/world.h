@@ -18,8 +18,7 @@ class PhysWorld;
 
 struct PhysJointInfo { virtual ~PhysJointInfo() = default; protected: PhysJointInfo() = default; };
 struct PhysFixedJointInfo : PhysJointInfo { CFrame c0; CFrame c1; inline PhysFixedJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {} };
-struct PhysHingeJointInfo : PhysJointInfo { CFrame c0; CFrame c1; inline PhysHingeJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {} };
-struct PhysMotorJointInfo : PhysJointInfo { Vector3 anchorPoint; Vector3 rotationAxis; inline PhysMotorJointInfo(Vector3 anchorPoint, Vector3 rotationAxis) : anchorPoint(anchorPoint), rotationAxis(rotationAxis) {} };
+struct PhysRotatingJointInfo : PhysJointInfo { CFrame c0; CFrame c1; bool motorized; inline PhysRotatingJointInfo(CFrame c0, CFrame c1, bool motorized = false) : c0(c0), c1(c1), motorized(motorized) {} };
 
 class PhysWorld;
 struct PhysJoint {
