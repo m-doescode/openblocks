@@ -28,19 +28,31 @@ struct PhysFixedJointInfo : PhysJointInfo {
 struct PhysRotatingJointInfo : PhysJointInfo {
     CFrame c0;
     CFrame c1;
-    bool motorized;
+    
+    inline PhysRotatingJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1) {}
+};
+
+struct PhysMotorizedJointInfo : PhysRotatingJointInfo {
     float initialVelocity;
     
-    inline PhysRotatingJointInfo(CFrame c0, CFrame c1) : c0(c0), c1(c1), motorized(false), initialVelocity(0.f){}
-    inline PhysRotatingJointInfo(CFrame c0, CFrame c1, float initialVelocity) : c0(c0), c1(c1), motorized(true), initialVelocity(initialVelocity) {}
+    inline PhysMotorizedJointInfo(CFrame c0, CFrame c1, float initialVelocity) : PhysRotatingJointInfo(c0, c1), initialVelocity(initialVelocity) {}
+};
+
+struct PhysStepperJointInfo : PhysRotatingJointInfo {
+    float initialAngle;
+    float initialVelocity;
+    
+    inline PhysStepperJointInfo(CFrame c0, CFrame c1, float initialAngle, float initialVelocity) : PhysRotatingJointInfo(c0, c1), initialAngle(initialAngle), initialVelocity(initialVelocity) {}
 };
 
 class PhysWorld;
 struct PhysJoint {
 public:
     JPH::TwoBodyConstraint* jointImpl;
+    PhysWorld* parentWorld;
 
     void setAngularVelocity(float velocity);
+    void setTargetAngle(float angle);
 };
 
 struct RaycastResult;
@@ -105,6 +117,7 @@ class PhysWorld : public std::enable_shared_from_this<PhysWorld> {
     JPH::PhysicsSystem worldImpl;
     std::list<std::shared_ptr<BasePart>> simulatedBodies;
 
+    friend PhysJoint;
 public:
     PhysWorld();
     ~PhysWorld();

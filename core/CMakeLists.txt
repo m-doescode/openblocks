@@ -89,6 +89,8 @@ set(SOURCES
     src/objects/joint/weld.h
     src/objects/joint/snap.cpp
     src/objects/joint/rotatev.cpp
+    src/objects/joint/motor6d.h
+    src/objects/joint/motor6d.cpp
     src/objects/base/service.h
     src/objects/base/member.h
     src/objects/base/instance.h
@@ -142,6 +144,7 @@ set(AUTOGEN_SOURCES
     src/objects/script.h
     src/objects/joint/snap.h
     src/objects/joint/jointinstance.h
+    src/objects/joint/motor6d.h
     src/objects/joint/rotatev.h
     src/objects/joint/rotate.h
     src/objects/joint/weld.h

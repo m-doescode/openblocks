@@ -1,22 +1,27 @@
 #include "meta.h"
-#include "objects/folder.h"
-#include "objects/hint.h"
-#include "objects/joint/jointinstance.h"
-#include "objects/joint/rotate.h"
-#include "objects/joint/rotatev.h"
-#include "objects/joint/weld.h"
-#include "objects/message.h"
-#include "objects/part/wedgepart.h"
-#include "objects/service/jointsservice.h"
-#include "objects/model.h"
-#include "objects/part/part.h"
-#include "objects/joint/snap.h"
-#include "objects/script.h"
-#include "objects/service/script/scriptcontext.h"
-#include "objects/service/script/serverscriptservice.h"
-#include "objects/service/selection.h"
-#include "objects/service/workspace.h"
-#include "objects/datamodel.h"
+
+#define DECLTYPE(className) class className { public: const static InstanceType TYPE; };
+
+DECLTYPE(DataModel);
+DECLTYPE(BasePart);
+DECLTYPE(Part);
+DECLTYPE(WedgePart);
+DECLTYPE(Snap);
+DECLTYPE(Weld);
+DECLTYPE(Rotate);
+DECLTYPE(RotateV);
+DECLTYPE(Motor6D);
+DECLTYPE(JointInstance);
+DECLTYPE(Script);
+DECLTYPE(Model);
+DECLTYPE(Message);
+DECLTYPE(Hint);
+// DECLTYPE(Folder);
+DECLTYPE(Workspace);
+DECLTYPE(JointsService);
+DECLTYPE(ScriptContext);
+DECLTYPE(ServerScriptService);
+DECLTYPE(Selection);
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Instance", &Instance::TYPE },
@@ -29,6 +34,7 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Weld", &Weld::TYPE },
     { "Rotate", &Rotate::TYPE },
     { "RotateV", &RotateV::TYPE },
+    { "Motor6D", &Motor6D::TYPE },
     { "JointInstance", &JointInstance::TYPE },
     { "Script", &Script::TYPE },
     { "Model", &Model::TYPE },

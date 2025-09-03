@@ -226,26 +226,39 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
         settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
         settings.mNormalAxis2 = convert<JPH::Vec3>(info->c1.RightVector());
         settings.mHingeAxis2 = convert<JPH::Vec3>(info->c1.LookVector());
-        // settings.mMotorSettings = JPH::MotorSettings(1.0f, 1.0f);
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-        if (info->motorized) {
+        
+        if (PhysMotorizedJointInfo* info = dynamic_cast<PhysMotorizedJointInfo*>(&type)) {
             static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
             static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
+        } else if (PhysStepperJointInfo* info = dynamic_cast<PhysStepperJointInfo*>(&type)) {
+            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Position);
+            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
+            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngle(info->initialAngle);
         }
     } else {
         panic();
     }
 
     worldImpl.AddConstraint(constraint);
-    return { constraint };
+    return { constraint, this };
 }
 
 // WATCH OUT! This should only be called for HingeConstraints.
 // Can't use dynamic_cast because TwoBodyConstraint is not virtual
 void PhysJoint::setAngularVelocity(float velocity) {
     JPH::HingeConstraint* constraint = static_cast<JPH::HingeConstraint*>(jointImpl);
-    if (!constraint) return;
     constraint->SetTargetAngularVelocity(-velocity);
+}
+
+void PhysJoint::setTargetAngle(float angle) {
+    JPH::HingeConstraint* constraint = static_cast<JPH::HingeConstraint*>(jointImpl);
+    constraint->SetTargetAngle(angle);
+
+    // Wake up the part as it could be sleeping
+    JPH::BodyInterface& interface = parentWorld->worldImpl.GetBodyInterface();
+    JPH::BodyID bodies[] = {constraint->GetBody1()->GetID(), constraint->GetBody2()->GetID()};
+    interface.ActivateBodies(bodies, 2);
 }
 
 void PhysWorld::destroyJoint(PhysJoint joint) {
