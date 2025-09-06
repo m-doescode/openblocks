@@ -306,7 +306,7 @@ void BasePart::MakeJoints() {
 }
 
 void BasePart::UpdateNoBreakJoints() {    
-    if (workspace())
+    if (workspace() != nullptr)
         workspace()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
 }
 

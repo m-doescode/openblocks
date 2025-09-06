@@ -27,14 +27,6 @@ void Motor6D::buildJoint() {
     jointWorkspace = workspace;
 }
 
-void Motor6D::onUpdated(std::string property) {
-    if (property == "DesiredAngle") {
-        joint.setTargetAngle(desiredAngle);
-    } else if (property == "MaxVelocity") {
-        joint.setAngularVelocity(maxVelocity);
-    }
-}
-
 bool Motor6D::isDrivenJoint() {
     return true;
 }
@@ -59,7 +51,7 @@ void Motor6D::OnPhysicsStep(float deltaTime) {
         CFrame newFrame = rotatedAnchor * c1.Inverse();
         
         part1.lock()->cframe = newFrame;
-        jointWorkspace.lock()->SetPhysicalCFrameInternal(part1.lock(), newFrame);
+        part1.lock()->UpdateNoBreakJoints();
     } else if (!part0.lock()->anchored) {
         CFrame anchorPoint = part1.lock()->cframe * c1;
         Vector3 angles = anchorPoint.ToEulerAnglesXYZ();
@@ -67,6 +59,6 @@ void Motor6D::OnPhysicsStep(float deltaTime) {
         CFrame newFrame = rotatedAnchor * c0.Inverse();
         
         part0.lock()->cframe = newFrame;
-        jointWorkspace.lock()->SetPhysicalCFrameInternal(part0.lock(), newFrame);
+        part0.lock()->UpdateNoBreakJoints();
     }
 }
