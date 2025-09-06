@@ -1,4 +1,5 @@
 #include "motor6d.h"
+#include "datatypes/vector.h"
 #include "objects/part/part.h"
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
@@ -10,6 +11,7 @@ Motor6D::Motor6D(): JointInstance(&TYPE) {
 
 Motor6D::~Motor6D() {
 }
+
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 void Motor6D::buildJoint() {
@@ -30,5 +32,41 @@ void Motor6D::onUpdated(std::string property) {
         joint.setTargetAngle(desiredAngle);
     } else if (property == "MaxVelocity") {
         joint.setAngularVelocity(maxVelocity);
+    }
+}
+
+bool Motor6D::isDrivenJoint() {
+    return true;
+}
+
+void Motor6D::OnPhysicsStep(float deltaTime) {
+    // Tween currentAngle
+    float diffAngle = abs(currentAngle - desiredAngle);
+    if (diffAngle > abs(maxVelocity)) { // Don't tween if we're already close enough to being there
+        if (currentAngle < desiredAngle)
+            currentAngle += maxVelocity;
+        else
+            currentAngle -= maxVelocity;
+    }
+
+    // Shouldn't in theory be necessary, but just in case.
+    if (part0.expired() || part1.expired()) return;
+
+    if (!part1.lock()->anchored) {
+        CFrame anchorPoint = part0.lock()->cframe * c0;
+        Vector3 angles = anchorPoint.ToEulerAnglesXYZ();
+        CFrame rotatedAnchor = CFrame::FromEulerAnglesXYZ({angles.X(), angles.Y(), currentAngle}) + anchorPoint.Position();
+        CFrame newFrame = rotatedAnchor * c1.Inverse();
+        
+        part1.lock()->cframe = newFrame;
+        jointWorkspace.lock()->SetPhysicalCFrameInternal(part1.lock(), newFrame);
+    } else if (!part0.lock()->anchored) {
+        CFrame anchorPoint = part1.lock()->cframe * c1;
+        Vector3 angles = anchorPoint.ToEulerAnglesXYZ();
+        CFrame rotatedAnchor = CFrame::FromEulerAnglesXYZ({angles.X(), angles.Y(), currentAngle}) + anchorPoint.Position();
+        CFrame newFrame = rotatedAnchor * c0.Inverse();
+        
+        part0.lock()->cframe = newFrame;
+        jointWorkspace.lock()->SetPhysicalCFrameInternal(part0.lock(), newFrame);
     }
 }

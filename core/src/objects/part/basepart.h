@@ -119,6 +119,7 @@ public:
 
     void MakeJoints();
     void BreakJoints();
+    void UpdateNoBreakJoints();
 
     // Calculate size of axis-aligned bounding box
     Vector3 GetAABB();

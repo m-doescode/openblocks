@@ -14,6 +14,7 @@
 #include <Jolt/Physics/Constraints/TwoBodyConstraint.h>
 
 class BasePart;
+class JointInstance;
 class PhysWorld;
 
 struct PhysJointInfo { virtual ~PhysJointInfo() = default; protected: PhysJointInfo() = default; };
@@ -116,6 +117,7 @@ class PhysWorld : public std::enable_shared_from_this<PhysWorld> {
     ObjectLayerPairFilter objectLayerPairFilter;
     JPH::PhysicsSystem worldImpl;
     std::list<std::shared_ptr<BasePart>> simulatedBodies;
+    std::list<std::shared_ptr<JointInstance>> drivenJoints;
 
     friend PhysJoint;
 public:
@@ -129,6 +131,11 @@ public:
 
     PhysJoint createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1);
     void destroyJoint(PhysJoint joint);
+
+    void trackDrivenJoint(std::shared_ptr<JointInstance> motor);
+    void untrackDrivenJoint(std::shared_ptr<JointInstance> motor);
+
+    void setCFrameInternal(std::shared_ptr<BasePart> part, CFrame frame);
 
     inline const std::list<std::shared_ptr<BasePart>>& getSimulatedBodies() { return simulatedBodies; }
     void syncBodyProperties(std::shared_ptr<BasePart>);

@@ -32,6 +32,7 @@ protected:
     inline void onUpdated(std::string property) { Update(); };
 
     virtual void buildJoint() = 0;
+    virtual bool isDrivenJoint();
 public:
     void Update();
     virtual void OnPartParamsUpdated();
@@ -40,6 +41,8 @@ public:
     DEF_PROP_PHYS std::weak_ptr<BasePart> part1;
     DEF_PROP_PHYS CFrame c0;
     DEF_PROP_PHYS CFrame c1;
+
+    virtual void OnPhysicsStep(float deltaTime);
 
     JointInstance(const InstanceType*);
     ~JointInstance();

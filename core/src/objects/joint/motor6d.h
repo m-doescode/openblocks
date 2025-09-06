@@ -12,10 +12,14 @@ class DEF_INST Motor6D : public JointInstance {
 
     virtual void buildJoint() override;
     void onUpdated(std::string);
+
+    void OnPhysicsStep(float deltaTime) override;
+    bool isDrivenJoint() override;
 public:
     Motor6D();
     ~Motor6D();
 
+    DEF_PROP float currentAngle;
     DEF_PROP_PHYS float desiredAngle;
     DEF_PROP_PHYS float maxVelocity;
 

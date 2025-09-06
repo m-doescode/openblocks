@@ -2,6 +2,7 @@
 #include "datatypes/vector.h"
 #include "enum/part.h"
 #include "logger.h"
+#include "objects/joint/jointinstance.h"
 #include "objects/part/basepart.h"
 #include "objects/part/part.h"
 #include "objects/part/wedgepart.h"
@@ -37,6 +38,8 @@
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
 #include <Jolt/Physics/Constraints/HingeConstraint.h>
+#include <algorithm>
+#include <cstdio>
 #include <memory>
 
 static JPH::TempAllocator* allocator;
@@ -194,6 +197,11 @@ void PhysWorld::step(float deltaTime) {
         part->cframe = CFrame(convert<Vector3>(interface.GetPosition(bodyID)), convert<glm::quat>(interface.GetRotation(bodyID)));
     }
 
+    // Update joints
+    for (std::shared_ptr<JointInstance> joint : drivenJoints) {
+        joint->OnPhysicsStep(deltaTime);
+    }
+
     physTime = tu_clock_micros() - startTime;
 }
 
@@ -232,9 +240,8 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
             static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
             static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
         } else if (PhysStepperJointInfo* info = dynamic_cast<PhysStepperJointInfo*>(&type)) {
-            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Position);
-            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
-            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngle(info->initialAngle);
+            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
+            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(0);
         }
     } else {
         panic();
@@ -242,6 +249,19 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
 
     worldImpl.AddConstraint(constraint);
     return { constraint, this };
+}
+
+void PhysWorld::trackDrivenJoint(std::shared_ptr<JointInstance> motor) {
+    drivenJoints.push_back(motor);
+}
+
+void PhysWorld::untrackDrivenJoint(std::shared_ptr<JointInstance> motor) {
+    for (auto it = drivenJoints.begin(); it != drivenJoints.end();) {
+        if (*it == motor)
+            it = drivenJoints.erase(it);
+        else
+            it++;
+    }
 }
 
 // WATCH OUT! This should only be called for HingeConstraints.

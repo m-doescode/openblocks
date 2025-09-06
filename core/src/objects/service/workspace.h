@@ -2,10 +2,9 @@
 
 #include "objects/annotation.h"
 #include "objects/base/service.h"
+#include "objects/joint/jointinstance.h"
 #include "physics/world.h"
-#include "utils.h"
 #include <glm/ext/vector_float3.hpp>
-#include <list>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -55,6 +54,9 @@ public:
 
     inline PhysJoint CreateJoint(PhysJointInfo& info, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) { return physicsWorld->createJoint(info, part0, part1); }
     inline void DestroyJoint(PhysJoint joint) { physicsWorld->destroyJoint(joint); }
+
+    inline void TrackDrivenJoint(std::shared_ptr<JointInstance> motor) { return physicsWorld->trackDrivenJoint(motor); }
+    inline void UntrackDrivenJoint(std::shared_ptr<JointInstance> motor) { return physicsWorld->untrackDrivenJoint(motor); }
 
     void PhysicsStep(float deltaTime);
     inline std::optional<const RaycastResult> CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter = std::nullopt, unsigned short categoryMaskBits = 0xFFFF) { return physicsWorld->castRay(point, rotation, maxLength, filter, categoryMaskBits); }

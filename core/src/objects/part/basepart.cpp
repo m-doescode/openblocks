@@ -305,6 +305,11 @@ void BasePart::MakeJoints() {
     }
 }
 
+void BasePart::UpdateNoBreakJoints() {    
+    if (workspace())
+        workspace()->SyncPartPhysics(std::dynamic_pointer_cast<BasePart>(this->shared_from_this()));
+}
+
 void BasePart::trackJoint(std::shared_ptr<JointInstance> joint) {
     if (!joint->part0.expired() && joint->part0.lock() == shared_from_this()) {
         for (auto it = primaryJoints.begin(); it != primaryJoints.end();) {

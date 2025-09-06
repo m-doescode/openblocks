@@ -20,12 +20,20 @@ void JointInstance::OnAncestryChanged(nullable std::shared_ptr<Instance>, nullab
 void JointInstance::OnPartParamsUpdated() {
 }
 
+void JointInstance::OnPhysicsStep(float deltaTime) {
+}
+
+bool JointInstance::isDrivenJoint() {
+    return false;
+}
+
 void JointInstance::Update() {
     // To keep it simple compared to our previous algorithm, this one is pretty barebones:
     // 1. Every time we update, (whether our parent changed, or a property), destroy the current joints
     // 2. If the new configuration is valid, rebuild our joints
 
     if (!jointWorkspace.expired()) {
+        if (isDrivenJoint()) jointWorkspace.lock()->UntrackDrivenJoint(shared<JointInstance>());
         jointWorkspace.lock()->DestroyJoint(joint);
         if (!oldPart0.expired())
             oldPart0.lock()->untrackJoint(shared<JointInstance>());
@@ -54,6 +62,7 @@ void JointInstance::Update() {
 
     part0.lock()->trackJoint(shared<JointInstance>());
     part1.lock()->trackJoint(shared<JointInstance>());
+    jointWorkspace.lock()->TrackDrivenJoint(shared<JointInstance>());
 }
 
 nullable std::shared_ptr<Workspace> JointInstance::workspaceOfPart(std::shared_ptr<BasePart> part) {
