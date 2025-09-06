@@ -234,14 +234,17 @@ PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> 
         settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
         settings.mNormalAxis2 = convert<JPH::Vec3>(info->c1.RightVector());
         settings.mHingeAxis2 = convert<JPH::Vec3>(info->c1.LookVector());
+        
+        // settings for Motor6D
+        settings.mMotorSettings.mSpringSettings.mFrequency = 20;
+        settings.mMotorSettings.mSpringSettings.mDamping = 1;
         constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
         
         if (PhysMotorizedJointInfo* info = dynamic_cast<PhysMotorizedJointInfo*>(&type)) {
             static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
             static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
-        } else if (PhysStepperJointInfo* info = dynamic_cast<PhysStepperJointInfo*>(&type)) {
-            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
-            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(0);
+        } else if (PhysStepperJointInfo* _ = dynamic_cast<PhysStepperJointInfo*>(&type)) {
+            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Position);
         }
     } else {
         panic();

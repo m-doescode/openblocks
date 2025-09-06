@@ -44,21 +44,6 @@ void Motor6D::OnPhysicsStep(float deltaTime) {
     // Shouldn't in theory be necessary, but just in case.
     if (part0.expired() || part1.expired()) return;
 
-    if (!part1.lock()->anchored) {
-        CFrame anchorPoint = part0.lock()->cframe * c0;
-        Vector3 angles = anchorPoint.ToEulerAnglesXYZ();
-        CFrame rotatedAnchor = CFrame::FromEulerAnglesXYZ({angles.X(), angles.Y(), currentAngle}) + anchorPoint.Position();
-        CFrame newFrame = rotatedAnchor * c1.Inverse();
-        
-        part1.lock()->cframe = newFrame;
-        part1.lock()->UpdateNoBreakJoints();
-    } else if (!part0.lock()->anchored) {
-        CFrame anchorPoint = part1.lock()->cframe * c1;
-        Vector3 angles = anchorPoint.ToEulerAnglesXYZ();
-        CFrame rotatedAnchor = CFrame::FromEulerAnglesXYZ({angles.X(), angles.Y(), currentAngle}) + anchorPoint.Position();
-        CFrame newFrame = rotatedAnchor * c0.Inverse();
-        
-        part0.lock()->cframe = newFrame;
-        part0.lock()->UpdateNoBreakJoints();
-    }
+    // TODO: Re-add rotating only one part when both are unanchored, maybe?
+    joint.setTargetAngle(currentAngle);
 }
