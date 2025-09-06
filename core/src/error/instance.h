@@ -9,7 +9,7 @@ class NoSuchInstance : public Error {
 
 class NoSuchService : public Error {
     public:
-    inline NoSuchService(std::string className) : Error("NoSuchService", "Cannot insert service of unknown type " + className) {}
+    inline NoSuchService(std::string className) : Error("NoSuchService", "Unknown service type " + className) {}
 };
 
 class ServiceAlreadyExists : public Error {

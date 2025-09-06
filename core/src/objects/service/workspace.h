@@ -33,13 +33,14 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
     std::shared_ptr<PhysWorld> physicsWorld;
     friend PhysWorld;
 protected:
-    void InitService() override;
-    void OnRun() override;
     bool initialized = false;
 
 public:
     Workspace();
     ~Workspace();
+    
+    void InitService() override;
+    void OnRun() override;
 
     std::recursive_mutex queueLock;
 

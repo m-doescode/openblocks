@@ -21,13 +21,14 @@ class DEF_INST_SERVICE_(hidden) ScriptContext : public Service {
     std::vector<SleepingThread> sleepingThreads;
     int lastScriptSourceId = 0;
 protected:
-    void InitService() override;
     bool initialized = false;
 
 public:
     ScriptContext();
     ~ScriptContext();
 
+    void InitService() override;
+    
     lua_State* state;
     void PushThreadSleep(lua_State* thread, float delay);
     void RunSleepingThreads();

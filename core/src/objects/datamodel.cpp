@@ -34,8 +34,13 @@ void DataModel::Init(bool runMode) {
     // Init all services
     for (auto [_, service] : this->services) {
         service->InitService();
-        if (runMode) service->OnRun();
     }
+
+    // Deterministic run order
+    if (!runMode) return;
+    
+    if (auto service = FindService<Workspace>()) service->OnRun();
+    if (auto service = FindService<ServerScriptService>()) service->OnRun();
 }
 
 void DataModel::SaveToFile(std::optional<std::string> path) {
@@ -114,12 +119,13 @@ result<std::shared_ptr<Service>, NoSuchService> DataModel::GetService(std::strin
 }
 
 result<nullable std::shared_ptr<Service>, NoSuchService> DataModel::FindService(std::string className) {
-    if (!INSTANCE_MAP[className] || (INSTANCE_MAP[className]->flags ^ (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) != 0) {
-        return NoSuchService(className);
-    }
-
     if (services.count(className) != 0)
         return std::dynamic_pointer_cast<Service>(services[className]);
+    
+    if (!INSTANCE_MAP[className] || ~(INSTANCE_MAP[className]->flags & (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE)) == 0) {
+        return NoSuchService(className);
+    }
+    
     return nullptr;
 }
 
