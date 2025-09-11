@@ -95,8 +95,9 @@ void PlaceDocument::timerEvent(QTimerEvent* evt) {
 
     placeWidget->repaint();
     placeWidget->updateCycle();
+    if (_runState != RUN_RUNNING) return;
     gDataModel->GetService<ScriptContext>()->RunSleepingThreads();
-    if (_runState == RUN_RUNNING) gDataModel->GetService<Workspace>()->PhysicsStep(0.033);
+    gDataModel->GetService<Workspace>()->PhysicsStep(0.033);
 }
 
 
