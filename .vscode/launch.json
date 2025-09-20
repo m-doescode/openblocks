@@ -26,6 +26,6 @@
             "program": "${workspaceFolder}/autogen/build/autogen",
             "args": ["../core/src", "../core/src/objects", "build/generated"],
             "cwd": "${workspaceFolder}/autogen",
-        }
-    ]
+        },
+    ],
 }

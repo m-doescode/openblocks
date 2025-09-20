@@ -27,3 +27,8 @@ void Weld::buildJoint() {
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;
 }
+
+void Weld::breakJoint() {
+    if (joint.jointImpl != nullptr)
+        joint.parentWorld->destroyJoint(joint);
+}

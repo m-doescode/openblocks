@@ -539,7 +539,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
             .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
-        gWorkspace()->SyncPartPhysics(lastPart);
+        // gWorkspace()->SyncPartPhysics(lastPart);
         lastPart->name = "Part" + std::to_string(partId++);
         M_mainWindow->undoManager.PushState({ UndoStateInstanceCreated { lastPart, gWorkspace() } });
     }

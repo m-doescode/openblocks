@@ -47,3 +47,8 @@ void Motor6D::OnPhysicsStep(float deltaTime) {
     // TODO: Re-add rotating only one part when both are unanchored, maybe?
     joint.setTargetAngle(currentAngle);
 }
+
+void Motor6D::breakJoint() {
+    if (joint.jointImpl != nullptr)
+        joint.parentWorld->destroyJoint(joint);
+}

@@ -32,3 +32,8 @@ void RotateV::OnPartParamsUpdated() {
     float vel = part0.lock()->GetSurfaceParamB(-c0.LookVector().Unit()) * 6.28;
     this->joint.setAngularVelocity(vel);
 }
+
+void RotateV::breakJoint() {
+    if (joint.jointImpl != nullptr)
+        joint.parentWorld->destroyJoint(joint);
+}

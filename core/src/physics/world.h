@@ -49,7 +49,7 @@ struct PhysStepperJointInfo : PhysRotatingJointInfo {
 class PhysWorld;
 struct PhysJoint {
 public:
-    JPH::TwoBodyConstraint* jointImpl;
+    JPH::TwoBodyConstraint* jointImpl = nullptr;
     PhysWorld* parentWorld;
 
     void setAngularVelocity(float velocity);
@@ -111,6 +111,7 @@ class ObjectLayerPairFilter : public JPH::ObjectLayerPairFilter {
     bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const override;
 };
 
+class PhysBody;
 class PhysWorld : public std::enable_shared_from_this<PhysWorld> {
     BroadPhaseLayerInterface broadPhaseLayerInterface;
     ObjectBroadPhaseFilter objectBroadPhasefilter;
@@ -120,13 +121,14 @@ class PhysWorld : public std::enable_shared_from_this<PhysWorld> {
     std::list<std::shared_ptr<JointInstance>> drivenJoints;
 
     friend PhysJoint;
+    friend PhysBody;
 public:
     PhysWorld();
     ~PhysWorld();
 
     void step(float deltaTime);
     
-    void addBody(std::shared_ptr<BasePart>);
+    // void addBody(std::shared_ptr<BasePart>);
     void removeBody(std::shared_ptr<BasePart>);
 
     PhysJoint createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1);
@@ -138,7 +140,7 @@ public:
     void setCFrameInternal(std::shared_ptr<BasePart> part, CFrame frame);
 
     inline const std::list<std::shared_ptr<BasePart>>& getSimulatedBodies() { return simulatedBodies; }
-    void syncBodyProperties(std::shared_ptr<BasePart>);
+    // void syncBodyProperties(std::shared_ptr<BasePart>);
     std::optional<const RaycastResult> castRay(Vector3 point, Vector3 rotation, float maxLength, std::optional<RaycastFilter> filter, unsigned short categoryMaskBits);
 };
 

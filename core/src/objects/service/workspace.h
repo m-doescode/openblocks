@@ -14,6 +14,7 @@ class Snap;
 class Weld;
 class Rotate;
 class RotateV;
+class PhysBody;
 
 struct ContactItem {
     std::shared_ptr<BasePart> part0;
@@ -32,6 +33,7 @@ class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
 
     std::shared_ptr<PhysWorld> physicsWorld;
     friend PhysWorld;
+    friend PhysBody;
 protected:
     bool initialized = false;
 
@@ -49,9 +51,9 @@ public:
     // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Workspace>(); };
 
-    inline void AddBody(std::shared_ptr<BasePart> part) { physicsWorld->addBody(part); }
+    // inline void AddBody(std::shared_ptr<BasePart> part) { physicsWorld->addBody(part); }
     inline void RemoveBody(std::shared_ptr<BasePart> part) { physicsWorld->removeBody(part); }
-    void SyncPartPhysics(std::shared_ptr<BasePart> part);
+    // void SyncPartPhysics(std::shared_ptr<BasePart> part);
 
     inline PhysJoint CreateJoint(PhysJointInfo& info, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) { return physicsWorld->createJoint(info, part0, part1); }
     inline void DestroyJoint(PhysJoint joint) { physicsWorld->destroyJoint(joint); }

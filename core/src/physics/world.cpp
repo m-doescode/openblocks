@@ -61,7 +61,7 @@ namespace BPLayers
 	static constexpr uint NUM_LAYERS(3);
 };
 
-static JPH::Ref<JPH::Shape> wedgeShape;
+JPH::Ref<JPH::Shape> wedgeShape;
 
 void physicsInit() {
     JPH::RegisterDefaultAllocator();
@@ -105,9 +105,9 @@ PhysWorld::PhysWorld() {
 PhysWorld::~PhysWorld() {
 }
 
-void PhysWorld::addBody(std::shared_ptr<BasePart> part) {
-    syncBodyProperties(part);
-}
+// void PhysWorld::addBody(std::shared_ptr<BasePart> part) {
+//     syncBodyProperties(part);
+// }
 
 void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
     JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
@@ -117,9 +117,9 @@ void PhysWorld::removeBody(std::shared_ptr<BasePart> part) {
     Vector3 aabbSize = part->GetAABB();
     interface.ActivateBodiesInAABox(JPH::AABox(convert<JPH::Vec3>(part->position() - aabbSize), convert<JPH::Vec3>(part->position() + aabbSize)), {}, {});
 
-    interface.RemoveBody(part->rigidBody.bodyImpl->GetID());
-    interface.DestroyBody(part->rigidBody.bodyImpl->GetID());
-    part->rigidBody.bodyImpl = nullptr;
+    // interface.RemoveBody(part->rigidBody.bodyImpl->GetID());
+    // interface.DestroyBody(part->rigidBody.bodyImpl->GetID());
+    // part->rigidBody.bodyImpl = nullptr;
 }
 
 JPH::Shape* makeShape(std::shared_ptr<BasePart> basePart) {
@@ -138,49 +138,49 @@ JPH::Shape* makeShape(std::shared_ptr<BasePart> basePart) {
     return nullptr;
 }
 
-void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
-    JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
+// void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
+//     JPH::BodyInterface& interface = worldImpl.GetBodyInterface();
 
-    JPH::EMotionType motionType = part->anchored ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
-    JPH::EActivation activationMode = part->anchored ? JPH::EActivation::DontActivate : JPH::EActivation::Activate;
-    JPH::ObjectLayer objectLayer = !part->canCollide ? Layers::NOCOLLIDE : (part->anchored ? Layers::ANCHORED : Layers::DYNAMIC);
+//     JPH::EMotionType motionType = part->anchored ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+//     JPH::EActivation activationMode = part->anchored ? JPH::EActivation::DontActivate : JPH::EActivation::Activate;
+//     JPH::ObjectLayer objectLayer = !part->canCollide ? Layers::NOCOLLIDE : (part->anchored ? Layers::ANCHORED : Layers::DYNAMIC);
 
-    JPH::Body* body = part->rigidBody.bodyImpl;
+//     JPH::Body* body = part->rigidBody.bodyImpl;
 
-    // Generate a new rigidBody
-    if (body == nullptr) {
-        JPH::Shape* shape = makeShape(part);
-        JPH::BodyCreationSettings settings(shape, convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), motionType, objectLayer);
-        settings.mAllowDynamicOrKinematic = true;
-        settings.mRestitution = 0.5;
+//     // Generate a new rigidBody
+//     if (body == nullptr) {
+//         JPH::Shape* shape = makeShape(part);
+//         JPH::BodyCreationSettings settings(shape, convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), motionType, objectLayer);
+//         settings.mAllowDynamicOrKinematic = true;
+//         settings.mRestitution = 0.5;
 
-        body = interface.CreateBody(settings);
-        body->SetUserData((JPH::uint64)part.get());
-        part->rigidBody.bodyImpl = body;
+//         body = interface.CreateBody(settings);
+//         body->SetUserData((JPH::uint64)part.get());
+//         part->rigidBody.bodyImpl = body;
 
-        interface.AddBody(body->GetID(), activationMode);
-        interface.SetLinearVelocity(body->GetID(), convert<JPH::Vec3>(part->velocity));
-    } else {
-        std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part);
-        bool shouldUpdateShape = (part2 != nullptr && part->rigidBody._lastShape != part2->shape) || part->rigidBody._lastSize == part->size;
+//         interface.AddBody(body->GetID(), activationMode);
+//         interface.SetLinearVelocity(body->GetID(), convert<JPH::Vec3>(part->velocity));
+//     } else {
+//         std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part);
+//         bool shouldUpdateShape = (part2 != nullptr && part->rigidBody._lastShape != part2->shape) || part->rigidBody._lastSize == part->size;
 
-        if (shouldUpdateShape) {
-            // const JPH::Shape* oldShape = body->GetShape();
-            JPH::Shape* newShape = makeShape(part);
+//         if (shouldUpdateShape) {
+//             // const JPH::Shape* oldShape = body->GetShape();
+//             JPH::Shape* newShape = makeShape(part);
 
-            interface.SetShape(body->GetID(), newShape, true, activationMode);
-            // Seems like Jolt manages its memory for us, so we don't need the below
-            // delete oldShape;
-        }
+//             interface.SetShape(body->GetID(), newShape, true, activationMode);
+//             // Seems like Jolt manages its memory for us, so we don't need the below
+//             // delete oldShape;
+//         }
 
-        interface.SetObjectLayer(body->GetID(), objectLayer);        
-        interface.SetMotionType(body->GetID(), motionType, activationMode);
-        interface.SetPositionRotationAndVelocity(body->GetID(), convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), convert<JPH::Vec3>(part->velocity), /* Angular velocity is NYI: */ body->GetAngularVelocity());
-    }
+//         interface.SetObjectLayer(body->GetID(), objectLayer);        
+//         interface.SetMotionType(body->GetID(), motionType, activationMode);
+//         interface.SetPositionRotationAndVelocity(body->GetID(), convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), convert<JPH::Vec3>(part->velocity), /* Angular velocity is NYI: */ body->GetAngularVelocity());
+//     }
 
-    part->rigidBody._lastSize = part->size;
-    if (std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part)) part->rigidBody._lastShape = part2->shape;
-}
+//     part->rigidBody._lastSize = part->size;
+//     if (std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part)) part->rigidBody._lastShape = part2->shape;
+// }
 
 tu_time_t physTime;
 void PhysWorld::step(float deltaTime) {
@@ -193,8 +193,8 @@ void PhysWorld::step(float deltaTime) {
     JPH::BodyIDVector bodyIDs;
     worldImpl.GetBodies(bodyIDs);
     for (JPH::BodyID bodyID : bodyIDs) {
-        std::shared_ptr<BasePart> part = ((Instance*)interface.GetUserData(bodyID))->shared<BasePart>();
-        part->cframe = CFrame(convert<Vector3>(interface.GetPosition(bodyID)), convert<glm::quat>(interface.GetRotation(bodyID)));
+        PhysBody* bodyObj = (PhysBody*)interface.GetUserData(bodyID);
+        bodyObj->updatePartFrames();
     }
 
     // Update joints
@@ -206,52 +206,52 @@ void PhysWorld::step(float deltaTime) {
 }
 
 PhysJoint PhysWorld::createJoint(PhysJointInfo& type, std::shared_ptr<BasePart> part0, std::shared_ptr<BasePart> part1) {
-    if (part0->rigidBody.bodyImpl == nullptr
-        || part1->rigidBody.bodyImpl == nullptr
-        || !part0->workspace()
-        || !part1->workspace()
-        || part0->workspace()->physicsWorld != shared_from_this()
-        || part1->workspace()->physicsWorld != shared_from_this()
-    ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
+    // if (part0->rigidBody.bodyImpl == nullptr
+    //     || part1->rigidBody.bodyImpl == nullptr
+    //     || !part0->workspace()
+    //     || !part1->workspace()
+    //     || part0->workspace()->physicsWorld != shared_from_this()
+    //     || part1->workspace()->physicsWorld != shared_from_this()
+    // ) { Logger::fatalError("Failed to create joint between two parts due to the call being invalid"); panic(); };
 
-    JPH::TwoBodyConstraint* constraint;
-    if (PhysFixedJointInfo* info = dynamic_cast<PhysFixedJointInfo*>(&type)) {
-        JPH::FixedConstraintSettings settings;
-        settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
-        settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
-        settings.mAxisX1 = convert<JPH::Vec3>(info->c0.RightVector());
-        settings.mAxisY1 = convert<JPH::Vec3>(info->c0.UpVector());
-        settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
-        settings.mAxisX2 = convert<JPH::Vec3>(info->c1.RightVector());
-        settings.mAxisY2 = convert<JPH::Vec3>(info->c1.UpVector());
-        constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
-    } else if (PhysRotatingJointInfo* info = dynamic_cast<PhysRotatingJointInfo*>(&type)) {
-        JPH::HingeConstraintSettings settings;
-        settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
-        settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
-        settings.mNormalAxis1 = convert<JPH::Vec3>(info->c0.RightVector());
-        settings.mHingeAxis1 = convert<JPH::Vec3>(info->c0.LookVector());
-        settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
-        settings.mNormalAxis2 = convert<JPH::Vec3>(info->c1.RightVector());
-        settings.mHingeAxis2 = convert<JPH::Vec3>(info->c1.LookVector());
+    // JPH::TwoBodyConstraint* constraint;
+    // if (PhysFixedJointInfo* info = dynamic_cast<PhysFixedJointInfo*>(&type)) {
+    //     JPH::FixedConstraintSettings settings;
+    //     settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
+    //     settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
+    //     settings.mAxisX1 = convert<JPH::Vec3>(info->c0.RightVector());
+    //     settings.mAxisY1 = convert<JPH::Vec3>(info->c0.UpVector());
+    //     settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
+    //     settings.mAxisX2 = convert<JPH::Vec3>(info->c1.RightVector());
+    //     settings.mAxisY2 = convert<JPH::Vec3>(info->c1.UpVector());
+    //     constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
+    // } else if (PhysRotatingJointInfo* info = dynamic_cast<PhysRotatingJointInfo*>(&type)) {
+    //     JPH::HingeConstraintSettings settings;
+    //     settings.mSpace = JPH::EConstraintSpace::LocalToBodyCOM;
+    //     settings.mPoint1 = convert<JPH::Vec3>(info->c0.Position());
+    //     settings.mNormalAxis1 = convert<JPH::Vec3>(info->c0.RightVector());
+    //     settings.mHingeAxis1 = convert<JPH::Vec3>(info->c0.LookVector());
+    //     settings.mPoint2 = convert<JPH::Vec3>(info->c1.Position());
+    //     settings.mNormalAxis2 = convert<JPH::Vec3>(info->c1.RightVector());
+    //     settings.mHingeAxis2 = convert<JPH::Vec3>(info->c1.LookVector());
         
-        // settings for Motor6D
-        settings.mMotorSettings.mSpringSettings.mFrequency = 20;
-        settings.mMotorSettings.mSpringSettings.mDamping = 1;
-        constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
+    //     // settings for Motor6D
+    //     settings.mMotorSettings.mSpringSettings.mFrequency = 20;
+    //     settings.mMotorSettings.mSpringSettings.mDamping = 1;
+    //     constraint = settings.Create(*part0->rigidBody.bodyImpl, *part1->rigidBody.bodyImpl);
         
-        if (PhysMotorizedJointInfo* info = dynamic_cast<PhysMotorizedJointInfo*>(&type)) {
-            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
-            static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
-        } else if (PhysStepperJointInfo* _ = dynamic_cast<PhysStepperJointInfo*>(&type)) {
-            static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Position);
-        }
-    } else {
-        panic();
-    }
+    //     if (PhysMotorizedJointInfo* info = dynamic_cast<PhysMotorizedJointInfo*>(&type)) {
+    //         static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Velocity);
+    //         static_cast<JPH::HingeConstraint*>(constraint)->SetTargetAngularVelocity(-info->initialVelocity);
+    //     } else if (PhysStepperJointInfo* _ = dynamic_cast<PhysStepperJointInfo*>(&type)) {
+    //         static_cast<JPH::HingeConstraint*>(constraint)->SetMotorState(JPH::EMotorState::Position);
+    //     }
+    // } else {
+    //     panic();
+    // }
 
-    worldImpl.AddConstraint(constraint);
-    return { constraint, this };
+    // worldImpl.AddConstraint(constraint);
+    // return { constraint, this };
 }
 
 void PhysWorld::trackDrivenJoint(std::shared_ptr<JointInstance> motor) {
@@ -290,11 +290,12 @@ void PhysWorld::destroyJoint(PhysJoint joint) {
 
 class PhysRayCastBodyFilter : public JPH::BodyFilter {
     bool ShouldCollideLocked(const JPH::Body &inBody) const override {
-        std::shared_ptr<BasePart> part = ((Instance*)inBody.GetUserData())->shared<BasePart>();
+        // std::shared_ptr<BasePart> part = ((Instance*)inBody.GetUserData())->shared<BasePart>();
 
-        // Ignore specifically "hidden" parts from raycast
-        // TODO: Replace this with a better system... Please.
-        if (!part->rigidBody.isCollisionsEnabled()) return false;
+        // // Ignore specifically "hidden" parts from raycast
+        // // TODO: Replace this with a better system... Please.
+        // if (!part->rigidBody.isCollisionsEnabled()) return false;
+        // panic(); // TODO:
 
         return true;
     }
@@ -319,7 +320,8 @@ std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rot
 
     // Next we cast a ray to find the hit surface and its world position and normal
     JPH::BodyID hitBodyId = result.mBodyID;
-    std::shared_ptr<BasePart> part = ((Instance*)interface.GetUserData(hitBodyId))->shared<BasePart>();
+    PhysBody* bodyObj = (PhysBody*)interface.GetUserData(hitBodyId);
+    std::shared_ptr<BasePart> part = bodyObj->getPartFromShapeId(result.mSubShapeID2);
     const JPH::Shape* shape = interface.GetShape(hitBodyId);
 
     // Find the hit position and hence the surface normal of the shape at that specific point

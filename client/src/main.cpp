@@ -72,7 +72,8 @@ int main() {
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
         if (inst->GetClass()->className != "Part") continue;
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
-        gWorkspace()->SyncPartPhysics(part);
+        // lastPart->UpdateProperty("Size");
+        // gWorkspace()->SyncPartPhysics(part);
     }
 
     float lastTime = glfwGetTime();
@@ -124,15 +125,15 @@ void processInput(GLFWwindow* window) {
         shiftFactor *= deltaTime;
         if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
             // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(1, 0, 0));
-            gWorkspace()->SyncPartPhysics(lastPart);
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
             // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 1, 0));
-            gWorkspace()->SyncPartPhysics(lastPart);
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
             // lastPart->rotation *= glm::angleAxis(shiftFactor, glm::vec3(0, 0, 1));
-            gWorkspace()->SyncPartPhysics(lastPart);
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
     }
 }
@@ -174,35 +175,37 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),
         }));
-        gWorkspace()->SyncPartPhysics(lastPart);
     }
 
     float shiftFactor = (mods & GLFW_MOD_SHIFT) ? -0.2 : 0.2;
     if (mode == 0) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
             // lastPart->position.x += shiftFactor;
-            gWorkspace()->SyncPartPhysics(lastPart);
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
             // lastPart->position.y += shiftFactor;
-            gWorkspace()->SyncPartPhysics(lastPart);
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
             // lastPart->position.z += shiftFactor;
-            gWorkspace()->SyncPartPhysics(lastPart);
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
     } else if (mode == 1) {
         if (key == GLFW_KEY_X && action == GLFW_PRESS) {
             lastPart->size += Vector3(1, 0, 0) * shiftFactor;
-            gWorkspace()->SyncPartPhysics(lastPart);
+            lastPart->UpdateProperty("Size");
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
             lastPart->size += Vector3(0, 1, 0) * shiftFactor;
-            gWorkspace()->SyncPartPhysics(lastPart);
+            lastPart->UpdateProperty("Size");
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
         if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
             lastPart->size += Vector3(0, 0, 1) * shiftFactor;
-            gWorkspace()->SyncPartPhysics(lastPart);
+            lastPart->UpdateProperty("Size");
+            // gWorkspace()->SyncPartPhysics(lastPart);
         }
     }
     

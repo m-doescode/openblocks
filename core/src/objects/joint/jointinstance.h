@@ -24,14 +24,14 @@ class DEF_INST_ABSTRACT JointInstance : public Instance {
 protected:
     // The workspace the joint was created in, if it exists
     std::weak_ptr<Workspace> jointWorkspace;
-    PhysJoint joint;
 
     void OnAncestryChanged(nullable std::shared_ptr<Instance>, nullable std::shared_ptr<Instance>) override;
 
     nullable std::shared_ptr<Workspace> workspaceOfPart(std::shared_ptr<BasePart>);
-    inline void onUpdated(std::string property) { Update(); };
+    void onUpdated(std::string property);
 
     virtual void buildJoint() = 0;
+    virtual void breakJoint() = 0;
     virtual bool isDrivenJoint();
 public:
     void Update();

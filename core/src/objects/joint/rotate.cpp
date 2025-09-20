@@ -24,3 +24,8 @@ void Rotate::buildJoint() {
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;
 }
+
+void Rotate::breakJoint() {
+    if (joint.jointImpl != nullptr)
+        joint.parentWorld->destroyJoint(joint);
+}

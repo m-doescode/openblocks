@@ -8,7 +8,10 @@
 class DEF_INST Weld : public JointInstance {
     AUTOGEN_PREAMBLE
 
+    PhysJoint joint;
+
     virtual void buildJoint() override;
+    virtual void breakJoint() override;
 public:
     Weld();
     ~Weld();

@@ -27,3 +27,10 @@ void Snap::buildJoint() {
     this->joint = workspace->CreateJoint(jointInfo, part0.lock(), part1.lock());
     jointWorkspace = workspace;
 }
+
+void Snap::breakJoint() {
+    if (joint.jointImpl != nullptr) {
+        joint.parentWorld->destroyJoint(joint);
+        joint = {};
+    }
+}

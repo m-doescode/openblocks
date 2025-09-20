@@ -81,15 +81,16 @@ protected:
     virtual void OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace);
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace);
 
+public:
+    const static InstanceType TYPE;
+    std::string name;
+
     // The root data model this object is a descendant of
     nullable std::shared_ptr<DataModel> dataModel();
     // The root workspace this object is a descendant of
     // NOTE: This value is not necessarily present if dataModel is present
     // Objects under services other than workspace will NOT have this field set
     nullable std::shared_ptr<Workspace> workspace();
-public:
-    const static InstanceType TYPE;
-    std::string name;
 
     // Signals
     SignalSource AncestryChanged;
@@ -163,3 +164,5 @@ private:
     std::shared_ptr<Instance> current;
     std::vector<int> siblingIndex;
 };
+
+bool CheckInstanceWorkspaceValidity(std::vector<std::weak_ptr<Instance>>);

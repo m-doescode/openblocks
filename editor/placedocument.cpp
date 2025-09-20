@@ -116,15 +116,15 @@ void PlaceDocument::init() {
         .locked = true,
     }));
     lastPart->name = "Baseplate";
-    gWorkspace()->SyncPartPhysics(lastPart);
+    // gWorkspace()->SyncPartPhysics(lastPart);
 
-    gWorkspace()->AddChild(lastPart = Part::New({
-        .position = glm::vec3(-3.8),
-        .rotation = glm::vec3(0),
-        .size = glm::vec3(4, 1.2, 2),
-        .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
-    }));
-    gWorkspace()->SyncPartPhysics(lastPart);
+    // gWorkspace()->AddChild(lastPart = Part::New({
+    //     .position = glm::vec3(-3.8),
+    //     .rotation = glm::vec3(0),
+    //     .size = glm::vec3(4, 1.2, 2),
+    //     .color = glm::vec3(0.639216f, 0.635294f, 0.647059f),
+    // }));
+    // gWorkspace()->SyncPartPhysics(lastPart);
     auto part0 = lastPart;
 
     lastPart = Part::New();

@@ -364,7 +364,7 @@ void MainWindow::connectActionHandlers() {
             .locked = true,
         }));
         placeDocument->placeWidget->lastPart->name = "Baseplate";
-        gWorkspace()->SyncPartPhysics(placeDocument->placeWidget->lastPart);
+        // gWorkspace()->SyncPartPhysics(placeDocument->placeWidget->lastPart);
     });
 
     connect(ui->actionSave, &QAction::triggered, this, [&]() {

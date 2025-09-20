@@ -525,3 +525,16 @@ std::string Instance::GetFullName() {
 
     return currentName;
 }
+
+bool CheckInstanceWorkspaceValidity(std::vector<std::weak_ptr<Instance>> insts) {
+    if (insts.size() == 0) return false;
+
+    std::shared_ptr<Workspace> workspace = insts[0].lock()->workspace();
+    for (auto inst : insts) {
+        if (inst.expired()) return false;
+        if (inst.lock()->workspace() == nullptr) return false;
+        if (inst.lock()->workspace() != workspace) return false;
+    }
+
+    return true;
+}

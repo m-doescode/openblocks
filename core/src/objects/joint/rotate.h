@@ -8,7 +8,10 @@
 class DEF_INST Rotate : public JointInstance {
     AUTOGEN_PREAMBLE
 
+    PhysJoint joint;
+
     virtual void buildJoint() override;
+    virtual void breakJoint() override;
 public:
     Rotate();
     ~Rotate();

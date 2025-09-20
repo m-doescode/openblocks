@@ -48,9 +48,9 @@ void Workspace::OnRun() {
     }
 }
 
-void Workspace::SyncPartPhysics(std::shared_ptr<BasePart> part) {
-    physicsWorld->syncBodyProperties(part);
-}
+// void Workspace::SyncPartPhysics(std::shared_ptr<BasePart> part) {
+//     physicsWorld->syncBodyProperties(part);
+// }
 
 void Workspace::PhysicsStep(float deltaTime) {
     physicsWorld->step(deltaTime);

@@ -12,6 +12,7 @@
 #include <vector>
 #include "objects/annotation.h"
 #include "objects/pvinstance.h"
+#include "physics/body.h"
 #include "physics/world.h"
 
 // Common macro for part properties
@@ -34,25 +35,16 @@ class PhysWorld;
 class DEF_INST_ABSTRACT_(explorer_icon="part") BasePart : public PVInstance {
     AUTOGEN_PREAMBLE
 protected:
-    // Joints where this part is Part0
-    std::vector<std::weak_ptr<JointInstance>> primaryJoints;
-    // Joints where this part is Part1
-    std::vector<std::weak_ptr<JointInstance>> secondaryJoints;
-
-    void trackJoint(std::shared_ptr<JointInstance>);
-    void untrackJoint(std::shared_ptr<JointInstance>);
+    std::vector<std::weak_ptr<JointInstance>> attachedJoints;
 
     SurfaceType surfaceFromFace(NormalId);
-    bool checkJointContinuity(std::shared_ptr<BasePart>);
-    bool checkJointContinuityUp(std::shared_ptr<BasePart>);
-    bool checkJointContinuityDown(std::shared_ptr<BasePart>);
+    // Ensures that "needle" is not already part of this assembly by traversing connected joints
+    bool checkAttached(std::shared_ptr<BasePart> needle, std::shared_ptr<BasePart> prevPart = {});
     bool checkSurfacesTouching(CFrame surfaceFrame, Vector3 size, Vector3 myFace, Vector3 otherFace, std::shared_ptr<BasePart> otherPart); 
 
     friend JointInstance;
     friend PhysWorld;
 
-    virtual void OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
-    virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) override;
     void onUpdated(std::string);
     void onParamUpdated(std::string);
@@ -106,7 +98,7 @@ public:
     DEF_SIGNAL SignalSource Touched;
     DEF_SIGNAL SignalSource TouchEnded;
 
-    PhysRigidBody rigidBody;
+    PhysBodyHandle bodyHandle;
     
     inline SurfaceType GetSurfaceFromFace(NormalId face) { return surfaceFromFace(face); }
     float GetSurfaceParamA(Vector3 face);
@@ -120,6 +112,9 @@ public:
     void MakeJoints();
     void BreakJoints();
     void UpdateNoBreakJoints();
+
+    void AddJoint(std::shared_ptr<JointInstance>);
+    void RemoveJoint(std::shared_ptr<JointInstance>);
 
     // Calculate size of axis-aligned bounding box
     Vector3 GetAABB();

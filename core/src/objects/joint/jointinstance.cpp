@@ -1,6 +1,7 @@
 #include "jointinstance.h"
 
 #include "datatypes/ref.h"
+#include "objects/base/instance.h"
 #include "objects/datamodel.h"
 #include "objects/service/jointsservice.h"
 #include "objects/part/basepart.h"
@@ -23,46 +24,41 @@ void JointInstance::OnPartParamsUpdated() {
 void JointInstance::OnPhysicsStep(float deltaTime) {
 }
 
-bool JointInstance::isDrivenJoint() {
-    return false;
+template <typename T>
+bool weak_equals(std::weak_ptr<T> a, std::weak_ptr<T> b) {
+    return (a.expired() && b.expired()) || (!a.expired() && !b.expired() && a.lock() == b.lock());
+}
+
+void JointInstance::onUpdated(std::string property) {
+    if (property == "Part0" || property == "Part1")
+        Update();
 }
 
 void JointInstance::Update() {
-    // To keep it simple compared to our previous algorithm, this one is pretty barebones:
-    // 1. Every time we update, (whether our parent changed, or a property), destroy the current joints
-    // 2. If the new configuration is valid, rebuild our joints
+    // Truly checking to see if the joint has been modified, etc. is FAR too complex for what its worth, so I'll just stick to break-detach-build-attach
+    breakJoint();
 
-    if (!jointWorkspace.expired()) {
-        if (isDrivenJoint()) jointWorkspace.lock()->UntrackDrivenJoint(shared<JointInstance>());
-        jointWorkspace.lock()->DestroyJoint(joint);
-        if (!oldPart0.expired())
-            oldPart0.lock()->untrackJoint(shared<JointInstance>());
-        if (!oldPart1.expired())
-            oldPart1.lock()->untrackJoint(shared<JointInstance>());
-    }
+    if (!oldPart0.expired())
+        oldPart0.lock()->RemoveJoint(shared<JointInstance>());
+    if (!oldPart1.expired())
+        oldPart1.lock()->RemoveJoint(shared<JointInstance>());
 
     oldPart0 = part0;
     oldPart1 = part1;
 
-    // Don't build the joint if we're not part of either a workspace or JointsService
-    if ((!GetParent() || GetParent()->GetClass() != &JointsService::TYPE) && !workspace()) return;
+    bool isValid = GetParent() != nullptr && (GetParent()->GetClass() == &JointsService::TYPE
+        ? CheckInstanceWorkspaceValidity({part0, part1}) : CheckInstanceWorkspaceValidity({part0, part1, shared_from_this()}));
+    if (!isValid)
+        return;
 
-    // If either part is invalid or they are part of separate worlds, fail
-    if (part0.expired()
-        || part1.expired()
-        || !workspaceOfPart(part0.lock())
-        || !workspaceOfPart(part1.lock())
-        || workspaceOfPart(part0.lock()) != workspaceOfPart(part1.lock())
-    ) return;
-
-    // TODO: Add joint continuity check here
-
-    // Finally, build the joint
     buildJoint();
 
-    part0.lock()->trackJoint(shared<JointInstance>());
-    part1.lock()->trackJoint(shared<JointInstance>());
-    jointWorkspace.lock()->TrackDrivenJoint(shared<JointInstance>());
+    part0.lock()->AddJoint(shared<JointInstance>());
+    part1.lock()->AddJoint(shared<JointInstance>());
+}
+
+bool JointInstance::isDrivenJoint() {
+    return false;
 }
 
 nullable std::shared_ptr<Workspace> JointInstance::workspaceOfPart(std::shared_ptr<BasePart> part) {

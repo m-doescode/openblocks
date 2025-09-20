@@ -7,8 +7,11 @@
 
 class DEF_INST Motor6D : public JointInstance {
     AUTOGEN_PREAMBLE
+    
+    PhysJoint joint;
 
     virtual void buildJoint() override;
+    virtual void breakJoint() override;
     void onUpdated(std::string);
 
     void OnPhysicsStep(float deltaTime) override;

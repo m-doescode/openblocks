@@ -59,6 +59,8 @@ set(SOURCES
     src/rendering/texture3d.cpp
     src/physics/world.h
     src/physics/world.cpp
+    src/physics/body.h
+    src/physics/body.cpp
     src/logger.cpp
     src/handles.h
     src/timeutil.h
