@@ -57,6 +57,8 @@ set(SOURCES
     src/rendering/font.h
     src/rendering/defaultmeshes.h
     src/rendering/texture3d.cpp
+    src/rendering/frustum.h
+    src/rendering/frustum.cpp
     src/physics/world.h
     src/physics/world.cpp
     src/logger.cpp
