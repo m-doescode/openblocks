@@ -18,6 +18,7 @@
             "program": "${workspaceFolder}/build/bin/editor",
             "args": [],
             "cwd": "${workspaceFolder}",
+            "preLaunchTask": "buildDebug"
         },
         {
             "type": "lldb",

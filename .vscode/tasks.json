@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "buildDebug",
+            "type": "process",
+            "command": "cmake",
+            "args": ["--build", "build", "-j16"]
+        }
+    ]
+}
