@@ -14,6 +14,7 @@ struct FrustumPlane {
     FrustumPlane() = default;
 
     bool checkPointForward(Vector3);
+    bool checkAABBForward(Vector3 center, Vector3 extents);
 };
 
 struct Frustum {
@@ -26,4 +27,5 @@ struct Frustum {
 
     Frustum(const Camera cam, float aspect, float fovY, float zNear, float zFar);
     bool checkPoint(Vector3);
+    bool checkAABB(Vector3 center, Vector3 extents);
 };
