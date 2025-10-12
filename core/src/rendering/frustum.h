@@ -26,6 +26,10 @@ struct Frustum {
     FrustumPlane bottom;
 
     Frustum(const Camera cam, float aspect, float fovY, float zNear, float zFar);
+    static Frustum createSliced(const Camera cam, float width, float height, float left, float right, float top, float bottom, float fovY, float zNear, float zFar);
     bool checkPoint(Vector3);
     bool checkAABB(Vector3 center, Vector3 extents);
+
+private:
+    Frustum();
 };

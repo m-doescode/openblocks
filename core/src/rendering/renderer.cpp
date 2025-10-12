@@ -666,6 +666,8 @@ void render() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    // For some reason this is unset by QPainter, so we override it here
+    glEnable(GL_MULTISAMPLE);
 
     renderSkyBox();
     renderHandles();
@@ -684,6 +686,13 @@ void render() {
     // renderAABB();
 
     renderTime = tu_clock_micros() - startTime;
+
+    identityShader->use();
+    identityShader->set("aColor", glm::vec4(1,0,0,1));
+    // Unbinding both is important or else it will mess up QPainter
+    // https://stackoverflow.com/a/47417780/16255372
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
 }
 
 void drawRect(int x, int y, int width, int height, glm::vec4 color) {

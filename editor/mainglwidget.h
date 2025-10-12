@@ -1,13 +1,13 @@
 #ifndef MAINGLWIDGET_H
 #define MAINGLWIDGET_H
 
-#include "objects/part/part.h"
-#include "qevent.h"
-#include <QOpenGLWidget>
-#include <QWidget>
+#include <glm/fwd.hpp>
 #include <memory>
-#include <qmenu.h>
+#include <QEvent>
+#include <QOpenGLWidget>
+#include <QMenu>
 
+class BasePart;
 class HandleFace;
 class MainWindow;
 
@@ -28,6 +28,7 @@ protected:
     void handleLinearTransform(QMouseEvent* evt);
     void handleRotationalTransform(QMouseEvent* evt);
     void handleCursorChange(QMouseEvent* evt);
+    bool handlePartClick(QMouseEvent* evt);
     void startLinearTransform(QMouseEvent* evt);
     std::optional<HandleFace> raycastHandle(glm::vec3 pointDir);
 
@@ -42,6 +43,8 @@ protected:
 
     MainWindow* mainWindow();
     float snappingFactor();
+
+    QRect selectionLasso;
 };
 
 #endif // MAINGLWIDGET_H

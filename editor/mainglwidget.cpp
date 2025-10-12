@@ -1,29 +1,17 @@
 #include <glad/gl.h>
-#include <glm/common.hpp>
-#include <glm/vector_relational.hpp>
 #include <memory>
 #include <miniaudio.h>
 #include <qcursorconstraints.h>
-#include <qnamespace.h>
-#include <qguiapplication.h>
-#include <string>
+#include <QPainter>
+
 #include "./ui_mainwindow.h"
-#include "mainglwidget.h"
-#include "datatypes/vector.h"
-#include "enum/surface.h"
-#include "handles.h"
-#include "logger.h"
-#include "mainwindow.h"
 #include "common.h"
+#include "mainwindow.h"
 #include "math_helper.h"
-#include "objects/base/instance.h"
-#include "objects/pvinstance.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/renderer.h"
-#include "rendering/shader.h"
-#include "datatypes/variant.h"
-#include "undohistory.h"
+#include "mainglwidget.h"
 
 #define PI 3.14159
 #define M_mainWindow dynamic_cast<MainWindow*>(window())
@@ -68,9 +56,16 @@ glm::vec2 secondPoint;
 
 extern std::weak_ptr<BasePart> draggingObject;
 extern std::optional<HandleFace> draggingHandle;
-extern Shader* shader;
 void MainGLWidget::paintGL() {
+    QPainter painter(this);
+
+    painter.beginNativePainting();
     ::render();
+    painter.endNativePainting();
+    
+    painter.setPen(QColor(200, 200, 200));
+    painter.drawRect(selectionLasso);
+    painter.end();
 }
 
 bool isMouseRightDragging = false;
@@ -326,7 +321,7 @@ std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
 }
 
 void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
-    if (isMouseRightDragging) return; // Don't change the cursor while it is intentionally blank
+    if (isMouseRightDragging || selectionLasso != QRect{0,0,0,0}) return; // Don't change the cursor while it is intentionally blank
     QPoint position = evt->pos();
 
     glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
@@ -369,6 +364,85 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     default:
         break;
     }
+
+    if (selectionLasso != QRect {0,0,0,0}) {
+        selectionLasso = {selectionLasso.topLeft(), evt->pos()};
+
+        float left = std::min(selectionLasso.left(), selectionLasso.right());
+        float right = std::max(selectionLasso.left(), selectionLasso.right());
+        float top = std::min(selectionLasso.top(), selectionLasso.bottom());
+        float bottom = std::max(selectionLasso.top(), selectionLasso.bottom());
+
+        Frustum selectionFrustum = Frustum::createSliced(camera, width(), height(), left, right, top, bottom, glm::radians(45.f), 0.1f, 1000.0f);
+
+        std::vector<std::shared_ptr<Instance>> castedParts = gWorkspace()->CastFrustum(selectionFrustum);
+        gDataModel->GetService<Selection>()->Set(castedParts);
+    }
+}
+
+bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
+    QPoint position = evt->pos();
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+
+    // raycast part
+    std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    if (!rayHit || !rayHit->hitPart) { selection->Set({}); return false; }
+    std::shared_ptr<BasePart> part = rayHit->hitPart;
+    if (part->locked) { selection->Set({}); return false; }
+
+    std::shared_ptr<PVInstance> selObject = part;
+
+    // Traverse to the root model
+    if (~evt->modifiers() & Qt::AltModifier) {
+        nullable std::shared_ptr<Instance> nextParent = selObject->GetParent();
+        while (nextParent && nextParent->IsA("Model")) {
+            selObject = std::dynamic_pointer_cast<PVInstance>(nextParent); nextParent = selObject->GetParent();
+        }
+    }
+
+    initialAssembly = PartAssembly::FromSelection({selObject});
+    initialFrame = initialAssembly.assemblyOrigin();
+    initialHitPos = rayHit->worldPoint;
+    initialHitNormal = rayHit->worldNormal;
+    
+    // Handle surface tool
+    if (mainWindow()->selectedTool >= TOOL_SMOOTH) {
+        Vector3 localNormal = part->cframe.Inverse().Rotation() * rayHit->worldNormal;
+        NormalId face = faceFromNormal(localNormal);
+        SurfaceType surface = SurfaceType(mainWindow()->selectedTool - TOOL_SMOOTH);
+        std::string surfacePropertyName = EnumType::NormalId.FromValue(face)->Name() + "Surface";
+
+        // Get old surface and set new surface
+        EnumItem newSurface = EnumType::SurfaceType.FromValue((int)surface).value();
+        EnumItem oldSurface = part->GetProperty(surfacePropertyName).expect().get<EnumItem>();
+        part->SetProperty(surfacePropertyName, newSurface).expect();
+
+        M_mainWindow->undoManager.PushState({UndoStatePropertyChanged { part, surfacePropertyName, oldSurface, newSurface }});
+
+        if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
+            playSound("./assets/excluded/electronicpingshort.wav");
+
+        return true;
+    }
+
+    //part.selected = true;
+    isMouseDragging = true;
+    draggingObject = part;
+    initialTransforms = PartAssembly::FromSelection({part}).GetCurrentTransforms();
+    if (evt->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) {
+        auto sel = selection->Get();
+        if (std::find(sel.begin(), sel.end(), selObject) == sel.end())
+            selection->Add({ selObject });
+        else
+            selection->Remove({ selObject });
+    } else {
+        selection->Set({ selObject });
+    }
+    // Disable bit so that we can ignore the part while raycasting
+    // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
+
+    return true;
 }
 
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
@@ -400,63 +474,9 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
             return;
         }
 
-        // raycast part
-        std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
-        std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-        if (!rayHit || !rayHit->hitPart) { selection->Set({}); return; }
-        std::shared_ptr<BasePart> part = rayHit->hitPart;
-        if (part->locked) { selection->Set({}); return; }
+        if (handlePartClick(evt)) return;
 
-        std::shared_ptr<PVInstance> selObject = part;
-
-        // Traverse to the root model
-        if (~evt->modifiers() & Qt::AltModifier) {
-            nullable std::shared_ptr<Instance> nextParent = selObject->GetParent();
-            while (nextParent && nextParent->IsA("Model")) {
-                selObject = std::dynamic_pointer_cast<PVInstance>(nextParent); nextParent = selObject->GetParent();
-            }
-        }
-
-        initialAssembly = PartAssembly::FromSelection({selObject});
-        initialFrame = initialAssembly.assemblyOrigin();
-        initialHitPos = rayHit->worldPoint;
-        initialHitNormal = rayHit->worldNormal;
-        
-        // Handle surface tool
-        if (mainWindow()->selectedTool >= TOOL_SMOOTH) {
-            Vector3 localNormal = part->cframe.Inverse().Rotation() * rayHit->worldNormal;
-            NormalId face = faceFromNormal(localNormal);
-            SurfaceType surface = SurfaceType(mainWindow()->selectedTool - TOOL_SMOOTH);
-            std::string surfacePropertyName = EnumType::NormalId.FromValue(face)->Name() + "Surface";
-
-            // Get old surface and set new surface
-            EnumItem newSurface = EnumType::SurfaceType.FromValue((int)surface).value();
-            EnumItem oldSurface = part->GetProperty(surfacePropertyName).expect().get<EnumItem>();
-            part->SetProperty(surfacePropertyName, newSurface).expect();
-
-            M_mainWindow->undoManager.PushState({UndoStatePropertyChanged { part, surfacePropertyName, oldSurface, newSurface }});
-
-            if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
-                playSound("./assets/excluded/electronicpingshort.wav");
-
-            return;
-        }
-
-        //part.selected = true;
-        isMouseDragging = true;
-        draggingObject = part;
-        initialTransforms = PartAssembly::FromSelection({part}).GetCurrentTransforms();
-        if (evt->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) {
-            auto sel = selection->Get();
-            if (std::find(sel.begin(), sel.end(), selObject) == sel.end())
-                selection->Add({ selObject });
-            else
-                selection->Remove({ selObject });
-        } else {
-            selection->Set({ selObject });
-        }
-        // Disable bit so that we can ignore the part while raycasting
-        // part->rigidBody->getCollider(0)->setCollisionCategoryBits(0b10);
+        selectionLasso = {position, QSize {0, 0}};
 
         return;
     } default:
@@ -471,6 +491,7 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     isMouseDragging = false;
     draggingObject = {};
     draggingHandle = std::nullopt;
+    selectionLasso = {0,0,0,0};
     setCursor(Qt::ArrowCursor);
 
     if (!initialTransforms.empty()) {

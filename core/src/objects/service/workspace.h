@@ -4,6 +4,7 @@
 #include "objects/base/service.h"
 #include "objects/joint/jointinstance.h"
 #include "physics/world.h"
+#include "rendering/frustum.h"
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <mutex>
@@ -61,4 +62,5 @@ public:
 
     void PhysicsStep(float deltaTime);
     inline std::optional<const RaycastResult> CastRayNearest(glm::vec3 point, glm::vec3 rotation, float maxLength, std::optional<RaycastFilter> filter = std::nullopt, unsigned short categoryMaskBits = 0xFFFF) { return physicsWorld->castRay(point, rotation, maxLength, filter, categoryMaskBits); }
+    std::vector<std::shared_ptr<Instance>> CastFrustum(Frustum frustum);
 };

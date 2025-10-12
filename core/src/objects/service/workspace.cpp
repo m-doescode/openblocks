@@ -67,3 +67,18 @@ void Workspace::PhysicsStep(float deltaTime) {
         }
     }
 }
+
+std::vector<std::shared_ptr<Instance>> Workspace::CastFrustum(Frustum frustum) {
+    std::vector<std::shared_ptr<Instance>> parts;
+
+    for (auto it = GetDescendantsStart(); it != GetDescendantsEnd(); it++) {
+        if (!it->IsA<BasePart>()) continue;
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(*it);
+
+        if (!part->locked && frustum.checkAABB(part->position(), part->GetAABB())) {
+            parts.push_back(part);
+        }
+    }
+
+    return parts;
+}
