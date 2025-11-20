@@ -144,6 +144,7 @@ void drawText(std::shared_ptr<Font> font, std::string text, float x, float y, fl
     // activate corresponding render state
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // TODO: Figure out why when changed to GL_ONE this causes graphical errors
 
     fontShader->use();
     fontShader->set("textColor", color);

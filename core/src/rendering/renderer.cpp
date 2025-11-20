@@ -1,6 +1,4 @@
 #include <glad/gl.h>
-#include <cmath>
-#include <cstdio>
 #include <glm/ext.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
@@ -79,8 +77,6 @@ void renderInit(int width, int height) {
     glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
     glFrontFace(GL_CW);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     debugFontTexture = new Texture("assets/textures/debugfnt.bmp", GL_RGB);
 
@@ -170,7 +166,7 @@ void renderParts() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     shader->use();
@@ -234,7 +230,7 @@ void renderSurfaceExtras() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     ghostShader->use();
@@ -358,7 +354,7 @@ void renderAABB() {
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     ghostShader->use();
@@ -397,7 +393,7 @@ void renderWireframe() {
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     // Use shader
@@ -437,7 +433,7 @@ void renderOutlines() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     outlineShader->use();
@@ -500,7 +496,7 @@ void renderSelectionAssembly() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     PartAssembly selectionAssembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
 
@@ -538,7 +534,7 @@ void renderRotationArcs() {
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // Use shader
     handleShader->use();
@@ -636,7 +632,6 @@ void renderMessages() {
     // glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 
     for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
         if (!it->IsA<Message>()) continue;
@@ -653,7 +648,7 @@ void renderMessages() {
             if (message->text == "") continue;
 
             float strokedTextWidth = calcTextWidth(sansSerif, message->text, true);
-            drawRect(0, 0, viewportWidth, viewportHeight, glm::vec4(0.5));
+            drawRect(0, 0, viewportWidth, viewportHeight, glm::vec4(0.5, 0.5, 0.5, 0.5));
             drawText(sansSerif, message->text, ((float)viewportWidth - textWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2, 1.f, glm::vec3(0), true);
             drawText(sansSerif, message->text, ((float)viewportWidth - strokedTextWidth) / 2, ((float)viewportHeight - sansSerif->height) / 2, 1.f, glm::vec3(1), false);
         }
@@ -698,6 +693,13 @@ void render() {
 void drawRect(int x, int y, int width, int height, glm::vec4 color) {
     // GL_CULL_FACE has to be disabled as we are flipping the order of the vertices here, besides we don't really care about it
     glDisable(GL_CULL_FACE);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Multiply color
+    float a = color.a;
+    color *= a;
+    color.a = a;
+
     glm::mat4 model(1.0f); // Same applies to this VV
     // Make sure to cast these to floats, as mat4<i> is a different type that is not compatible
     glm::mat4 proj = glm::ortho(0.f, (float)viewportWidth, (float)viewportHeight, 0.f, -1.f, 1.f);
