@@ -9,8 +9,11 @@ CPMAddPackage("gh:g-truc/glm#1.0.1")
 CPMAddPackage(NAME Jolt GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics" VERSION 5.3.0 SOURCE_SUBDIR "Build")
 CPMAddPackage("gh:zeux/pugixml@1.15")
 
-CPMAddPackage(
-    NAME freetype
+# TODO: Figure out why this repo causes ft2 to keep rebuilding every time
+# For now, I'll just make it use CPM as a fallback
+# CPMAddPackage(
+CPMFindPackage(
+    NAME Freetype
     GIT_REPOSITORY https://github.com/aseprite/freetype2.git
     GIT_TAG VER-2-10-0
     VERSION 2.10.0
