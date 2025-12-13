@@ -32,6 +32,8 @@ public:
     lua_State* state;
     void PushThreadSleep(lua_State* thread, float delay);
     void RunSleepingThreads();
+    // TEMPORARY. USED ONLY FOR TESTING
+    void DebugClearSleepingThreads();
 
     // Generates an environment with a metatable and pushes it both the env table and metatable in order onto the stack
     void NewEnvironment(lua_State* state);

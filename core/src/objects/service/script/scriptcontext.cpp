@@ -137,6 +137,7 @@ void ScriptContext::RunSleepingThreads() {
     for (i = 0; i < sleepingThreads.size();) {
         bool deleted = false;
 
+        // TODO: Remove threads that belong to non-existent scripts
         SleepingThread sleep = sleepingThreads[i];
         if (tu_clock_micros() >= sleep.targetTimeMicros) {
             // Time args
@@ -165,6 +166,12 @@ void ScriptContext::RunSleepingThreads() {
     }
     if (i > 0)
         schedTime = tu_clock_micros() - startTime;
+}
+
+// Temporary stopgap until RunSleepingThreads can clear threads that belong to
+// scripts no longer parented to the DataModel
+void ScriptContext::DebugClearSleepingThreads() {
+    sleepingThreads.clear();
 }
 
 void ScriptContext::NewEnvironment(lua_State* L) {

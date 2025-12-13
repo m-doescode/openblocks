@@ -24,7 +24,4 @@ add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(editor)
 
-
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests )
-enable_testing()
 add_subdirectory(tests)

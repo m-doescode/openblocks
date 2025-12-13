@@ -13,5 +13,16 @@
     "program": "$ZED_WORKTREE_ROOT/build/bin/editor",
     "request": "launch",
     "adapter": "CodeLLDB"
+  },
+  {
+    "label": "Debug tests",
+    "build": {
+      "command": "cmake",
+      "args": ["--build", "build", "-j16"],
+      "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    "program": "$ZED_WORKTREE_ROOT/build/bin/obtest",
+    "request": "launch",
+    "adapter": "CodeLLDB"
   }
 ]
