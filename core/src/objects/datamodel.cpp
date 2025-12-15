@@ -15,12 +15,15 @@
 #include <memory>
 #include <optional>
 
+int _dbgDataModelDestroyCount = 0;
+
 DataModel::DataModel()
     : Instance(&TYPE) {
     this->name = "Place";
 }
 
 DataModel::~DataModel() {
+    _dbgDataModelDestroyCount++;
 #ifndef NDEBUG
     printf("Datamodel successfully destroyed\n");
 #endif
