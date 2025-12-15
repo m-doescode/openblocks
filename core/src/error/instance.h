@@ -7,6 +7,11 @@ class NoSuchInstance : public Error {
     inline NoSuchInstance(std::string className) : Error("NoSuchInstance", "Cannot create instance of unknown type " + className) {}
 };
 
+class NotCreatableInstance : public Error {
+    public:
+    inline NotCreatableInstance(std::string className) : Error("NotCreatableInstance", "Instance class " + className + " is not creatable") {}
+};
+
 class NoSuchService : public Error {
     public:
     inline NoSuchService(std::string className) : Error("NoSuchService", "Unknown service type " + className) {}

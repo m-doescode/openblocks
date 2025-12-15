@@ -18,9 +18,6 @@ public:
     void testRunStarting(Catch::TestRunInfo const&) override {
         // TODO: Make physicsInit optional in headless environments
         physicsInit();
-        
-        gTestModel = DataModel::New();
-        gTestModel->Init(true);
         Logger::initTest(&testLogOutput);
     }
     
@@ -33,21 +30,12 @@ public:
     void testCasePartialStarting(const Catch::TestCaseInfo &testInfo, uint64_t partNumber) override {
         // Clear the log output prior to each test
         testLogOutput.str("");
+        
+        gTestModel = DataModel::New();
+        gTestModel->Init(true);
     }
 
-    void testCasePartialEnded(const Catch::TestCaseStats &testCaseStats, uint64_t partNumber) override {    
-        auto ctx = gTestModel->GetService<ScriptContext>();
-        ctx->DebugClearSleepingThreads();
-        
-        // Clean up remaining scripts from ServerScriptService        
-        for (auto& obj : gTestModel->GetService<ServerScriptService>()->GetChildren()) {
-            obj->Destroy();
-        }
-        
-        // Also clear workspace
-        for (auto& obj : gTestModel->GetService<Workspace>()->GetChildren()) {
-            obj->Destroy();
-        }
+    void testCasePartialEnded(const Catch::TestCaseStats &testCaseStats, uint64_t partNumber) override {
     }
 };
 

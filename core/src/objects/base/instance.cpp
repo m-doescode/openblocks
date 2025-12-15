@@ -525,3 +525,16 @@ std::string Instance::GetFullName() {
 
     return currentName;
 }
+
+result<std::shared_ptr<Instance>, NoSuchInstance, NotCreatableInstance> Instance::New(std::string className) {
+    const InstanceType* type = INSTANCE_MAP[className];
+
+    if (type == nullptr) {
+        return NoSuchInstance(className);
+    }
+    
+    if (type->flags & (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE) || type->constructor == nullptr)
+        return NotCreatableInstance(className);
+    
+    return type->constructor();
+}

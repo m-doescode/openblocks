@@ -114,6 +114,9 @@ public:
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
     nullable std::shared_ptr<Instance> FindFirstChild(std::string);
     std::string GetFullName();
+    
+    // Dynamically create an instance
+    static result<std::shared_ptr<Instance>, NoSuchInstance, NotCreatableInstance> New(std::string className);
 
     // Properties
     result<Variant, MemberNotFound> GetProperty(std::string name);
