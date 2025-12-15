@@ -110,3 +110,40 @@ TEST_CASE("Parenting") {
         REQUIRE(part2->GetParent() == part);
     }
 }
+
+TEST_CASE("Prevent self-parenting") {
+    auto folder = Model::New();
+    m->AddChild(folder);
+    
+    SECTION("Single layer") {
+        auto part = Part::New();
+        folder->AddChild(part);
+        
+        part->AddChild(part);
+        REQUIRE(part->GetParent());
+        REQUIRE(part->GetParent() == folder);
+        REQUIRE(folder->GetChildren().size() == 1);
+        REQUIRE(folder->GetChildren()[0] == part);
+    }
+    
+    SECTION("I'm my own grandpa") {
+        auto folder2 = Model::New();
+        folder->AddChild(folder2);
+        
+        auto part = Part::New();
+        folder2->AddChild(part);
+        
+        part->AddChild(folder);
+        REQUIRE(folder->GetParent());
+        REQUIRE(folder->GetParent() == m);
+        REQUIRE(folder->GetChildren().size() == 1);
+        REQUIRE(folder->GetChildren()[0] == folder2);
+        REQUIRE(folder2->GetParent());
+        REQUIRE(folder2->GetParent() == folder);
+        REQUIRE(folder2->GetChildren().size() == 1);
+        REQUIRE(folder2->GetChildren()[0] == part);
+        REQUIRE(part->GetParent());
+        REQUIRE(part->GetParent() == folder2);
+        REQUIRE(part->GetChildren().size() == 0);
+    }
+}
