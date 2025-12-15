@@ -68,7 +68,7 @@ void PartAssembly::SetCollisionsEnabled(bool enabled) {
 void PartAssembly::SetOrigin(CFrame newOrigin) {
     for (auto part : parts) {
         part->cframe = newOrigin * (_assemblyOrigin.Inverse() * part->cframe);
-        part->velocity = 0; // Reset velocity
+        part->velocity = Vector3(0); // Reset velocity
         part->UpdateProperty("CFrame");
         part->UpdateProperty("Velocity");
         // sendPropertyUpdatedSignal(part, "CFrame", Variant(part->cframe));
@@ -80,7 +80,7 @@ void PartAssembly::SetOrigin(CFrame newOrigin) {
 void PartAssembly::TransformBy(CFrame transform) {
     for (auto part : parts) {
         part->cframe = transform * part->cframe;
-        part->velocity = 0; // Reset velocity
+        part->velocity = Vector3(0); // Reset velocity
         part->UpdateProperty("CFrame");
         part->UpdateProperty("Position");
         part->UpdateProperty("Rotation");

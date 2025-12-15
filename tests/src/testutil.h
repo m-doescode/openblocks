@@ -9,9 +9,8 @@
 #define TT_ADVANCETIME(secs) tu_set_override(tu_clock_micros() + (secs) * 1'000'000);
 
 inline std::string luaEvalOut(std::shared_ptr<DataModel> m, std::string source) {
-    testLogOutput.seekp(0, std::ios::end);
     size_t offset = testLogOutput.tellp();
-    testLogOutput.seekp(0);
+    testLogOutput.seekp(0, std::ios::end);
 
     auto ss = m->GetService<ServerScriptService>();
     auto s = Script::New();

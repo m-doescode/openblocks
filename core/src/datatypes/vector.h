@@ -13,7 +13,7 @@ class DEF_DATA Vector3 {
 public:
     DEF_DATA_CTOR Vector3();
     DEF_DATA_CTOR Vector3(float x, float y, float z);
-    inline Vector3(float value) : Vector3(value, value, value) {}
+    explicit inline Vector3(float value) : Vector3(value, value, value) {}
     Vector3(const glm::vec3&);
     virtual ~Vector3();
 
