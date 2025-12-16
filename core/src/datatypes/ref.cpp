@@ -3,12 +3,16 @@
 #include "error/data.h"
 #include "logger.h"
 #include "variant.h" // IWYU pragma: keep
+#include <lauxlib.h>
+#include <lua.h>
 #include <memory>
 #include <optional>
 #include "objects/base/instance.h"
 #include "luaapis.h" // IWYU pragma: keep
 #include "objects/base/member.h"
 #include <pugixml.hpp>
+
+#define DATAMODEL_MAGIC 0xFF // It is very unlikely that any object is created at this specific address
 
 TypeMeta::TypeMeta(const InstanceType* instType) : descriptor(&InstanceRef::TYPE), instType(instType) {}
 
@@ -100,9 +104,15 @@ void InstanceRef::PushLuaValue(lua_State* L) const {
 
     auto userdata = (std::shared_ptr<Instance>**)lua_newuserdata(L, sizeof(void*));
 
-    // Create new pointer, and assign userdata a pointer to it
-    std::shared_ptr<Instance>* ptr = new std::shared_ptr<Instance>(ref);
-    *userdata = ptr;
+    // Special case: for game/DataModel, use a custom value to avoid creating a shared_ptr
+    // which will cause a cyclic dependency and cause DataModel to fail to properly clean itself up
+    if (ref->IsA("DataModel")) {
+        *((void**)userdata) = (void*)DATAMODEL_MAGIC;
+    } else {
+        // Create new pointer, and assign userdata a pointer to it
+        std::shared_ptr<Instance>* ptr = new std::shared_ptr<Instance>(ref);
+        *userdata = ptr;
+    }
 
     // Create the instance's metatable
     luaL_newmetatable(L, "__mt_instance");
@@ -123,22 +133,47 @@ result<Variant, LuaCastError> InstanceRef::FromLuaValue(lua_State* L, int idx) {
         return LuaCastError(lua_typename(L, idx), "Instance");
     // TODO: overhaul this to support other types
     auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, idx);
+    // Special case for DataModel
+    if (*(void**)userdata == (void*)DATAMODEL_MAGIC) {
+        // Get the DataModel from the state registry
+        lua_getfield(L, LUA_REGISTRYINDEX, "dataModel");
+        Instance* inst = (Instance*)lua_touserdata(L, -1);
+        lua_pop(L, 1);
+        return Variant(InstanceRef(inst->shared_from_this()));
+    }
     return Variant(InstanceRef(**userdata));
 }
 
 static int inst_gc(lua_State* L) {
     // Destroy the contained shared_ptr
     auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, -1);
+    // Special case: Don't delete DataModel
+    if (*((void**)userdata) == (void*)DATAMODEL_MAGIC) { lua_pop(L, 1); return 0; }
     delete *userdata;
     lua_pop(L, 1);
 
     return 0;
 }
 
+static std::shared_ptr<Instance> fromLua(lua_State* L, int idx) {
+    auto result = InstanceRef::FromLuaValue(L, idx);
+    if (result.isError()) {
+        luaL_error(L, "%s", result.errorMessage().value().c_str());
+    }
+    return result.expect().get<InstanceRef>();
+}
+
+static std::shared_ptr<Instance> fromLuaFallible(lua_State* L, int idx) {
+    auto result = InstanceRef::FromLuaValue(L, idx);
+    if (result.isError()) {
+        return nullptr;
+    }
+    return result.expect().get<InstanceRef>();
+}
+
 // __index(t,k)
 static int inst_index(lua_State* L) {
-    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, 1);
-    std::shared_ptr<Instance> inst = **userdata;
+    std::shared_ptr<Instance> inst = fromLua(L, 1);
     std::string key(lua_tostring(L, 2));
     lua_pop(L, 2);
     
@@ -162,8 +197,7 @@ static int inst_index(lua_State* L) {
 
 // __newindex(t,k,v)
 static int inst_newindex(lua_State* L) {
-    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, 1);
-    std::shared_ptr<Instance> inst = **userdata;
+    std::shared_ptr<Instance> inst = fromLua(L, 1);
     std::string key(lua_tostring(L, 2));
     
     // Validate property
@@ -186,19 +220,15 @@ static int inst_newindex(lua_State* L) {
 }
 
 static int inst_tostring(lua_State* L) {
-    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, 1);
-    std::shared_ptr<Instance> inst = **userdata;
-
+    std::shared_ptr<Instance> inst = fromLua(L, 1);
     lua_pushstring(L, inst->name.c_str());
 
     return 1;
 }
 
 static int inst_eq(lua_State* L) {
-    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, 1);
-    std::shared_ptr<Instance> inst = **userdata;
-    auto userdata2 = (std::shared_ptr<Instance>**)luaL_checkudata(L, 2, "__mt_instance");
-    std::shared_ptr<Instance> inst2 = **userdata2;
+    std::shared_ptr<Instance> inst = fromLua(L, 1);
+    std::shared_ptr<Instance> inst2 = fromLuaFallible(L, 2);
 
     lua_pushboolean(L, inst == inst2);
     return 1;

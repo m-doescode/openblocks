@@ -8,7 +8,7 @@ add_executable(obtest
     src/lua/luageneric.cpp
     src/lua/luainst.cpp
     src/objectmodel/basic.cpp
-    # src/objectmodel/datamodel.cpp
+    src/objectmodel/datamodel.cpp
 )
 target_link_libraries(obtest PRIVATE openblocks Catch2::Catch2WithMain)
 target_include_directories(obtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

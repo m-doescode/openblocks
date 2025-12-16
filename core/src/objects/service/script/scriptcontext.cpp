@@ -57,6 +57,10 @@ void ScriptContext::InitService() {
     CFrame::PushLuaLibrary(state);
     Color3::PushLuaLibrary(state);
     Instance::PushLuaLibrary(state);
+    
+    // Push reference to datamodel
+    lua_pushlightuserdata(state, &*dataModel());
+    lua_setfield(state, LUA_REGISTRYINDEX, "dataModel");
 
     // Add other globals
     lua_getglobal(state, "_G");
