@@ -501,6 +501,7 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
             historyState.push_back(UndoStatePropertyChanged { t.part, "CFrame", t.cframe, t.part->cframe });
             historyState.push_back(UndoStatePropertyChanged { t.part, "Size", t.size, t.part->size });
             historyState.push_back(UndoStatePropertyChanged { t.part, "Velocity", t.velocity, t.part->velocity });
+            historyState.push_back(UndoStatePropertyChanged { t.part, "RotVelocity", t.rotVelocity, t.part->rotVelocity });
         }
 
         M_mainWindow->undoManager.PushState(historyState);

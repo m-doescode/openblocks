@@ -160,6 +160,7 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
 
         interface.AddBody(body->GetID(), activationMode);
         interface.SetLinearVelocity(body->GetID(), convert<JPH::Vec3>(part->velocity));
+        interface.SetAngularVelocity(body->GetID(), convert<JPH::Vec3>(part->rotVelocity));
     } else {
         std::shared_ptr<Part> part2 = std::dynamic_pointer_cast<Part>(part);
         bool shouldUpdateShape = (part2 != nullptr && part->rigidBody._lastShape != part2->shape) || part->rigidBody._lastSize == part->size;
@@ -175,7 +176,7 @@ void PhysWorld::syncBodyProperties(std::shared_ptr<BasePart> part) {
 
         interface.SetObjectLayer(body->GetID(), objectLayer);        
         interface.SetMotionType(body->GetID(), motionType, activationMode);
-        interface.SetPositionRotationAndVelocity(body->GetID(), convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), convert<JPH::Vec3>(part->velocity), /* Angular velocity is NYI: */ body->GetAngularVelocity());
+        interface.SetPositionRotationAndVelocity(body->GetID(), convert<JPH::Vec3>(part->position()), convert<JPH::Quat>((glm::quat)part->cframe.RotMatrix()), convert<JPH::Vec3>(part->velocity), convert<JPH::Vec3>(part->rotVelocity));
     }
 
     part->rigidBody._lastSize = part->size;
@@ -195,6 +196,8 @@ void PhysWorld::step(float deltaTime) {
     for (JPH::BodyID bodyID : bodyIDs) {
         std::shared_ptr<BasePart> part = ((Instance*)interface.GetUserData(bodyID))->shared<BasePart>();
         part->cframe = CFrame(convert<Vector3>(interface.GetPosition(bodyID)), convert<glm::quat>(interface.GetRotation(bodyID)));
+        part->velocity = convert<Vector3>(interface.GetLinearVelocity(bodyID));
+        part->rotVelocity = convert<Vector3>(interface.GetAngularVelocity(bodyID));
     }
 
     // Update joints

@@ -62,6 +62,7 @@ protected:
 public:
     DEF_PROP_CATEGORY(DATA)
     DEF_PROP_PHYS Vector3 velocity;
+    DEF_PROP_PHYS Vector3 rotVelocity;
     [[ def_prop(name="CFrame", on_update=onUpdated), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
     CFrame cframe;
 
