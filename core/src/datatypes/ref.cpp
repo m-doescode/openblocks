@@ -12,8 +12,6 @@
 #include "objects/base/member.h"
 #include <pugixml.hpp>
 
-#define DATAMODEL_MAGIC 0xFF // It is very unlikely that any object is created at this specific address
-
 TypeMeta::TypeMeta(const InstanceType* instType) : descriptor(&InstanceRef::TYPE), instType(instType) {}
 
 InstanceRef::InstanceRef() : ref(nullptr) {};
@@ -102,18 +100,18 @@ void InstanceRef::PushLuaValue(lua_State* L) const {
 
     int n = lua_gettop(L);
 
-    auto userdata = (std::shared_ptr<Instance>**)lua_newuserdata(L, sizeof(void*));
-
+    std::shared_ptr<Instance>* userdata;
+    
     // Special case: for game/DataModel, use a custom value to avoid creating a shared_ptr
     // which will cause a cyclic dependency and cause DataModel to fail to properly clean itself up
     if (ref->IsA("DataModel")) {
-        *((void**)userdata) = (void*)DATAMODEL_MAGIC;
+        userdata = (std::shared_ptr<Instance>*)lua_newuserdata(L, 0);
     } else {
         // Create new pointer, and assign userdata a pointer to it
-        std::shared_ptr<Instance>* ptr = new std::shared_ptr<Instance>(ref);
-        *userdata = ptr;
+        userdata = (std::shared_ptr<Instance>*)lua_newuserdata(L, sizeof(std::shared_ptr<Instance>));
+        new (userdata) std::shared_ptr<Instance>(ref); // Contruct at the address
     }
-
+    
     // Create the instance's metatable
     luaL_newmetatable(L, "__mt_instance");
     luaL_register(L, NULL, metatable);
@@ -132,24 +130,30 @@ result<Variant, LuaCastError> InstanceRef::FromLuaValue(lua_State* L, int idx) {
     if (!lua_isuserdata(L, idx))
         return LuaCastError(lua_typename(L, idx), "Instance");
     // TODO: overhaul this to support other types
-    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, idx);
+
     // Special case for DataModel
-    if (*(void**)userdata == (void*)DATAMODEL_MAGIC) {
+    if (lua_objlen(L, idx) == 0) {
         // Get the DataModel from the state registry
         lua_getfield(L, LUA_REGISTRYINDEX, "dataModel");
         Instance* inst = (Instance*)lua_touserdata(L, -1);
         lua_pop(L, 1);
         return Variant(InstanceRef(inst->shared_from_this()));
     }
-    return Variant(InstanceRef(**userdata));
+    
+    // Extract shared pointer from within
+    auto data = (std::shared_ptr<Instance>*)lua_touserdata(L, idx);
+    return Variant(InstanceRef(*data));
 }
 
 static int inst_gc(lua_State* L) {
-    // Destroy the contained shared_ptr
-    auto userdata = (std::shared_ptr<Instance>**)lua_touserdata(L, -1);
     // Special case: Don't delete DataModel
-    if (*((void**)userdata) == (void*)DATAMODEL_MAGIC) { lua_pop(L, 1); return 0; }
-    delete *userdata;
+    if (lua_objlen(L, -1) == 0) {
+        return 0;
+    }
+
+    // Destruct the contained shared_ptr
+    std::shared_ptr<Instance>* userdata = (std::shared_ptr<Instance>*)lua_touserdata(L, -1);
+    userdata->~shared_ptr(); // Destruct without freeing memory
     lua_pop(L, 1);
 
     return 0;
