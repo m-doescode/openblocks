@@ -4,8 +4,9 @@
 #include "objectmodel/macro.h"
 #include "datatypes/primitives.h"
 #include "objects/base/member.h"
+#include "objects/base/instance.h"
 
-class TestInstance : public Instance2 {
+class TestInstance : public Instance {
 public:
     int x;
     std::string y;
@@ -13,7 +14,7 @@ public:
     TestInstance() {
     }
 private:
-    static const InstanceType2 __buildType() {
+    static const InstanceType __buildType() {
         return make_instance_type<TestInstance>(
             "TestInstance",
             

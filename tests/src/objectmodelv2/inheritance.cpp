@@ -3,13 +3,14 @@
 #include "objectmodel/macro.h"
 #include "objectmodel/property.h"
 #include "objectmodel/type.h"
+#include "objects/base/instance.h"
 
-class TestBaseInstance : public Instance2 {
+class TestBaseInstance : public Instance {
 public:
     int x;
     int y;
 private:
-    static InstanceType2 __buildType() {
+    static InstanceType __buildType() {
         return make_instance_type<TestBaseInstance>(
             "TestBaseInstance",
 
@@ -26,7 +27,7 @@ public:
     int x2;
     int z;
 private:
-    static InstanceType2 __buildType() {
+    static InstanceType __buildType() {
         return make_instance_type<TestDerivedInstance, TestBaseInstance>(
             "TestDerivedInstance",
 
@@ -40,7 +41,7 @@ private:
 
 TEST_CASE("Member inheritance") {
     SECTION("Constructor") {
-        auto apex = Instance2::Type();
+        auto apex = Instance::Type();
         auto base = TestBaseInstance::Type();
         auto derived = TestDerivedInstance::Type();
 

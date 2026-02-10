@@ -5,6 +5,7 @@
 #include "datatypes/base.h"
 #include "datatypes/ref.h"
 #include "error/instance.h"
+#include "objectmodel/type.h"
 #include "objects/base/member.h"
 #include "objects/base/refstate.h"
 #include "objects/datamodel.h"
@@ -21,24 +22,14 @@
 #include <utility>
 #include <vector>
 #include <pugixml.hpp>
-#include "ptr_helpers.h"
+#include "ptr_helpers.h" // IWYU pragma: keep
 
-// Static so that this variable name is "local" to this source file
-const InstanceType Instance::TYPE = {
-    .super = NULL,
-    .className = "Instance",
-    .constructor = NULL, // Instance is abstract and therefore not creatable
-    .explorerIcon = "instance",
-    .flags = 0
-};
-
-// Instance is abstract, so it should not implement GetType directly
-// InstanceType* Instance::GetType() {
-//     return &TYPE_;
-// }
-
-Instance::Instance(const InstanceType* type) {
-    this->name = type->className;
+InstanceType Instance::__buildType() {
+    InstanceType type;
+    type.className = "Instance";
+    type.super = nullptr;
+    type.flags = INSTANCE_NOTCREATABLE;
+    return type;
 }
 
 Instance::~Instance () {
@@ -86,8 +77,8 @@ void Instance::updateAncestry(nullable std::shared_ptr<Instance> updatedChild, n
 
     // Update parent data model and workspace, if applicable
     if (GetParent() != nullptr) {
-        this->_dataModel = GetParent()->GetType() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
-        this->_workspace = GetParent()->GetType() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
+        this->_dataModel = &GetParent()->GetType() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
+        this->_workspace = &GetParent()->GetType() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
     } else {
         this->_dataModel = {};
         this->_workspace = {};
@@ -132,7 +123,7 @@ void Instance::Destroy() {
 }
 
 bool Instance::IsA(std::string className) {
-    const InstanceType* cur = GetType();
+    const InstanceType* cur = &GetType();
     while (cur && cur->className != className) { cur = cur->super; }
     return cur != nullptr;
 }
@@ -203,9 +194,9 @@ result<Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string n
     } else if (name == "Parent") {
         return Variant(InstanceRef(this->parent));
     } else if (name == "ClassName") {
-        return Variant(GetType()->className);
+        return Variant(GetType().className);
     }
-    return MemberNotFound(GetType()->className, name);
+    return MemberNotFound(GetType().className, name);
 }
 
 result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) {
@@ -216,7 +207,7 @@ result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::stri
     } else if (name == "ClassName") {
         return PropertyMeta { &STRING_TYPE, PROP_NOSAVE | PROP_READONLY };
     }
-    return MemberNotFound(GetType()->className, name);
+    return MemberNotFound(GetType().className, name);
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Variant value) {
@@ -226,9 +217,9 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyVa
         std::weak_ptr<Instance> ref = value.get<InstanceRef>();
         SetParent(ref.expired() ? nullptr : ref.lock());
     } else if (name == "ClassName") {
-        return AssignToReadOnlyMember(GetType()->className, name);
+        return AssignToReadOnlyMember(GetType().className, name);
     } else {
-        return MemberNotFound(GetType()->className, name);
+        return MemberNotFound(GetType().className, name);
     }
     return {};
 }
@@ -262,7 +253,7 @@ std::vector<std::string> Instance::GetProperties() {
 void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
     if (state == nullptr) state = std::make_shared<__RefStateSerialize>();
     pugi::xml_node node = parent.append_child("Item");
-    node.append_attribute("class").set_value(this->GetType()->className);
+    node.append_attribute("class").set_value(this->GetType().className);
 
     // Add properties
     pugi::xml_node propertiesNode = node.append_child("Properties");
@@ -327,8 +318,14 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
     if (INSTANCE_MAP.count(className) == 0) {
         return NoSuchInstance(className);
     }
-    // This will error if an abstract instance is used in the file. Oh well, not my prob rn.
-    std::shared_ptr<Instance> object = INSTANCE_MAP[className]->constructor();
+    
+    std::optional<InstanceConstructor> constructor = INSTANCE_MAP[className]->constructor;
+    if (!constructor.has_value()) {
+        // TODO: Replace this with a more appropriate error
+        return NoSuchInstance("TODO: <constructor for: " + className + ">");
+    }
+
+    std::shared_ptr<Instance> object = constructor.value()();
     object->GetChildren();
 
     // const InstanceType* type = INSTANCE_MAP.at(className);
@@ -339,7 +336,7 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
         if (!meta_) {
-            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetType()->className.c_str());
+            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetType().className.c_str());
             continue;
         }
         auto meta = meta_.expect();
@@ -444,7 +441,8 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
 
 nullable std::shared_ptr<Instance> Instance::Clone(RefStateClone state) {
     if (state == nullptr) state = std::make_shared<__RefStateClone>();
-    std::shared_ptr<Instance> newInstance = GetType()->constructor();
+    // TODO: Handle case where this is NotCreatable
+    std::shared_ptr<Instance> newInstance = GetType().constructor.value()();
 
     // Copy properties
     for (std::string property : GetProperties()) {
@@ -536,5 +534,5 @@ result<std::shared_ptr<Instance>, NoSuchInstance, NotCreatableInstance> Instance
     if (type->flags & (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE) || type->constructor == nullptr)
         return NotCreatableInstance(className);
     
-    return type->constructor();
+    return type->constructor.value()();
 }

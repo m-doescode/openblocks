@@ -2,8 +2,9 @@
 #include "objectmodel/macro.h"
 #include "objectmodel/property.h"
 #include "objectmodel/type.h"
+#include "objects/base/instance.h"
 
-class TestInstance2 : public Instance2 {
+class TestInstance : public Instance {
 public:
     int a;
     int b;
@@ -13,18 +14,18 @@ public:
     int f;
 
 private:
-    static InstanceType2 __buildType() {
-        return make_instance_type<TestInstance2>(
-            "TestInstance2",
+    static InstanceType __buildType() {
+        return make_instance_type<TestInstance>(
+            "TestInstance",
 
-            def_property("a", &TestInstance2::a),
+            def_property("a", &TestInstance::a),
             set_property_category("data"),
-            def_property("b", &TestInstance2::b),
-            def_property("c", &TestInstance2::c),
+            def_property("b", &TestInstance::b),
+            def_property("c", &TestInstance::c),
             set_property_category("appearance"),
-            def_property("d", &TestInstance2::d),
-            def_property("e", &TestInstance2::e),
-            def_property("f", &TestInstance2::f)
+            def_property("d", &TestInstance::d),
+            def_property("e", &TestInstance::e),
+            def_property("f", &TestInstance::f)
         );
     }
 
@@ -32,7 +33,7 @@ private:
 };
 
 TEST_CASE("Property categories") {
-    auto type = TestInstance2::Type();
+    auto type = TestInstance::Type();
     REQUIRE(type.properties["a"].category == "");
     REQUIRE(type.properties["b"].category == "data");
     REQUIRE(type.properties["c"].category == "data");

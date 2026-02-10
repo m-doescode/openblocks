@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "objectmodel/type.h"
 #include "datatypes/signal.h"
 #include "error/instance.h"
 #include "error/result.h"
@@ -18,30 +19,23 @@
 #include "objects/base/refstate.h"
 #include "utils.h"
 
+// Used exclusively by Instance
+#define INSTANCE_HEADER_APEX \
+private: \
+    static InstanceType __buildType(); \
+public: \
+    static const InstanceType& Type() { \
+        static InstanceType type = __buildType(); \
+        return type; \
+    } \
+private:
+
 class Instance;
-typedef std::shared_ptr<Instance>(*InstanceConstructor)();
 
 class DataModel;
 class Workspace;
 
 namespace pugi { class xml_node; };
-
-typedef int InstanceFlags;
-// This instance should only be instantiated in special circumstances (i.e. by DataModel) and should be creatable directly via any API 
-const InstanceFlags INSTANCE_NOTCREATABLE = (InstanceFlags)1<<0;
-// This instance is a service
-const InstanceFlags INSTANCE_SERVICE = (InstanceFlags)1<<1;
-// This instance should be hidden from the explorer
-const InstanceFlags INSTANCE_HIDDEN = (InstanceFlags)1<<2;
-
-// Struct describing information about an instance
-struct InstanceType {
-    const InstanceType* super; // May be null
-    std::string className;
-    InstanceConstructor constructor;
-    std::string explorerIcon = "";
-    InstanceFlags flags;
-};
 
 class DescendantsIterator;
 class JointInstance;
@@ -51,6 +45,7 @@ class JointInstance;
                  // Maybe this could be replaced with a friendship? But that seems unnecessary.
                  // https://stackoverflow.com/q/56415222/16255372
 class Instance : public std::enable_shared_from_this<Instance> {
+    INSTANCE_HEADER_APEX
 private:
     std::weak_ptr<Instance> parent;
     std::vector<std::shared_ptr<Instance>> children;
@@ -67,7 +62,6 @@ private:
 protected:
     bool parentLocked = false;
 
-    Instance(const InstanceType*);
     virtual ~Instance();
 
     virtual result<Variant, MemberNotFound> InternalGetPropertyValue(std::string name);
@@ -88,14 +82,14 @@ protected:
     // Objects under services other than workspace will NOT have this field set
     nullable std::shared_ptr<Workspace> workspace();
 public:
-    const static InstanceType TYPE;
+    // Instance is abstract, so it should not implement GetType directly
+    virtual const InstanceType& GetType() = 0;
+
     std::string name;
 
     // Signals
     SignalSource AncestryChanged;
 
-    // Instance is abstract, so it should not implement GetClass directly
-    virtual const InstanceType* GetClass() = 0;
     static void PushLuaLibrary(lua_State*); // Defined in lua/instancelib.cpp
     bool SetParent(nullable std::shared_ptr<Instance> newParent);
     nullable std::shared_ptr<Instance> GetParent();
@@ -133,7 +127,7 @@ public:
         // TODO: Too lazy to implement a manual check
         std::shared_ptr<T> result = std::dynamic_pointer_cast<T>(shared_from_this());
         if (result == nullptr)
-            return InstanceCastError(GetClass()->className, T::TYPE.className);
+            return InstanceCastError(GetType().className, T::Type().className);
         return result;
     }
 

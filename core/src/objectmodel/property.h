@@ -5,10 +5,10 @@
 #include "datatypes.h"
 #include "objects/base/member.h"
 
-class Instance2;
+class Instance;
 
-using PropertyGetter = std::function<Variant(std::shared_ptr<Instance2>)>;
-using PropertySetter = std::function<void(std::shared_ptr<Instance2>, Variant)>;
+using PropertyGetter = std::function<Variant(std::shared_ptr<Instance>)>;
+using PropertySetter = std::function<void(std::shared_ptr<Instance>, Variant)>;
 
 struct InstanceProperty {
     std::string name;
@@ -29,11 +29,11 @@ InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags 
         flags,
         "",
 
-        [ref](std::shared_ptr<Instance2> instance) {
+        [ref](std::shared_ptr<Instance> instance) {
             auto obj = std::dynamic_pointer_cast<C>(instance);
             return obj.get()->*ref;
         },
-        [ref](std::shared_ptr<Instance2> instance, Variant value) {
+        [ref](std::shared_ptr<Instance> instance, Variant value) {
             auto obj = std::dynamic_pointer_cast<C>(instance);
             obj.get()->*ref = value.get<T>();
         }
