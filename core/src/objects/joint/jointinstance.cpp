@@ -14,10 +14,10 @@ InstanceType JointInstance::__buildType() {
         "JointInstance",
         INSTANCE_NOTCREATABLE,
         
-        def_property("part0", &JointInstance::part0, 0, &JointInstance::onUpdated),
-        def_property("part1", &JointInstance::part1, 0, &JointInstance::onUpdated),
-        def_property("c0", &JointInstance::c0, 0, &JointInstance::onUpdated),
-        def_property("c1", &JointInstance::c1, 0, &JointInstance::onUpdated)
+        def_property("Part0", &JointInstance::part0, 0, &JointInstance::onUpdated),
+        def_property("Part1", &JointInstance::part1, 0, &JointInstance::onUpdated),
+        def_property("C0", &JointInstance::c0, 0, &JointInstance::onUpdated),
+        def_property("C1", &JointInstance::c1, 0, &JointInstance::onUpdated)
     );
 }
 

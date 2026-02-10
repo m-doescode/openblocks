@@ -5,7 +5,7 @@
 
 InstanceType Part::__buildType() {
     return make_instance_type<Part, BasePart>("Part",
-        def_property("shape", &Part::shape, 0, &BasePart::onUpdate)
+        def_property("Shape", &Part::shape, 0, &Part::onUpdated)
     );
 }
 

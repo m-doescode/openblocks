@@ -15,7 +15,7 @@
 
 InstanceType Workspace::__buildType() {
     return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
-        def_property("fallenPartsDestroyHeight", &Workspace::fallenPartsDestroyHeight)
+        def_property("FallenPartsDestroyHeight", &Workspace::fallenPartsDestroyHeight)
     );
 }
 

@@ -48,8 +48,9 @@ InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags 
     };
 }
 
-template <typename T, typename C>
-InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags, MemberPropertyListener<C> listener) {
+// Separate C and C2 as the member function may be inherited
+template <typename T, typename C, typename C2>
+InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags, MemberPropertyListener<C2> listener) {
     return def_property(name, ref, flags, [listener](std::shared_ptr<Instance> instance, std::string name, Variant oldValue, Variant newValue) {
         auto obj = std::dynamic_pointer_cast<C>(instance);
         (obj.get()->*listener)(name, oldValue, newValue);

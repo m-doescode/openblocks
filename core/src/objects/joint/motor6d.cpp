@@ -11,9 +11,9 @@ InstanceType Motor6D::__buildType() {
     return make_instance_type<Motor6D, JointInstance>(
         "Motor6D",
 
-        def_property("currentAngle", &Motor6D::currentAngle),
-        def_property("desiredAngle", &Motor6D::desiredAngle),
-        def_property("maxVelocity", &Motor6D::maxVelocity)
+        def_property("CurrentAngle", &Motor6D::currentAngle),
+        def_property("DesiredAngle", &Motor6D::desiredAngle),
+        def_property("MaxVelocity", &Motor6D::maxVelocity)
     );
 }
 
