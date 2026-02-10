@@ -9,6 +9,7 @@ add_executable(obtest
     src/objectmodel/basic.cpp
     src/objectmodel/datamodel.cpp
     src/objectmodelv2/members.cpp
+    src/objectmodelv2/typemeta.cpp
 )
 target_link_libraries(obtest PRIVATE openblocks Catch2::Catch2WithMain)
 target_include_directories(obtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

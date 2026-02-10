@@ -1,9 +1,31 @@
 #include "primitives.h"
+#include "datatypes/base.h"
+#include "datatypes/enum.h"
 #include "error/data.h"
 #include "variant.h"
 #include <pugixml.hpp>
 #include "luaapis.h" // IWYU pragma: keep
 #include <sstream>
+
+TypeMeta::TypeMeta(const TypeMeta& src) : descriptor(src.descriptor) {
+    if (src.descriptor == &EnumItem::TYPE) {
+        enum_ = src.enum_;
+    } else if (src.descriptor == &InstanceRef::TYPE) {
+        instType = src.instType;
+    }
+}
+
+TypeMeta& TypeMeta::operator=(const TypeMeta& src) {
+    this->descriptor = src.descriptor;
+    if (src.descriptor == &EnumItem::TYPE) {
+        enum_ = src.enum_;
+    } else if (src.descriptor == &InstanceRef::TYPE) {
+        instType = src.instType;
+    }
+    return *this;
+}
+
+TypeMeta::TypeMeta() : descriptor(&NULL_TYPE) {}
 
 // null
 

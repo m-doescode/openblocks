@@ -45,4 +45,9 @@ struct TypeMeta {
     inline TypeMeta(const TypeDesc* descriptor) : descriptor(descriptor) {}
     TypeMeta(const Enum*);
     TypeMeta(const InstanceType*);
+
+    // Temporary until this gets replaced
+    TypeMeta();
+    TypeMeta(const TypeMeta&);
+    TypeMeta& operator=(const TypeMeta& src);
 };
