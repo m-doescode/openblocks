@@ -2,17 +2,15 @@
 
 #include "basepart.h"
 #include "enum/part.h"
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 
-class DEF_INST Part : public BasePart {
-    AUTOGEN_PREAMBLE
-protected:
-
+class Part : public BasePart {
+    INSTANCE_HEADER
 public:
     Part();
     Part(PartConstructParams params);
 
-    DEF_PROP_(on_update=onUpdated) PartType shape = PartType::Block;
+    PartType shape = PartType::Block;
 
     Vector3 GetEffectiveSize() override;
 

@@ -52,7 +52,7 @@ template <typename T, typename C>
 InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags, MemberPropertyListener<C> listener) {
     return def_property(name, ref, flags, [listener](std::shared_ptr<Instance> instance, std::string name, Variant oldValue, Variant newValue) {
         auto obj = std::dynamic_pointer_cast<C>(instance);
-        obj->*listener(name, oldValue, newValue);
+        (obj.get()->*listener)(name, oldValue, newValue);
     });
 }
 

@@ -1,11 +1,18 @@
 #include "part.h"
 #include "enum/part.h"
+#include "objectmodel/property.h"
 #include <glm/common.hpp>
 
-Part::Part(): BasePart(&TYPE) {
+InstanceType Part::__buildType() {
+    return make_instance_type<Part, BasePart>("Part",
+        def_property("shape", &Part::shape, 0, &BasePart::onUpdate)
+    );
 }
 
-Part::Part(PartConstructParams params): BasePart(&TYPE, params) {
+Part::Part() {
+}
+
+Part::Part(PartConstructParams params): BasePart(params) {
 }
 
 Vector3 Part::GetEffectiveSize() {

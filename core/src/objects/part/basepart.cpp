@@ -1,4 +1,5 @@
 #include "basepart.h"
+#include "objectmodel/property.h"
 #include "objects/base/instance.h"
 #include "common.h"
 #include "datatypes/base.h"
@@ -16,12 +17,100 @@
 #include "enum/surface.h"
 #include <glm/common.hpp>
 #include <memory>
-#include <optional>
 
-BasePart::BasePart(const InstanceType* type): BasePart(type, PartConstructParams { .size = glm::vec3(4, 1.2, 2), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
+InstanceProperty def_position_property(MemberPropertyListener<BasePart> listener) {
+    return {
+        "Position", type_meta_of<Vector3>(), 0, "",
+
+        [](std::shared_ptr<Instance> instance) {
+            auto obj = std::dynamic_pointer_cast<BasePart>(instance);
+            return obj->cframe.Position();
+        },
+        [](std::shared_ptr<Instance> instance, Variant value) {
+            auto obj = std::dynamic_pointer_cast<BasePart>(instance);
+            obj->cframe = obj->cframe.Rotation() + value.get<Vector3>();
+        },
+        [listener](std::shared_ptr<Instance> instance, std::string name, Variant oldValue, Variant newValue) {
+            auto obj = std::dynamic_pointer_cast<BasePart>(instance);
+            (obj.get()->*listener)(name, oldValue, newValue);
+        }
+    };
+};
+
+InstanceProperty def_rotation_property(MemberPropertyListener<BasePart> listener) {
+    return {
+        "Rotation", type_meta_of<Vector3>(), 0, "",
+
+        [](std::shared_ptr<Instance> instance) {
+            auto obj = std::dynamic_pointer_cast<BasePart>(instance);
+            return obj->cframe.Rotation();
+        },
+        [](std::shared_ptr<Instance> instance, Variant value) {
+            auto obj = std::dynamic_pointer_cast<BasePart>(instance);
+            obj->cframe = CFrame::FromEulerAnglesXYZ(value.get<Vector3>()) + obj->cframe.Position();
+        },
+        [listener](std::shared_ptr<Instance> instance, std::string name, Variant oldValue, Variant newValue) {
+            auto obj = std::dynamic_pointer_cast<BasePart>(instance);
+            (obj.get()->*listener)(name, oldValue, newValue);
+        }
+    };
+};
+
+InstanceType BasePart::__buildType() {
+    return make_instance_type<BasePart, PVInstance>("BasePart",
+        set_property_category("data"),
+        def_property("Velocity", &BasePart::velocity, 0, &BasePart::onUpdated),
+        def_property("RotVelocity", &BasePart::rotVelocity, 0, &BasePart::onUpdated),
+        def_property("CFrame", &BasePart::cframe, 0, &BasePart::onUpdated),
+
+        def_position_property(&BasePart::onUpdated),
+        def_rotation_property(&BasePart::onUpdated),
+
+        set_property_category("part"),
+        def_property("Size", &BasePart::size, 0, &BasePart::onUpdated),
+
+        set_property_category("appearance"),
+        def_property("Color", &BasePart::color),
+        def_property("Transparency", &BasePart::transparency),
+        def_property("Reflectance", &BasePart::reflectance),
+
+        set_property_category("behavior"),
+        def_property("Anchored", &BasePart::anchored, 0, &BasePart::onUpdated),
+        def_property("CanCollide", &BasePart::canCollide, 0, &BasePart::onUpdated),
+        def_property("Locked", &BasePart::locked),
+
+        set_property_category("surface"),
+        def_property("TopSurface", &BasePart::topSurface),
+        def_property("BottomSurface", &BasePart::bottomSurface),
+        def_property("LeftSurface", &BasePart::leftSurface),
+        def_property("RightSurface", &BasePart::rightSurface),
+        def_property("FrontSurface", &BasePart::frontSurface),
+        def_property("BackSurface", &BasePart::backSurface),
+
+        set_property_category("surface input"),
+        def_property("TopParamA", &BasePart::topParamA, 0, &BasePart::onParamUpdated),
+        def_property("BottomParamA", &BasePart::bottomParamA, 0, &BasePart::onParamUpdated),
+        def_property("LeftParamA", &BasePart::leftParamA, 0, &BasePart::onParamUpdated),
+        def_property("RightParamA", &BasePart::rightParamA, 0, &BasePart::onParamUpdated),
+        def_property("FrontParamA", &BasePart::frontParamA, 0, &BasePart::onParamUpdated),
+        def_property("BackParamA", &BasePart::backParamA, 0, &BasePart::onParamUpdated),
+
+        def_property("TopParamB", &BasePart::topParamB, 0, &BasePart::onParamUpdated),
+        def_property("BottomParamB", &BasePart::bottomParamB, 0, &BasePart::onParamUpdated),
+        def_property("LeftParamB", &BasePart::leftParamB, 0, &BasePart::onParamUpdated),
+        def_property("RightParamB", &BasePart::rightParamB, 0, &BasePart::onParamUpdated),
+        def_property("FrontParamB", &BasePart::frontParamB, 0, &BasePart::onParamUpdated),
+        def_property("BackParamB", &BasePart::backParamB, 0, &BasePart::onParamUpdated)
+
+        // def_signal("Touched", &BasePart::Touched),
+        // def_signal("TouchEnded", &BasePart::TouchEnded),
+    );
 }
 
-BasePart::BasePart(const InstanceType* type, PartConstructParams params): PVInstance(type), cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
+BasePart::BasePart() : BasePart(PartConstructParams { .size = glm::vec3(4, 1.2, 2), .color = Color3(0.639216f, 0.635294f, 0.647059f) }) {
+}
+
+BasePart::BasePart(PartConstructParams params) : cframe(CFrame::FromEulerAnglesXYZ((Vector3)params.rotation) + params.position),
                                         size(params.size), color(params.color), anchored(params.anchored), locked(params.locked) {
 }
 
@@ -53,7 +142,7 @@ void BasePart::OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) {
     oldWorkspace->RemoveBody(shared<BasePart>());
 }
 
-void BasePart::onUpdated(std::string property) {
+void BasePart::onUpdated(std::string property, Variant, Variant) {
     bool reset = property == "Position" || property == "Rotation" || property == "CFrame" || property == "Size" || property == "Shape";
 
     // Sanitize size
@@ -70,7 +159,7 @@ void BasePart::onUpdated(std::string property) {
         BreakJoints();
 }
 
-void BasePart::onParamUpdated(std::string property) {
+void BasePart::onParamUpdated(std::string property, Variant, Variant) {
     // Send signal to joints to update themselves
     for (std::weak_ptr<JointInstance> joint : primaryJoints) {
         if (joint.expired()) continue;

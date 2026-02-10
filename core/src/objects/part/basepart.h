@@ -14,10 +14,6 @@
 #include "objects/pvinstance.h"
 #include "physics/world.h"
 
-// Common macro for part properties
-#define DEF_PROP_PHYS DEF_PROP_(on_update=onUpdated)
-#define DEF_PROP_PHYSPARAM DEF_PROP_(on_update=onParamUpdated)
-
 // For easy construction from C++. Maybe should be removed?
 struct PartConstructParams {
     Vector3 position;
@@ -31,8 +27,8 @@ struct PartConstructParams {
 
 class PhysWorld;
 
-class DEF_INST_ABSTRACT_(explorer_icon="part") BasePart : public PVInstance {
-    AUTOGEN_PREAMBLE
+class BasePart : public PVInstance {
+    INSTANCE_HEADER
 protected:
     // Joints where this part is Part0
     std::vector<std::weak_ptr<JointInstance>> primaryJoints;
@@ -54,58 +50,51 @@ protected:
     virtual void OnWorkspaceAdded(nullable std::shared_ptr<Workspace> oldWorkspace, std::shared_ptr<Workspace> newWorkspace) override;
     virtual void OnWorkspaceRemoved(std::shared_ptr<Workspace> oldWorkspace) override;
     void OnAncestryChanged(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent) override;
-    void onUpdated(std::string);
-    void onParamUpdated(std::string);
+    void onUpdated(std::string, Variant, Variant);
+    void onParamUpdated(std::string, Variant, Variant);
 
-    BasePart(const InstanceType*);
-    BasePart(const InstanceType*, PartConstructParams params);
+    BasePart();
+    BasePart(PartConstructParams params);
 public:
-    DEF_PROP_CATEGORY(DATA)
-    DEF_PROP_PHYS Vector3 velocity;
-    DEF_PROP_PHYS Vector3 rotVelocity;
-    [[ def_prop(name="CFrame", on_update=onUpdated), cframe_position_prop(name="Position"), cframe_rotation_prop(name="Rotation") ]]
+    Vector3 velocity;
+    Vector3 rotVelocity;
     CFrame cframe;
 
-    DEF_PROP_CATEGORY(PART)
     // Special compatibility changes for this property were made in
     // Instance::Serialize
-    DEF_PROP_PHYS Vector3 size;
+    Vector3 size;
 
-    DEF_PROP_CATEGORY(APPEARANCE)
-    DEF_PROP Color3 color;
-    DEF_PROP float transparency = 0.f;
-    DEF_PROP float reflectance = 0.f;
+    Color3 color;
+    float transparency = 0.f;
+    float reflectance = 0.f;
     
-    DEF_PROP_CATEGORY(BEHAVIOR)
-    DEF_PROP_PHYS bool anchored = false;
-    DEF_PROP_PHYS bool canCollide = true;
-    DEF_PROP bool locked = false;
+    bool anchored = false;
+    bool canCollide = true;
+    bool locked = false;
 
-    DEF_PROP_CATEGORY(SURFACE)
-    DEF_PROP SurfaceType topSurface = SurfaceType::Studs;
-    DEF_PROP SurfaceType bottomSurface = SurfaceType::Inlet;
-    DEF_PROP SurfaceType leftSurface = SurfaceType::Smooth;
-    DEF_PROP SurfaceType rightSurface = SurfaceType::Smooth;
-    DEF_PROP SurfaceType frontSurface = SurfaceType::Smooth;
-    DEF_PROP SurfaceType backSurface = SurfaceType::Smooth;
+    SurfaceType topSurface = SurfaceType::Studs;
+    SurfaceType bottomSurface = SurfaceType::Inlet;
+    SurfaceType leftSurface = SurfaceType::Smooth;
+    SurfaceType rightSurface = SurfaceType::Smooth;
+    SurfaceType frontSurface = SurfaceType::Smooth;
+    SurfaceType backSurface = SurfaceType::Smooth;
 
-    DEF_PROP_CATEGORY(SURFACE_INPUT)
-    DEF_PROP_PHYSPARAM float topParamA = -0.5;
-    DEF_PROP_PHYSPARAM float bottomParamA = -0.5;
-    DEF_PROP_PHYSPARAM float leftParamA = -0.5;
-    DEF_PROP_PHYSPARAM float rightParamA = -0.5;
-    DEF_PROP_PHYSPARAM float frontParamA = -0.5;
-    DEF_PROP_PHYSPARAM float backParamA = -0.5;
+    float topParamA = -0.5;
+    float bottomParamA = -0.5;
+    float leftParamA = -0.5;
+    float rightParamA = -0.5;
+    float frontParamA = -0.5;
+    float backParamA = -0.5;
 
-    DEF_PROP_PHYSPARAM float topParamB = 0.5;
-    DEF_PROP_PHYSPARAM float bottomParamB = 0.5;
-    DEF_PROP_PHYSPARAM float leftParamB = 0.5;
-    DEF_PROP_PHYSPARAM float rightParamB = 0.5;
-    DEF_PROP_PHYSPARAM float frontParamB = 0.5;
-    DEF_PROP_PHYSPARAM float backParamB = 0.5;
+    float topParamB = 0.5;
+    float bottomParamB = 0.5;
+    float leftParamB = 0.5;
+    float rightParamB = 0.5;
+    float frontParamB = 0.5;
+    float backParamB = 0.5;
 
-    DEF_SIGNAL SignalSource Touched;
-    DEF_SIGNAL SignalSource TouchEnded;
+    SignalSource Touched;
+    SignalSource TouchEnded;
 
     PhysRigidBody rigidBody;
     
@@ -125,6 +114,3 @@ public:
     // Calculate size of axis-aligned bounding box
     Vector3 GetAABB();
 };
-
-#undef DEF_PROP_PHYS
-#undef DEF_PROP_PHYSPARAM
