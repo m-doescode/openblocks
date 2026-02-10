@@ -39,6 +39,16 @@ private:
 };
 
 TEST_CASE("Member inheritance") {
+    SECTION("Constructor") {
+        auto apex = Instance2::Type();
+        auto base = TestBaseInstance::Type();
+        auto derived = TestDerivedInstance::Type();
+
+        REQUIRE(!apex.constructor.has_value());
+        REQUIRE(base.constructor.has_value());
+        REQUIRE(derived.constructor.has_value());
+    }
+
     SECTION("Property inheritance") {
         auto type = TestDerivedInstance::Type();
         REQUIRE(type.properties.size() == 3);

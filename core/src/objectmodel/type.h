@@ -1,16 +1,25 @@
 #pragma once
 
+#include <functional>
 #include <map>
+#include <memory>
+#include <optional>
 #include <string>
+#include <type_traits>
 #include "objects/base/instance.h"
 #include "property.h"
 
 class Instance2; // TEMPORARY
 
+using InstanceConstructor2 = std::function<std::shared_ptr<Instance2>()>;
+
 struct InstanceType2 {
     std::string className;
-    const InstanceType2* super;
     InstanceFlags flags;
+    const InstanceType2* super;
+    std::optional<InstanceConstructor2> constructor;
+
+    // Members
     std::map<std::string, InstanceProperty> properties;
 };
 
@@ -29,10 +38,21 @@ inline void __instance_type_add_member(InstanceType2& type, __make_instance_type
     temps.lastCategory = category.name;
 }
 
+template <typename T>
+std::optional<InstanceConstructor2> __get_instance_constructor() {
+    if constexpr (!std::is_abstract_v<T>) {
+        return []() { return std::make_shared<T>(); };
+    } else {
+        return {};
+    }
+}
+
 template <typename T, typename B = Instance2, typename ...Args /* TODO: Add SFINAE */ >
 const InstanceType2 make_instance_type(std::string name, InstanceFlags flags, Args... args) {
     InstanceType2 type;
     type.className = name;
+    type.flags = flags;
+    type.constructor = __get_instance_constructor<T>();
 
     // Add members from parent type
     auto super = B::Type();
