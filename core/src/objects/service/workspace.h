@@ -44,7 +44,7 @@ public:
 
     std::recursive_mutex queueLock;
 
-    DEF_PROP float fallenPartsDestroyHeight = -500;
+    float fallenPartsDestroyHeight = -500;
 
     // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Workspace>(); };

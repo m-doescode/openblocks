@@ -3,6 +3,7 @@
 #include "datatypes/ref.h"
 #include "datatypes/vector.h"
 #include "logger.h"
+#include "objectmodel/property.h"
 #include "objects/base/instance.h"
 #include "objects/part/part.h"
 #include "objects/part/wedgepart.h"
@@ -13,7 +14,9 @@
 #include <memory>
 
 InstanceType Workspace::__buildType() {
-    return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE);
+    return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
+        def_property("fallenPartsDestroyHeight", &Workspace::fallenPartsDestroyHeight)
+    );
 }
 
 Workspace::Workspace(): physicsWorld(std::make_shared<PhysWorld>()) {

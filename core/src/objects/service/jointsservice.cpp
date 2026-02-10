@@ -1,9 +1,11 @@
 #include "jointsservice.h"
+#include "objectmodel/type.h"
 #include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 #include <memory>
 
-JointsService::JointsService(): Service(&TYPE) {
+InstanceType JointsService::__buildType() {
+    return make_instance_type<JointsService>("JointsService", INSTANCE_NOTCREATABLE | INSTANCE_SERVICE);
 }
 
 JointsService::~JointsService() = default;

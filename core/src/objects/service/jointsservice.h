@@ -1,10 +1,10 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/service.h"
 
-class DEF_INST_SERVICE_(hidden) JointsService : public Service {
-    AUTOGEN_PREAMBLE
+class JointsService : public Service {
+    INSTANCE_HEADER
 private:
     nullable std::shared_ptr<Workspace> jointWorkspace();
 protected:
@@ -12,7 +12,6 @@ protected:
     bool initialized = false;
 
 public:
-    JointsService();
     ~JointsService();
 
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<JointsService>(); };
