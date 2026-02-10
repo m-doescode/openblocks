@@ -3,6 +3,7 @@
 #include "objectmodel/type.h"
 #include "objectmodel/macro.h"
 #include "datatypes/primitives.h"
+#include "objects/base/member.h"
 
 class TestInstance : public Instance2 {
 public:
@@ -17,7 +18,7 @@ private:
             "TestInstance",
             
             def_property("x", &TestInstance::x),
-            def_property("y", &TestInstance::y)
+            def_property("y", &TestInstance::y, PROP_NOSAVE)
         );
     }
 
@@ -54,12 +55,15 @@ TEST_CASE("Introspection") {
         REQUIRE(testInstance->y == "Foo, bar!");
     }
 
-    SECTION ("Property types") {
+    SECTION ("Property info") {
         auto type = TestInstance::Type();
         auto xProp = type.properties["x"];
         auto yProp = type.properties["y"];
 
         REQUIRE(xProp.type.descriptor == &INT_TYPE);
         REQUIRE(yProp.type.descriptor == &STRING_TYPE);
+
+        REQUIRE(xProp.flags == 0);
+        REQUIRE(yProp.flags == PROP_NOSAVE);
     }
 }
