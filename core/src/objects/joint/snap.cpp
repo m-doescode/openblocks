@@ -9,7 +9,8 @@
 #include "physics/world.h"
 #include <memory>
 
-Snap::Snap(): JointInstance(&TYPE) {
+InstanceType Snap::__buildType() {
+    return make_instance_type<Snap, JointInstance>("Snap");
 }
 
 Snap::~Snap() {

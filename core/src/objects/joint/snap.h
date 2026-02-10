@@ -1,12 +1,11 @@
 #pragma once
 
-#include "objects/annotation.h"
 #include "objects/base/instance.h"
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-class DEF_INST Snap : public JointInstance {
-    AUTOGEN_PREAMBLE
+class Snap : public JointInstance {
+    INSTANCE_HEADER
 
     virtual void buildJoint() override;
 public:

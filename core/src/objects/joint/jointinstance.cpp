@@ -1,13 +1,27 @@
 #include "jointinstance.h"
 
 #include "datatypes/ref.h"
+#include "objectmodel/property.h"
+#include "objectmodel/type.h"
 #include "objects/datamodel.h"
 #include "objects/service/jointsservice.h"
 #include "objects/part/basepart.h"
 #include "objects/service/workspace.h"
 #include <memory>
 
-JointInstance::JointInstance(const InstanceType* type): Instance(type) {
+InstanceType JointInstance::__buildType() {
+    return make_instance_type<JointInstance>(
+        "JointInstance",
+        INSTANCE_NOTCREATABLE,
+        
+        def_property("part0", &JointInstance::part0, 0, &JointInstance::onUpdated),
+        def_property("part1", &JointInstance::part1, 0, &JointInstance::onUpdated),
+        def_property("c0", &JointInstance::c0, 0, &JointInstance::onUpdated),
+        def_property("c1", &JointInstance::c1, 0, &JointInstance::onUpdated)
+    );
+}
+
+JointInstance::JointInstance() {
 }
 
 JointInstance::~JointInstance() {

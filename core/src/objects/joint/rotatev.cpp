@@ -6,11 +6,13 @@
 
 #define PI 3.14159
 
-RotateV::RotateV(): JointInstance(&TYPE) {
+InstanceType RotateV::__buildType() {
+    return make_instance_type<RotateV, JointInstance>("RotateV");
 }
 
 RotateV::~RotateV() {
 }
+
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 void RotateV::buildJoint() {

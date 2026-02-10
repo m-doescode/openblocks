@@ -2,22 +2,14 @@
 
 #include "objectmodel/macro.h"
 #include "objects/base/instance.h"
-#include "../annotation.h"
 #include <memory>
 #include "datatypes/cframe.h"
 #include "physics/world.h"
 
-//this is necessary ebcause we use std::weak_ptr<Part> without including it in this file
-#ifdef __AUTOGEN_EXTRA_INCLUDES__
-#include "objects/part/part.h"
-#endif
-
-#define DEF_PROP_PHYS DEF_PROP_(on_update=onUpdated)
-
 class BasePart;
 class Workspace;
 
-class DEF_INST_ABSTRACT JointInstance : public Instance {
+class JointInstance : public Instance {
     INSTANCE_HEADER
 
     std::weak_ptr<BasePart> oldPart0;
@@ -30,7 +22,7 @@ protected:
     void OnAncestryChanged(nullable std::shared_ptr<Instance>, nullable std::shared_ptr<Instance>) override;
 
     nullable std::shared_ptr<Workspace> workspaceOfPart(std::shared_ptr<BasePart>);
-    inline void onUpdated(std::string property) { Update(); };
+    inline void onUpdated(std::string property, Variant, Variant) { Update(); };
 
     virtual void buildJoint() = 0;
     virtual bool isDrivenJoint();
@@ -38,14 +30,14 @@ public:
     void Update();
     virtual void OnPartParamsUpdated();
 
-    DEF_PROP_PHYS std::weak_ptr<BasePart> part0;
-    DEF_PROP_PHYS std::weak_ptr<BasePart> part1;
-    DEF_PROP_PHYS CFrame c0;
-    DEF_PROP_PHYS CFrame c1;
+    std::weak_ptr<BasePart> part0;
+    std::weak_ptr<BasePart> part1;
+    CFrame c0;
+    CFrame c1;
 
     virtual void OnPhysicsStep(float deltaTime);
 
-    JointInstance(const InstanceType*);
+    JointInstance();
     ~JointInstance();
 };
 

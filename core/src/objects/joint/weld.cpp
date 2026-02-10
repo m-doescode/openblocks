@@ -9,7 +9,8 @@
 #include "physics/world.h"
 #include <memory>
 
-Weld::Weld(): JointInstance(&TYPE) {
+InstanceType Weld::__buildType() {
+    return make_instance_type<Weld, JointInstance>("Weld");
 }
 
 Weld::~Weld() {

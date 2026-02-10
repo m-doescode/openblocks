@@ -1,12 +1,20 @@
 #include "motor6d.h"
 #include "datatypes/vector.h"
+#include "objectmodel/property.h"
 #include "objects/part/part.h"
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
 
 #define PI 3.14159
 
-Motor6D::Motor6D(): JointInstance(&TYPE) {
+InstanceType Motor6D::__buildType() {
+    return make_instance_type<Motor6D, JointInstance>(
+        "Motor6D",
+
+        def_property("currentAngle", &Motor6D::currentAngle),
+        def_property("desiredAngle", &Motor6D::desiredAngle),
+        def_property("maxVelocity", &Motor6D::maxVelocity)
+    );
 }
 
 Motor6D::~Motor6D() {

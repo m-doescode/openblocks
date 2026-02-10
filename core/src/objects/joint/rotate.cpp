@@ -4,11 +4,13 @@
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
 
-Rotate::Rotate(): JointInstance(&TYPE) {
+InstanceType Rotate::__buildType() {
+    return make_instance_type<Rotate, JointInstance>("Rotate");
 }
 
 Rotate::~Rotate() {
 }
+
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));
 
 void Rotate::buildJoint() {

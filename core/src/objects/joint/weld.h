@@ -1,16 +1,15 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/instance.h"
 #include "objects/joint/jointinstance.h"
 #include <memory>
 
-class DEF_INST Weld : public JointInstance {
-    AUTOGEN_PREAMBLE
+class Weld : public JointInstance {
+    INSTANCE_HEADER
 
     virtual void buildJoint() override;
 public:
-    Weld();
     ~Weld();
 
     static inline std::shared_ptr<Weld> New() { return std::make_shared<Weld>(); };
