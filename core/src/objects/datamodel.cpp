@@ -184,8 +184,8 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
         newModel->AddChild(result);
 
         // Special case: Ignore instances parented to DataModel which are not services
-        if (child->GetClass()->flags & INSTANCE_SERVICE) {
-            newModel->services[child->GetClass()->className] = std::dynamic_pointer_cast<Service>(result);
+        if (child->GetType()->flags & INSTANCE_SERVICE) {
+            newModel->services[child->GetType()->className] = std::dynamic_pointer_cast<Service>(result);
         }
     }
 

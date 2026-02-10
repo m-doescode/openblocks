@@ -32,8 +32,8 @@ const InstanceType Instance::TYPE = {
     .flags = 0
 };
 
-// Instance is abstract, so it should not implement GetClass directly
-// InstanceType* Instance::GetClass() {
+// Instance is abstract, so it should not implement GetType directly
+// InstanceType* Instance::GetType() {
 //     return &TYPE_;
 // }
 
@@ -86,8 +86,8 @@ void Instance::updateAncestry(nullable std::shared_ptr<Instance> updatedChild, n
 
     // Update parent data model and workspace, if applicable
     if (GetParent() != nullptr) {
-        this->_dataModel = GetParent()->GetClass() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
-        this->_workspace = GetParent()->GetClass() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
+        this->_dataModel = GetParent()->GetType() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
+        this->_workspace = GetParent()->GetType() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
     } else {
         this->_dataModel = {};
         this->_workspace = {};
@@ -132,7 +132,7 @@ void Instance::Destroy() {
 }
 
 bool Instance::IsA(std::string className) {
-    const InstanceType* cur = GetClass();
+    const InstanceType* cur = GetType();
     while (cur && cur->className != className) { cur = cur->super; }
     return cur != nullptr;
 }
@@ -203,9 +203,9 @@ result<Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string n
     } else if (name == "Parent") {
         return Variant(InstanceRef(this->parent));
     } else if (name == "ClassName") {
-        return Variant(GetClass()->className);
+        return Variant(GetType()->className);
     }
-    return MemberNotFound(GetClass()->className, name);
+    return MemberNotFound(GetType()->className, name);
 }
 
 result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) {
@@ -216,7 +216,7 @@ result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::stri
     } else if (name == "ClassName") {
         return PropertyMeta { &STRING_TYPE, PROP_NOSAVE | PROP_READONLY };
     }
-    return MemberNotFound(GetClass()->className, name);
+    return MemberNotFound(GetType()->className, name);
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Variant value) {
@@ -226,9 +226,9 @@ fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyVa
         std::weak_ptr<Instance> ref = value.get<InstanceRef>();
         SetParent(ref.expired() ? nullptr : ref.lock());
     } else if (name == "ClassName") {
-        return AssignToReadOnlyMember(GetClass()->className, name);
+        return AssignToReadOnlyMember(GetType()->className, name);
     } else {
-        return MemberNotFound(GetClass()->className, name);
+        return MemberNotFound(GetType()->className, name);
     }
     return {};
 }
@@ -262,7 +262,7 @@ std::vector<std::string> Instance::GetProperties() {
 void Instance::Serialize(pugi::xml_node parent, RefStateSerialize state) {
     if (state == nullptr) state = std::make_shared<__RefStateSerialize>();
     pugi::xml_node node = parent.append_child("Item");
-    node.append_attribute("class").set_value(this->GetClass()->className);
+    node.append_attribute("class").set_value(this->GetType()->className);
 
     // Add properties
     pugi::xml_node propertiesNode = node.append_child("Properties");
@@ -339,7 +339,7 @@ result<std::shared_ptr<Instance>, NoSuchInstance> Instance::Deserialize(pugi::xm
         std::string propertyName = propertyNode.attribute("name").value();
         auto meta_ = object->GetPropertyMeta(propertyName);
         if (!meta_) {
-            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetClass()->className.c_str());
+            Logger::fatalErrorf("Attempt to set unknown property '%s' of %s", propertyName.c_str(), object->GetType()->className.c_str());
             continue;
         }
         auto meta = meta_.expect();
@@ -444,7 +444,7 @@ DescendantsIterator::self_type DescendantsIterator::operator++(int _) {
 
 nullable std::shared_ptr<Instance> Instance::Clone(RefStateClone state) {
     if (state == nullptr) state = std::make_shared<__RefStateClone>();
-    std::shared_ptr<Instance> newInstance = GetClass()->constructor();
+    std::shared_ptr<Instance> newInstance = GetType()->constructor();
 
     // Copy properties
     for (std::string property : GetProperties()) {

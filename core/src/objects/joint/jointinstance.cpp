@@ -45,7 +45,7 @@ void JointInstance::Update() {
     oldPart1 = part1;
 
     // Don't build the joint if we're not part of either a workspace or JointsService
-    if ((!GetParent() || GetParent()->GetClass() != &JointsService::TYPE) && !workspace()) return;
+    if ((!GetParent() || GetParent()->GetType() != &JointsService::TYPE) && !workspace()) return;
 
     // If either part is invalid or they are part of separate worlds, fail
     if (part0.expired()

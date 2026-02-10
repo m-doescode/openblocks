@@ -34,5 +34,5 @@ class AssignToReadOnlyMember : public Error {
 
 class InstanceCastError : public Error {
     public:
-    inline InstanceCastError(std::string sourceClass, std::string targetClass) : Error("InstanceCastError", "Attempt to cast object of type " + sourceClass + " to incompatible type " + targetClass) {}
+    inline InstanceCastError(std::string sourceClass, std::string tarGetType) : Error("InstanceCastError", "Attempt to cast object of type " + sourceClass + " to incompatible type " + tarGetType) {}
 };

@@ -43,5 +43,5 @@ virtual void InternalUpdateProperty(std::string name) override; \
 virtual std::vector<std::string> InternalGetProperties() override; \
 public: \
 const static InstanceType TYPE; \
-virtual const InstanceType* GetClass() override; \
+virtual const InstanceType* GetType() override; \
 private:

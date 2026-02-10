@@ -62,7 +62,7 @@ It comes with various parameters/flags:
 - `service` - Flag, the instance is a service. Additionally, enable the `not_creatable` flag as well (Adds both `INSTANCE_NOTCREATABLE` and `INSTANCE_SERVICE` flags)
 - `explorer_icon` - Option, string to pass into editor for the icon of the instance in the explorer
 
-A file will be generated in `build/generated/<header>.cpp` with the `TYPE` automatically filled in, as well as an implementation for `GetClass()`
+A file will be generated in `build/generated/<header>.cpp` with the `TYPE` automatically filled in, as well as an implementation for `GetType()`
 
 Note that it is also necessary to add `AUTOGEN_PREAMBLE` to the top of your class definition, to make sure that various functions for properties, etc. are
 declared such that they can later be defined in the generated source file.

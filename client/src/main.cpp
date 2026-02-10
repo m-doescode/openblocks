@@ -70,7 +70,7 @@ int main() {
     }));
 
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
-        if (inst->GetClass()->className != "Part") continue;
+        if (inst->GetType()->className != "Part") continue;
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         gWorkspace()->SyncPartPhysics(part);
     }

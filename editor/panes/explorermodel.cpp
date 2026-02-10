@@ -50,7 +50,7 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
         : rootItem.get();
 
 #ifdef NDEBUG
-    if (parentItem->GetChildren().size() >= (size_t)row && !(parentItem->GetChildren()[row]->GetClass()->flags & INSTANCE_HIDDEN))
+    if (parentItem->GetChildren().size() >= (size_t)row && !(parentItem->GetChildren()[row]->GetType()->flags & INSTANCE_HIDDEN))
         return createIndex(row, column, parentItem->GetChildren()[row].get());
 #else
     // Don't hide in debug builds
@@ -106,7 +106,7 @@ int ExplorerModel::rowCount(const QModelIndex &parent) const {
 #ifdef NDEBUG
     // Trim trailing hidden items as they make the branches look weird
     int count = parentItem->GetChildren().size();
-    while (count > 0 && parentItem->GetChildren()[count-1]->GetClass()->flags & INSTANCE_HIDDEN) count--;
+    while (count > 0 && parentItem->GetChildren()[count-1]->GetType()->flags & INSTANCE_HIDDEN) count--;
     return count;
 #else
     // Don't hide in debug builds
@@ -129,7 +129,7 @@ QVariant ExplorerModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole:
             return QString::fromStdString(item->name);
         case Qt::DecorationRole:
-            return iconOf(item->GetClass());
+            return iconOf(item->GetType());
     }
     return {};
 }
@@ -175,7 +175,7 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
     Logger::infof("Moved %d from %s", count, sourceParent->name.c_str());
 
     if (size_t(sourceRow + count) >= sourceParent->GetChildren().size()) {
-        Logger::fatalErrorf("Attempt to move rows %d-%d from %s (%s) while it only has %zu children.", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetClass()->className.c_str(), sourceParent->GetChildren().size());
+        Logger::fatalErrorf("Attempt to move rows %d-%d from %s (%s) while it only has %zu children.", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetType()->className.c_str(), sourceParent->GetChildren().size());
         return false;
     }
 

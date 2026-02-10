@@ -373,7 +373,7 @@ void renderAABB() {
 
     // Sort by nearest
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
-        if (inst->GetClass()->className != "Part") continue;
+        if (inst->GetType()->className != "Part") continue;
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         glm::mat4 model = CFrame::IDENTITY + part->cframe.Position();
         printf("AABB is supposedly (%f, %f, %f)\n", part->GetAABB().X(), part->GetAABB().Y(), part->GetAABB().Z());
@@ -413,7 +413,7 @@ void renderWireframe() {
 
     // Sort by nearest
     for (std::shared_ptr<Instance> inst : gWorkspace()->GetChildren()) {
-        if (inst->GetClass()->className != "Part") continue;
+        if (inst->GetType()->className != "Part") continue;
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         glm::mat4 model = part->cframe;
         model = glm::scale(model, (glm::vec3)part->size);
@@ -455,7 +455,7 @@ void renderOutlines() {
 
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
     for (auto inst : selection->Get()) {
-        if (inst->GetClass() != &BasePart::TYPE) continue;
+        if (inst->GetType() != &BasePart::TYPE) continue;
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
 
         if (first)
@@ -640,7 +640,7 @@ void renderMessages() {
         float textWidth = calcTextWidth(sansSerif, message->text);
 
         // Render hint
-        if (message->GetClass() == &Hint::TYPE) {
+        if (message->GetType() == &Hint::TYPE) {
             drawRect(0, 0, viewportWidth, 20, glm::vec4(0,0,0,1));
             drawText(sansSerif, message->text, (viewportWidth - textWidth) / 2, 0);
         } else {
