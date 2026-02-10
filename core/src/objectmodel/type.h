@@ -13,10 +13,19 @@ struct InstanceType2 {
     std::map<std::string, InstanceProperty> properties;
 };
 
-inline void __instance_type_add_member(InstanceType2& type, InstanceProperty property) {
+struct __make_instance_type_temps {
+    std::string lastCategory;
+};
+
+inline void __instance_type_add_member(InstanceType2& type, __make_instance_type_temps& temps, InstanceProperty property) {
     // TODO: Add error checks here
 
+    property.category = temps.lastCategory;
     type.properties[property.name] = property;
+}
+
+inline void __instance_type_add_member(InstanceType2& type, __make_instance_type_temps& temps, set_property_category category) {
+    temps.lastCategory = category.name;
 }
 
 template <typename T, typename ...Args /* TODO: Add SFINAE */ >
@@ -24,7 +33,8 @@ const InstanceType2 make_instance_type(std::string name, InstanceFlags flags, Ar
     InstanceType2 type;
     type.className = name;
 
-    (__instance_type_add_member(type, args), ...);
+    __make_instance_type_temps temps;
+    (__instance_type_add_member(type, temps, args), ...);
 
     return type;
 }

@@ -15,6 +15,7 @@ struct InstanceProperty {
 
     TypeMeta type;
     PropertyFlags flags;
+    std::string category;
 
     PropertyGetter getter;
     PropertySetter setter;
@@ -26,6 +27,7 @@ InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags 
         name,
         type_meta_of<T>(),
         flags,
+        "",
 
         [ref](std::shared_ptr<Instance2> instance) {
             auto obj = std::dynamic_pointer_cast<C>(instance);
@@ -37,3 +39,7 @@ InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags 
         }
     };
 }
+
+struct set_property_category {
+    std::string name;
+};
