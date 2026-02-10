@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
+#include "objectmodel/property.h"
 #include "objectmodel/type.h"
 #include "objectmodel/macro.h"
 #include "datatypes/primitives.h"
@@ -10,16 +11,23 @@ class TestInstance : public Instance {
 public:
     int x;
     std::string y;
+    int z;
+    bool updated = false;
 
     TestInstance() {
     }
 private:
+    void onUpdate(std::string name, Variant, Variant) {
+        updated = true;
+    }
+
     static const InstanceType __buildType() {
         return make_instance_type<TestInstance>(
             "TestInstance",
             
             def_property("x", &TestInstance::x),
-            def_property("y", &TestInstance::y, PROP_NOSAVE)
+            def_property("y", &TestInstance::y, PROP_NOSAVE),
+            def_property("z", &TestInstance::z, 0, &TestInstance::onUpdate)
         );
     }
 
@@ -54,6 +62,13 @@ TEST_CASE("Introspection") {
 
         REQUIRE(testInstance->x == 456);
         REQUIRE(testInstance->y == "Foo, bar!");
+
+        REQUIRE(xProp.listener == std::nullopt);
+        REQUIRE(yProp.listener != std::nullopt);
+
+        REQUIRE(testInstance->updated == false);
+        yProp.listener.value()(testInstance, "x", 123, 456);
+        REQUIRE(testInstance->updated == true);
     }
 
     SECTION("Property info") {
