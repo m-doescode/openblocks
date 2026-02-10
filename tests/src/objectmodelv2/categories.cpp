@@ -31,7 +31,7 @@ private:
     INSTANCE_HEADER_SOURCE
 };
 
-TEST_CASE ("Property categories") {
+TEST_CASE("Property categories") {
     auto type = TestInstance2::Type();
     REQUIRE(type.properties["a"].category == "");
     REQUIRE(type.properties["b"].category == "data");

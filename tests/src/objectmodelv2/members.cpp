@@ -26,11 +26,11 @@ private:
 };
 
 TEST_CASE("Introspection") {
-    SECTION ("Name") {
+    SECTION("Name") {
         REQUIRE(TestInstance::Type().className == "TestInstance");
     }
 
-    SECTION ("Property access") {
+    SECTION("Property access") {
         auto testInstance = std::make_shared<TestInstance>();
         testInstance->x = 123;
         testInstance->y = "Hello, world!";
@@ -55,7 +55,7 @@ TEST_CASE("Introspection") {
         REQUIRE(testInstance->y == "Foo, bar!");
     }
 
-    SECTION ("Property info") {
+    SECTION("Property info") {
         auto type = TestInstance::Type();
         auto xProp = type.properties["x"];
         auto yProp = type.properties["y"];

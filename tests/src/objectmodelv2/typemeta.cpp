@@ -6,7 +6,7 @@
 
 // Tests for interim class
 
-TEST_CASE ("Type_meta_of") {
+TEST_CASE("Type_meta_of") {
     REQUIRE(type_meta_of<std::shared_ptr<Part>>().descriptor == &InstanceRef::TYPE);
     REQUIRE(type_meta_of<std::shared_ptr<Part>>().instType == &Part::TYPE);
 

@@ -1,0 +1,56 @@
+#include <catch2/catch_test_macros.hpp>
+#include <memory>
+#include "objectmodel/macro.h"
+#include "objectmodel/property.h"
+#include "objectmodel/type.h"
+
+class TestBaseInstance : public Instance2 {
+public:
+    int x;
+    int y;
+private:
+    static InstanceType2 __buildType() {
+        return make_instance_type<TestBaseInstance>(
+            "TestBaseInstance",
+
+            def_property("x", &TestBaseInstance::x),
+            def_property("y", &TestBaseInstance::y)
+        );
+    }
+
+    INSTANCE_HEADER_SOURCE
+};
+
+class TestDerivedInstance : public TestBaseInstance {
+public:
+    int x2;
+    int z;
+private:
+    static InstanceType2 __buildType() {
+        return make_instance_type<TestDerivedInstance, TestBaseInstance>(
+            "TestDerivedInstance",
+
+            def_property("x", &TestDerivedInstance::x2),
+            def_property("z", &TestDerivedInstance::z)
+        );
+    }
+
+    INSTANCE_HEADER_SOURCE
+};
+
+TEST_CASE("Member inheritance") {
+    SECTION("Property inheritance") {
+        auto type = TestDerivedInstance::Type();
+        REQUIRE(type.properties.size() == 3);
+
+        std::shared_ptr<TestDerivedInstance> foo = std::make_shared<TestDerivedInstance>();
+        foo->x = 1;
+        foo->y = 2;
+        foo->z = 3;
+        foo->x2 = 4;
+
+        REQUIRE(type.properties["x"].getter(foo).get<int>() == 4);
+        REQUIRE(type.properties["y"].getter(foo).get<int>() == 2);
+        REQUIRE(type.properties["z"].getter(foo).get<int>() == 3);
+    }
+}
