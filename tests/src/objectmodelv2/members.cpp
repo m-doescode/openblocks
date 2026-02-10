@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include "objectmodel/type.h"
+#include "objectmodel/macro.h"
 #include "datatypes/primitives.h"
 
 class TestInstance : public Instance2 {

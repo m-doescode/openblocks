@@ -1,34 +1,10 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <string>
-#include <functional>
-#include "datatypes/variant.h"
+#include "property.h"
 
 class Instance2; // TEMPORARY
-
-#define INSTANCE_HEADER_SOURCE  \
-public: \
-    static inline const InstanceType2& Type() { \
-        static const InstanceType2 type = __buildType(); \
-        return type; \
-    } \
-\
-    inline const InstanceType2& GetType() override { \
-        return Type();\
-    } \
-private:
-
-using PropertyGetter = std::function<Variant(std::shared_ptr<Instance2>)>;
-using PropertySetter = std::function<void(std::shared_ptr<Instance2>, Variant)>;
-
-struct InstanceProperty {
-    std::string name;
-
-    PropertyGetter getter;
-    PropertySetter setter;
-};
 
 struct InstanceType2 {
     std::string className;
@@ -49,21 +25,6 @@ const InstanceType2 make_instance_type(std::string name, Args... args) {
     (__instance_type_add_member(type, args), ...);
 
     return type;
-}
-
-template <typename T, typename C>
-InstanceProperty def_property(std::string name, T C::* ref) {
-    return {
-        name,
-        [ref](std::shared_ptr<Instance2> instance) {
-            auto obj = std::dynamic_pointer_cast<C>(instance);
-            return obj.get()->*ref;
-        },
-        [ref](std::shared_ptr<Instance2> instance, Variant value) {
-            auto obj = std::dynamic_pointer_cast<C>(instance);
-            obj.get()->*ref = value.get<T>();
-        }
-    };
 }
 
 // TEMPORARY
