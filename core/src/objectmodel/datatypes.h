@@ -33,6 +33,11 @@ struct type_meta_of_t<std::shared_ptr<T>> {
     TypeMeta value = &T::TYPE;
 };
 
+template <typename T>
+struct type_meta_of_t<std::weak_ptr<T>> {
+    TypeMeta value = &T::TYPE;
+};
+
 template <>
 struct type_meta_of_t<std::monostate> {
     TypeMeta value = &NULL_TYPE;

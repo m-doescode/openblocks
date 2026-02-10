@@ -1,18 +1,17 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/instance.h"
 #include <memory>
 
-class DEF_INST_(explorer_icon="script") Script : public Instance {
-    AUTOGEN_PREAMBLE
+class Script : public Instance {
+    INSTANCE_HEADER
 
     lua_State* thread;
 public:
     Script();
     ~Script();
 
-    [[ def_prop(name="Source", hidden) ]]
     std::string source;
     void Run();
     void Stop();

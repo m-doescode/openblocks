@@ -1,5 +1,7 @@
 #include "message.h"
 
-Message::Message(const InstanceType* type) : Instance(type) {}
-Message::Message(): Instance(&TYPE) {}
+InstanceType Message::__buildType() {
+    return make_instance_type<Message>("Message");
+}
+
 Message::~Message() = default;

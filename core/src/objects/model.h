@@ -1,17 +1,16 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/instance.h"
 #include "objects/pvinstance.h"
 #include <memory>
 
 // Group object for Parts
 
-class DEF_INST_(explorer_icon="model") Model : public PVInstance {
-    AUTOGEN_PREAMBLE
+class Model : public PVInstance {
+    INSTANCE_HEADER
 
 public:
-    Model();
     ~Model();
 
     static inline std::shared_ptr<Model> New() { return std::make_shared<Model>(); };

@@ -24,6 +24,10 @@ struct InstanceType {
 
     // Members
     std::map<std::string, InstanceProperty> properties;
+
+    inline bool operator==(const InstanceType& other) const {
+        return this == &other;
+    }
 };
 
 struct __make_instance_type_temps {

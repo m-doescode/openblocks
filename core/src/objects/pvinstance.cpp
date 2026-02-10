@@ -1,4 +1,9 @@
 #include "pvinstance.h"
+#include "objectmodel/type.h"
 
-PVInstance::PVInstance(const InstanceType* type): Instance(type) {}
+InstanceType PVInstance::__buildType() {
+    return make_instance_type<PVInstance>("PVInstance", INSTANCE_NOTCREATABLE);
+}
+
+PVInstance::PVInstance() {}
 PVInstance::~PVInstance() = default;

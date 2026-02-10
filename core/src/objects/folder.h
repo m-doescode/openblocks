@@ -1,6 +1,6 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/instance.h"
 #include <memory>
 
@@ -8,10 +8,9 @@
 // Has no functionality of its own, used purely for organizational/grouping purposes
 
 class DEF_INST_(explorer_icon="folder") Folder : public Instance {
-    AUTOGEN_PREAMBLE
+    INSTANCE_HEADER
 
 public:
-    Folder();
     ~Folder();
 
     static inline std::shared_ptr<Folder> New() { return std::make_shared<Folder>(); };

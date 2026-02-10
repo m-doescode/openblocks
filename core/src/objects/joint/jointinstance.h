@@ -1,5 +1,6 @@
 #pragma once
 
+#include "objectmodel/macro.h"
 #include "objects/base/instance.h"
 #include "../annotation.h"
 #include <memory>
@@ -17,7 +18,7 @@ class BasePart;
 class Workspace;
 
 class DEF_INST_ABSTRACT JointInstance : public Instance {
-    AUTOGEN_PREAMBLE
+    INSTANCE_HEADER
 
     std::weak_ptr<BasePart> oldPart0;
     std::weak_ptr<BasePart> oldPart1;

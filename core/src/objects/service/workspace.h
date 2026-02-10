@@ -1,8 +1,7 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/service.h"
-#include "objects/joint/jointinstance.h"
 #include "physics/world.h"
 #include "rendering/frustum.h"
 #include <glm/ext/vector_float3.hpp>
@@ -25,8 +24,8 @@ struct ContactItem {
     } action;
 };
 
-class DEF_INST_SERVICE_(explorer_icon="workspace") Workspace : public Service {
-    AUTOGEN_PREAMBLE
+class Workspace : public Service {
+    INSTANCE_HEADER
     
     std::queue<ContactItem> contactQueue;
     std::mutex contactQueueLock;

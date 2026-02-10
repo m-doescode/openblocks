@@ -12,7 +12,11 @@
 #include "timeutil.h"
 #include <memory>
 
-Workspace::Workspace(): Service(&TYPE), physicsWorld(std::make_shared<PhysWorld>()) {
+InstanceType Workspace::__buildType() {
+    return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE);
+}
+
+Workspace::Workspace(): physicsWorld(std::make_shared<PhysWorld>()) {
 }
 
 Workspace::~Workspace() =  default;

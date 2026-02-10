@@ -1,6 +1,6 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/service.h"
 #include "luaapis.h" // IWYU pragma: keep
 #include <memory>
@@ -15,8 +15,8 @@ struct SleepingThread {
 
 class Script;
 
-class DEF_INST_SERVICE_(hidden) ScriptContext : public Service {
-    AUTOGEN_PREAMBLE
+class ScriptContext : public Service {
+    INSTANCE_HEADER
 
     std::vector<SleepingThread> sleepingThreads;
     int lastScriptSourceId = 0;
@@ -24,7 +24,6 @@ protected:
     bool initialized = false;
 
 public:
-    ScriptContext();
     ~ScriptContext();
 
     void InitService() override;

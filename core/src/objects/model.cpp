@@ -1,4 +1,7 @@
 #include "model.h"
 
-Model::Model(): PVInstance(&TYPE) {}
+InstanceType Model::__buildType() {
+    return make_instance_type<Model>("Model");
+}
+
 Model::~Model() = default;

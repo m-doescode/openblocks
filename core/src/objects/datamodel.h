@@ -2,7 +2,7 @@
 
 #include "error/instance.h"
 #include "error/result.h"
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/instance.h"
 #include "objects/base/refstate.h"
 #include <memory>
@@ -13,8 +13,8 @@ class DataModel;
 class Service;
 
 // The root instance to all objects in the hierarchy
-class DEF_INST_(abstract) DataModel : public Instance {
-    AUTOGEN_PREAMBLE
+class DataModel : public Instance {
+    INSTANCE_HEADER
 private:
     // void DeserializeService(pugi::xml_node node, RefStateDeserialize);
     static void cloneService(std::shared_ptr<DataModel> target, std::shared_ptr<Service>, RefStateClone);

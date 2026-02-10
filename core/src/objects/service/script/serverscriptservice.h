@@ -1,17 +1,16 @@
 #pragma once
 
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/service.h"
 
 // Container class for server scripts
 // Also handles/manages running server scripts on run
-class DEF_INST_SERVICE_(explorer_icon="server-scripts", hidden) ServerScriptService : public Service {
-    AUTOGEN_PREAMBLE
+class ServerScriptService : public Service {
+    INSTANCE_HEADER
 protected:
     bool initialized = false;
 
 public:
-    ServerScriptService();
     ~ServerScriptService();
 
     void InitService() override;

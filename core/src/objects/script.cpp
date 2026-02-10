@@ -3,6 +3,7 @@
 #include "datatypes/variant.h"
 #include "lauxlib.h"
 #include "logger.h"
+#include "objectmodel/property.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
 #include "objects/service/script/scriptcontext.h"
@@ -15,7 +16,14 @@
 
 int script_errhandler(lua_State*);
 
-Script::Script(): Instance(&TYPE) {
+InstanceType Script::__buildType() {
+    return make_instance_type<Script>(
+        "Script",
+        def_property("Source", &Script::source, PROP_HIDDEN)
+    );
+}
+
+Script::Script() {
     source = "print(\"Hello, world!\")";
 }
 

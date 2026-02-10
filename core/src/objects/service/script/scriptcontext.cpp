@@ -30,7 +30,8 @@ std::string unsafe_globals[] = {
     "loadfile", "loadstring", "load", "dofile", "getfenv", "setfenv"
 };
 
-ScriptContext::ScriptContext(): Service(&TYPE) {
+InstanceType ScriptContext::__buildType() {
+    return make_instance_type<ScriptContext>("ScriptContext", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE | INSTANCE_HIDDEN);
 }
 
 ScriptContext::~ScriptContext() {

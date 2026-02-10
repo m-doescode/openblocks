@@ -3,7 +3,8 @@
 #include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 
-ServerScriptService::ServerScriptService(): Service(&TYPE) {
+InstanceType ServerScriptService::__buildType() {
+    return make_instance_type<ServerScriptService>("ServerScriptService", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE);
 }
 
 ServerScriptService::~ServerScriptService() = default;

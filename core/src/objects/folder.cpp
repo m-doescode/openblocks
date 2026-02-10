@@ -1,4 +1,7 @@
 #include "folder.h"
 
-Folder::Folder(): Instance(&TYPE) {}
+InstanceType Folder::__buildType() {
+    return make_instance_type<Folder>("Folder");
+}
+
 Folder::~Folder() = default;

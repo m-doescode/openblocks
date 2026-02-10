@@ -1,4 +1,5 @@
 #include "datamodel.h"
+#include "objectmodel/type.h"
 #include "objects/base/service.h"
 #include "objects/base/instance.h"
 #include "objects/base/refstate.h"
@@ -17,8 +18,11 @@
 
 int _dbgDataModelDestroyCount = 0;
 
-DataModel::DataModel()
-    : Instance(&TYPE) {
+InstanceType DataModel::__buildType() {
+    return make_instance_type<DataModel>("DataModel", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE);
+}
+
+DataModel::DataModel() {
     this->name = "Place";
 }
 
@@ -114,7 +118,7 @@ result<std::shared_ptr<Service>, NoSuchService> DataModel::GetService(std::strin
         return NoSuchService(className);
     }
 
-    services[className] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[className]->constructor());
+    services[className] = std::dynamic_pointer_cast<Service>(INSTANCE_MAP[className]->constructor.value()());
     AddChild(std::dynamic_pointer_cast<Instance>(services[className]));
     services[className]->InitService();
 
@@ -184,8 +188,8 @@ std::shared_ptr<DataModel> DataModel::CloneModel() {
         newModel->AddChild(result);
 
         // Special case: Ignore instances parented to DataModel which are not services
-        if (child->GetType()->flags & INSTANCE_SERVICE) {
-            newModel->services[child->GetType()->className] = std::dynamic_pointer_cast<Service>(result);
+        if (child->GetType().flags & INSTANCE_SERVICE) {
+            newModel->services[child->GetType().className] = std::dynamic_pointer_cast<Service>(result);
         }
     }
 

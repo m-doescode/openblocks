@@ -9,7 +9,6 @@ class DataModel;
 
 class Service : public Instance {
 protected:
-    Service(const InstanceType* type);
     virtual void InitService();
     virtual void OnRun();
 

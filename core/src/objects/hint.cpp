@@ -1,4 +1,7 @@
 #include "hint.h"
 
-Hint::Hint(): Message(&TYPE) {}
+InstanceType Hint::__buildType() {
+    return make_instance_type<Hint, Message>("Hint");
+}
+
 Hint::~Hint() = default;
