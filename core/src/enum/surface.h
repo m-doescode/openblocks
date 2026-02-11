@@ -1,6 +1,7 @@
 #pragma once
 
 #include "datatypes/enum.h"
+#include "datatypes/enummeta.h"
 #include "enum/annotation.h"
 
 enum DEF_ENUM NormalId {
@@ -27,6 +28,9 @@ namespace EnumType {
     extern const Enum NormalId;
     extern const Enum SurfaceType;
 };
+
+DEF_ENUM_META(NormalId)
+DEF_ENUM_META(SurfaceType)
 
 class Vector3;
 NormalId faceFromNormal(Vector3);

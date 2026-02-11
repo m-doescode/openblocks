@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <type_traits>
 #include <variant>
 #include <map>
@@ -8,26 +9,12 @@
 #include "datatypes/enum.h"
 #include "datatypes/ref.h"
 #include "datatypes/signal.h"
+#include "datatypes/enummeta.h"
 #include "error/data.h"
 #include "vector.h"
 #include "cframe.h"
 
-// #define __VARIANT_TYPE std::variant< \_
-//         Null, \_
-//         Bool, \_
-//         Int, \_
-//         Float, \_
-//         String \_
-//     >
-
-template <typename T> struct __get_variant_type_t { using value = T; };
-template <typename T> struct __get_variant_type_t<std::weak_ptr<T>> { using value = InstanceRef; };
-template <typename T> struct __get_variant_type_t<std::shared_ptr<T>> { using value = InstanceRef; };
-
-template <typename T>
-using __get_variant_type = __get_variant_type_t<T>::value;
-
-typedef std::variant<
+using __VARIANT_TYPE = std::variant<
     std::monostate,
     bool,
     int,
@@ -41,13 +28,29 @@ typedef std::variant<
     SignalConnectionRef,
     Enum,
     EnumItem
-> __VARIANT_TYPE;
+>;
+
+// Is this a valid generic type
+template <typename T> using __is_simple_variant_type = std::enable_if<std::is_constructible_v<__VARIANT_TYPE, T>>;
+template <typename T, typename R> using __is_simple_variant_type_t = std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, T>, R>;
+
+// Convert any type to a generic type (T -> T, EnumItem, InstanceRef)
+template <typename T> __is_simple_variant_type_t<T, T> __to_variant(T& t) { return t; }
+template <typename T> InstanceRef __to_variant(std::shared_ptr<T>& t) { return InstanceRef(t); }
+template <typename T> InstanceRef __to_variant(std::weak_ptr<T>& t) { return InstanceRef(t); }
+template <typename T> std::enable_if_t<std::is_enum_v<T>, EnumItem> __to_variant(T& t) { return enum_type_of_t<T>().value.FromValueInternal((int)t); }
+
+// Convert generic type into specialized type (* -> _enum_, std::shared_ptr<_instance_>)
+template <typename T> __is_simple_variant_type_t<T, T> __from_variant(__VARIANT_TYPE& wrapped) { return std::get<T>(wrapped); }
+template <typename T> std::enable_if_t<std::is_enum_v<T>, T> __from_variant(__VARIANT_TYPE& wrapped) { return (T)std::get<EnumItem>(wrapped).Value(); }
+template <typename T, typename U = typename T::element_type> T __from_variant(__VARIANT_TYPE& wrapped) {
+    return std::dynamic_pointer_cast<U>((std::shared_ptr<Instance>)std::get<InstanceRef>(wrapped)); }
 
 class Variant {
     __VARIANT_TYPE wrapped;
 public:
-    template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, T>, int> = 0> Variant(T obj) : wrapped(obj) {}
-    template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, __get_variant_type<T>>, int> = 0> T get() { return (T)std::get<__get_variant_type<T>>(wrapped); }
+    template <typename T> Variant(T obj) : wrapped(__to_variant(obj)) {}
+    template <typename T> T get() { return __from_variant<T>(wrapped); }
     std::string ToString() const;
     
     const TypeMeta GetTypeMeta() const;

@@ -4,9 +4,8 @@
 #include <glm/common.hpp>
 
 InstanceType Part::__buildType() {
-    // TODO:
-    return make_instance_type<Part, BasePart>("Part"
-        // def_property("Shape", &Part::shape, 0, &Part::onUpdated)
+    return make_instance_type<Part, BasePart>("Part",
+        def_property("Shape", &Part::shape, 0, &Part::onUpdated)
     );
 }
 

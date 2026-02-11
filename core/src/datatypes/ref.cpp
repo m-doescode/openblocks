@@ -28,6 +28,14 @@ const TypeDesc InstanceRef::TYPE = {
     .fromLuaValue = &InstanceRef::FromLuaValue,
 };
 
+InstanceRef::operator std::shared_ptr<Instance>() {
+    return ref;
+}
+
+InstanceRef::operator std::weak_ptr<Instance>() {
+    return ref;
+}
+
 const std::string InstanceRef::ToString() const {
     return ref == nullptr ? "NULL" : ref->name;
 }

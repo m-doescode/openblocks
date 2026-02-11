@@ -2,7 +2,7 @@
 
 #include "datatypes/enum.h"
 #include "enum/annotation.h"
-
+#include "datatypes/enummeta.h"
 
 enum class DEF_ENUM PartType {
     Ball = 0,
@@ -13,3 +13,5 @@ enum class DEF_ENUM PartType {
 namespace EnumType {
     extern const Enum PartType;
 };
+
+DEF_ENUM_META(PartType)
