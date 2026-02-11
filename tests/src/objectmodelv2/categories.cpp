@@ -4,7 +4,8 @@
 #include "objectmodel/type.h"
 #include "objects/base/instance.h"
 
-class TestInstance : public Instance {
+// Important: Make sure that the class name is unique in each test file
+class TestInstance3 : public Instance {
 public:
     int a;
     int b;
@@ -15,17 +16,17 @@ public:
 
 private:
     static InstanceType __buildType() {
-        return make_instance_type<TestInstance>(
-            "TestInstance",
+        return make_instance_type<TestInstance3>(
+            "TestInstance3",
 
-            def_property("a", &TestInstance::a),
+            def_property("a", &TestInstance3::a),
             set_property_category("data"),
-            def_property("b", &TestInstance::b),
-            def_property("c", &TestInstance::c),
+            def_property("b", &TestInstance3::b),
+            def_property("c", &TestInstance3::c),
             set_property_category("appearance"),
-            def_property("d", &TestInstance::d),
-            def_property("e", &TestInstance::e),
-            def_property("f", &TestInstance::f)
+            def_property("d", &TestInstance3::d),
+            def_property("e", &TestInstance3::e),
+            def_property("f", &TestInstance3::f)
         );
     }
 
@@ -33,7 +34,7 @@ private:
 };
 
 TEST_CASE("Property categories") {
-    auto type = TestInstance::Type();
+    auto type = TestInstance3::Type();
     REQUIRE(type.properties["a"].category == "");
     REQUIRE(type.properties["b"].category == "data");
     REQUIRE(type.properties["c"].category == "data");

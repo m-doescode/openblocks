@@ -35,8 +35,6 @@ struct __make_instance_type_temps {
 };
 
 inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, InstanceProperty property) {
-    // TODO: Add error checks here
-
     property.category = temps.lastCategory;
     type.properties[property.name] = property;
 }
@@ -74,5 +72,5 @@ const InstanceType make_instance_type(std::string name, InstanceFlags flags, Arg
 
 template <typename T, typename B = Instance, typename ...Args /* TODO: Add SFINAE */ >
 const InstanceType make_instance_type(std::string name, Args... args) {
-    return make_instance_type<T, B>(name, 0, args...);
+    return make_instance_type<T, B, Args...>(name, 0, args...);
 }
