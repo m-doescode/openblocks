@@ -214,13 +214,16 @@ static int inst_newindex(lua_State* L) {
     std::string key(lua_tostring(L, 2));
     
     // Validate property
+    auto& type = inst->GetType();
+    if (type.signalSources.count(key) != 0)
+        return luaL_error(L, "Attempt to assign value to signal '%s' of %s", key.c_str(), type.className.c_str());
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);
     if (!meta)
-        return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), inst->GetType().className.c_str());
+        return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), type.className.c_str());
     if (meta->flags & PROP_READONLY)
-        return luaL_error(L, "'%s' of %s is read-only", key.c_str(), inst->GetType().className.c_str());
+        return luaL_error(L, "'%s' of %s is read-only", key.c_str(), type.className.c_str());
     if (key == "Parent" && inst->IsParentLocked())
-        return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent()->name.c_str() : "NULL", inst->GetType().className.c_str());
+        return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent()->name.c_str() : "NULL", type.className.c_str());
 
     // TODO: Make this work for enums, this is not a solution!!
     result<Variant, LuaCastError> value = meta->type.descriptor->fromLuaValue(L, -1);

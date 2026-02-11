@@ -84,7 +84,6 @@ InstanceType BasePart::__buildType() {
         def_property("CanCollide", &BasePart::canCollide, 0, &BasePart::onUpdated),
         def_property("Locked", &BasePart::locked),
 
-        // TODO:
         set_property_category("surface"),
         def_property("TopSurface", &BasePart::topSurface),
         def_property("BottomSurface", &BasePart::bottomSurface),

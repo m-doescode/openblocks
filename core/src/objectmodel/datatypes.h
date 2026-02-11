@@ -8,21 +8,6 @@
 #include <string>
 #include <type_traits>
 
-    // &NULL_TYPE,
-    // &BOOL_TYPE,
-    // &INT_TYPE,
-    // &FLOAT_TYPE,
-    // &STRING_TYPE,
-    // &Vector3::TYPE,
-    // &CFrame::TYPE,
-    // &Color3::TYPE,
-    // &InstanceRef::TYPE,
-    // &SignalRef::TYPE,
-    // &SignalConnectionRef::TYPE,
-    // &Enum::TYPE,
-    // &EnumItem::TYPE,
-// TODO:
-
 template <typename T>
 struct type_meta_of_t {
     TypeMeta value = &T::TYPE;
