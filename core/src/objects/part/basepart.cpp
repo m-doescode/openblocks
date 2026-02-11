@@ -93,7 +93,7 @@ InstanceType BasePart::__buildType() {
         def_property("FrontSurface", &BasePart::frontSurface),
         def_property("BackSurface", &BasePart::backSurface),
 
-        set_property_category("surface input"),
+        set_property_category("surface inputs"),
         def_property("TopParamA", &BasePart::topParamA, 0, &BasePart::onParamUpdated),
         def_property("BottomParamA", &BasePart::bottomParamA, 0, &BasePart::onParamUpdated),
         def_property("LeftParamA", &BasePart::leftParamA, 0, &BasePart::onParamUpdated),

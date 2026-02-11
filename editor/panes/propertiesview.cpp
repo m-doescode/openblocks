@@ -17,11 +17,13 @@
 #include <QTime>
 #include <cmath>
 #include <functional>
+#include <map>
 #include <qapplication.h>
 #include <qcombobox.h>
 #include <qevent.h>
 #include <qnamespace.h>
 #include <qtreewidget.h>
+#include <string>
 
 QDoubleSpinBox* makeDoubleSpinBox(QWidget* parent = nullptr) {
     QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
@@ -306,13 +308,22 @@ PropertiesView::PropertiesView(QWidget* parent):
 PropertiesView::~PropertiesView() {
 }
 
-QStringList PROPERTY_CATEGORY_NAMES {
-    "Appearence",
-    "Data",
-    "Behavior",
-    "Part",
-    "Surface",
-    "Surface Inputs",
+// QStringList PROPERTY_CATEGORY_NAMES {
+//     "Appearence",
+//     "Data",
+//     "Behavior",
+//     "Part",
+//     "Surface",
+//     "Surface Inputs",
+// };
+
+std::map<std::string, std::string> PROPERTY_CATEGORY_NAMES = {
+    { "appearance",     "Appearance" },
+    { "data",           "Data" },
+    { "behavior",       "Behavior" },
+    { "part",           "Part" },
+    { "surface",        "Surface" },
+    { "surface inputs", "Surface Inputs" },
 };
 
 void PropertiesView::init() {
@@ -333,6 +344,10 @@ void PropertiesView::drawBranches(QPainter *painter, const QRect &rect, const QM
     QTreeWidget::drawBranches(painter, rect, index);
 }
 
+inline std::string categoryName(std::string key) {
+    return PROPERTY_CATEGORY_NAMES.count(key) == 0 ? "data" : key;
+}
+
 void PropertiesView::setSelected(nullable std::shared_ptr<Instance> instance) {
     clear();
     currentInstance = {};
@@ -340,19 +355,19 @@ void PropertiesView::setSelected(nullable std::shared_ptr<Instance> instance) {
     std::shared_ptr<Instance> inst = instance;
     currentInstance = inst;
 
-    std::map<PropertyCategory, QTreeWidgetItem*> propertyCategories;
+    std::map<std::string, QTreeWidgetItem*> propertyCategories;
 
-    for (int i = 0; i <= PROPERTY_CATEGORY_MAX; i++) {
+    for (auto &[key, name] : PROPERTY_CATEGORY_NAMES) {
         QTreeWidgetItem* item = new QTreeWidgetItem;
 
         QBrush brush;
         brush.setColor(QPalette::Midlight);
         brush.setStyle(Qt::SolidPattern);
 
-        item->setData(0, Qt::DisplayRole, PROPERTY_CATEGORY_NAMES[i]);
+        item->setData(0, Qt::DisplayRole, QString::fromStdString(name));
         item->setFirstColumnSpanned(true);
 
-        propertyCategories[(PropertyCategory)i] = item;
+        propertyCategories[key] = item;
         addTopLevelItem(item);
     }
 
@@ -393,17 +408,17 @@ void PropertiesView::setSelected(nullable std::shared_ptr<Instance> instance) {
 
         rebuildCompositeProperty(item, meta.type.descriptor, currentValue);
 
-        propertyCategories[meta.category]->addChild(item);
-        propertyCategories[meta.category]->setExpanded(true);
+        propertyCategories[categoryName(meta.category)]->addChild(item);
+        propertyCategories[categoryName(meta.category)]->setExpanded(true);
     }
 
     // Remove child-less categories
-    for (int i = 0; i <= PROPERTY_CATEGORY_MAX; i++) {
-        if (i == PROP_CATEGORY_SURFACE_INPUT)
-            propertyCategories[(PropertyCategory)i]->setExpanded(false);
+    for (auto& [key, name] : PROPERTY_CATEGORY_NAMES) {
+        if (key == "surface inputs")
+            propertyCategories[key]->setExpanded(false);
 
-        if (propertyCategories[(PropertyCategory)i]->childCount() > 0) continue;
-        int idx = indexOfTopLevelItem(propertyCategories[(PropertyCategory)i]);
+        if (propertyCategories[key]->childCount() > 0) continue;
+        int idx = indexOfTopLevelItem(propertyCategories[key]);
         delete takeTopLevelItem(idx);
     }
 

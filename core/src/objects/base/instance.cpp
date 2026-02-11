@@ -240,7 +240,7 @@ result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::stri
     }
     auto& property = type.properties.at(name);
 
-    return { property.type, property.flags };
+    return { property.type, property.flags, property.category };
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Variant value) {
