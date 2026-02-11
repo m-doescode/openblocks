@@ -14,7 +14,7 @@ public:
 
     Vector3 GetEffectiveSize() override;
 
-    static inline std::shared_ptr<Part> New() { return std::make_shared<Part>(); };
-    static inline std::shared_ptr<Part> New(PartConstructParams params) { return std::make_shared<Part>(params); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Part>(); };
+    static inline std::shared_ptr<Part> New() { return new_instance<Part>(); };
+    static inline std::shared_ptr<Part> New(PartConstructParams params) { return new_instance<Part>(params); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Part>(); };
 };

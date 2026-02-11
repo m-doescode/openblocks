@@ -15,7 +15,7 @@ private:
     bool initialized = false;
 public:
     ~Selection();
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Selection>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Selection>(); };
 
     std::vector<std::shared_ptr<Instance>> Get();
     void Set(std::vector<std::shared_ptr<Instance>> newSelection);

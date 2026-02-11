@@ -19,6 +19,6 @@ public:
     float desiredAngle = 0;
     float maxVelocity = 0.1;
 
-    static inline std::shared_ptr<Motor6D> New() { return std::make_shared<Motor6D>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Motor6D>(); };
+    static inline std::shared_ptr<Motor6D> New() { return new_instance<Motor6D>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Motor6D>(); };
 };

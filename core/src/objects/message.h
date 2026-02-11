@@ -13,6 +13,6 @@ public:
 
     std::string text;
 
-    static inline std::shared_ptr<Message> New() { return std::make_shared<Message>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Message>(); };
+    static inline std::shared_ptr<Message> New() { return new_instance<Message>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Message>(); };
 };

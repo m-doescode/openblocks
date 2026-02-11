@@ -11,6 +11,6 @@ class Snap : public JointInstance {
 public:
     ~Snap();
 
-    static inline std::shared_ptr<Snap> New() { return std::make_shared<Snap>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Snap>(); };
+    static inline std::shared_ptr<Snap> New() { return new_instance<Snap>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Snap>(); };
 };

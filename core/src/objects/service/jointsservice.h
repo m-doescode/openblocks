@@ -14,5 +14,5 @@ protected:
 public:
     ~JointsService();
 
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<JointsService>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<JointsService>(); };
 };

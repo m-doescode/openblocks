@@ -13,6 +13,6 @@ class Folder : public Instance {
 public:
     ~Folder();
 
-    static inline std::shared_ptr<Folder> New() { return std::make_shared<Folder>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Folder>(); };
+    static inline std::shared_ptr<Folder> New() { return new_instance<Folder>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Folder>(); };
 };

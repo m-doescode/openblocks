@@ -12,6 +12,6 @@ class Weld : public JointInstance {
 public:
     ~Weld();
 
-    static inline std::shared_ptr<Weld> New() { return std::make_shared<Weld>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Weld>(); };
+    static inline std::shared_ptr<Weld> New() { return new_instance<Weld>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Weld>(); };
 };

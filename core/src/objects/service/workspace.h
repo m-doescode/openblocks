@@ -46,8 +46,8 @@ public:
 
     float fallenPartsDestroyHeight = -500;
 
-    // static inline std::shared_ptr<Workspace> New() { return std::make_shared<Workspace>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Workspace>(); };
+    // static inline std::shared_ptr<Workspace> New() { return new_instance<Workspace>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Workspace>(); };
 
     inline void AddBody(std::shared_ptr<BasePart> part) { physicsWorld->addBody(part); }
     inline void RemoveBody(std::shared_ptr<BasePart> part) { physicsWorld->removeBody(part); }

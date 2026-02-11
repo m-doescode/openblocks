@@ -79,7 +79,7 @@ std::shared_ptr<DataModel> DataModel::LoadFromFile(std::string path) {
     doc.load(inStream);
 
     pugi::xml_node rootNode = doc.child("openblocks");
-    std::shared_ptr<DataModel> newModel = std::make_shared<DataModel>();
+    std::shared_ptr<DataModel> newModel = new_instance<DataModel>();
     RefStateDeserialize state = std::make_shared<__RefStateDeserialize>();
 
     for (pugi::xml_node childNode : rootNode.children("Item")) {

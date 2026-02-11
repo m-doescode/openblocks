@@ -16,6 +16,6 @@ public:
     void Run();
     void Stop();
 
-    static inline std::shared_ptr<Script> New() { return std::make_shared<Script>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Script>(); };
+    static inline std::shared_ptr<Script> New() { return new_instance<Script>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Script>(); };
 };

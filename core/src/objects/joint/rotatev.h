@@ -13,6 +13,6 @@ public:
 
     void OnPartParamsUpdated() override;
 
-    static inline std::shared_ptr<RotateV> New() { return std::make_shared<RotateV>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<RotateV>(); };
+    static inline std::shared_ptr<RotateV> New() { return new_instance<RotateV>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<RotateV>(); };
 };

@@ -44,9 +44,16 @@ inline void __instance_type_add_member(InstanceType& type, __make_instance_type_
 }
 
 template <typename T>
+std::shared_ptr<T> __new_instance() {
+    std::shared_ptr<T> obj = std::make_shared<T>();
+    if (obj->name == "") obj->name = T::Type().className;
+    return obj;
+}
+
+template <typename T>
 std::optional<InstanceConstructor> __get_instance_constructor() {
     if constexpr (std::is_constructible_v<T>) {
-        return []() { return std::make_shared<T>(); };
+        return []() { return __new_instance<T>(); };
     } else {
         return {};
     }

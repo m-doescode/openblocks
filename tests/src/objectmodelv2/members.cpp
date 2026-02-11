@@ -40,7 +40,7 @@ TEST_CASE("Introspection") {
     }
 
     SECTION("Property access") {
-        auto testInstance = std::make_shared<TestInstance>();
+        auto testInstance = new_instance<TestInstance>();
         testInstance->x = 123;
         testInstance->y = "Hello, world!";
 

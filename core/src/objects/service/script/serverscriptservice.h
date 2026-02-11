@@ -16,5 +16,5 @@ public:
     void InitService() override;
     void OnRun() override;
     
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<ServerScriptService>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<ServerScriptService>(); };
 };

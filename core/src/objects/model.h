@@ -13,6 +13,6 @@ class Model : public PVInstance {
 public:
     ~Model();
 
-    static inline std::shared_ptr<Model> New() { return std::make_shared<Model>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Model>(); };
+    static inline std::shared_ptr<Model> New() { return new_instance<Model>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Model>(); };
 };

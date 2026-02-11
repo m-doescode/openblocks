@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <type_traits>
 #include <utility>
 #include <vector>
 #include <memory>
@@ -155,3 +156,10 @@ private:
     std::shared_ptr<Instance> current;
     std::vector<int> siblingIndex;
 };
+
+template <typename T, typename... Args>
+std::enable_if_t<std::is_base_of_v<Instance, T>, std::shared_ptr<T>> new_instance(Args... args) {
+    std::shared_ptr<T> obj = std::make_shared<T>(args...);
+    if (obj->name == "") obj->name = T::Type().className;
+    return obj;
+}

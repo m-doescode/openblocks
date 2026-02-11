@@ -12,6 +12,6 @@ class Hint : public Message {
 public:
     ~Hint();
 
-    static inline std::shared_ptr<Hint> New() { return std::make_shared<Hint>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Hint>(); };
+    static inline std::shared_ptr<Hint> New() { return new_instance<Hint>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Hint>(); };
 };

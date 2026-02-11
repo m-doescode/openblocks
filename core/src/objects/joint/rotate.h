@@ -11,6 +11,6 @@ class Rotate : public JointInstance {
 public:
     ~Rotate();
 
-    static inline std::shared_ptr<Rotate> New() { return std::make_shared<Rotate>(); };
-    static inline std::shared_ptr<Instance> Create() { return std::make_shared<Rotate>(); };
+    static inline std::shared_ptr<Rotate> New() { return new_instance<Rotate>(); };
+    static inline std::shared_ptr<Instance> Create() { return new_instance<Rotate>(); };
 };
