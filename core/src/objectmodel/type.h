@@ -20,6 +20,7 @@ struct InstanceType {
     std::string className;
     InstanceFlags flags;
     const InstanceType* super;
+    std::string explorerIcon;
     std::optional<InstanceConstructor> constructor;
 
     // Members
@@ -34,6 +35,10 @@ struct __make_instance_type_temps {
     std::string lastCategory;
 };
 
+struct set_explorer_icon {
+    std::string explorerIcon;
+};
+
 inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, InstanceProperty property) {
     property.category = temps.lastCategory;
     type.properties[property.name] = property;
@@ -41,6 +46,10 @@ inline void __instance_type_add_member(InstanceType& type, __make_instance_type_
 
 inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, set_property_category category) {
     temps.lastCategory = category.name;
+}
+
+inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, set_explorer_icon explorerIcon) {
+    type.explorerIcon = explorerIcon.explorerIcon;
 }
 
 template <typename T>
@@ -69,6 +78,7 @@ const InstanceType make_instance_type(std::string name, InstanceFlags flags, Arg
     // Add members from parent type
     auto& super = B::Type();
     type.super = &super;
+    type.explorerIcon = super.explorerIcon;
     type.properties = super.properties;
 
     __make_instance_type_temps temps;

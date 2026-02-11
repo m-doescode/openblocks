@@ -158,16 +158,14 @@ Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
 }
 
 QIcon ExplorerModel::iconOf(const InstanceType& type) const {
-    // if (instanceIconCache.count(type.className)) return instanceIconCache[type.className];
+    if (instanceIconCache.count(type.className)) return instanceIconCache[type.className];
 
-    // const InstanceType* currentClass = &type;
-    // while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
+    const InstanceType* currentClass = &type;
+    while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
 
-    // QIcon icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
-    // instanceIconCache[type->className] = icon;
-    // return icon;
-    // TODO:
-    return QIcon("assets/icons/instance.png");
+    QIcon icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
+    instanceIconCache[type.className] = icon;
+    return icon;
 }
 
 bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, int count, const QModelIndex &destinationParentIdx, int destinationChild) {

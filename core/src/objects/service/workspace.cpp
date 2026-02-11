@@ -1,20 +1,17 @@
 #include "workspace.h"
-#include "datatypes/variant.h"
 #include "datatypes/ref.h"
-#include "datatypes/vector.h"
-#include "logger.h"
 #include "objectmodel/property.h"
+#include "objectmodel/type.h"
 #include "objects/base/instance.h"
-#include "objects/part/part.h"
-#include "objects/part/wedgepart.h"
+#include "objects/part/basepart.h"
 #include "objects/service/jointsservice.h"
 #include "objects/joint/jointinstance.h"
 #include "objects/datamodel.h"
-#include "timeutil.h"
 #include <memory>
 
 InstanceType Workspace::__buildType() {
     return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
+        set_explorer_icon("workspace"),
         def_property("FallenPartsDestroyHeight", &Workspace::fallenPartsDestroyHeight)
     );
 }

@@ -1,7 +1,8 @@
 #include "model.h"
+#include "objectmodel/type.h"
 
 InstanceType Model::__buildType() {
-    return make_instance_type<Model>("Model");
+    return make_instance_type<Model>("Model", set_explorer_icon("model"));
 }
 
 Model::~Model() = default;

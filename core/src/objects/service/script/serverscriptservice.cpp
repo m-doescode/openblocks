@@ -1,10 +1,13 @@
 #include "serverscriptservice.h"
+#include "objectmodel/type.h"
 #include "objects/script.h"
 #include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 
 InstanceType ServerScriptService::__buildType() {
-    return make_instance_type<ServerScriptService>("ServerScriptService", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE);
+    return make_instance_type<ServerScriptService>("ServerScriptService", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
+        set_explorer_icon("server-scripts")
+    );
 }
 
 ServerScriptService::~ServerScriptService() = default;

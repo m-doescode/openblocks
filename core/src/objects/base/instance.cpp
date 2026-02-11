@@ -59,6 +59,7 @@ const InstanceType& Instance::Type() {
         type.className = "Instance";
         type.super = nullptr;
         type.flags = INSTANCE_NOTCREATABLE;
+        type.explorerIcon = "instance";
 
         type.properties["Name"] = def_property("Name", &Instance::name);
         type.properties["Parent"] = def_property_apex(type, "Parent", &Instance::parent, PROP_NOSAVE);

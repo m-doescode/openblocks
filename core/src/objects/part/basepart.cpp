@@ -1,5 +1,6 @@
 #include "basepart.h"
 #include "objectmodel/property.h"
+#include "objectmodel/type.h"
 #include "objects/base/instance.h"
 #include "common.h"
 #include "datatypes/base.h"
@@ -58,6 +59,8 @@ InstanceProperty def_rotation_property(MemberPropertyListener<BasePart> listener
 
 InstanceType BasePart::__buildType() {
     return make_instance_type<BasePart, PVInstance>("BasePart",
+        set_explorer_icon("part"),
+
         set_property_category("data"),
         def_property("Velocity", &BasePart::velocity, 0, &BasePart::onUpdated),
         def_property("RotVelocity", &BasePart::rotVelocity, 0, &BasePart::onUpdated),
