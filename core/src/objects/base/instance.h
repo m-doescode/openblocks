@@ -21,13 +21,8 @@
 
 // Used exclusively by Instance
 #define INSTANCE_HEADER_APEX \
-private: \
-    static InstanceType __buildType(); \
 public: \
-    static const InstanceType& Type() { \
-        static InstanceType type = __buildType(); \
-        return type; \
-    } \
+    static const InstanceType& Type(); \
 private:
 
 class Instance;

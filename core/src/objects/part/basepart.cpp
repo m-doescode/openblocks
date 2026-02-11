@@ -43,7 +43,7 @@ InstanceProperty def_rotation_property(MemberPropertyListener<BasePart> listener
 
         [](std::shared_ptr<Instance> instance) {
             auto obj = std::dynamic_pointer_cast<BasePart>(instance);
-            return obj->cframe.Rotation();
+            return obj->cframe.Rotation().ToEulerAnglesXYZ();
         },
         [](std::shared_ptr<Instance> instance, Variant value) {
             auto obj = std::dynamic_pointer_cast<BasePart>(instance);

@@ -5,6 +5,7 @@
 #include "datatypes/base.h"
 #include "datatypes/ref.h"
 #include "error/instance.h"
+#include "objectmodel/property.h"
 #include "objectmodel/type.h"
 #include "objects/base/member.h"
 #include "objects/base/refstate.h"
@@ -24,11 +25,46 @@
 #include <pugixml.hpp>
 #include "ptr_helpers.h" // IWYU pragma: keep
 
-InstanceType Instance::__buildType() {
+// TODO: Maybe find a better solution?
+// Because def_property refers to Instance::Type(), we have to feed it this way instead
+template <typename T, typename C>
+InstanceProperty def_property_apex(const InstanceType& typeMeta, std::string name, T C::* ref, PropertyFlags flags = 0, PropertyListener listener = {}) {
+    return {
+        name,
+        &typeMeta,
+        flags,
+        "",
+
+        [ref](std::shared_ptr<Instance> instance) {
+            auto obj = std::dynamic_pointer_cast<C>(instance);
+            return obj.get()->*ref;
+        },
+        [ref](std::shared_ptr<Instance> instance, Variant value) {
+            auto obj = std::dynamic_pointer_cast<C>(instance);
+            obj.get()->*ref = value.get<T>();
+        },
+        listener
+    };
+}
+
+InstanceType __init() {
     InstanceType type;
-    type.className = "Instance";
-    type.super = nullptr;
-    type.flags = INSTANCE_NOTCREATABLE;
+    type.className = "<NULL>";
+    return type;
+}
+
+const InstanceType& Instance::Type() {
+    static InstanceType type = __init();
+    if (type.className == "<NULL>") {
+        type.className = "Instance";
+        type.super = nullptr;
+        type.flags = INSTANCE_NOTCREATABLE;
+
+        type.properties["Name"] = def_property("Name", &Instance::name);
+        type.properties["Parent"] = def_property_apex(type, "Parent", &Instance::parent, PROP_NOSAVE);
+        type.properties["ClassName"] = def_property<std::string, Instance>("ClassName", [](Instance* obj){ return obj->GetType().className; }, PROP_NOSAVE | PROP_READONLY);
+    }
+
     return type;
 }
 
@@ -189,38 +225,35 @@ result<PropertyMeta, MemberNotFound> Instance::GetPropertyMeta(std::string name)
 
 
 result<Variant, MemberNotFound> Instance::InternalGetPropertyValue(std::string name) {
-    if (name == "Name") {
-        return Variant(this->name);
-    } else if (name == "Parent") {
-        return Variant(InstanceRef(this->parent));
-    } else if (name == "ClassName") {
-        return Variant(GetType().className);
+    auto& type = GetType();
+    if (type.properties.count(name) == 0) {
+        return MemberNotFound(GetType().className, name);
     }
-    return MemberNotFound(GetType().className, name);
+    return type.properties.at(name).getter(shared_from_this());
 }
 
 result<PropertyMeta, MemberNotFound> Instance::InternalGetPropertyMeta(std::string name) {
-    if (name == "Name") {
-        return PropertyMeta { &STRING_TYPE, 0 };
-    } else if (name == "Parent") {
-        return PropertyMeta { &InstanceRef::TYPE, PROP_NOSAVE };
-    } else if (name == "ClassName") {
-        return PropertyMeta { &STRING_TYPE, PROP_NOSAVE | PROP_READONLY };
+    auto& type = GetType();
+    if (type.properties.count(name) == 0) {
+        return MemberNotFound(GetType().className, name);
     }
-    return MemberNotFound(GetType().className, name);
+    auto& property = type.properties.at(name);
+
+    return { property.type, property.flags };
 }
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::InternalSetPropertyValue(std::string name, Variant value) {
-    if (name == "Name") {
-        this->name = (std::string)value.get<std::string>();
-    } else if (name == "Parent") {
-        std::weak_ptr<Instance> ref = value.get<InstanceRef>();
-        SetParent(ref.expired() ? nullptr : ref.lock());
-    } else if (name == "ClassName") {
-        return AssignToReadOnlyMember(GetType().className, name);
-    } else {
+    auto& type = GetType();
+    if (type.properties.count(name) == 0) {
         return MemberNotFound(GetType().className, name);
     }
+    auto& property = type.properties.at(name);
+
+    if (property.flags & PROP_READONLY) {
+        return AssignToReadOnlyMember(GetType().className, name);
+    }
+
+    property.setter(shared_from_this(), value);
     return {};
 }
 
@@ -229,9 +262,9 @@ void Instance::InternalUpdateProperty(std::string name) {
 
 std::vector<std::string> Instance::InternalGetProperties() {
     std::vector<std::string> members;
-    members.push_back("Name");
-    members.push_back("Parent");
-    members.push_back("ClassName");
+    for (auto& [key, value] : GetType().properties) {
+        members.push_back(key);
+    }
     return members;
 }
 
