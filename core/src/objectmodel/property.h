@@ -33,7 +33,7 @@ struct InstanceProperty {
 };
 
 template <typename T, typename C>
-InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags = 0, PropertyListener listener = {}) {
+InstanceProperty def_property(std::string name, T C::* ref, PropertyFlags flags = 0, std::optional<PropertyListener> listener = {}) {
     return {
         name,
         type_meta_of<T>(),

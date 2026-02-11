@@ -45,7 +45,7 @@ TEST_CASE("Introspection") {
         testInstance->y = "Hello, world!";
 
         auto type = testInstance->GetType();
-        REQUIRE(type.properties.size() == 3);
+        REQUIRE(type.properties.size() == 3 + 3);
         
         auto xProp = type.properties["x"];
         REQUIRE(xProp.name == "x");
@@ -56,6 +56,9 @@ TEST_CASE("Introspection") {
         REQUIRE(yProp.name == "y");
         REQUIRE(yProp.getter(testInstance).GetType() == &STRING_TYPE);
         REQUIRE(yProp.getter(testInstance).get<std::string>() == "Hello, world!");
+        
+        auto zProp = type.properties["z"];
+        REQUIRE(zProp.name == "z");
 
         xProp.setter(testInstance, 456);
         yProp.setter(testInstance, "Foo, bar!");
@@ -64,10 +67,11 @@ TEST_CASE("Introspection") {
         REQUIRE(testInstance->y == "Foo, bar!");
 
         REQUIRE(xProp.listener == std::nullopt);
-        REQUIRE(yProp.listener != std::nullopt);
+        REQUIRE(yProp.listener == std::nullopt);
+        REQUIRE(zProp.listener != std::nullopt);
 
         REQUIRE(testInstance->updated == false);
-        yProp.listener.value()(testInstance, "x", 123, 456);
+        zProp.listener.value()(testInstance, "z", 123, 456);
         REQUIRE(testInstance->updated == true);
     }
 

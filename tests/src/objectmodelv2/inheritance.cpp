@@ -52,7 +52,7 @@ TEST_CASE("Member inheritance") {
 
     SECTION("Property inheritance") {
         auto type = TestDerivedInstance::Type();
-        REQUIRE(type.properties.size() == 3);
+        REQUIRE(type.properties.size() == 3 + 3);
 
         std::shared_ptr<TestDerivedInstance> foo = std::make_shared<TestDerivedInstance>();
         foo->x = 1;
