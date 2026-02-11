@@ -1,9 +1,10 @@
 #include "selection.h"
-#include "objects/datamodel.h"
+#include "objectmodel/type.h"
 #include <algorithm>
 #include <memory>
 
-Selection::Selection(): Service(&TYPE) {
+InstanceType Selection::__buildType() {
+    return make_instance_type<Selection>("Selection", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE | INSTANCE_HIDDEN);
 }
 
 Selection::~Selection() = default;

@@ -9,7 +9,6 @@ class Snap : public JointInstance {
 
     virtual void buildJoint() override;
 public:
-    Snap();
     ~Snap();
 
     static inline std::shared_ptr<Snap> New() { return std::make_shared<Snap>(); };

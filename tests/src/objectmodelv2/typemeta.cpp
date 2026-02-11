@@ -8,7 +8,7 @@
 
 TEST_CASE("Type_meta_of") {
     REQUIRE(type_meta_of<std::shared_ptr<Part>>().descriptor == &InstanceRef::TYPE);
-    REQUIRE(type_meta_of<std::shared_ptr<Part>>().instType == &Part::TYPE);
+    REQUIRE(type_meta_of<std::shared_ptr<Part>>().instType == &Part::Type());
 
     REQUIRE(type_meta_of<PartType>().descriptor == &EnumItem::TYPE);
     REQUIRE(type_meta_of<PartType>().enum_ == &EnumType::PartType);

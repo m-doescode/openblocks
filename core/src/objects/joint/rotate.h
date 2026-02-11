@@ -9,7 +9,6 @@ class Rotate : public JointInstance {
 
     virtual void buildJoint() override;
 public:
-    Rotate();
     ~Rotate();
 
     static inline std::shared_ptr<Rotate> New() { return std::make_shared<Rotate>(); };

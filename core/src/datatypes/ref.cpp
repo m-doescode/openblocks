@@ -32,14 +32,6 @@ const std::string InstanceRef::ToString() const {
     return ref == nullptr ? "NULL" : ref->name;
 }
 
-InstanceRef::operator std::shared_ptr<Instance>() {
-    return ref;
-}
-
-InstanceRef::operator std::weak_ptr<Instance>() {
-    return ref;
-}
-
 bool InstanceRef::operator ==(InstanceRef other) const {
     return this->ref == other.ref;
 }
@@ -196,7 +188,7 @@ static int inst_index(lua_State* L) {
         return 1;
     }
 
-    return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), inst->GetType()->className.c_str());
+    return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), inst->GetType().className.c_str());
 }
 
 // __newindex(t,k,v)
@@ -207,11 +199,11 @@ static int inst_newindex(lua_State* L) {
     // Validate property
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);
     if (!meta)
-        return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), inst->GetType()->className.c_str());
+        return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), inst->GetType().className.c_str());
     if (meta->flags & PROP_READONLY)
-        return luaL_error(L, "'%s' of %s is read-only", key.c_str(), inst->GetType()->className.c_str());
+        return luaL_error(L, "'%s' of %s is read-only", key.c_str(), inst->GetType().className.c_str());
     if (key == "Parent" && inst->IsParentLocked())
-        return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent()->name.c_str() : "NULL", inst->GetType()->className.c_str());
+        return luaL_error(L, "Cannot set property Parent (%s) of %s, parent is locked", inst->GetParent() ? inst->GetParent()->name.c_str() : "NULL", inst->GetType().className.c_str());
 
     // TODO: Make this work for enums, this is not a solution!!
     result<Variant, LuaCastError> value = meta->type.descriptor->fromLuaValue(L, -1);

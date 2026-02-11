@@ -30,12 +30,12 @@ struct type_meta_of_t {
 
 template <typename T>
 struct type_meta_of_t<std::shared_ptr<T>> {
-    TypeMeta value = &T::TYPE;
+    TypeMeta value = &T::Type();
 };
 
 template <typename T>
 struct type_meta_of_t<std::weak_ptr<T>> {
-    TypeMeta value = &T::TYPE;
+    TypeMeta value = &T::Type();
 };
 
 template <>

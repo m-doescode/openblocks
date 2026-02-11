@@ -9,7 +9,6 @@ class RotateV : public JointInstance {
 
     virtual void buildJoint() override;
 public:
-    RotateV();
     ~RotateV();
 
     void OnPartParamsUpdated() override;

@@ -7,7 +7,7 @@
 // The simplest instance
 // Has no functionality of its own, used purely for organizational/grouping purposes
 
-class DEF_INST_(explorer_icon="folder") Folder : public Instance {
+class Folder : public Instance {
     INSTANCE_HEADER
 
 public:

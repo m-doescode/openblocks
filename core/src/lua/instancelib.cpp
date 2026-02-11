@@ -33,7 +33,7 @@ static int __lua_impl__Instance__new(lua_State* L) {
     if (type->flags & (INSTANCE_NOTCREATABLE | INSTANCE_SERVICE) || type->constructor == nullptr)
         return luaL_error(L, "Attempt to create Instance of type '%s', which is not creatable", className.c_str());
 
-    std::shared_ptr<Instance> object = type->constructor();
+    std::shared_ptr<Instance> object = type->constructor.value()();
     
     if (parent != nullptr)
         object->SetParent(parent);

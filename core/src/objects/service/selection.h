@@ -1,20 +1,19 @@
 #pragma once
 
 #include "datatypes/signal.h"
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 #include "objects/base/service.h"
 #include <memory>
 #include <vector>
 
-class DEF_INST_SERVICE_(hidden) Selection : public Service {
-    AUTOGEN_PREAMBLE
+class Selection : public Service {
+    INSTANCE_HEADER
 private:
     std::vector<std::shared_ptr<Instance>> selection;
     protected:
     void InitService() override;
     bool initialized = false;
 public:
-    Selection();
     ~Selection();
     static inline std::shared_ptr<Instance> Create() { return std::make_shared<Selection>(); };
 

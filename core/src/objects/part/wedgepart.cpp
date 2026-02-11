@@ -1,6 +1,9 @@
 #include "wedgepart.h"
 
-WedgePart::WedgePart(): BasePart(&TYPE) {
+InstanceType WedgePart::__buildType() {
+    return make_instance_type<WedgePart, BasePart>("WedgePart");
 }
 
-WedgePart::WedgePart(PartConstructParams params): BasePart(&TYPE, params) {}
+WedgePart::WedgePart(): BasePart() {}
+
+WedgePart::WedgePart(PartConstructParams params): BasePart(params) {}

@@ -1,6 +1,6 @@
 #include "meta.h"
 
-#define DECLTYPE(className) class className { public: const static InstanceType TYPE; };
+#define DECLTYPE(className) class className { public: static const InstanceType& Type(); };
 
 DECLTYPE(DataModel);
 DECLTYPE(BasePart);
@@ -24,29 +24,29 @@ DECLTYPE(ServerScriptService);
 DECLTYPE(Selection);
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
-    { "Instance", &Instance::TYPE },
-    { "DataModel", &DataModel::TYPE },
+    { "Instance", &Instance::Type() },
+    { "DataModel", &DataModel::Type() },
 
-    { "BasePart", &BasePart::TYPE },
-    { "Part", &Part::TYPE },
-    { "WedgePart", &WedgePart::TYPE },
-    { "Snap", &Snap::TYPE },
-    { "Weld", &Weld::TYPE },
-    { "Rotate", &Rotate::TYPE },
-    { "RotateV", &RotateV::TYPE },
-    { "Motor6D", &Motor6D::TYPE },
-    { "JointInstance", &JointInstance::TYPE },
-    { "Script", &Script::TYPE },
-    { "Model", &Model::TYPE },
-    { "Message", &Message::TYPE },
-    { "Hint", &Hint::TYPE },
-    // { "Folder", &Folder::TYPE },
+    { "BasePart", &BasePart::Type() },
+    { "Part", &Part::Type() },
+    { "WedgePart", &WedgePart::Type() },
+    { "Snap", &Snap::Type() },
+    { "Weld", &Weld::Type() },
+    { "Rotate", &Rotate::Type() },
+    { "RotateV", &RotateV::Type() },
+    { "Motor6D", &Motor6D::Type() },
+    { "JointInstance", &JointInstance::Type() },
+    { "Script", &Script::Type() },
+    { "Model", &Model::Type() },
+    { "Message", &Message::Type() },
+    { "Hint", &Hint::Type() },
+    // { "Folder", &Folder::Type() },
 
     // Services
 
-    { "Workspace", &Workspace::TYPE },
-    { "JointsService", &JointsService::TYPE },
-    { "ScriptContext", &ScriptContext::TYPE },
-    { "ServerScriptService", &ServerScriptService::TYPE },
-    { "Selection", &Selection::TYPE },
+    { "Workspace", &Workspace::Type() },
+    { "JointsService", &JointsService::Type() },
+    { "ScriptContext", &ScriptContext::Type() },
+    { "ServerScriptService", &ServerScriptService::Type() },
+    { "Selection", &Selection::Type() },
 };

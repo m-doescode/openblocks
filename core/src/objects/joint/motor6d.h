@@ -13,7 +13,6 @@ class Motor6D : public JointInstance {
     void OnPhysicsStep(float deltaTime) override;
     bool isDrivenJoint() override;
 public:
-    Motor6D();
     ~Motor6D();
 
     float currentAngle = 0;

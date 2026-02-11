@@ -137,30 +137,6 @@ set(SOURCES
 )
 
 set(AUTOGEN_SOURCES
-    # Objects
-    src/objects/service/script/serverscriptservice.h
-    src/objects/service/script/scriptcontext.h
-    src/objects/service/selection.h
-    src/objects/service/jointsservice.h
-    src/objects/service/workspace.h
-    src/objects/script.h
-    src/objects/joint/snap.h
-    src/objects/joint/jointinstance.h
-    src/objects/joint/motor6d.h
-    src/objects/joint/rotatev.h
-    src/objects/joint/rotate.h
-    src/objects/joint/weld.h
-    src/objects/message.h
-    src/objects/pvinstance.h
-    src/objects/base.h
-    src/objects/datamodel.h
-    src/objects/folder.h
-    src/objects/model.h
-    src/objects/part/part.h
-    src/objects/part/wedgepart.h
-    src/objects/part/basepart.h
-    src/objects/meta.h
-    src/objects/hint.h
     # Enum
     src/enum/part.h
     src/enum/surface.h

@@ -34,13 +34,13 @@ public:
 
     template <typename T>
     std::shared_ptr<T> GetService() {
-        auto result = GetService(T::TYPE.className);
+        auto result = GetService(T::Type().className);
         return std::dynamic_pointer_cast<T>(result.expect("GetService<T>() was called with a non-service instance type"));
     }
 
     template <typename T>
     nullable std::shared_ptr<T> FindService() {
-        auto result = FindService(T::TYPE.className).expect("FindService<T>() was called with a non-service instance type");
+        auto result = FindService(T::Type().className).expect("FindService<T>() was called with a non-service instance type");
         if (!result) return nullptr;
         return std::dynamic_pointer_cast<T>(result);
     }

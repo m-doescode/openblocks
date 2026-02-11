@@ -16,8 +16,11 @@ public:
 
     static const TypeDesc TYPE;
 
-    operator std::shared_ptr<Instance>();
-    operator std::weak_ptr<Instance>();
+    // TODO: Is this a good idea?
+    template <typename T>
+    operator std::shared_ptr<T>() { return std::dynamic_pointer_cast<T>(ref); }
+    template <typename T>
+    operator std::weak_ptr<T>() { return std::dynamic_pointer_cast<T>(ref); }
 
     virtual const std::string ToString() const;
     virtual void Serialize(pugi::xml_node node) const;

@@ -14,8 +14,9 @@ InstanceType JointInstance::__buildType() {
         "JointInstance",
         INSTANCE_NOTCREATABLE,
         
-        def_property("Part0", &JointInstance::part0, 0, &JointInstance::onUpdated),
-        def_property("Part1", &JointInstance::part1, 0, &JointInstance::onUpdated),
+        // TODO:
+        // def_property("Part0", &JointInstance::part0, 0, &JointInstance::onUpdated),
+        // def_property("Part1", &JointInstance::part1, 0, &JointInstance::onUpdated),
         def_property("C0", &JointInstance::c0, 0, &JointInstance::onUpdated),
         def_property("C1", &JointInstance::c1, 0, &JointInstance::onUpdated)
     );
@@ -59,7 +60,7 @@ void JointInstance::Update() {
     oldPart1 = part1;
 
     // Don't build the joint if we're not part of either a workspace or JointsService
-    if ((!GetParent() || GetParent()->GetType() != &JointsService::TYPE) && !workspace()) return;
+    if ((!GetParent() || GetParent()->GetType() != JointsService::Type()) && !workspace()) return;
 
     // If either part is invalid or they are part of separate worlds, fail
     if (part0.expired()

@@ -157,15 +157,17 @@ Qt::ItemFlags ExplorerModel::flags(const QModelIndex &index) const
         : Qt::NoItemFlags | Qt::ItemIsDropEnabled;
 }
 
-QIcon ExplorerModel::iconOf(const InstanceType* type) const {
-    if (instanceIconCache.count(type->className)) return instanceIconCache[type->className];
+QIcon ExplorerModel::iconOf(const InstanceType& type) const {
+    // if (instanceIconCache.count(type.className)) return instanceIconCache[type.className];
 
-    const InstanceType* currentClass = type;
-    while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
+    // const InstanceType* currentClass = &type;
+    // while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
 
-    QIcon icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
-    instanceIconCache[type->className] = icon;
-    return icon;
+    // QIcon icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
+    // instanceIconCache[type->className] = icon;
+    // return icon;
+    // TODO:
+    return QIcon("assets/icons/instance.png");
 }
 
 bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, int count, const QModelIndex &destinationParentIdx, int destinationChild) {
@@ -175,7 +177,7 @@ bool ExplorerModel::moveRows(const QModelIndex &sourceParentIdx, int sourceRow, 
     Logger::infof("Moved %d from %s", count, sourceParent->name.c_str());
 
     if (size_t(sourceRow + count) >= sourceParent->GetChildren().size()) {
-        Logger::fatalErrorf("Attempt to move rows %d-%d from %s (%s) while it only has %zu children.", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetType()->className.c_str(), sourceParent->GetChildren().size());
+        Logger::fatalErrorf("Attempt to move rows %d-%d from %s (%s) while it only has %zu children.", sourceRow, sourceRow + count, sourceParent->name.c_str(), sourceParent->GetType().className.c_str(), sourceParent->GetChildren().size());
         return false;
     }
 

@@ -20,6 +20,13 @@
 //         String \_
 //     >
 
+template <typename T> struct __get_variant_type_t { using value = T; };
+template <typename T> struct __get_variant_type_t<std::weak_ptr<T>> { using value = InstanceRef; };
+template <typename T> struct __get_variant_type_t<std::shared_ptr<T>> { using value = InstanceRef; };
+
+template <typename T>
+using __get_variant_type = __get_variant_type_t<T>::value;
+
 typedef std::variant<
     std::monostate,
     bool,
@@ -40,7 +47,7 @@ class Variant {
     __VARIANT_TYPE wrapped;
 public:
     template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, T>, int> = 0> Variant(T obj) : wrapped(obj) {}
-    template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, T>, int> = 0> T get() { return std::get<T>(wrapped); }
+    template <typename T, std::enable_if_t<std::is_constructible_v<__VARIANT_TYPE, __get_variant_type<T>>, int> = 0> T get() { return (T)std::get<__get_variant_type<T>>(wrapped); }
     std::string ToString() const;
     
     const TypeMeta GetTypeMeta() const;

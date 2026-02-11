@@ -45,7 +45,7 @@ TEST_CASE("Introspection") {
         testInstance->y = "Hello, world!";
 
         auto type = testInstance->GetType();
-        REQUIRE(type.properties.size() == 2);
+        REQUIRE(type.properties.size() == 3);
         
         auto xProp = type.properties["x"];
         REQUIRE(xProp.name == "x");

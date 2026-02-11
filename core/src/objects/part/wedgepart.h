@@ -1,10 +1,10 @@
 #pragma once
 
 #include "basepart.h"
-#include "objects/annotation.h"
+#include "objectmodel/macro.h"
 
 class DEF_INST WedgePart : public BasePart {
-    AUTOGEN_PREAMBLE
+    INSTANCE_HEADER
 
 public:
     WedgePart();

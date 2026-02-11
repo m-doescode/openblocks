@@ -98,7 +98,7 @@ public:
     void Destroy();
     // Determines whether this object is an instance of, or an instance of a subclass of the sepcified type's class name
     bool IsA(std::string className);
-    template <typename T> bool IsA() { return IsA(T::TYPE.className); }
+    template <typename T> bool IsA() { return IsA(T::Type().className); }
     
     template <typename T> inline std::shared_ptr<T> shared() { return std::dynamic_pointer_cast<T>(this->shared_from_this()); }
 

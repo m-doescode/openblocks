@@ -32,7 +32,7 @@ public:
     std::shared_ptr<Instance> fromIndex(const QModelIndex index) const;
     QModelIndex ObjectToIndex(std::shared_ptr<Instance> item);
     
-    QIcon iconOf(const InstanceType* type) const;
+    QIcon iconOf(const InstanceType& type) const;
 
     void updateRoot(std::shared_ptr<Instance> newRoot);
 private:

@@ -77,8 +77,8 @@ void Instance::updateAncestry(nullable std::shared_ptr<Instance> updatedChild, n
 
     // Update parent data model and workspace, if applicable
     if (GetParent() != nullptr) {
-        this->_dataModel = &GetParent()->GetType() == &DataModel::TYPE ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
-        this->_workspace = &GetParent()->GetType() == &Workspace::TYPE ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
+        this->_dataModel = GetParent()->GetType() == DataModel::Type() ? std::dynamic_pointer_cast<DataModel>(GetParent()) : GetParent()->_dataModel;
+        this->_workspace = GetParent()->GetType() == Workspace::Type() ? std::dynamic_pointer_cast<Workspace>(GetParent()) : GetParent()->_workspace;
     } else {
         this->_dataModel = {};
         this->_workspace = {};

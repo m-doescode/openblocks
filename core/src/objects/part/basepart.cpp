@@ -79,13 +79,14 @@ InstanceType BasePart::__buildType() {
         def_property("CanCollide", &BasePart::canCollide, 0, &BasePart::onUpdated),
         def_property("Locked", &BasePart::locked),
 
+        // TODO:
         set_property_category("surface"),
-        def_property("TopSurface", &BasePart::topSurface),
-        def_property("BottomSurface", &BasePart::bottomSurface),
-        def_property("LeftSurface", &BasePart::leftSurface),
-        def_property("RightSurface", &BasePart::rightSurface),
-        def_property("FrontSurface", &BasePart::frontSurface),
-        def_property("BackSurface", &BasePart::backSurface),
+        // def_property("TopSurface", &BasePart::topSurface),
+        // def_property("BottomSurface", &BasePart::bottomSurface),
+        // def_property("LeftSurface", &BasePart::leftSurface),
+        // def_property("RightSurface", &BasePart::rightSurface),
+        // def_property("FrontSurface", &BasePart::frontSurface),
+        // def_property("BackSurface", &BasePart::backSurface),
 
         set_property_category("surface input"),
         def_property("TopParamA", &BasePart::topParamA, 0, &BasePart::onParamUpdated),

@@ -109,13 +109,13 @@ void ExplorerView::buildContextMenu() {
     for (const auto& [_, type] : INSTANCE_MAP) {
         if (type->flags & (INSTANCE_NOTCREATABLE | INSTANCE_HIDDEN) || !type->constructor) continue;
 
-        QAction* instAction = new QAction(model.iconOf(type), QString::fromStdString(type->className));
+        QAction* instAction = new QAction(model.iconOf(*type), QString::fromStdString(type->className));
         insertObjectMenu->addAction(instAction);
         connect(instAction, &QAction::triggered, this, [&]() {
             std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
             if (selection->Get().size() == 0) return;
             std::shared_ptr<Instance> instParent = selection->Get()[0];
-            std::shared_ptr<Instance> newInst = type->constructor();
+            std::shared_ptr<Instance> newInst = type->constructor.value()();
             newInst->SetParent(instParent);
             M_mainWindow->undoManager.PushState({ UndoStateInstanceCreated { newInst, instParent } });
         });
