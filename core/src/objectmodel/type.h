@@ -47,7 +47,7 @@ inline void __instance_type_add_member(InstanceType& type, __make_instance_type_
 
 template <typename T>
 std::optional<InstanceConstructor> __get_instance_constructor() {
-    if constexpr (!std::is_abstract_v<T>) {
+    if constexpr (std::is_constructible_v<T>) {
         return []() { return std::make_shared<T>(); };
     } else {
         return {};
@@ -62,7 +62,7 @@ const InstanceType make_instance_type(std::string name, InstanceFlags flags, Arg
     type.constructor = __get_instance_constructor<T>();
 
     // Add members from parent type
-    auto super = B::Type();
+    auto& super = B::Type();
     type.super = &super;
     type.properties = super.properties;
 

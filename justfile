@@ -11,6 +11,9 @@ build: #configure
 
 editor: build
     ./build/bin/editor
+
+editor-dbg: build
+    gdb -q ./build/bin/editor
     
 test: build
     ctest --test-dir=build
