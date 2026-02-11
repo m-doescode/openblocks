@@ -19,6 +19,8 @@
 #include <glm/common.hpp>
 #include <memory>
 
+#undef def_signal
+
 InstanceProperty def_position_property(MemberPropertyListener<BasePart> listener) {
     return {
         "Position", type_meta_of<Vector3>(), 0, "",
@@ -104,10 +106,10 @@ InstanceType BasePart::__buildType() {
         def_property("LeftParamB", &BasePart::leftParamB, 0, &BasePart::onParamUpdated),
         def_property("RightParamB", &BasePart::rightParamB, 0, &BasePart::onParamUpdated),
         def_property("FrontParamB", &BasePart::frontParamB, 0, &BasePart::onParamUpdated),
-        def_property("BackParamB", &BasePart::backParamB, 0, &BasePart::onParamUpdated)
+        def_property("BackParamB", &BasePart::backParamB, 0, &BasePart::onParamUpdated),
 
-        // def_signal("Touched", &BasePart::Touched),
-        // def_signal("TouchEnded", &BasePart::TouchEnded),
+        def_signal("Touched", &BasePart::Touched),
+        def_signal("TouchEnded", &BasePart::TouchEnded)
     );
 }
 

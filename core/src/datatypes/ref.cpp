@@ -172,11 +172,20 @@ static int inst_index(lua_State* L) {
     std::shared_ptr<Instance> inst = fromLua(L, 1);
     std::string key(lua_tostring(L, 2));
     lua_pop(L, 2);
+
+    auto& type = inst->GetType();
     
     // Read property
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);
     if (meta) {
         Variant value = inst->GetProperty(key).expect();
+        value.PushLuaValue(L);
+        return 1;
+    }
+
+    // Read signal
+    if (type.signalSources.count(key)) {
+        Variant value = SignalRef(type.signalSources.at(key).getter(inst));
         value.PushLuaValue(L);
         return 1;
     }

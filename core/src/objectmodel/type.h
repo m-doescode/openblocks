@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 #include "property.h"
+#include "signal.h"
 
 using InstanceFlags = int;
 const InstanceFlags INSTANCE_NOTCREATABLE = 1 << 0; // This instance should only be instantiated in special circumstances
@@ -25,6 +26,7 @@ struct InstanceType {
 
     // Members
     std::map<std::string, InstanceProperty> properties;
+    std::map<std::string, InstanceSignal> signalSources; // Can't use signals because it's #defined by Qt
 
     inline bool operator==(const InstanceType& other) const {
         return this == &other;
@@ -42,6 +44,10 @@ struct set_explorer_icon {
 inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, InstanceProperty property) {
     property.category = temps.lastCategory;
     type.properties[property.name] = property;
+}
+
+inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, InstanceSignal signal) {
+    type.signalSources[signal.name] = signal;
 }
 
 inline void __instance_type_add_member(InstanceType& type, __make_instance_type_temps& temps, set_property_category category) {
@@ -80,6 +86,7 @@ const InstanceType make_instance_type(std::string name, InstanceFlags flags, Arg
     type.super = &super;
     type.explorerIcon = super.explorerIcon;
     type.properties = super.properties;
+    type.signalSources = super.signalSources;
 
     __make_instance_type_temps temps;
     (__instance_type_add_member(type, temps, args), ...);
