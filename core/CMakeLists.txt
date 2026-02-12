@@ -8,6 +8,7 @@ set(SOURCES
     src/ptr_helpers.h
     src/enum/part.h
     src/enum/surface.cpp
+    src/enum/meta.cpp
     src/enum/meta.h
     src/enum/annotation.h
     src/enum/surface.h
@@ -130,6 +131,7 @@ set(SOURCES
     src/common.h
     src/platform.cpp
     src/panic.h
+    src/lua/enum.cpp
     src/lua/instancelib.cpp
     src/timeutil.cpp
     src/luaapis.h

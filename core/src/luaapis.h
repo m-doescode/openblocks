@@ -1,4 +1,5 @@
 #pragma once
+
 extern "C" {
     #include <luajit.h>
     #include <lauxlib.h>
@@ -6,18 +7,19 @@ extern "C" {
     #include <lua.h>
 }
 
+#define LUA_OK 0
+#define X_LUA_NOTMODIFIABLE(_Name) [](lua_State* L) { return luaL_error(L, "%s cannot be modified", _Name); }
+
 LUALIB_API void *(luaL_testudata) (lua_State *L, int ud, const char *tname);
 
 inline const char* x_luaL_udatatname (lua_State *L, int ud) {
-  void *p = lua_touserdata(L, ud);
-  if (p != NULL) {
-    lua_getmetatable(L, ud);
-    lua_getfield(L, -1, "__name");
-    const char* str = lua_tostring(L, -1);
-    lua_pop(L, 2);
-    return str;
-  }
-  return NULL;
+    void *p = lua_touserdata(L, ud);
+    if (p != NULL) {
+        lua_getmetatable(L, ud);
+        lua_getfield(L, -1, "__name");
+        const char* str = lua_tostring(L, -1);
+        lua_pop(L, 2);
+        return str;
+    }
+    return NULL;
 }
-
-#define LUA_OK 0

@@ -1,15 +1,16 @@
+#include <chrono>
+#include <ctime>
+#include <string>
 #include "scriptcontext.h"
 #include "datatypes/cframe.h"
 #include "datatypes/color3.h"
 #include "datatypes/ref.h"
 #include "datatypes/vector.h"
 #include "logger.h"
+#include "lua/globals.h"
 #include "objects/datamodel.h"
 #include "objects/service/workspace.h"
 #include "timeutil.h"
-#include <chrono>
-#include <ctime>
-#include <string>
 #include "luaapis.h" // IWYU pragma: keep
 
 const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
@@ -58,6 +59,7 @@ void ScriptContext::InitService() {
     CFrame::PushLuaLibrary(state);
     Color3::PushLuaLibrary(state);
     Instance::PushLuaLibrary(state);
+    push_enum_global(state);
     
     // Push reference to datamodel
     lua_pushlightuserdata(state, &*dataModel());

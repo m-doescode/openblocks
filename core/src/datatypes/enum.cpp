@@ -41,7 +41,8 @@ EnumItem Enum::FromValueInternal(int value) const {
 }
 
 std::string Enum::ToString() const {
-    return "Enum." + this->data->name;
+    // return "Enum." + this->data->name;
+    return this->data->name;
 }
 
 bool Enum::operator ==(Enum other) const {
