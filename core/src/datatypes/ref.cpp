@@ -215,6 +215,7 @@ static int inst_newindex(lua_State* L) {
     
     // Validate property
     auto& type = inst->GetType();
+    // NOTE: Potential incompatibility. Disable this if compatibility is necessary
     if (type.signalSources.count(key) != 0)
         return luaL_error(L, "Attempt to assign value to signal '%s' of %s", key.c_str(), type.className.c_str());
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);

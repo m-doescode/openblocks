@@ -10,6 +10,7 @@
 #include "objects/service/workspace.h"
 #include "logger.h"
 #include "panic.h"
+#include "version.h"
 #include <pugixml.hpp>
 #include <cstdio>
 #include <fstream>
@@ -62,6 +63,8 @@ void DataModel::SaveToFile(std::optional<std::string> path) {
     
     pugi::xml_document doc;
     pugi::xml_node root = doc.append_child("openblocks");
+    root.append_attribute("version").set_value(BUILD_VERSION);
+    root.append_attribute("build").set_value(BUILD_COMMIT_HASH);
 
     for (std::shared_ptr<Instance> child : this->GetChildren()) {
         child->Serialize(root);
