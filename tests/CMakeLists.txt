@@ -2,10 +2,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/deps.cmake)
 
 add_executable(obtest
     src/common.cpp
-    src/lua/luasched.cpp
-    src/lua/luasignal.cpp
+    src/lua/luaenum.cpp
     src/lua/luageneric.cpp
     src/lua/luainst.cpp
+    src/lua/luasched.cpp
+    src/lua/luasignal.cpp
     src/objectmodel/basic.cpp
     src/objectmodel/datamodel.cpp
     src/objectmodelv2/typemeta.cpp
