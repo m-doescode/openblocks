@@ -30,7 +30,7 @@ DataModel::DataModel() {
 DataModel::~DataModel() {
     _dbgDataModelDestroyCount++;
 #ifndef NDEBUG
-    printf("Datamodel successfully destroyed\n");
+    fprintf(stderr, "Datamodel successfully destroyed\n");
 #endif
 }
 

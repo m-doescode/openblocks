@@ -8,7 +8,9 @@
 #include <type_traits>
 #include <variant>
 
-struct DUMMY_VALUE {};
+namespace detail {
+    struct __fallible_dummy {};
+}
 
 template <typename T_Result, typename ...T_Errors>
 class [[nodiscard]] result {
@@ -68,10 +70,10 @@ public:
 };
 
 template <typename ...T_Errors>
-class [[nodiscard]] fallible : public result<DUMMY_VALUE, T_Errors...> {
+class [[nodiscard]] fallible : public result<detail::__fallible_dummy, T_Errors...> {
 public:
-    fallible() : result<DUMMY_VALUE, T_Errors...>(DUMMY_VALUE {}) {}
-    fallible(std::variant<T_Errors...> error) : result<DUMMY_VALUE, T_Errors...>(error) {}
+    fallible() : result<detail::__fallible_dummy, T_Errors...>(detail::__fallible_dummy {}) {}
+    fallible(std::variant<T_Errors...> error) : result<detail::__fallible_dummy, T_Errors...>(error) {}
     template <typename T_Error, std::enable_if_t<std::disjunction_v<std::is_same<T_Error, T_Errors>...>, int> = 0>
-    fallible(T_Error error) : result<DUMMY_VALUE, T_Errors...>(error) {}
+    fallible(T_Error error) : result<detail::__fallible_dummy, T_Errors...>(error) {}
 };

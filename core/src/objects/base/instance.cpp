@@ -1,6 +1,15 @@
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
+#include <cstdio>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+#include <pugixml.hpp>
 #include "instance.h"
 #include "common.h"
-#include "datatypes/primitives.h"
 #include "datatypes/variant.h"
 #include "datatypes/base.h"
 #include "datatypes/ref.h"
@@ -13,39 +22,8 @@
 #include "objects/meta.h"
 #include "logger.h"
 #include "panic.h"
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
-#include <cstdio>
-#include <memory>
-#include <optional>
-#include <string>
-#include <utility>
-#include <vector>
-#include <pugixml.hpp>
+#include "instancehelpers.h"
 #include "ptr_helpers.h" // IWYU pragma: keep
-
-// TODO: Maybe find a better solution?
-// Because def_property refers to Instance::Type(), we have to feed it this way instead
-template <typename T, typename C>
-InstanceProperty def_property_apex(const InstanceType& typeMeta, std::string name, T C::* ref, PropertyFlags flags = 0, PropertyListener listener = {}) {
-    return {
-        name,
-        &typeMeta,
-        flags,
-        "",
-
-        [ref](std::shared_ptr<Instance> instance) {
-            auto obj = std::dynamic_pointer_cast<C>(instance);
-            return obj.get()->*ref;
-        },
-        [ref](std::shared_ptr<Instance> instance, Variant value) {
-            auto obj = std::dynamic_pointer_cast<C>(instance);
-            obj.get()->*ref = value.get<T>();
-        },
-        listener
-    };
-}
 
 InstanceType __init() {
     InstanceType type;
