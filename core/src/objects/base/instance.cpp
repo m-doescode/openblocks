@@ -14,6 +14,7 @@
 #include "datatypes/base.h"
 #include "datatypes/ref.h"
 #include "error/instance.h"
+#include "objectmodel/method.h"
 #include "objectmodel/property.h"
 #include "objectmodel/type.h"
 #include "objects/base/member.h"
@@ -42,6 +43,8 @@ const InstanceType& Instance::Type() {
         type.properties["Name"] = def_property("Name", &Instance::name);
         type.properties["Parent"] = def_property_apex(type, "Parent", &Instance::parent, PROP_NOSAVE);
         type.properties["ClassName"] = def_property<std::string, Instance>("ClassName", [](Instance* obj){ return obj->GetType().className; }, PROP_NOSAVE | PROP_READONLY);
+    
+        type.methods["Clone"] = def_method("Clone", &Instance::ScriptClone);
     }
 
     return type;

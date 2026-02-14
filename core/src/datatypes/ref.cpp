@@ -11,6 +11,7 @@
 #include "luaapis.h" // IWYU pragma: keep
 #include "objects/base/member.h"
 #include <pugixml.hpp>
+#include <vector>
 
 TypeMeta::TypeMeta(const InstanceType* instType) : descriptor(&InstanceRef::TYPE), instType(instType) {}
 
@@ -61,6 +62,7 @@ static int inst_index(lua_State*);
 static int inst_newindex(lua_State*);
 static int inst_tostring(lua_State*);
 static int inst_eq(lua_State*);
+static int inst_methodcall(lua_State*);
 static const struct luaL_Reg metatable [] = {
     {"__gc", inst_gc},
     {"__index", inst_index},
@@ -198,6 +200,14 @@ static int inst_index(lua_State* L) {
         return 1;
     }
 
+    // Get method
+    if (type.methods.count(key)) {
+        // TODO: Save the closure (for compatibility) rather than making a new one each time
+        lua_pushstring(L, key.c_str());
+        lua_pushcclosure(L, inst_methodcall, 1);
+        return 1;
+    }
+
     // Look for child
     nullable std::shared_ptr<Instance> child = inst->FindFirstChild(key);
     if (child) {
@@ -214,10 +224,14 @@ static int inst_newindex(lua_State* L) {
     std::string key(lua_tostring(L, 2));
     
     // Validate property
-    auto& type = inst->GetType();
+#if 1
     // NOTE: Potential incompatibility. Disable this if compatibility is necessary
+    auto& type = inst->GetType();
     if (type.signalSources.count(key) != 0)
         return luaL_error(L, "Attempt to assign value to signal '%s' of %s", key.c_str(), type.className.c_str());
+    if (type.methods.count(key) != 0)
+        return luaL_error(L, "Attempt to assign value to method '%s' of %s", key.c_str(), type.className.c_str());
+#endif
     std::optional<PropertyMeta> meta = inst->GetPropertyMeta(key);
     if (!meta)
         return luaL_error(L, "'%s' is not a valid member of %s", key.c_str(), type.className.c_str());
@@ -248,5 +262,38 @@ static int inst_eq(lua_State* L) {
     std::shared_ptr<Instance> inst2 = fromLuaFallible(L, 2);
 
     lua_pushboolean(L, inst == inst2);
+    return 1;
+}
+
+static int inst_methodcall(lua_State* L) {
+    std::string key = lua_tostring(L, lua_upvalueindex(1));
+    std::shared_ptr<Instance> obj = fromLuaFallible(L, 1);
+
+    if (obj == nullptr) {
+        return luaL_error(L, "Missing self argument to method %s\n", key.c_str());
+    }
+
+    auto type = obj->GetType();
+    InstanceMethod& method = type.methods[key]; // We assume that the method is valid, because this comes from (safe C code)
+
+    // Collect args
+    std::vector<Variant> args;
+    for (int i = 2; i < lua_gettop(L) || i < (int)method.paramTypes.size(); i++) {
+        TypeMeta& meta = method.paramTypes[i];
+        auto result = meta.descriptor->fromLuaValue(L, i);
+        if (result.isError())
+            return luaL_error(L, "Could not cast %s to %s for argument #%d of %s in %s\n", lua_typename(L, lua_type(L, i)), meta.descriptor->name.c_str(), key.c_str(), type.className.c_str());
+        args.push_back(result.expect());
+    }
+
+    GenericResult result = method.method(obj, args);
+    if (result.index() == 1) {
+        // Catch error
+        return luaL_error(L, "%s", std::get<std::shared_ptr<Error>>(result)->message().c_str());
+    }
+
+    // Return value
+    Variant out = std::get<Variant>(result);
+    out.PushLuaValue(L);
     return 1;
 }

@@ -5,6 +5,7 @@ add_executable(obtest
     src/lua/luaenum.cpp
     src/lua/luageneric.cpp
     src/lua/luainst.cpp
+    src/lua/luamethod.cpp
     src/lua/luasched.cpp
     src/lua/luasignal.cpp
     src/objectmodel/basic.cpp

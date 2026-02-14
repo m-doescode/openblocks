@@ -131,6 +131,7 @@ public:
     void Serialize(pugi::xml_node parent, RefStateSerialize state = {});
     static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node, RefStateDeserialize state = {});
     nullable std::shared_ptr<Instance> Clone(RefStateClone state = {});
+    inline nullable std::shared_ptr<Instance> ScriptClone() { return Clone(); };
 };
 
 // https://gist.github.com/jeetsukumaran/307264
