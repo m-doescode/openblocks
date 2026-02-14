@@ -131,7 +131,7 @@ Vector3 initialHitNormal;
 CFrame initialFrame;
 PartAssembly initialAssembly({});
 void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
-    if (!isMouseDragging || draggingObject.expired() || mainWindow()->selectedTool >= TOOL_SMOOTH) return;
+    if (!isMouseDragging || draggingObject.expired() || mainWindow()->selectedTool >= TOOL_INTERACT) return;
 
     QPoint position = evt->pos();
 
@@ -331,6 +331,12 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
         return;
     };
 
+    // Interact mode
+    if (mainWindow()->selectedTool == TOOL_INTERACT) {
+        // TODO: 
+        return;
+    }
+
     std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
     if (rayHit && !rayHit->hitPart->locked) {
         setCursor(Qt::OpenHandCursor);
@@ -364,6 +370,9 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     default:
         break;
     }
+
+    if (mainWindow()->selectedTool == TOOL_INTERACT)
+        return;
 
     if (selectionLasso != QRect {0,0,0,0}) {
         selectionLasso = {selectionLasso.topLeft(), evt->pos()};
@@ -423,6 +432,12 @@ bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
         if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
             playSound("./assets/excluded/electronicpingshort.wav");
 
+        return true;
+    }
+
+    // Handle interact tool
+    if (mainWindow()->selectedTool == TOOL_INTERACT) {
+        // TODO:
         return true;
     }
 

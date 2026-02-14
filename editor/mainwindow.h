@@ -19,6 +19,7 @@ enum SelectedTool {
     TOOL_MOVE,
     TOOL_SCALE,
     TOOL_ROTATE,
+    TOOL_INTERACT,
 
     TOOL_SMOOTH,
     TOOL_GLUE,

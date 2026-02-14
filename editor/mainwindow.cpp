@@ -158,6 +158,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
     addAction(reloadMostRecent);
     #endif
+    
+    updateToolbars();
 }
 
 void MainWindow::closeEvent(QCloseEvent* evt) {
@@ -255,6 +257,7 @@ void MainWindow::connectActionHandlers() {
     connect(ui->actionToolMove, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_MOVE : TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolScale, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_SCALE : TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolRotate, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_ROTATE : TOOL_SELECT; updateToolbars(); });
+    connect(ui->actionToolInteract, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_INTERACT : TOOL_SELECT; updateToolbars(); });
     
     connect(ui->actionToolSmooth, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_SMOOTH : TOOL_SELECT; updateToolbars(); });
     connect(ui->actionToolGlue, &QAction::triggered, this, [&](bool state) { selectedTool = state ? TOOL_GLUE : TOOL_SELECT; updateToolbars(); });
@@ -650,10 +653,15 @@ void MainWindow::openFile(std::string path) {
 }
 
 void MainWindow::updateToolbars() {
+    if (placeDocument->runState() == RUN_STOPPED && selectedTool == TOOL_INTERACT) {
+        selectedTool = TOOL_SELECT;
+    }
+
     ui->actionToolSelect->setChecked(selectedTool == TOOL_SELECT);
     ui->actionToolMove->setChecked(selectedTool == TOOL_MOVE);
     ui->actionToolScale->setChecked(selectedTool == TOOL_SCALE);
     ui->actionToolRotate->setChecked(selectedTool == TOOL_ROTATE);
+    ui->actionToolInteract->setChecked(selectedTool == TOOL_INTERACT);
 
     ui->actionToolSmooth->setChecked(selectedTool == TOOL_SMOOTH);
     ui->actionToolGlue->setChecked(selectedTool == TOOL_GLUE);
@@ -671,7 +679,7 @@ void MainWindow::updateToolbars() {
     editorToolHandles.worldMode = (selectedTool == TOOL_SCALE || selectedTool == TOOL_ROTATE) ? false : worldSpaceTransforms;
     editorToolHandles.nixAxes = selectedTool == TOOL_ROTATE;
 
-    editorToolHandles.active = selectedTool > TOOL_SELECT && selectedTool < TOOL_SMOOTH;
+    editorToolHandles.active = selectedTool > TOOL_SELECT && selectedTool < TOOL_INTERACT;
     editorToolHandles.handlesType =
       selectedTool == TOOL_MOVE ? HandlesType::MoveHandles
     : selectedTool == TOOL_SCALE ? HandlesType::ScaleHandles
@@ -684,6 +692,8 @@ void MainWindow::updateToolbars() {
 
     ui->actionUndo->setEnabled(undoManager.CanUndo() && placeDocument->runState() == RUN_STOPPED);
     ui->actionRedo->setEnabled(undoManager.CanRedo() && placeDocument->runState() == RUN_STOPPED);
+
+    ui->actionToolInteract->setEnabled(placeDocument->runState() != RUN_STOPPED);
 }
 
 std::optional<std::string> MainWindow::openFileDialog(QString filter, QString defaultExtension, QFileDialog::AcceptMode acceptMode, QString title) {
