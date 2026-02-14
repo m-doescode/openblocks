@@ -111,6 +111,7 @@ set(SOURCES
     src/objects/folder.h
     src/objects/meta.cpp
     src/objects/model.h
+    src/objects/part/clickdetector.cpp
     src/objects/part/part.cpp
     src/objects/part/part.h
     src/objects/part/wedgepart.h

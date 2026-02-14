@@ -16,6 +16,7 @@ DECLTYPE(Script);
 DECLTYPE(Model);
 DECLTYPE(Message);
 DECLTYPE(Hint);
+DECLTYPE(ClickDetector);
 // DECLTYPE(Folder);
 DECLTYPE(Workspace);
 DECLTYPE(JointsService);
@@ -40,6 +41,7 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Model", &Model::Type() },
     { "Message", &Message::Type() },
     { "Hint", &Hint::Type() },
+    { "ClickDetector", &ClickDetector::Type() },
     // { "Folder", &Folder::Type() },
 
     // Services

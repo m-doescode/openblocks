@@ -3,11 +3,13 @@
 #include <miniaudio.h>
 #include <qcursorconstraints.h>
 #include <QPainter>
+#include <qnamespace.h>
 
 #include "./ui_mainwindow.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "math_helper.h"
+#include "objects/part/clickdetector.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/renderer.h"
@@ -331,18 +333,23 @@ void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
         return;
     };
 
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+
     // Interact mode
     if (mainWindow()->selectedTool == TOOL_INTERACT) {
-        // TODO: 
+        if (!rayHit || !rayHit->hitPart) goto end;
+        bool found = rayHit->hitPart->FindFirstChildWhichIsA<ClickDetector>() != nullptr;
+        if (!found) goto end;
+        setCursor(Qt::PointingHandCursor);
         return;
     }
 
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
-    if (rayHit && !rayHit->hitPart->locked) {
+    if (rayHit && rayHit->hitPart && !rayHit->hitPart->locked) {
         setCursor(Qt::OpenHandCursor);
         return;
     }
 
+end:
     setCursor(Qt::ArrowCursor);
 }
 
@@ -358,6 +365,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     handleCameraRotate(evt);
     handleObjectDrag(evt);
     handleCursorChange(evt);
+    handleInteractHover(evt);
 
     switch (mainWindow()->selectedTool) {
     case TOOL_MOVE:
@@ -387,6 +395,54 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
         std::vector<std::shared_ptr<Instance>> castedParts = gWorkspace()->CastFrustum(selectionFrustum);
         gDataModel->GetService<Selection>()->Set(castedParts);
     }
+}
+
+bool MainGLWidget::handleInteractClick(QMouseEvent* evt) {
+    QPoint position = evt->pos();
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+
+    // raycast part
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    if (!rayHit || !rayHit->hitPart) return true;
+    std::shared_ptr<BasePart> part = rayHit->hitPart;
+
+    // Handle interact tool
+    std::shared_ptr<ClickDetector> detector = part->FindFirstChildWhichIsA<ClickDetector>();
+    if (!detector) return true;
+    if (evt->button() == Qt::LeftButton) {
+        detector->MouseClick->Fire();
+    } else if (evt->button() == Qt::RightButton) {
+        detector->RightMouseClick->Fire();
+    }
+    return true;
+}
+
+std::weak_ptr<BasePart> lastHoverTarget;
+bool MainGLWidget::handleInteractHover(QMouseEvent* evt) {
+    QPoint position = evt->pos();
+    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+
+    // raycast part
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    if (!rayHit || !rayHit->hitPart) return true;
+    std::shared_ptr<BasePart> part = rayHit->hitPart;
+
+    // Send leave event to previous target
+    if (!lastHoverTarget.expired() && lastHoverTarget.lock() != part) {
+        std::shared_ptr<ClickDetector> detector = lastHoverTarget.lock()->FindFirstChildWhichIsA<ClickDetector>();
+        if (detector)
+            detector->MouseHoverLeave->Fire();
+    }
+
+    // Send enter event to new target
+    if (lastHoverTarget.expired() || lastHoverTarget.lock() != part) {
+        std::shared_ptr<ClickDetector> detector = part->FindFirstChildWhichIsA<ClickDetector>();
+        if (detector)
+            detector->MouseHoverEnter->Fire();
+    }
+
+    lastHoverTarget = part;
+    return true;
 }
 
 bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
@@ -437,7 +493,6 @@ bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
 
     // Handle interact tool
     if (mainWindow()->selectedTool == TOOL_INTERACT) {
-        // TODO:
         return true;
     }
 
@@ -463,6 +518,11 @@ bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
 void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     initialTransforms = {};
     tryMouseContextMenu = evt->button() == Qt::RightButton;
+
+    if (mainWindow()->selectedTool == TOOL_INTERACT) {
+        handleInteractClick(evt);
+    }
+
     switch(evt->button()) {
     // Camera drag
     case Qt::RightButton: {

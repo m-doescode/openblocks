@@ -29,6 +29,8 @@ protected:
     void handleRotationalTransform(QMouseEvent* evt);
     void handleCursorChange(QMouseEvent* evt);
     bool handlePartClick(QMouseEvent* evt);
+    bool handleInteractClick(QMouseEvent* evt);
+    bool handleInteractHover(QMouseEvent* evt);
     void startLinearTransform(QMouseEvent* evt);
     std::optional<HandleFace> raycastHandle(glm::vec3 pointDir);
 

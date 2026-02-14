@@ -103,6 +103,8 @@ public:
     // Utility functions
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
     nullable std::shared_ptr<Instance> FindFirstChild(std::string);
+    nullable std::shared_ptr<Instance> FindFirstChildWhichIsA(std::string);
+    template <typename T> nullable std::shared_ptr<T> FindFirstChildWhichIsA() { return std::dynamic_pointer_cast<T>(FindFirstChildWhichIsA(T::Type().className)); };
     std::string GetFullName();
     
     // Dynamically create an instance

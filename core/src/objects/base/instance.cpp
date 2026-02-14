@@ -154,6 +154,14 @@ nullable std::shared_ptr<Instance> Instance::FindFirstChild(std::string name) {
     return nullptr;
 }
 
+nullable std::shared_ptr<Instance> Instance::FindFirstChildWhichIsA(std::string className) {
+    for (auto child : children) {
+        if (child->IsA(className))
+            return child;
+    }
+    return nullptr;
+}
+
 static std::shared_ptr<Instance> DUMMY_INSTANCE;
 DescendantsIterator Instance::GetDescendantsStart() {
     return DescendantsIterator(GetChildren().size() > 0 ? GetChildren()[0] : DUMMY_INSTANCE);
