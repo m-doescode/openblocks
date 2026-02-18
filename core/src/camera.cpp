@@ -13,6 +13,13 @@ glm::mat4 Camera::getLookAt() {
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraFront = glm::normalize(direction);
 
+    if (mode == CameraMode::FIRSTPERSON) {
+        cameraPos = targetPos;
+    } else if (mode == CameraMode::ORBIT) {
+        cameraPos = targetPos + cameraFront * 10.f;
+        cameraFront = -cameraFront;
+    }
+
     return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
@@ -21,22 +28,22 @@ void Camera::processMovement(Direction direction, float deltaTime) {
 
     switch (direction) {
         case DIRECTION_FORWARD:
-            cameraPos += speed * cameraFront;
+            targetPos += speed * cameraFront;
             break;
         case DIRECTION_BACKWARDS:
-            cameraPos -= speed * cameraFront;
+            targetPos -= speed * cameraFront;
             break;
         case DIRECTION_LEFT:
-            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+            targetPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
             break;
         case DIRECTION_RIGHT:
-            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+            targetPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
             break;
         case DIRECTION_UP:
-            cameraPos += cameraUp * speed;
+            targetPos += cameraUp * speed;
             break;
         case DIRECTION_DOWN:
-            cameraPos -= cameraUp * speed;
+            targetPos -= cameraUp * speed;
             break;
     }
 }

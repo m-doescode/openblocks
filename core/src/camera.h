@@ -10,11 +10,18 @@ enum Direction {
     DIRECTION_DOWN,
 };
 
+enum class CameraMode {
+    FIRSTPERSON,
+    ORBIT
+};
+
 class Camera {
 public:
     glm::vec3 cameraPos;
+    glm::vec3 targetPos;
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    CameraMode mode = CameraMode::FIRSTPERSON;
 
     float pitch = 0., yaw = -90., roll = 0.;
 
