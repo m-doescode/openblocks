@@ -567,7 +567,6 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     draggingObject = {};
     draggingHandle = std::nullopt;
     selectionLasso = {0,0,0,0};
-    setCursor(Qt::ArrowCursor);
 
     if (!initialTransforms.empty()) {
         UndoState historyState;
