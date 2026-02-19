@@ -1,3 +1,4 @@
+#include <cmath>
 #include <glad/gl.h>
 #include <memory>
 #include <miniaudio.h>
@@ -6,6 +7,7 @@
 #include <qnamespace.h>
 
 #include "./ui_mainwindow.h"
+#include "camera.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "math_helper.h"
@@ -353,8 +355,14 @@ end:
     setCursor(Qt::ArrowCursor);
 }
 
+static float targetZoom = 10.0f;
 void MainGLWidget::wheelEvent(QWheelEvent* evt) {
-    camera.processMovement(evt->angleDelta().y() < 0 ? DIRECTION_BACKWARDS : DIRECTION_FORWARD, 0.25f);
+    if (camera.mode == CameraMode::FIRSTPERSON) {
+        camera.processMovement(evt->angleDelta().y() < 0 ? DIRECTION_BACKWARDS : DIRECTION_FORWARD, 0.25f);
+    } else {
+        targetZoom += -evt->angleDelta().y() / 20.0f;
+        targetZoom = std::max(targetZoom, 1.0f);
+    }
 
     if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/SWITCH3.wav"))
         playSound("./assets/excluded/SWITCH3.wav");
@@ -615,18 +623,24 @@ void MainGLWidget::updateCycle() {
     if (moveYw)
         camera.processMovement(moveYw == 1 ? DIRECTION_UP : DIRECTION_DOWN, deltaTime);
 
+    camera.zoom = std::lerp(camera.zoom, targetZoom, 0.5f);
 }
 
 int partId = 1;
 void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
-    if (evt->key() == Qt::Key_W) moveZ = 1;
-    else if (evt->key() == Qt::Key_S) moveZ = -1;
-    
-    if (evt->key() == Qt::Key_A) moveX = 1;
-    else if (evt->key() == Qt::Key_D) moveX = -1;
+    if (evt->key() == Qt::Key_Semicolon)
+        camera.mode = camera.mode == CameraMode::FIRSTPERSON ? CameraMode::ORBIT : CameraMode::FIRSTPERSON;
 
-    if (evt->key() == Qt::Key_E) moveYw = 1;
-    else if (evt->key() == Qt::Key_Q) moveYw = -1;
+    if (camera.mode == CameraMode::FIRSTPERSON) {
+        if (evt->key() == Qt::Key_W) moveZ = 1;
+        else if (evt->key() == Qt::Key_S) moveZ = -1;
+        
+        if (evt->key() == Qt::Key_A) moveX = 1;
+        else if (evt->key() == Qt::Key_D) moveX = -1;
+
+        if (evt->key() == Qt::Key_E) moveYw = 1;
+        else if (evt->key() == Qt::Key_Q) moveYw = -1;
+    }
 
     if (evt->key() == Qt::Key_F) {
         gWorkspace()->AddChild(lastPart = Part::New({

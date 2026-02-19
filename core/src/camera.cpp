@@ -16,7 +16,7 @@ glm::mat4 Camera::getLookAt() {
     if (mode == CameraMode::FIRSTPERSON) {
         cameraPos = targetPos;
     } else if (mode == CameraMode::ORBIT) {
-        cameraPos = targetPos + cameraFront * 10.f;
+        cameraPos = targetPos + cameraFront * zoom;
         cameraFront = -cameraFront;
     }
 

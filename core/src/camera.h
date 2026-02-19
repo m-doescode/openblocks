@@ -27,6 +27,7 @@ public:
 
     float movementSpeed = 10.0f;
     float mouseSensitivity = 0.2f;
+    float zoom = 10.0f; // Distance from targetPos in orbit camera mode
 
     Camera(glm::vec3 initialPosition);
 
