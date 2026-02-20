@@ -101,6 +101,7 @@ public:
     std::vector<std::shared_ptr<Instance>> GetChildren();
     std::vector<std::shared_ptr<Instance>> GetDescendants();
     void Destroy();
+    void ClearAllChildren();
     template <typename T> bool IsA() { return IsA(T::Type().className); }
     [[deprecated]] DescendantsIterator GetDescendantsStart();
     [[deprecated]] DescendantsIterator GetDescendantsEnd();

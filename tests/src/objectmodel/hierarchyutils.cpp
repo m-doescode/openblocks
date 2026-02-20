@@ -81,4 +81,32 @@ TEST_CASE("Hierarchy utilities") {
         REQUIRE(m->GetChildren() == std::vector<std::shared_ptr<Instance>> { m1, m2, m5 });
         REQUIRE(m->GetDescendants() == std::vector<std::shared_ptr<Instance>> { m1, m2, m3, m4, m5, m6, m7 });
     }
+
+    SECTION("Destroy") {
+        auto m = append_model(root, "");
+        auto m1 = append_model(m, "");
+
+        m1->Destroy();
+        REQUIRE(m1->GetParent() == nullptr);
+        REQUIRE(m1->IsParentLocked() == true);
+    }
+
+    SECTION("ClearAllChildren") {
+        auto m = append_model(root, "");
+        auto m1 = append_model(m, "");
+        auto m2 = append_model(m, "");
+        auto m3 = append_model(m2, "");
+        auto m4 = append_model(m2, "");
+        auto m5 = append_model(m, "");
+        auto m6 = append_model(m5, "");
+        auto m7 = append_model(m5, "");
+
+        m->ClearAllChildren();
+        REQUIRE(m->GetParent() == root);
+        REQUIRE(m->IsParentLocked() == false);
+        REQUIRE(m1->GetParent() == nullptr);
+        REQUIRE(m1->IsParentLocked() == true);
+        REQUIRE(m6->GetParent() == nullptr);
+        REQUIRE(m6->IsParentLocked() == true);
+    }
 }

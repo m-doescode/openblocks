@@ -59,6 +59,7 @@ const InstanceType& Instance::Type() {
         type.methods["FindFirstAncestorOfClass"] = def_method("FindFirstChildOfClass", &Instance::FindFirstAncestorOfClass);
         type.methods["Destroy"] = def_method("Destroy", &Instance::Destroy);
         type.methods["Remove"] = def_method("Remove", &Instance::ScriptRemove);
+        type.methods["ClearAllChildren"] = def_method("ClearAllChildren", &Instance::ClearAllChildren);
     }
 
     return type;
@@ -173,6 +174,16 @@ void Instance::Destroy() {
     // TODO: Implement proper destruction stuff
     SetParent(nullptr);
     parentLocked = true;
+}
+
+void Instance::ClearAllChildren() {
+    // Use GetChildren() instead of children because
+    // modifying a vector while it is being iterated on
+    // will lead to issues.
+    for (auto&& child : GetChildren()) {
+        child->ClearAllChildren();
+        child->Destroy();
+    }
 }
 
 bool Instance::IsA(std::string className) {

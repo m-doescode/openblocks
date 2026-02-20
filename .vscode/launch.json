@@ -12,6 +12,13 @@
             "cwd": "${workspaceFolder}",
         },
         {
+            "type": "gdb",
+            "request": "launch",
+            "name": "Debug tests (gdb)",
+            "program": "${workspaceFolder}/build/bin/obtest",
+            "cwd": "${workspaceFolder}",
+        },
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
