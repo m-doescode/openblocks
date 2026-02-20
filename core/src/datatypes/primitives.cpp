@@ -2,6 +2,7 @@
 #include "datatypes/base.h"
 #include "datatypes/enum.h"
 #include "error/data.h"
+#include "logger.h"
 #include "variant.h"
 #include <pugixml.hpp>
 #include "luaapis.h" // IWYU pragma: keep
@@ -89,7 +90,7 @@ void Bool_PushLuaValue(Variant self, lua_State* L) {
 
 result<Variant, LuaCastError> Bool_FromLuaValue(lua_State* L, int idx) {
     if (!lua_isboolean(L, idx))
-        return LuaCastError(lua_typename(L, idx), "boolean");
+        return LuaCastError(lua_typename(L, lua_type(L, idx)), "boolean");
     return Variant((bool)lua_toboolean(L, idx));
 }
 
@@ -132,7 +133,7 @@ void Int_PushLuaValue(Variant self, lua_State* L) {
 
 result<Variant, LuaCastError> Int_FromLuaValue(lua_State* L, int idx) {
     if (!lua_isnumber(L, idx))
-        return LuaCastError(lua_typename(L, idx), "integer");
+        return LuaCastError(lua_typename(L, lua_type(L, idx)), "integer");
     return Variant((int)lua_tonumber(L, idx));
 }
 
@@ -177,7 +178,7 @@ void Float_PushLuaValue(Variant self, lua_State* L) {
 
 result<Variant, LuaCastError> Float_FromLuaValue(lua_State* L, int idx) {
     if (!lua_isnumber(L, idx))
-        return LuaCastError(lua_typename(L, idx), "float");
+        return LuaCastError(lua_typename(L, lua_type(L, idx)), "float");
     return Variant((float)lua_tonumber(L, idx));
 }
 
@@ -217,7 +218,7 @@ void String_PushLuaValue(Variant self, lua_State* L) {
 
 result<Variant, LuaCastError> String_FromLuaValue(lua_State* L, int idx) {
     if (!lua_tostring(L, idx))
-        return LuaCastError(lua_typename(L, idx), "string");
+        return LuaCastError(lua_typename(L, lua_type(L, idx)), "string");
     return Variant(lua_tostring(L, idx));
 }
 
@@ -232,3 +233,66 @@ const TypeDesc STRING_TYPE {
 };
 
 // /string
+
+// array
+
+TypeMeta::TypeMeta(const std::shared_ptr<const TypeMeta> nestedType) : nestedType(nestedType) {}
+
+void Array_Serialize(Variant self, pugi::xml_node node) {
+    Logger::fatalError("Array serialization is not yet implemented");
+    // node.text().set(self.get<std::vector<Variant>>());
+}
+
+result<Variant, DataParseError> Array_Deserialize(pugi::xml_node node, const TypeMeta) {
+    Logger::fatalError("Array serialization is not yet implemented");
+    return DataParseError(node.name(), "array<NIY>");
+}
+
+const std::string Array_ToString(Variant self) {
+    auto vec = self.get<std::vector<Variant>>();
+    std::stringstream buf;
+    buf << "[";
+    for (auto&& item : vec) {
+        buf << item.ToString() << ",";
+    }
+    buf << "]";
+    return buf.str();
+}
+
+result<Variant, DataParseError> Array_FromString(std::string string, const TypeMeta) {
+    Logger::fatalError("Array from string is not yet implemented");
+    return DataParseError(string, "array<NIY>");
+}
+
+void Array_PushLuaValue(Variant self, lua_State* L) {
+    auto vec = self.get<std::vector<Variant>>();
+    lua_createtable(L, vec.size(), 0);
+    for (size_t i = 0; i < vec.size(); i++) {
+        auto&& item = vec[i];
+        item.PushLuaValue(L);
+        lua_rawseti(L, -2, i+1);
+    }
+}
+
+result<Variant, LuaCastError> Array_FromLuaValue(lua_State* L, int idx) {
+    Logger::fatalError("Array from lua is not yet implemented");
+    return LuaCastError(lua_typename(L, lua_type(L, idx)), "array<NIY>");
+    // std::vector<Variant> vec;
+    // luaL_checktype(L, idx, LUA_TTABLE);
+    // for (size_t i = 0; i < lua_objlen(L, idx); i++) {
+    //     Variant value = 
+    // }
+    // return vec;
+}
+
+const TypeDesc ARRAY_TYPE {
+    "array",
+    Array_Serialize,
+    Array_Deserialize,
+    Array_ToString,
+    Array_FromString,
+    Array_PushLuaValue,
+    Array_FromLuaValue,
+};
+
+// /array

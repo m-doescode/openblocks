@@ -35,6 +35,7 @@ const TypeDesc* VARIANT_TYPES[] {
     &SignalConnectionRef::TYPE,
     &Enum::TYPE,
     &EnumItem::TYPE,
+    &ARRAY_TYPE
 };
 
 const TypeMeta Variant::GetTypeMeta() const {

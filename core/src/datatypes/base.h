@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <functional>
 #include <optional>
@@ -41,10 +42,12 @@ struct TypeMeta {
         const Enum* enum_; // Applicable for EnumItem
         const InstanceType* instType; // Applicable for InstanceRef
     };
+    const std::shared_ptr<const TypeMeta> nestedType; // Applicable for arrays
 
     inline TypeMeta(const TypeDesc* descriptor) : descriptor(descriptor) {}
     TypeMeta(const Enum*);
     TypeMeta(const InstanceType*);
+    TypeMeta(const std::shared_ptr<const TypeMeta>);
 
     // Temporary until this gets replaced
     TypeMeta();

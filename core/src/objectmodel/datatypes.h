@@ -23,6 +23,11 @@ struct type_meta_of_t<std::weak_ptr<T>> {
     TypeMeta value = &T::Type();
 };
 
+template <typename T>
+struct type_meta_of_t<std::vector<T>> {
+    TypeMeta value = TypeMeta(std::make_shared<TypeMeta>(type_meta_of_t<T>().value));
+};
+
 template <>
 struct type_meta_of_t<std::monostate> {
     TypeMeta value = &NULL_TYPE;

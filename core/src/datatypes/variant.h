@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <variant>
 #include <map>
+#include <vector>
 #include "base.h"
 #include "datatypes/color3.h"
 #include "datatypes/enum.h"
@@ -27,7 +28,8 @@ using __VARIANT_TYPE = std::variant<
     SignalRef,
     SignalConnectionRef,
     Enum,
-    EnumItem
+    EnumItem,
+    std::vector<Variant>
 >;
 
 // Is this a valid generic type
@@ -45,6 +47,13 @@ template <typename T> __is_simple_variant_type_t<T, T> __from_variant(__VARIANT_
 template <typename T> std::enable_if_t<std::is_enum_v<T>, T> __from_variant(__VARIANT_TYPE& wrapped) { return (T)std::get<EnumItem>(wrapped).Value(); }
 template <typename T, typename U = typename T::element_type> T __from_variant(__VARIANT_TYPE& wrapped) {
     return std::dynamic_pointer_cast<U>((std::shared_ptr<Instance>)std::get<InstanceRef>(wrapped)); }
+
+template <typename T> struct is_vector_type_t : std::bool_constant<false> {};
+template <typename T> struct is_vector_type_t<std::vector<T>> : std::bool_constant<true> {};
+template <typename T> inline constexpr bool is_vector_type = is_vector_type_t<T>::value;
+
+template <typename T> std::enable_if_t<is_vector_type<T>, std::vector<Variant>> __to_variant(T& invec);
+template <typename T> std::enable_if_t<is_vector_type<T> && !std::is_same_v<T, std::vector<Variant>>, T> __from_variant(__VARIANT_TYPE& wrapped);
 
 class Variant {
     __VARIANT_TYPE wrapped;
@@ -102,3 +111,26 @@ std::function<result<Variant, E...>(Args..., const TypeMeta)> toVariantGenerator
 
 // Map of all data types to their type names
 extern std::map<std::string, const TypeDesc*> TYPE_MAP;
+
+
+template <typename T> std::enable_if_t<is_vector_type<T>, std::vector<Variant>> __to_variant(T& invec) {
+    std::vector<Variant> outvec;
+
+    for (auto&& elem : invec) {
+        outvec.push_back(Variant(elem));
+    }
+
+    return outvec;
+}
+
+template <typename T> std::enable_if_t<is_vector_type<T> && !std::is_same_v<T, std::vector<Variant>>, T> __from_variant(__VARIANT_TYPE& wrapped) {
+    using U = T::element_type;
+    std::vector<Variant>& invec = std::get<std::vector<Variant>>(wrapped);
+    std::vector<U> outvec;
+
+    for (auto&& elem : invec) {
+        outvec.push_back(std::get<U>(elem));
+    }
+
+    return outvec;
+}
