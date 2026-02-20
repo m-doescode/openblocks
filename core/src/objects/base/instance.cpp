@@ -2,6 +2,7 @@
 #include <cctype>
 #include <cstddef>
 #include <cstdio>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -43,8 +44,21 @@ const InstanceType& Instance::Type() {
         type.properties["Name"] = def_property("Name", &Instance::name);
         type.properties["Parent"] = def_property_apex(type, "Parent", &Instance::parent, PROP_NOSAVE);
         type.properties["ClassName"] = def_property<std::string, Instance>("ClassName", [](Instance* obj){ return obj->GetType().className; }, PROP_NOSAVE | PROP_READONLY);
-    
+        
         type.methods["Clone"] = def_method("Clone", &Instance::ScriptClone);
+        type.methods["GetFullName"] = def_method("GetFullName", &Instance::GetFullName);
+        type.methods["GetChildren"] = def_method("GetChildren", &Instance::GetChildren);
+        type.methods["GetDescendants"] = def_method("GetDescendants", &Instance::GetDescendants);
+        type.methods["FindFirstChild"] = def_method("FindFirstChild", &Instance::FindFirstChild);
+        // TODO: Add default (last) parameter
+        type.methods["FindFirstChildWhichIsA"] = def_method("FindFirstChildWhichIsA", &Instance::ScriptFindFirstChildWhichIsA);
+        type.methods["FindFirstChildOfClass"] = def_method("FindFirstChildOfClass", &Instance::FindFirstChildOfClass);
+        type.methods["FindFirstAncestor"] = def_method("FindFirstAncestor", &Instance::FindFirstAncestor);
+        // TODO: Add default (last) parameter
+        type.methods["FindFirstAncestorWhichIsA"] = def_method("FindFirstChildWhichIsA", &Instance::ScriptFindFirstAncestorWhichIsA);
+        type.methods["FindFirstAncestorOfClass"] = def_method("FindFirstChildOfClass", &Instance::FindFirstAncestorOfClass);
+        type.methods["Destroy"] = def_method("Destroy", &Instance::Destroy);
+        type.methods["Remove"] = def_method("Remove", &Instance::ScriptRemove);
     }
 
     return type;
@@ -133,9 +147,30 @@ nullable std::shared_ptr<Instance> Instance::GetParent() {
     return parent.expired() ? nullptr : parent.lock();
 }
 
+std::vector<std::shared_ptr<Instance>> Instance::GetChildren() {
+    return children;
+}
+
+std::vector<std::shared_ptr<Instance>> Instance::GetDescendants() {
+    std::vector<std::shared_ptr<Instance>> descendants;
+    std::function<void(std::shared_ptr<Instance>&)> recurse = [&recurse, &descendants](std::shared_ptr<Instance>& obj) {
+        for (auto&& child : obj->children) {
+            descendants.push_back(child);
+            recurse(child);
+        }
+    };
+    auto self = shared_from_this();
+    recurse(self);
+    return descendants;
+}
+
+void Instance::ScriptRemove() {
+    SetParent(nullptr);
+}
+
 void Instance::Destroy() {
     if (parentLocked) return;
-    // TODO: Implement proper distruction stuff
+    // TODO: Implement proper destruction stuff
     SetParent(nullptr);
     parentLocked = true;
 }
@@ -158,6 +193,44 @@ nullable std::shared_ptr<Instance> Instance::FindFirstChildWhichIsA(std::string 
     for (auto child : children) {
         if (child->IsA(className))
             return child;
+    }
+    return nullptr;
+}
+
+nullable std::shared_ptr<Instance> Instance::FindFirstChildOfClass(std::string className) {
+    for (auto child : children) {
+        if (child->GetType().className == className)
+            return child;
+    }
+    return nullptr;
+}
+
+nullable std::shared_ptr<Instance> Instance::FindFirstAncestor(std::string name) {
+    Instance* cur = GetParent().get();
+    while (cur != nullptr) {
+        if (cur->name == name)
+            return cur->shared_from_this();
+        cur = cur->GetParent().get();
+    }
+    return nullptr;
+}
+
+nullable std::shared_ptr<Instance> Instance::FindFirstAncestorWhichIsA(std::string className) {
+    Instance* cur = GetParent().get();
+    while (cur != nullptr) {
+        if (cur->IsA(className))
+            return cur->shared_from_this();
+        cur = cur->GetParent().get();
+    }
+    return nullptr;
+}
+
+nullable std::shared_ptr<Instance> Instance::FindFirstAncestorOfClass(std::string className) {
+    Instance* cur = GetParent().get();
+    while (cur != nullptr) {
+        if (cur->GetType().className == className)
+            return cur->shared_from_this();
+        cur = cur->GetParent().get();
     }
     return nullptr;
 }

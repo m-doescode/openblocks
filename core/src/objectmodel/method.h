@@ -36,7 +36,12 @@ InstanceMethod def_method(std::string name, T (C::*func)(Args...)) {
             int i = 0;
             std::tuple<C*, Args...> targs = { obj.get(), args.at(i++).get<Args>()... };
 
-            return GenericResult(std::apply(func, targs));
+            if constexpr (std::is_void_v<T>) {
+                std::apply(func, targs);
+                return std::monostate();
+            } else {
+                return GenericResult(std::apply(func, targs));
+            }
         },
         type_meta_of<T>(),
         { type_meta_of<Args>()... }

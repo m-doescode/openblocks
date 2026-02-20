@@ -34,6 +34,11 @@ struct type_meta_of_t<std::monostate> {
 };
 
 template <>
+struct type_meta_of_t<void> {
+    TypeMeta value = &NULL_TYPE;
+};
+
+template <>
 struct type_meta_of_t<bool> {
     TypeMeta value = &BOOL_TYPE;
 };

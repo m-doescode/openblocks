@@ -10,6 +10,7 @@ add_executable(obtest
     src/lua/luasignal.cpp
     src/objectmodel/basic.cpp
     src/objectmodel/datamodel.cpp
+    src/objectmodel/hierarchyutils.cpp
     src/objectmodelv2/typemeta.cpp
     src/objectmodelv2/members.cpp
     src/objectmodelv2/categories.cpp

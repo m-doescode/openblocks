@@ -54,6 +54,8 @@ private:
     bool ancestryContinuityCheck(nullable std::shared_ptr<Instance> newParent);
     void updateAncestry(nullable std::shared_ptr<Instance> child, nullable std::shared_ptr<Instance> newParent);
 
+    void ScriptRemove();
+
     friend JointInstance; // This isn't ideal, but oh well
 protected:
     bool parentLocked = false;
@@ -85,27 +87,43 @@ public:
 
     // Signals
     SignalSource AncestryChanged;
-
-    static void PushLuaLibrary(lua_State*); // Defined in lua/instancelib.cpp
-    bool SetParent(nullable std::shared_ptr<Instance> newParent);
-    nullable std::shared_ptr<Instance> GetParent();
-    bool IsParentLocked();
-    inline const std::vector<std::shared_ptr<Instance>> GetChildren() { return children; }
-    void Destroy();
-    // Determines whether this object is an instance of, or an instance of a subclass of the sepcified type's class name
-    bool IsA(std::string className);
-    template <typename T> bool IsA() { return IsA(T::Type().className); }
     
     template <typename T> inline std::shared_ptr<T> shared() { return std::dynamic_pointer_cast<T>(this->shared_from_this()); }
 
-    DescendantsIterator GetDescendantsStart();
-    DescendantsIterator GetDescendantsEnd();
-    // Utility functions
+    // Lua
+    static void PushLuaLibrary(lua_State*); // Defined in lua/instancelib.cpp
+
+    // Object hierarchy
+    bool SetParent(nullable std::shared_ptr<Instance> newParent);
     inline void AddChild(std::shared_ptr<Instance> object) { object->SetParent(this->shared_from_this()); }
+    nullable std::shared_ptr<Instance> GetParent();
+    bool IsParentLocked();
+    std::vector<std::shared_ptr<Instance>> GetChildren();
+    std::vector<std::shared_ptr<Instance>> GetDescendants();
+    void Destroy();
+    template <typename T> bool IsA() { return IsA(T::Type().className); }
+    [[deprecated]] DescendantsIterator GetDescendantsStart();
+    [[deprecated]] DescendantsIterator GetDescendantsEnd();
+    std::string GetFullName();
+    
     nullable std::shared_ptr<Instance> FindFirstChild(std::string);
     nullable std::shared_ptr<Instance> FindFirstChildWhichIsA(std::string);
     template <typename T> nullable std::shared_ptr<T> FindFirstChildWhichIsA() { return std::dynamic_pointer_cast<T>(FindFirstChildWhichIsA(T::Type().className)); };
-    std::string GetFullName();
+    nullable std::shared_ptr<Instance> FindFirstChildOfClass(std::string);
+    
+    nullable std::shared_ptr<Instance> FindFirstAncestor(std::string);
+    nullable std::shared_ptr<Instance> FindFirstAncestorWhichIsA(std::string);
+    template <typename T> nullable std::shared_ptr<T> FindFirstAncestorWhichIsA() { return std::dynamic_pointer_cast<T>(FindFirstAncestorWhichIsA(T::Type().className)); };
+    nullable std::shared_ptr<Instance> FindFirstAncestorOfClass(std::string);
+
+    // Script aliases
+    inline nullable std::shared_ptr<Instance> ScriptFindFirstChildWhichIsA(std::string className) { return FindFirstChildWhichIsA(className); }
+    inline nullable std::shared_ptr<Instance> ScriptFindFirstAncestorWhichIsA(std::string className) { return FindFirstAncestorWhichIsA(className); }
+
+    // Determines whether this object is an instance of, or an instance of a subclass of the sepcified type's class name
+    bool IsA(std::string className);
+    bool IsAncestorOf(std::shared_ptr<Instance> descendant);
+    bool IsDescendantOf(std::shared_ptr<Instance> ancestor);
     
     // Dynamically create an instance
     static result<std::shared_ptr<Instance>, NoSuchInstance, NotCreatableInstance> New(std::string className);
@@ -137,7 +155,7 @@ public:
 };
 
 // https://gist.github.com/jeetsukumaran/307264
-class DescendantsIterator {
+class [[deprecated]] DescendantsIterator {
 public:
     typedef DescendantsIterator self_type;
     typedef std::shared_ptr<Instance> value_type;
