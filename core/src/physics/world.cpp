@@ -38,8 +38,6 @@
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
 #include <Jolt/Physics/Constraints/HingeConstraint.h>
-#include <algorithm>
-#include <cstdio>
 #include <memory>
 
 static JPH::TempAllocator* allocator;
@@ -58,7 +56,7 @@ namespace BPLayers
 	static constexpr JPH::BroadPhaseLayer ANCHORED(0);
 	static constexpr JPH::BroadPhaseLayer DYNAMIC(1);
 	static constexpr JPH::BroadPhaseLayer NOCOLLIDE(2);
-	static constexpr uint NUM_LAYERS(3);
+	static constexpr JPH::uint NUM_LAYERS(3);
 };
 
 static JPH::Ref<JPH::Shape> wedgeShape;
@@ -338,7 +336,7 @@ std::optional<const RaycastResult> PhysWorld::castRay(Vector3 point, Vector3 rot
     };
 }
 
-uint BroadPhaseLayerInterface::GetNumBroadPhaseLayers() const {
+JPH::uint BroadPhaseLayerInterface::GetNumBroadPhaseLayers() const {
     return BPLayers::NUM_LAYERS;
 }
 

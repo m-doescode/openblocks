@@ -98,7 +98,7 @@ class BasePart;
 typedef std::function<FilterResult(std::shared_ptr<BasePart>)> RaycastFilter;
 
 class BroadPhaseLayerInterface : public JPH::BroadPhaseLayerInterface {
-    uint GetNumBroadPhaseLayers() const override;
+    JPH::uint GetNumBroadPhaseLayers() const override;
     JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override;
     const char * GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override;
 };

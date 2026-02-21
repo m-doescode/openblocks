@@ -1,4 +1,4 @@
 
 include(CPM)
 
-CPMAddPackage("gh:m-doescode/qcursorconstraints#eb674e1fab418c4c5ccb7c599c19bd2e8a062faf")
+CPMAddPackage("gh:m-doescode/qcursorconstraints#9c71515e64be7853b00e78dc5f755c6d1607eb9b")

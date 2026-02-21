@@ -6,7 +6,7 @@ set (PREV_BIN_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 unset (CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
 CPMAddPackage("gh:g-truc/glm#1.0.1")
-CPMAddPackage(NAME Jolt GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics" VERSION 5.3.0 SOURCE_SUBDIR "Build")
+CPMAddPackage(NAME Jolt GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics" VERSION 5.3.0 SOURCE_SUBDIR "Build" PATCHES ${CMAKE_SOURCE_DIR}/patches/jolt_farproc.patch)
 CPMAddPackage("gh:zeux/pugixml@1.15")
 
 # TODO: Figure out why this repo causes ft2 to keep rebuilding every time
