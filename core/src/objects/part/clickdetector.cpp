@@ -2,6 +2,8 @@
 #include "objectmodel/signal.h"
 #include "objectmodel/type.h"
 
+INSTANCE_IMPL(ClickDetector)
+
 InstanceType ClickDetector::__buildType() {
     return make_instance_type<ClickDetector>("ClickDetector",
         set_explorer_icon("mouse"),

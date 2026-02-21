@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <memory>
 
+INSTANCE_IMPL(Selection)
+
 InstanceType Selection::__buildType() {
     return make_instance_type<Selection>("Selection", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE | INSTANCE_HIDDEN);
 }

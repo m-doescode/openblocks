@@ -4,6 +4,8 @@
 #include "objects/service/workspace.h"
 #include "objects/datamodel.h"
 
+INSTANCE_IMPL(ServerScriptService)
+
 InstanceType ServerScriptService::__buildType() {
     return make_instance_type<ServerScriptService>("ServerScriptService", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
         set_explorer_icon("server-scripts")

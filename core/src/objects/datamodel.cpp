@@ -17,6 +17,8 @@
 #include <memory>
 #include <optional>
 
+INSTANCE_IMPL(DataModel)
+
 int _dbgDataModelDestroyCount = 0;
 
 InstanceType DataModel::__buildType() {

@@ -13,6 +13,8 @@
 #include "timeutil.h"
 #include "luaapis.h" // IWYU pragma: keep
 
+INSTANCE_IMPL(ScriptContext)
+
 const char* WRAPPER_SRC = "local func, errhandler = ... return function(...) local args = {...} xpcall(function() func(unpack(args)) end, errhandler) end";
 
 int g_wait(lua_State*);

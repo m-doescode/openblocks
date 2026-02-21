@@ -19,6 +19,8 @@
 #include <glm/common.hpp>
 #include <memory>
 
+INSTANCE_IMPL(BasePart)
+
 #undef def_signal
 
 InstanceProperty def_position_property(MemberPropertyListener<BasePart> listener) {
