@@ -6,14 +6,21 @@ set (PREV_BIN_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 unset (CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
 CPMAddPackage("gh:g-truc/glm#1.0.1")
-CPMAddPackage(NAME Jolt GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics" VERSION 5.3.0 SOURCE_SUBDIR "Build")
+CPMAddPackage(
+    NAME Jolt
+    GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+    VERSION 5.3.0
+    SOURCE_SUBDIR "Build"
+    # https://github.com/jrouwe/JoltPhysics/issues/1724#issuecomment-3179656866
+    OPTIONS "USE_STATIC_MSVC_RUNTIME_LIBRARY OFF"
+)
 CPMAddPackage("gh:zeux/pugixml@1.15")
 
 # TODO: Figure out why this repo causes ft2 to keep rebuilding every time
 # For now, I'll just make it use CPM as a fallback
 # CPMAddPackage(
 CPMFindPackage(
-    NAME Freetype
+    NAME freetype
     GIT_REPOSITORY https://github.com/aseprite/freetype2.git
     GIT_TAG VER-2-10-0
     VERSION 2.10.0
