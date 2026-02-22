@@ -1,6 +1,7 @@
 #include "font.h"
 #include "logger.h"
 #include "panic.h"
+#include "rendering/assets.h"
 #include "rendering/shader.h"
 
 #include <glad/gl.h>
@@ -81,7 +82,7 @@ static void loadCharTexture(FT_Face& face, FT_BitmapGlyph& glyph_bitmap, Charact
 }
 
 std::shared_ptr<Font> loadFont(std::string fontName) {
-    std::string fontPath = "assets/font/" + fontName;
+    std::string fontPath = resolveAssetPath("assets/font/" + fontName);
 
     FT_Face face;
     if (FT_Error err = FT_New_Face(freetype, fontPath.c_str(), 0, &face)) {

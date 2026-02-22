@@ -5,6 +5,7 @@
 
 #include "panic.h"
 #include "logger.h"
+#include "rendering/assets.h"
 
 Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned int tileHeight, unsigned int tileCount, unsigned int format) {
     glGenTextures(1, &this->ID);
@@ -21,7 +22,7 @@ Texture3D::Texture3D(const char* texturePath, unsigned int tileWidth, unsigned i
 
     // stbi_set_flip_vertically_on_load(true);
     int width, height, nrChannels;
-    unsigned char *data = stbi_load(texturePath, &width, &height,
+    unsigned char *data = stbi_load(resolveAssetPath(texturePath).c_str(), &width, &height,
                                     &nrChannels, 0);
 
     if (!data) {

@@ -4,6 +4,7 @@
 
 #include "logger.h"
 #include "panic.h"
+#include "rendering/assets.h"
 #include "shader.h"
 
 std::string getContents(std::string filePath) {
@@ -18,7 +19,7 @@ unsigned int compileShader(std::string path, GLenum type) {
     int success;
     unsigned int shader = glCreateShader(type);
 
-    std::string source = getContents(path);
+    std::string source = getContents(resolveAssetPath(path));
     const char* source2 = source.c_str();
     glShaderSource(shader, 1, &source2, NULL);
     glCompileShader(shader);

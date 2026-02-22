@@ -35,6 +35,7 @@ set(SOURCES
     src/utils.h
     src/platform.h
     src/math_helper.cpp
+    src/rendering/assets.cpp
     src/rendering/skybox.cpp
     src/rendering/mesh2d.cpp
     src/rendering/torus.cpp
