@@ -14,6 +14,7 @@
 #include "objects/part/clickdetector.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
+#include "rendering/assets.h"
 #include "rendering/renderer.h"
 #include "mainglwidget.h"
 
@@ -39,9 +40,10 @@ void MainGLWidget::initializeGL() {
 }
 
 extern ma_engine miniaudio;
-inline void playSound(QString path) {
+inline void playSound(std::string path) {
+    std::string resolvedPath = resolveAssetPath(path);
     ma_engine_stop(&miniaudio);
-    ma_engine_play_sound(&miniaudio, path.toStdString().c_str(), NULL);
+    ma_engine_play_sound(&miniaudio, resolvedPath.c_str(), NULL);
 }
 
 extern int vpx, vpy;
@@ -246,8 +248,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
             selectionAssembly.Scale(selectionAssembly.size() + abs(draggingHandle->normal) * diff, diff > 0);
         }
 
-        if (snappingFactor() > 0 && oldSize != selectionAssembly.size() && mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/switch.wav"))
-            playSound("./assets/excluded/switch.wav");
+        if (snappingFactor() > 0 && oldSize != selectionAssembly.size() && mainWindow()->editSoundEffects && resolveAssetPath("assets/excluded/switch.wav") != "")
+            playSound("assets/excluded/switch.wav");
     }
 }
 
@@ -364,8 +366,8 @@ void MainGLWidget::wheelEvent(QWheelEvent* evt) {
         targetZoom = std::max(targetZoom, 1.0f);
     }
 
-    if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/SWITCH3.wav"))
-        playSound("./assets/excluded/SWITCH3.wav");
+    if (mainWindow()->editSoundEffects && resolveAssetPath("assets/excluded/SWITCH3.wav") != "")
+        playSound("assets/excluded/SWITCH3.wav");
 }
 
 void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
@@ -493,8 +495,8 @@ bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
 
         M_mainWindow->undoManager.PushState({UndoStatePropertyChanged { part, surfacePropertyName, oldSurface, newSurface }});
 
-        if (mainWindow()->editSoundEffects && QFile::exists("./assets/excluded/electronicpingshort.wav"))
-            playSound("./assets/excluded/electronicpingshort.wav");
+        if (mainWindow()->editSoundEffects && resolveAssetPath("assets/excluded/electronicpingshort.wav") != "")
+            playSound("assets/excluded/electronicpingshort.wav");
 
         return true;
     }

@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 #include "objects/base/instance.h"
 #include "objects/base/member.h"
+#include "rendering/assets.h"
 #include "undohistory.h"
 #include <qicon.h>
 #include <qmimedata.h>
@@ -163,7 +164,8 @@ QIcon ExplorerModel::iconOf(const InstanceType& type) const {
     const InstanceType* currentClass = &type;
     while (currentClass->explorerIcon.empty()) currentClass = currentClass->super;
 
-    QIcon icon("assets/icons/" + QString::fromStdString(currentClass->explorerIcon));
+    // We only resolve assets/icons because we don't know the extension of the icon
+    QIcon icon(QString::fromStdString(resolveAssetPath("assets/icons/") + currentClass->explorerIcon));
     instanceIconCache[type.className] = icon;
     return icon;
 }

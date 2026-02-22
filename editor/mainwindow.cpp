@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "rendering/assets.h"
 #include "script/commandedit.h"
 #include "common.h"
 #include "aboutdialog.h"
@@ -78,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->actionRedo->setShortcuts({QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")});
 
-    QIcon::setThemeSearchPaths(QIcon::themeSearchPaths() + QStringList { "./assets/icons" });
+    QIcon::setThemeSearchPaths(QIcon::themeSearchPaths() + QStringList { QString::fromStdString(resolveAssetPath("assets/icons")) });
 
     // Force theme under windows
     #ifdef _WIN32
