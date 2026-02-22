@@ -30,9 +30,19 @@ LuaSignalConnection::LuaSignalConnection(lua_State* L, std::weak_ptr<Signal> par
     // For posterity, since I accidentally removed this once, the parent thread must not be 
     // deleted because it may (likely) contain upvalues that the handler references
     thread = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    // Get the ScriptContext to prevent crash. See ~LuaSignalConnection
 }
 
 LuaSignalConnection::~LuaSignalConnection() {
+    // During destruction of the program, LuaSignalConnection may be destruct after the lua_State, causing a 
+    // crash. This hotfix just grabs a reference to ScriptContext. If the weak_ptr has expired, then so too
+    // should state be invalid, therefore we do nothing.
+    // This is really not ideal and we should be grabbing state from ScriptContext every time, but this will
+    // do for now
+    if (context.expired())
+        return;
+
     // Remove LuaSignalConnectionthread so that it can get properly GC'd
     luaL_unref(state, LUA_REGISTRYINDEX, function);
     luaL_unref(state, LUA_REGISTRYINDEX, thread);

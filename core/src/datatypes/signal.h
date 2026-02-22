@@ -14,6 +14,7 @@
 
 class Instance;
 class Signal;
+class ScriptContext;
 
 class SignalConnectionRef;
 
@@ -46,6 +47,7 @@ public:
 class LuaSignalConnection : public SignalConnection {
     lua_State* state;
     int function, thread;
+    std::weak_ptr<ScriptContext> context;
 
     friend Signal;
 protected:
