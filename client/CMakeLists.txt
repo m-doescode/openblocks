@@ -22,3 +22,5 @@ if (WIN32)
     # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
     target_link_options(client PRIVATE "/ENTRY:mainCRTStartup")
 endif()
+
+install(TARGETS client DESTINATION bin)

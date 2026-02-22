@@ -190,3 +190,11 @@ add_dependencies(openblocks autogen_build autogen)
 if(WIN32)
     target_link_libraries(openblocks shell32.lib)
 endif()
+
+install(TARGETS openblocks
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets"
+        DESTINATION share/openblocks)

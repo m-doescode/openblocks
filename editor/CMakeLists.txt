@@ -98,3 +98,5 @@ if (WIN32)
 endif()
 
 qt_finalize_executable(editor)
+
+install(TARGETS editor DESTINATION bin)
