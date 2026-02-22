@@ -349,6 +349,7 @@ JPH::BroadPhaseLayer BroadPhaseLayerInterface::GetBroadPhaseLayer(JPH::ObjectLay
     }
 }
 
+#ifndef NO_JPH_LAYER_NAME
 const char * BroadPhaseLayerInterface::GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const {
     using T = JPH::BroadPhaseLayer::Type;
     switch ((T)inLayer) {
@@ -358,6 +359,7 @@ const char * BroadPhaseLayerInterface::GetBroadPhaseLayerName(JPH::BroadPhaseLay
         default: panic();
     }
 }
+#endif
 
 bool ObjectBroadPhaseFilter::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const {
     using T = JPH::BroadPhaseLayer::Type;
