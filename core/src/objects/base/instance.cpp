@@ -284,10 +284,16 @@ result<Variant, MemberNotFound> Instance::GetProperty(std::string name) {
 
 fallible<MemberNotFound, AssignToReadOnlyMember> Instance::SetProperty(std::string name, Variant value, bool sendUpdateEvent) {
     name[0] = toupper(name[0]); // Ignore case of first character
+    auto prevValue = InternalGetPropertyValue(name);
     auto result = InternalSetPropertyValue(name, value);
     if (result.isSuccess() && sendUpdateEvent) {
+        auto newValue = InternalGetPropertyValue(name);
         InternalUpdateProperty(name);
         sendPropertyUpdatedSignal(shared_from_this(), name, value);
+
+        auto&& prop = GetType().properties.at(name);
+        if (prop.listener)
+            prop.listener.value()(shared_from_this(), name, prevValue.expect("Gotten value should be valid in listener call"), newValue.expect("Gotten value should be valid in listener call"));
     }
     return result;
 }
@@ -344,6 +350,12 @@ std::vector<std::string> Instance::InternalGetProperties() {
 
 void Instance::UpdateProperty(std::string name) {
     InternalUpdateProperty(name);
+
+    auto&& prop = GetType().properties.at(name);
+    if (prop.listener)
+        // TODO: Replace this, because this isn't really great
+        prop.listener.value()(shared_from_this(), name, std::monostate(), std::monostate());
+
 }
 
 std::vector<std::string> Instance::GetProperties() {
