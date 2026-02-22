@@ -1,9 +1,11 @@
 #include "motor6d.h"
 #include "datatypes/vector.h"
 #include "objectmodel/property.h"
-#include "objects/part/part.h"
+#include "objects/part/basepart.h" // IWYU pragma: keep
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
+
+INSTANCE_IMPL(Motor6D)
 
 #define PI 3.14159
 

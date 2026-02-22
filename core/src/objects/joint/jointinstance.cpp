@@ -9,6 +9,8 @@
 #include "objects/service/workspace.h"
 #include <memory>
 
+INSTANCE_IMPL(JointInstance)
+
 InstanceType JointInstance::__buildType() {
     return make_instance_type<JointInstance>(
         "JointInstance",

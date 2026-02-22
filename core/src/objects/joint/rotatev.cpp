@@ -1,8 +1,9 @@
 #include "rotatev.h"
-#include "objects/service/jointsservice.h"
-#include "objects/part/part.h"
+#include "objects/part/basepart.h" // IWYU pragma: keep
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
+
+INSTANCE_IMPL(RotateV)
 
 #define PI 3.14159
 

@@ -3,11 +3,12 @@
 #include "datatypes/cframe.h"
 #include "objects/datamodel.h"
 #include "objects/joint/jointinstance.h"
-#include "objects/service/jointsservice.h"
-#include "objects/part/part.h"
+#include "objects/part/basepart.h" // IWYU pragma: keep
 #include "objects/service/workspace.h"
 #include "physics/world.h"
 #include <memory>
+
+INSTANCE_IMPL(Snap)
 
 InstanceType Snap::__buildType() {
     return make_instance_type<Snap, JointInstance>("Snap");

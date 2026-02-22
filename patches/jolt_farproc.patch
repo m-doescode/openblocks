@@ -1,0 +1,13 @@
+diff --git a/Jolt/Core/JobSystemThreadPool.cpp b/Jolt/Core/JobSystemThreadPool.cpp
+index 6d4dc10f..980741ec 100644
+--- a/Jolt/Core/JobSystemThreadPool.cpp
++++ b/Jolt/Core/JobSystemThreadPool.cpp
+@@ -281,7 +281,7 @@ void JobSystemThreadPool::QueueJobs(Job **inJobs, uint inNumJobs)
+ 		JPH_MSVC_SUPPRESS_WARNING(4191) // reinterpret_cast' : unsafe conversion from 'FARPROC' to 'SetThreadDescriptionFunc'. Calling this function through the result pointer may cause your program to fail
+ 
+ 		using SetThreadDescriptionFunc = HRESULT(WINAPI*)(HANDLE hThread, PCWSTR lpThreadDescription);
+-		static SetThreadDescriptionFunc SetThreadDescription = reinterpret_cast<SetThreadDescriptionFunc>(GetProcAddress(GetModuleHandleW(L"Kernel32.dll"), "SetThreadDescription"));
++		static SetThreadDescriptionFunc SetThreadDescription = reinterpret_cast<SetThreadDescriptionFunc>((void*)GetProcAddress(GetModuleHandleW(L"Kernel32.dll"), "SetThreadDescription"));
+ 
+ 		JPH_SUPPRESS_WARNING_POP
+ 

@@ -9,6 +9,8 @@
 #include "objects/datamodel.h"
 #include <memory>
 
+INSTANCE_IMPL(Workspace)
+
 InstanceType Workspace::__buildType() {
     return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
         set_explorer_icon("workspace"),

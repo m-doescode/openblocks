@@ -11,6 +11,7 @@ CPMAddPackage(
     GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
     VERSION 5.3.0
     SOURCE_SUBDIR "Build"
+    PATCHES ${CMAKE_SOURCE_DIR}/patches/jolt_farproc.patch
     # https://github.com/jrouwe/JoltPhysics/issues/1724#issuecomment-3179656866
     OPTIONS "USE_STATIC_MSVC_RUNTIME_LIBRARY OFF"
 )

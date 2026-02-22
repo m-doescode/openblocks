@@ -4,6 +4,8 @@
 #include "objects/datamodel.h"
 #include <memory>
 
+INSTANCE_IMPL(JointsService)
+
 InstanceType JointsService::__buildType() {
     return make_instance_type<JointsService>("JointsService", INSTANCE_NOTCREATABLE | INSTANCE_SERVICE);
 }

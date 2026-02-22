@@ -7,15 +7,18 @@
 private: \
     static InstanceType __buildType(); \
 public: \
-    static inline const InstanceType& Type() { \
-        static const InstanceType type = __buildType(); \
-        return type; \
-    } \
+    static const InstanceType& Type(); \
 \
     inline const InstanceType& GetType() override { \
         return Type();\
     } \
 private:
+
+#define INSTANCE_IMPL(_ClassName) \
+const InstanceType& _ClassName::Type() { \
+    static const InstanceType type = __buildType(); \
+    return type; \
+}
 
 // Use when __buildType is implemented inline, or when the implementation
 // of the Instance is not available/readable

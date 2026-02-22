@@ -50,7 +50,7 @@ QModelIndex ExplorerModel::index(int row, int column, const QModelIndex &parent)
         : rootItem.get();
 
 #ifdef NDEBUG
-    if (parentItem->GetChildren().size() >= (size_t)row && !(parentItem->GetChildren()[row]->GetType()->flags & INSTANCE_HIDDEN))
+    if (parentItem->GetChildren().size() >= (size_t)row && !(parentItem->GetChildren()[row]->GetType().flags & INSTANCE_HIDDEN))
         return createIndex(row, column, parentItem->GetChildren()[row].get());
 #else
     // Don't hide in debug builds
@@ -106,7 +106,7 @@ int ExplorerModel::rowCount(const QModelIndex &parent) const {
 #ifdef NDEBUG
     // Trim trailing hidden items as they make the branches look weird
     int count = parentItem->GetChildren().size();
-    while (count > 0 && parentItem->GetChildren()[count-1]->GetType()->flags & INSTANCE_HIDDEN) count--;
+    while (count > 0 && parentItem->GetChildren()[count-1]->GetType().flags & INSTANCE_HIDDEN) count--;
     return count;
 #else
     // Don't hide in debug builds

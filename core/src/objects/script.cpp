@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <memory>
 
+INSTANCE_IMPL(Script)
+
 int script_errhandler(lua_State*);
 
 InstanceType Script::__buildType() {

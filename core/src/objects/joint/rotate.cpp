@@ -1,8 +1,9 @@
 #include "rotate.h"
-#include "objects/service/jointsservice.h"
-#include "objects/part/part.h"
+#include "objects/part/basepart.h" // IWYU pragma: keep
 #include "objects/service/workspace.h"
 #include "rendering/renderer.h"
+
+INSTANCE_IMPL(Rotate)
 
 InstanceType Rotate::__buildType() {
     return make_instance_type<Rotate, JointInstance>("Rotate");
