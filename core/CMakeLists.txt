@@ -183,7 +183,7 @@ add_library(openblocks STATIC ${SOURCES})
 set_target_properties(openblocks PROPERTIES OUTPUT_NAME "openblocks")
 target_link_directories(openblocks PUBLIC ${LUAJIT_LIBRARY_DIRS})
 target_link_libraries(openblocks Jolt pugixml::pugixml Freetype::Freetype glm::glm libluajit ${LuaJIT_LIBRARIES})
-target_include_directories(openblocks PUBLIC "src" "../include" "${CMAKE_SOURCE_DIR}/external/glad" ${LUAJIT_INCLUDE_DIRS} ${stb_SOURCE_DIR})
+target_include_directories(openblocks PUBLIC "src" PRIVATE "${CMAKE_SOURCE_DIR}/external/glad" ${LUAJIT_INCLUDE_DIRS} ${stb_SOURCE_DIR})
 add_dependencies(openblocks autogen_build autogen)
 
 # Windows-specific dependencies

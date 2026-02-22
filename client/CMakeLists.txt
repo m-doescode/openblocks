@@ -2,6 +2,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/deps.cmake)
 
 add_executable(client "src/main.cpp")
 target_link_libraries(client PRIVATE openblocks glfw)
+target_include_directories(client PRIVATE "${CMAKE_SOURCE_DIR}/external/glad")
 add_dependencies(client openblocks)
 
 if(WIN32)
