@@ -577,6 +577,8 @@ void MainGLWidget::mouseReleaseEvent(QMouseEvent* evt) {
     draggingObject = {};
     draggingHandle = std::nullopt;
     selectionLasso = {0,0,0,0};
+    // Once the user lets go of right-click, we need to restore the cursor
+    handleCursorChange(evt);
 
     if (!initialTransforms.empty()) {
         UndoState historyState;
