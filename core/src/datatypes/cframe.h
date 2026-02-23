@@ -20,8 +20,10 @@ public:
     // CFrame(const glm::vec3&);
     // CFrame(const rp::Vector3&);
     DEF_DATA_CTOR CFrame();
-    DEF_DATA_CTOR CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
+    DEF_DATA_CTOR CFrame(Vector3);
     DEF_DATA_CTOR CFrame(Vector3 , Vector3 lookAt, Vector3 up = Vector3(0, 1, 0));
+    DEF_DATA_CTOR CFrame(float x, float y, float z);
+    DEF_DATA_CTOR CFrame(float x, float y, float z, float R00, float R01, float R02, float R10, float R11, float R12, float R20, float R21, float R22);
     CFrame(Vector3 position, glm::quat quat);
     virtual ~CFrame();
 

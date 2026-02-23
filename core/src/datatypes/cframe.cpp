@@ -28,6 +28,16 @@ CFrame::CFrame(float x, float y, float z, float R00, float R01, float R02, float
     }) {
 }
 
+CFrame::CFrame(float x, float y, float z)
+    : translation(x, y, z)
+    , rotation(glm::mat3(1.f)) {
+}
+
+CFrame::CFrame(Vector3 position)
+    : translation(position)
+    , rotation(glm::mat3(1.f)) {
+}
+
 CFrame::CFrame(glm::vec3 translation, glm::mat3 rotation)
     : translation(translation)
     , rotation(rotation) {
