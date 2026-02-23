@@ -5,6 +5,7 @@ set(SOURCES
     src/stb.cpp
     src/glad.cpp
 
+    src/meta.cpp
     src/ptr_helpers.h
     src/enum/part.h
     src/enum/surface.cpp
@@ -20,7 +21,6 @@ set(SOURCES
     src/datatypes/base.h
     src/datatypes/enum.h
     src/datatypes/enum.cpp
-    src/datatypes/meta.cpp
     src/datatypes/primitives.h
     src/datatypes/cframe.h
     src/datatypes/variant.cpp
@@ -111,7 +111,6 @@ set(SOURCES
     src/objects/model.cpp
     src/objects/datamodel.h
     src/objects/folder.h
-    src/objects/meta.cpp
     src/objects/model.h
     src/objects/part/clickdetector.cpp
     src/objects/part/part.cpp
