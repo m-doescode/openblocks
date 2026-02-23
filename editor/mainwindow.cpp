@@ -31,6 +31,8 @@
 #include <qtextedit.h>
 #include <miniaudio.h>
 #include <qtoolbutton.h>
+#include <qdir.h>
+#include <qurl.h>
 #include <vector>
 #include <fstream>
 
@@ -190,12 +192,28 @@ void MainWindow::closeEvent(QCloseEvent* evt) {
 void MainWindow::refreshRecentsMenu() {
     if (!recentsMenu) recentsMenu = new QMenu();
 
-    recentsMenu->setTitle("Recent files...");
+    recentsMenu->setTitle("Open Recent");
+    recentsMenu->setIcon(QIcon::fromTheme("document-open-recent"));
 
     recentsMenu->clear(); // Actions not shown in any other menu are automatically deleted
-    for (QString item : recentFiles) {
+    // Fesiug: I changed this to URL! 2026-02-23
+    // Item is defined below.
+    for (QUrl url : recentFiles) {
         QAction* itemAction = new QAction();
-        itemAction->setText(item.split('/').last());
+        QString item = url.toString();
+
+        // Fesiug:
+        // These could use native paths and separators, like Kate does
+        // https://doc.qt.io/qtcreator-extending/utils-filepath.html
+        // This comes from Kate, in /apps/lib/ktexteditor_utils.cpp
+        // line 348, fbf2d5b8f3add0daddff8b75a2748514615c8979
+        // https://invent.kde.org/utilities/kate
+        const QString homePath = QDir::homePath();
+        QString path = url.toDisplayString(QUrl::PreferLocalFile | QUrl::StripTrailingSlash);
+        if (path.startsWith(homePath)) {
+            path = QLatin1String("~") + path.right(path.length() - homePath.length());
+        }
+        itemAction->setText(url.fileName() + " [" + path + "]");
         recentsMenu->addAction(itemAction);
         
         connect(itemAction, &QAction::triggered, [item, this]{
