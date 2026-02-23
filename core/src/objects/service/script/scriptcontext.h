@@ -7,7 +7,8 @@
 #include <vector>
 
 struct SleepingThread {
-    lua_State* thread;
+    lua_State* thread; // Dangerous, should only really be using the below
+    int threadRef; // Ref used to keep the thread alive
     uint64_t timeYieldedWhen;
     uint64_t targetTimeMicros;
     bool active = true;

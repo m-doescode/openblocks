@@ -109,10 +109,6 @@ void ScriptContext::InitService() {
     }
 
     lua_pop(state, 1); // _G
-
-    lua_pushlightuserdata(state, &sleepingThreads);
-    lua_newtable(state);
-    lua_settable(state, LUA_REGISTRYINDEX);
 }
 
 void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
@@ -123,57 +119,40 @@ void ScriptContext::PushThreadSleep(lua_State* thread, float delay) {
     sleep.timeYieldedWhen = tu_clock_micros();
     sleep.targetTimeMicros = tu_clock_micros() + delay * 1'000'000;
 
+    // Add ref to registry to keep it alive / prevent being GC'd
+    lua_pushthread(sleep.thread);
+    sleep.threadRef = luaL_ref(sleep.thread, LUA_REGISTRYINDEX);
+
     sleepingThreads.push_back(sleep);
-
-    // Add to registry so it doesn't get GC'd
-
-    // https://stackoverflow.com/a/17138663/16255372
-    lua_pushlightuserdata(state, &sleepingThreads);
-    lua_gettable(state, LUA_REGISTRYINDEX);
-
-    lua_pushthread(thread); // key
-    lua_xmove(thread, state, 1);
-    lua_pushboolean(state, true); // value
-    lua_rawset(state, -3); // set
-
-    lua_pop(state, 1); // pop sleepingThreads
 }
 
 tu_time_t schedTime;
 void ScriptContext::RunSleepingThreads() {
     tu_time_t startTime = tu_clock_micros();
-    size_t i;
-    for (i = 0; i < sleepingThreads.size();) {
-        bool deleted = false;
 
+    // Copy old threads
+    std::vector<SleepingThread> oldThreads = sleepingThreads;
+    sleepingThreads.clear();
+
+    bool done = false;
+    for (SleepingThread& thread : oldThreads) {
+        done = true;
         // TODO: Remove threads that belong to non-existent scripts
-        SleepingThread sleep = sleepingThreads[i];
+        auto&& sleep = thread;
         if (tu_clock_micros() >= sleep.targetTimeMicros) {
             // Time args
             lua_pushnumber(sleep.thread, float(tu_clock_micros() - sleep.timeYieldedWhen) / 1'000'000);
             lua_pushnumber(sleep.thread, float(tu_clock_micros()) / 1'000'000);
             lua_resume(sleep.thread, 2);
 
-            // Remove thread
-            deleted = true;
-            sleepingThreads.erase(sleepingThreads.begin() + i);
-
-            // Erase from registry
-            lua_pushlightuserdata(state, &sleepingThreads);
-            lua_gettable(state, LUA_REGISTRYINDEX);
-            
-            lua_pushthread(sleep.thread); // key
-            lua_xmove(sleep.thread, state, 1);
-            lua_pushnil(state);
-            lua_rawset(state, -3); // set
-
-            lua_pop(state, 1); // sleepingThreads
+            // Remove reference
+            luaL_unref(state, LUA_REGISTRYINDEX, sleep.threadRef);
+        } else {
+            // Re-add to new queue
+            sleepingThreads.push_back(sleep);
         }
-
-        if (!deleted)
-            i++;
     }
-    if (i > 0)
+    if (done)
         schedTime = tu_clock_micros() - startTime;
 }
 
