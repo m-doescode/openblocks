@@ -17,9 +17,7 @@ OutputTextView::OutputTextView(QWidget* parent) : QTextEdit(parent) {
     Logger::addLogListener(std::bind(&OutputTextView::handleLog, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     ensureCursorVisible();
 
-    QFont font("");
-    font.setStyleHint(QFont::Monospace);
-    setFont(font);
+    setFont( QFontDatabase::systemFont(QFontDatabase::FixedFont) );
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &QWidget::customContextMenuRequested, [&](QPoint point) {
@@ -44,8 +42,6 @@ void OutputTextView::handleLog(Logger::LogLevel logLevel, std::string message, L
     moveCursor(QTextCursor::MoveOperation::End);
     QTextCursor cursor = textCursor();
     QTextCharFormat format = cursor.charFormat();
-    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    format.setFont(font);
 
     if (logLevel == Logger::LogLevel::TRACE) {
         format.setForeground(QColor(0, 127, 255));

@@ -5,12 +5,15 @@
 #include "objects/service/script/scriptcontext.h"
 #include "luaapis.h" // IWYU pragma: keep
 #include <qevent.h>
+#include <qfont.h>
+#include <qfontdatabase.h>
 #include <qlineedit.h>
 #include <qnamespace.h>
 
 int script_errhandler(lua_State*);
 
 CommandEdit::CommandEdit(QWidget* parent) : QLineEdit(parent) {
+    setFont( QFontDatabase::systemFont(QFontDatabase::FixedFont) );
     connect(this, &QLineEdit::returnPressed, this, &CommandEdit::executeCommand);
 }
 
