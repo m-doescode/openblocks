@@ -7,7 +7,7 @@
 #include <vector>
 #include "datatypes/variant.h"
 #include "error/error.h"
-#include "objectmodel/datatypes.h"
+#include "datatypes/meta.h"
 
 using MethodFlags = int;
 

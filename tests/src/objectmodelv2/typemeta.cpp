@@ -2,7 +2,7 @@
 #include "datatypes/ref.h"
 #include "enum/part.h"
 #include "objects/part/part.h"
-#include "objectmodel/datatypes.h"
+#include "datatypes/meta.h"
 
 // Tests for interim class
 

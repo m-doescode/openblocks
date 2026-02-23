@@ -20,6 +20,7 @@ set(SOURCES
     src/datatypes/base.h
     src/datatypes/enum.h
     src/datatypes/enum.cpp
+    src/datatypes/meta.cpp
     src/datatypes/primitives.h
     src/datatypes/cframe.h
     src/datatypes/variant.cpp
