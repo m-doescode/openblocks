@@ -57,6 +57,18 @@ std::map<std::type_index, TypeMeta> INTEGRAL_TYPE_META = {
     { index<EnumItem>(), &EnumItem::TYPE },
 };
 
+std::map<std::string, const TypeDesc*> TYPE_BY_NAME = {
+    { "null", &NULL_TYPE },
+    { "bool", &BOOL_TYPE },
+    { "int", &INT_TYPE },
+    { "float", &FLOAT_TYPE },
+    { "string", &STRING_TYPE },
+    { "Vector3", &Vector3::TYPE },
+    { "CoordinateFrame", &CFrame::TYPE },
+    { "Color3", &Color3::TYPE },
+    { "Ref", &InstanceRef::TYPE },
+    { "token", &EnumItem::TYPE },
+};
 
 // Instances
 

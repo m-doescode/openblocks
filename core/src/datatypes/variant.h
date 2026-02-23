@@ -109,10 +109,6 @@ std::function<result<Variant, E...>(Args..., const TypeMeta)> toVariantGenerator
     };
 }
 
-// Map of all data types to their type names
-extern std::map<std::string, const TypeDesc*> TYPE_MAP;
-
-
 template <typename T> std::enable_if_t<is_vector_type<T>, std::vector<Variant>> __to_variant(T& invec) {
     std::vector<Variant> outvec;
 

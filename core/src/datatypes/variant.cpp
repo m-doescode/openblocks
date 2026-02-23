@@ -1,14 +1,8 @@
 #include "variant.h"
 #include "datatypes/base.h"
-#include "datatypes/cframe.h"
-#include "datatypes/enum.h"
-#include "datatypes/primitives.h"
-#include "datatypes/ref.h"
-#include "datatypes/signal.h"
-#include "datatypes/vector.h"
+#include "datatypes/meta.h"
 #include "error/data.h"
 #include "logger.h"
-#include "panic.h"
 #include <pugixml.hpp>
 #include <string>
 #include <variant>
@@ -21,50 +15,33 @@
 #endif
 }
 
-const TypeDesc* VARIANT_TYPES[] {
-    &NULL_TYPE,
-    &BOOL_TYPE,
-    &INT_TYPE,
-    &FLOAT_TYPE,
-    &STRING_TYPE,
-    &Vector3::TYPE,
-    &CFrame::TYPE,
-    &Color3::TYPE,
-    &InstanceRef::TYPE,
-    &SignalRef::TYPE,
-    &SignalConnectionRef::TYPE,
-    &Enum::TYPE,
-    &EnumItem::TYPE,
-    &ARRAY_TYPE
-};
-
 const TypeMeta Variant::GetTypeMeta() const {
-    return VARIANT_TYPES[wrapped.index()];
+    return std::visit([](auto&& value) { return type_meta_of<decltype(value)>(); }, wrapped);
 }
 
 const TypeDesc* Variant::GetType() const {
-    return VARIANT_TYPES[wrapped.index()];
+    return GetTypeMeta().descriptor;
 }
 
 std::string Variant::ToString() const {
-    if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
-        Logger::fatalErrorf("Data type %s does not implement toString", VARIANT_TYPES[wrapped.index()]->name.c_str());
+    if (!GetType()->pushLuaValue) {
+        Logger::fatalErrorf("Data type %s does not implement toString", GetType()->name.c_str());
     }
-    return VARIANT_TYPES[wrapped.index()]->toString(*this);
+    return GetType()->toString(*this);
 }
 
 void Variant::Serialize(pugi::xml_node node) const {
-    if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
-        Logger::fatalErrorf("Data type %s does not implement serializer", VARIANT_TYPES[wrapped.index()]->name.c_str());
+    if (!GetType()->pushLuaValue) {
+        Logger::fatalErrorf("Data type %s does not implement serializer", GetType()->name.c_str());
     }
-    VARIANT_TYPES[wrapped.index()]->serialize(*this, node);
+    GetType()->serialize(*this, node);
 }
 
 void Variant::PushLuaValue(lua_State* state) const {
-    if (!VARIANT_TYPES[wrapped.index()]->pushLuaValue) {
-        Logger::fatalErrorf("Data type %s does not implement pushLuaValue", VARIANT_TYPES[wrapped.index()]->name.c_str());
+    if (!GetType()->pushLuaValue) {
+        Logger::fatalErrorf("Data type %s does not implement pushLuaValue", GetType()->name.c_str());
     }
-    VARIANT_TYPES[wrapped.index()]->pushLuaValue(*this, state);
+    GetType()->pushLuaValue(*this, state);
 }
 
 result<Variant, DataParseError> Variant::Deserialize(pugi::xml_node node, const TypeMeta type) {
@@ -74,16 +51,3 @@ result<Variant, DataParseError> Variant::Deserialize(pugi::xml_node node, const 
     }
     return type.descriptor->deserialize(node, type);
 }
-
-std::map<std::string, const TypeDesc*> TYPE_MAP = {
-    { "null", &NULL_TYPE },
-    { "bool", &BOOL_TYPE },
-    { "int", &INT_TYPE },
-    { "float", &FLOAT_TYPE },
-    { "string", &STRING_TYPE },
-    { "Vector3", &Vector3::TYPE },
-    { "CoordinateFrame", &CFrame::TYPE },
-    { "Color3", &Color3::TYPE },
-    { "Ref", &InstanceRef::TYPE },
-    { "token", &EnumItem::TYPE },
-};
