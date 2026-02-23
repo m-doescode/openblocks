@@ -7,6 +7,8 @@
 #include <QWidget>
 #include <QMouseEvent>
 #include <qcursor.h>
+#include <qfont.h>
+#include <qfontdatabase.h>
 #include <qmenu.h>
 #include <qnamespace.h>
 #include <string>
@@ -42,6 +44,8 @@ void OutputTextView::handleLog(Logger::LogLevel logLevel, std::string message, L
     moveCursor(QTextCursor::MoveOperation::End);
     QTextCursor cursor = textCursor();
     QTextCharFormat format = cursor.charFormat();
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    format.setFont(font);
 
     if (logLevel == Logger::LogLevel::TRACE) {
         format.setForeground(QColor(0, 127, 255));

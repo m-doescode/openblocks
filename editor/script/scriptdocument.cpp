@@ -10,6 +10,7 @@
 #include <qboxlayout.h>
 #include <qcolor.h>
 #include <qfont.h>
+#include <qfontdatabase.h>
 #include <qdebug.h>
 #include <qglobal.h>
 #include <qlayout.h>
@@ -120,15 +121,7 @@ ScriptDocument::ScriptDocument(std::shared_ptr<Script> script, QWidget* parent):
     frameLayout->addWidget(scintilla);
     setWidget(frame);
 
-    // https://forum.qt.io/post/803690
-    QFont findFont("<NONE>");
-    findFont.setStyleHint(QFont::Monospace);
-    QFontInfo info(findFont);
-
-    QFont font;
-    font.setFamily(info.family());
-    font.setPointSize(10);
-    font.setFixedPitch(true);
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
     // scintilla->setMargins(2);
     scintilla->setScrollWidth(1); // Hide scrollbars on empty document, it will grow automatically
