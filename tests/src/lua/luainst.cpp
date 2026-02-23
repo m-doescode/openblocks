@@ -61,4 +61,12 @@ part.Position = Vector3.new(2, 3, 4)
         REQUIRE(part->anchored == true);
         REQUIRE(part->position() == Vector3(2, 3, 4));
     }
+
+    SECTION("Re-parenting") {
+        auto part = Part::New();
+        part->SetParent(m->FindFirstChild("Workspace"));
+        REQUIRE(luaEvalOut(m, "print(workspace.Part)") == "INFO: Part\n");
+        luaEval(m, "workspace.Part.Parent = game");
+        REQUIRE(luaEvalOut(m, "print(game.Part)") == "INFO: Part\n");
+    }
 }

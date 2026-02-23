@@ -33,6 +33,23 @@ InstanceType __init() {
     return type;
 }
 
+InstanceProperty def_parent_property(const InstanceType& typeMeta) {
+    return {
+        "Parent",
+        &typeMeta,
+        PROP_NOSAVE,
+        "",
+
+        [](std::shared_ptr<Instance> instance) {
+            return instance->GetParent();
+        },
+        [](std::shared_ptr<Instance> instance, Variant value) {
+            instance->SetParent(value.get<std::shared_ptr<Instance>>());
+        },
+        std::nullopt
+    };
+}
+
 const InstanceType& Instance::Type() {
     static InstanceType type = __init();
     if (type.className == "<NULL>") {
@@ -42,7 +59,7 @@ const InstanceType& Instance::Type() {
         type.explorerIcon = "instance";
 
         type.properties["Name"] = def_property("Name", &Instance::name);
-        type.properties["Parent"] = def_property_apex(type, "Parent", &Instance::parent, PROP_NOSAVE);
+        type.properties["Parent"] = def_parent_property(type);
         type.properties["ClassName"] = def_property<std::string, Instance>("ClassName", [](Instance* obj){ return obj->GetType().className; }, PROP_NOSAVE | PROP_READONLY);
         
         type.methods["Clone"] = def_method("Clone", &Instance::ScriptClone);
