@@ -22,5 +22,6 @@ TEST_CASE("Lua instance methods", "[luamethod]") {
     
     SECTION("Calling methods") {
         REQUIRE(luaEvalOut(m, "print(workspace.Part:Clone())") == "INFO: Part\n");
+        REQUIRE(luaEvalOut(m, "print(workspace:FindFirstChild('Part'))") == "INFO: Part\n");
     }
 }

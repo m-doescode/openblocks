@@ -278,11 +278,12 @@ static int inst_methodcall(lua_State* L) {
 
     // Collect args
     std::vector<Variant> args;
-    for (int i = 2; i < lua_gettop(L) || i < (int)method.paramTypes.size(); i++) {
+    for (int i = 0; i <= (lua_gettop(L)-2) || i < (int)method.paramTypes.size(); i++) {
+        int idx = i+2;
         TypeMeta& meta = method.paramTypes[i];
-        auto result = meta.descriptor->fromLuaValue(L, i);
+        auto result = meta.descriptor->fromLuaValue(L, idx);
         if (result.isError())
-            return luaL_error(L, "Could not cast %s to %s for argument #%d of %s in %s\n", lua_typename(L, lua_type(L, i)), meta.descriptor->name.c_str(), key.c_str(), type.className.c_str());
+            return luaL_error(L, "Could not cast %s to %s for argument #%d of %s in %s\n", lua_typename(L, lua_type(L, idx)), meta.descriptor->name.c_str(), key.c_str(), type.className.c_str());
         args.push_back(result.expect());
     }
 
