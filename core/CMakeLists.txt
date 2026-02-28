@@ -6,138 +6,65 @@ set(SOURCES
     src/glad.cpp
 
     src/meta.cpp
-    src/ptr_helpers.h
-    src/enum/part.h
     src/enum/surface.cpp
     src/enum/meta.cpp
-    src/enum/meta.h
-    src/enum/annotation.h
-    src/enum/surface.h
     src/camera.cpp
     src/datatypes/vector.cpp
-    src/datatypes/variant.h
     src/datatypes/cframe.cpp
     src/datatypes/signal.cpp
-    src/datatypes/base.h
-    src/datatypes/enum.h
     src/datatypes/enum.cpp
-    src/datatypes/primitives.h
-    src/datatypes/cframe.h
     src/datatypes/variant.cpp
-    src/datatypes/vector.h
-    src/datatypes/color3.h
-    src/datatypes/annotation.h
     src/datatypes/color3.cpp
     src/datatypes/primitives.cpp
     src/datatypes/ref.cpp
-    src/datatypes/ref.h
-    src/datatypes/signal.h
     src/common.cpp
-    src/utils.h
-    src/platform.h
     src/math_helper.cpp
     src/rendering/assets.cpp
     src/rendering/skybox.cpp
     src/rendering/mesh2d.cpp
     src/rendering/torus.cpp
-    src/rendering/mesh.h
     src/rendering/font.cpp
     src/rendering/debug/debugrenderer.cpp
-    src/rendering/texture.h
-    src/rendering/shader.h
     src/rendering/defaultmeshes.cpp
-    src/rendering/skybox.h
-    src/rendering/mesh2d.h
-    src/rendering/light.h
     src/rendering/renderer.cpp
-    src/rendering/texture3d.h
     src/rendering/texture.cpp
-    src/rendering/renderer.h
     src/rendering/shader.cpp
     src/rendering/mesh.cpp
-    src/rendering/material.h
-    src/rendering/torus.h
-    src/rendering/font.h
-    src/rendering/defaultmeshes.h
     src/rendering/texture3d.cpp
-    src/rendering/frustum.h
     src/rendering/frustum.cpp
-    src/physics/world.h
     src/physics/world.cpp
     src/logger.cpp
-    src/handles.h
-    src/timeutil.h
-    src/error/error.h
-    src/error/result.h
-    src/error/instance.h
-    src/error/data.h
-    src/partassembly.h
     src/objects/service/jointsservice.cpp
-    src/objects/service/script/serverscriptservice.h
     src/objects/service/script/serverscriptservice.cpp
-    src/objects/service/script/scriptcontext.h
     src/objects/service/script/scriptcontext.cpp
     src/objects/service/workspace.cpp
     src/objects/service/selection.cpp
-    src/objects/service/selection.h
-    src/objects/service/jointsservice.h
-    src/objects/service/workspace.h
     src/objects/datamodel.cpp
-    src/objects/script.h
-    src/objects/joint/snap.h
-    src/objects/joint/jointinstance.h
-    src/objects/joint/rotatev.h
     src/objects/joint/weld.cpp
     src/objects/joint/jointinstance.cpp
     src/objects/joint/rotate.cpp
-    src/objects/joint/rotate.h
-    src/objects/joint/weld.h
     src/objects/joint/snap.cpp
     src/objects/joint/rotatev.cpp
-    src/objects/joint/motor6d.h
     src/objects/joint/motor6d.cpp
-    src/objects/base/service.h
-    src/objects/base/member.h
-    src/objects/base/instance.h
     src/objects/base/service.cpp
     src/objects/base/instance.cpp
-    src/objects/base/refstate.h
-    src/objects/message.h
     src/objects/pvinstance.cpp
     src/objects/hint.cpp
-    src/objects/pvinstance.h
-    src/objects/base.h
     src/objects/folder.cpp
     src/objects/model.cpp
-    src/objects/datamodel.h
-    src/objects/folder.h
-    src/objects/model.h
     src/objects/part/clickdetector.cpp
     src/objects/part/part.cpp
-    src/objects/part/part.h
-    src/objects/part/wedgepart.h
     src/objects/part/basepart.cpp
     src/objects/part/wedgepart.cpp
-    src/objects/part/basepart.h
-    src/objects/meta.h
-    src/objects/hint.h
-    src/objects/annotation.h
     src/objects/message.cpp
     src/objects/script.cpp
     src/partassembly.cpp
     src/panic.cpp
-    src/logger.h
-    src/camera.h
     src/handles.cpp
-    src/version.h
-    src/common.h
     src/platform.cpp
-    src/panic.h
     src/lua/enum.cpp
     src/lua/instancelib.cpp
     src/timeutil.cpp
-    src/luaapis.h
-    src/math_helper.h
 )
 
 set(AUTOGEN_SOURCES
