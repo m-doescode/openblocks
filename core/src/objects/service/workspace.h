@@ -1,13 +1,14 @@
 #pragma once
 
-#include "objectmodel/macro.h"
-#include "objects/base/service.h"
-#include "physics/world.h"
-#include "rendering/frustum.h"
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <mutex>
 #include <queue>
+#include "objectmodel/macro.h"
+#include "objects/base/service.h"
+#include "physics/world.h"
+#include "rendering/frustum.h"
+#include "objects/camera.h"
 
 class BasePart;
 class Snap;
@@ -45,6 +46,9 @@ public:
     std::recursive_mutex queueLock;
 
     float fallenPartsDestroyHeight = -500;
+    std::weak_ptr<Camera> currentCamera;
+
+    std::shared_ptr<Camera> GetCamera();
 
     // static inline std::shared_ptr<Workspace> New() { return new_instance<Workspace>(); };
     static inline std::shared_ptr<Instance> Create() { return new_instance<Workspace>(); };

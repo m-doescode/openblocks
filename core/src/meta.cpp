@@ -87,6 +87,7 @@ DECLINST(Model);
 DECLINST(Message);
 DECLINST(Hint);
 DECLINST(ClickDetector);
+DECLINST(Camera);
 // DECLINST(Folder);
 DECLINST(Workspace);
 DECLINST(JointsService);
@@ -112,6 +113,7 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Message", &Message::Type() },
     { "Hint", &Hint::Type() },
     { "ClickDetector", &ClickDetector::Type() },
+    { "Camera", &Camera::Type() },
     // { "Folder", &Folder::Type() },
 
     // Services

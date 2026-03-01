@@ -120,6 +120,14 @@ void renderInit(int width, int height) {
     sansSerif = loadFont("LiberationSans-Regular.ttf");
 }
 
+inline glm::mat4 getCameraLookAt() {
+    return gWorkspace()->GetCamera()->cframe;
+}
+
+inline glm::vec3 getCameraPos() {
+    return gWorkspace()->GetCamera()->cframe.Position();
+}
+
 static void renderPart(std::shared_ptr<BasePart> part) {
     glm::mat4 model = part->cframe;
     Vector3 size = part->GetEffectiveSize();
@@ -173,7 +181,7 @@ void renderParts() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     shader->set("projection", projection);
     shader->set("view", view);
     shader->set("sunLight", DirLight {
@@ -191,7 +199,7 @@ void renderParts() {
     // Pre-calculate the normal matrix for the shader
 
     // Pass in the camera position
-    shader->set("viewPos", camera.cameraPos);
+    shader->set("viewPos", getCameraPos());
     
 
     // Sort by nearest
@@ -201,7 +209,7 @@ void renderParts() {
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(it);
 
         if (part->transparency > 0.00001) {
-            float distance = glm::length(glm::vec3(Vector3(camera.cameraPos) - part->position()));
+            float distance = glm::length(glm::vec3(Vector3(getCameraPos()) - part->position()));
             sorted[distance] = part;
         } else {
             renderPart(part);
@@ -237,13 +245,13 @@ void renderSurfaceExtras() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     ghostShader->set("projection", projection);
     ghostShader->set("view", view);
     ghostShader->set("color", glm::vec3(0.87f, 0.87f, 0.0f));
 
     // Pass in the camera position
-    ghostShader->set("viewPos", camera.cameraPos);
+    ghostShader->set("viewPos", getCameraPos());
 
     for (auto&& inst : gWorkspace()->GetDescendants()) {
         if (!inst->IsA("Part")) continue;
@@ -273,7 +281,7 @@ void renderSkyBox() {
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
     // Remove translation component of view, making us always at (0, 0, 0)
-    glm::mat4 view = glm::mat4(glm::mat3(camera.getLookAt()));
+    glm::mat4 view = glm::mat4(glm::mat3(getCameraLookAt()));
 
     skyboxShader->set("projection", projection);
     skyboxShader->set("view", view);
@@ -300,7 +308,7 @@ void renderHandles() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
     handleShader->set("sunLight", DirLight {
@@ -312,7 +320,7 @@ void renderHandles() {
     handleShader->set("numPointLights", 0);
 
     // Pass in the camera position
-    handleShader->set("viewPos", camera.cameraPos);
+    handleShader->set("viewPos", getCameraPos());
 
     for (auto face : HandleFace::Faces) {
         glm::mat4 model = getHandleCFrame(face);
@@ -360,12 +368,12 @@ void renderAABB() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     ghostShader->set("projection", projection);
     ghostShader->set("view", view);
 
     // Pass in the camera position
-    ghostShader->set("viewPos", camera.cameraPos);
+    ghostShader->set("viewPos", getCameraPos());
 
     ghostShader->set("transparency", 0.5f);
     ghostShader->set("color", glm::vec3(1.f, 0.f, 0.f));
@@ -400,12 +408,12 @@ void renderWireframe() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     wireframeShader->set("projection", projection);
     wireframeShader->set("view", view);
 
     // Pass in the camera position
-    wireframeShader->set("viewPos", camera.cameraPos);
+    wireframeShader->set("viewPos", getCameraPos());
 
     wireframeShader->set("transparency", 0.5f);
     wireframeShader->set("color", glm::vec3(1.f, 0.f, 0.f));
@@ -439,12 +447,12 @@ void renderOutlines() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     outlineShader->set("projection", projection);
     outlineShader->set("view", view);
 
     // Pass in the camera position
-    outlineShader->set("viewPos", camera.cameraPos);
+    outlineShader->set("viewPos", getCameraPos());
     outlineShader->set("thickness", 0.4f);
 
     outlineShader->set("color", glm::vec3(0.204, 0.584, 0.922));
@@ -504,12 +512,12 @@ void renderSelectionAssembly() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     outlineShader->set("projection", projection);
     outlineShader->set("view", view);
 
     // Pass in the camera position
-    outlineShader->set("viewPos", camera.cameraPos);
+    outlineShader->set("viewPos", getCameraPos());
     outlineShader->set("thickness", 0.4f);
 
     outlineShader->set("color", glm::vec3(1.f, 0.f, 0.f));
@@ -547,12 +555,12 @@ void renderRotationArcs() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
 
     // Pass in the camera position
-    handleShader->set("viewPos", camera.cameraPos);
+    handleShader->set("viewPos", getCameraPos());
 
     PartAssembly assembly = PartAssembly::FromSelection(gDataModel->GetService<Selection>());
     if (assembly.size() == Vector3::ZERO) return; // No parts are selected
@@ -587,7 +595,7 @@ void renderDebugCFrames() {
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    glm::mat4 view = getCameraLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
     handleShader->set("sunLight", DirLight {
@@ -599,7 +607,7 @@ void renderDebugCFrames() {
     handleShader->set("numPointLights", 0);
 
     // Pass in the camera position
-    handleShader->set("viewPos", camera.cameraPos);
+    handleShader->set("viewPos", getCameraPos());
 
     for (auto& [frame, color] : DEBUG_CFRAMES) {
         glm::mat4 model = frame;

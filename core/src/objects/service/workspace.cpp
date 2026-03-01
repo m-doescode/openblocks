@@ -14,7 +14,8 @@ INSTANCE_IMPL(Workspace)
 InstanceType Workspace::__buildType() {
     return make_instance_type<Workspace>("Workspace", INSTANCE_SERVICE | INSTANCE_NOTCREATABLE,
         set_explorer_icon("workspace"),
-        def_property("FallenPartsDestroyHeight", &Workspace::fallenPartsDestroyHeight)
+        def_property("FallenPartsDestroyHeight", &Workspace::fallenPartsDestroyHeight),
+        def_property("CurrentCamera", &Workspace::currentCamera)
     );
 }
 
@@ -86,4 +87,14 @@ std::vector<std::shared_ptr<Instance>> Workspace::CastFrustum(Frustum frustum) {
     }
 
     return parts;
+}
+
+std::shared_ptr<Camera> Workspace::GetCamera() {
+    if (this->currentCamera.expired()) {
+        auto camera = Camera::New();
+        camera->SetParent(shared<Workspace>());
+        this->currentCamera = camera;
+    }
+
+    return this->currentCamera.lock();
 }

@@ -58,6 +58,7 @@ set(SOURCES
     src/objects/part/wedgepart.cpp
     src/objects/message.cpp
     src/objects/script.cpp
+    src/objects/camera.cpp
     src/partassembly.cpp
     src/panic.cpp
     src/handles.cpp
