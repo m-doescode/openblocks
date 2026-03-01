@@ -338,8 +338,7 @@ void BasePart::MakeJoints() {
 
     // TEMPORARY
     // TODO: Use more efficient algorithm to *actually* find nearby parts)
-    for (auto it = workspace()->GetDescendantsStart(); it != workspace()->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> obj = *it;
+    for (auto&& obj : workspace()->GetDescendants()) {
         if (obj == shared_from_this()) continue; // Skip ourselves
         if (!obj->IsA<BasePart>()) continue;
         std::shared_ptr<BasePart> otherPart = obj->CastTo<BasePart>().expect();

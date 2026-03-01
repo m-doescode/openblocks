@@ -103,8 +103,6 @@ public:
     void Destroy();
     void ClearAllChildren();
     template <typename T> bool IsA() { return IsA(T::Type().className); }
-    [[deprecated]] DescendantsIterator GetDescendantsStart();
-    [[deprecated]] DescendantsIterator GetDescendantsEnd();
     std::string GetFullName();
     
     nullable std::shared_ptr<Instance> FindFirstChild(std::string);
@@ -153,30 +151,6 @@ public:
     static result<std::shared_ptr<Instance>, NoSuchInstance> Deserialize(pugi::xml_node node, RefStateDeserialize state = {});
     nullable std::shared_ptr<Instance> Clone(RefStateClone state = {});
     inline nullable std::shared_ptr<Instance> ScriptClone() { return Clone(); };
-};
-
-// https://gist.github.com/jeetsukumaran/307264
-class [[deprecated]] DescendantsIterator {
-public:
-    typedef DescendantsIterator self_type;
-    typedef std::shared_ptr<Instance> value_type;
-    typedef std::shared_ptr<Instance>& reference;
-    typedef std::shared_ptr<Instance> pointer;
-    typedef std::forward_iterator_tag iterator_category;
-    typedef int difference_type;
-
-    DescendantsIterator(std::shared_ptr<Instance> current);
-    inline self_type operator++() { (*this)++; return (*this); }
-    inline std::shared_ptr<Instance> operator*() { return current; }
-    inline std::shared_ptr<Instance> operator->() { return current; }
-    inline bool operator==(const self_type& rhs) { return current == rhs.current; }
-    inline bool operator!=(const self_type& rhs) { return current != rhs.current; }
-
-    self_type operator++(int _);
-private:
-    nullable std::shared_ptr<Instance> root;
-    std::shared_ptr<Instance> current;
-    std::vector<int> siblingIndex;
 };
 
 template <typename T, typename... Args>

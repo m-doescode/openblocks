@@ -196,9 +196,9 @@ void renderParts() {
 
     // Sort by nearest
     std::map<float, std::shared_ptr<BasePart>> sorted;
-    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+    for (auto&& it : gWorkspace()->GetDescendants()) {
         if (!it->IsA<BasePart>()) continue;
-        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(*it);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(it);
 
         if (part->transparency > 0.00001) {
             float distance = glm::length(glm::vec3(Vector3(camera.cameraPos) - part->position()));
@@ -245,8 +245,7 @@ void renderSurfaceExtras() {
     // Pass in the camera position
     ghostShader->set("viewPos", camera.cameraPos);
 
-    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> inst = *it;
+    for (auto&& inst : gWorkspace()->GetDescendants()) {
         if (!inst->IsA("Part")) continue;
         std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(inst);
         for (int i = 0; i < 6; i++) {
@@ -633,7 +632,7 @@ void renderMessages() {
     glDisable(GL_CULL_FACE);
     // glEnable(GL_BLEND);
 
-    for (auto it = gWorkspace()->GetDescendantsStart(); it != gWorkspace()->GetDescendantsEnd(); it++) {
+    for (auto&& it : gWorkspace()->GetDescendants()) {
         if (!it->IsA<Message>()) continue;
         std::shared_ptr<Message> message = it->CastTo<Message>().expect();
 

@@ -33,15 +33,14 @@ void Workspace::InitService() {
 
 void Workspace::OnRun() {
     // Make joints
-    for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
+    for (auto&& it : this->GetDescendants()) {
         if (!it->IsA<BasePart>()) continue;
         std::shared_ptr<BasePart> part = it->CastTo<BasePart>().expect();
         part->MakeJoints();
     }
 
     // Activate all joints
-    for (auto it = this->GetDescendantsStart(); it != this->GetDescendantsEnd(); it++) {
-        std::shared_ptr<Instance> obj = *it;
+    for (auto&& obj : this->GetDescendants()) {
         if (!obj->IsA<JointInstance>()) continue;
         std::shared_ptr<JointInstance> joint = obj->CastTo<JointInstance>().expect();
         joint->UpdateProperty("Part0");
@@ -77,9 +76,9 @@ void Workspace::PhysicsStep(float deltaTime) {
 std::vector<std::shared_ptr<Instance>> Workspace::CastFrustum(Frustum frustum) {
     std::vector<std::shared_ptr<Instance>> parts;
 
-    for (auto it = GetDescendantsStart(); it != GetDescendantsEnd(); it++) {
+    for (auto&& it : this->GetDescendants()) {
         if (!it->IsA<BasePart>()) continue;
-        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(*it);
+        std::shared_ptr<BasePart> part = std::dynamic_pointer_cast<BasePart>(it);
 
         if (!part->locked && frustum.checkAABB(part->position(), part->GetAABB())) {
             parts.push_back(part);

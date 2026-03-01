@@ -45,10 +45,10 @@ PartAssembly PartAssembly::FromSelection(std::vector<std::shared_ptr<Instance>> 
             selection.push_back(obj->CastTo<BasePart>().expect());
 
         // Add object descendants
-        for (DescendantsIterator it = obj->GetDescendantsStart(); it != obj->GetDescendantsEnd(); it++) {
-            if (!(*it)->IsA<BasePart>()) continue;
+        for (auto&& it : obj->GetDescendants()) {
+            if (!it->IsA<BasePart>()) continue;
 
-            selection.push_back((*it)->CastTo<BasePart>().expect());
+            selection.push_back(it->CastTo<BasePart>().expect());
         }
     }
 

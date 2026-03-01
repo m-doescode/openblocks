@@ -21,12 +21,12 @@ void ServerScriptService::InitService() {
 
 void ServerScriptService::OnRun() {
     auto workspace = dataModel()->GetService<Workspace>();
-    for (auto it = workspace->GetDescendantsStart(); it != workspace->GetDescendantsEnd(); it++) {
+    for (auto&& it : workspace->GetDescendants()) {
         if (!it->IsA<Script>()) continue;
         it->CastTo<Script>().expect()->Run();
     }
 
-    for (auto it = GetDescendantsStart(); it != GetDescendantsEnd(); it++) {
+    for (auto&& it : GetDescendants()) {
         if (!it->IsA<Script>()) continue;
         it->CastTo<Script>().expect()->Run();
     }
