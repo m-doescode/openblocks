@@ -15,7 +15,7 @@ enum class CameraMode {
     ORBIT
 };
 
-class Camera {
+class Camera_Old {
 public:
     glm::vec3 cameraPos;
     glm::vec3 targetPos;
@@ -29,7 +29,7 @@ public:
     float mouseSensitivity = 0.2f;
     float zoom = 10.0f; // Distance from targetPos in orbit camera mode
 
-    Camera(glm::vec3 initialPosition);
+    Camera_Old(glm::vec3 initialPosition);
 
     glm::mat4 getLookAt();
     /** Converts a set of screen coords to a direction from the camera's pos */

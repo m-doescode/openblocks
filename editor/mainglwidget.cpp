@@ -7,7 +7,7 @@
 #include <qnamespace.h>
 
 #include "./ui_mainwindow.h"
-#include "camera.h"
+#include "camera.old.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "math_helper.h"
@@ -534,7 +534,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     }
 
     switch(evt->button()) {
-    // Camera drag
+    // Camera_Old drag
     case Qt::RightButton: {
         mouseLockedPos = evt->pos();
         isMouseRightDragging = true;

@@ -1,12 +1,12 @@
-#include "camera.h"
+#include "camera.old.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-Camera::Camera(glm::vec3 initalPosition) {
+Camera_Old::Camera_Old(glm::vec3 initalPosition) {
     this->cameraPos = initalPosition;
 }
 
-glm::mat4 Camera::getLookAt() {
+glm::mat4 Camera_Old::getLookAt() {
     glm::vec3 direction;
     direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     direction.y = sin(glm::radians(pitch));
@@ -23,7 +23,7 @@ glm::mat4 Camera::getLookAt() {
     return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
-void Camera::processMovement(Direction direction, float deltaTime) {
+void Camera_Old::processMovement(Direction direction, float deltaTime) {
     float speed = this->movementSpeed * deltaTime;
 
     switch (direction) {
@@ -48,7 +48,7 @@ void Camera::processMovement(Direction direction, float deltaTime) {
     }
 }
 
-void Camera::processRotation(float deltaX, float deltaY) {
+void Camera_Old::processRotation(float deltaX, float deltaY) {
     deltaX *= this->mouseSensitivity;
     deltaY *= this->mouseSensitivity;
 
@@ -62,7 +62,7 @@ void Camera::processRotation(float deltaX, float deltaY) {
         pitch = -89.0f;
 }
 
-glm::vec3 Camera::getScreenDirection(glm::vec2 screenPos, glm::vec2 screenSize) {
+glm::vec3 Camera_Old::getScreenDirection(glm::vec2 screenPos, glm::vec2 screenSize) {
     // VVV Thank goodness for this person's answer
     // https://stackoverflow.com/a/30005258/16255372
 

@@ -9,7 +9,7 @@ FrustumPlane::FrustumPlane(Vector3 point, Vector3 normal) : normal(normal.Unit()
 
 Frustum::Frustum() {}
 
-Frustum::Frustum(const Camera cam, float aspect, float fovY, float zNear, float zFar) {
+Frustum::Frustum(const Camera_Old cam, float aspect, float fovY, float zNear, float zFar) {
     const float halfVSide = zFar * tanf(fovY * 0.5f);
     const float halfHSide = halfVSide * aspect;
     const glm::vec3 frontMultFar = zFar * -cam.cameraFront;
@@ -29,7 +29,7 @@ Frustum::Frustum(const Camera cam, float aspect, float fovY, float zNear, float 
                             glm::cross(frontMultFar + trueCamUp * halfVSide, camRight) };
 }
 
-Frustum Frustum::createSliced(const Camera cam, float width, float height, float left, float right, float top, float bottom, float fovY, float zNear, float zFar) {
+Frustum Frustum::createSliced(const Camera_Old cam, float width, float height, float left, float right, float top, float bottom, float fovY, float zNear, float zFar) {
     Frustum frustum;
 
     float aspect = width / height;

@@ -8,7 +8,7 @@ set(SOURCES
     src/meta.cpp
     src/enum/surface.cpp
     src/enum/meta.cpp
-    src/camera.cpp
+    src/camera.old.cpp
     src/datatypes/vector.cpp
     src/datatypes/cframe.cpp
     src/datatypes/signal.cpp
