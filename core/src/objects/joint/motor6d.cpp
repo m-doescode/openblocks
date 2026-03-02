@@ -7,8 +7,6 @@
 
 INSTANCE_IMPL(Motor6D)
 
-#define PI 3.14159
-
 InstanceType Motor6D::__buildType() {
     return make_instance_type<Motor6D, JointInstance>(
         "Motor6D",

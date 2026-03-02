@@ -2,8 +2,6 @@
 
 #define CMP_EPSILON 0.00001
 
-constexpr float PI = 3.14159265359;
-
 float deg2rad(float deg) {
 	return deg * PI/180;
 }

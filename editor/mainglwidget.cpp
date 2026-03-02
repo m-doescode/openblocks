@@ -19,7 +19,6 @@
 #include "rendering/renderer.h"
 #include "mainglwidget.h"
 
-#define PI 3.14159
 #define M_mainWindow dynamic_cast<MainWindow*>(window())
 
 static CFrame XYZToZXY(glm::vec3(0, 0, 0), -glm::vec3(1, 0, 0), glm::vec3(0, 0, 1));

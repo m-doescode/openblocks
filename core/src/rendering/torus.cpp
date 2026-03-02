@@ -1,9 +1,8 @@
 #include "torus.h"
+#include "math_helper.h"
 #include <cmath>
 
 #include <glad/gl.h>
-
-#define PI 3.1415926535f
 
 struct vec { float x; float y; float z; };
 

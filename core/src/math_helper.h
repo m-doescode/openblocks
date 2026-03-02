@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 
+constexpr float PI = 3.14159265359;
+
 float deg2rad(float deg);
 float rad2deg(float rad);
 glm::vec3 normalizeAngles(glm::vec3 eulerAngles);

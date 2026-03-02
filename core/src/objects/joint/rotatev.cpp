@@ -5,8 +5,6 @@
 
 INSTANCE_IMPL(RotateV)
 
-#define PI 3.14159
-
 InstanceType RotateV::__buildType() {
     return make_instance_type<RotateV, JointInstance>("RotateV");
 }
