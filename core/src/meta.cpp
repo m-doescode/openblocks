@@ -94,6 +94,7 @@ DECLINST(JointsService);
 DECLINST(ScriptContext);
 DECLINST(ServerScriptService);
 DECLINST(Selection);
+DECLINST(CameraController);
 
 std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "Instance", &Instance::Type() },
@@ -123,4 +124,5 @@ std::map<std::string, const InstanceType*> INSTANCE_MAP = {
     { "ScriptContext", &ScriptContext::Type() },
     { "ServerScriptService", &ServerScriptService::Type() },
     { "Selection", &Selection::Type() },
+    { "CameraController", &CameraController::Type() },
 };

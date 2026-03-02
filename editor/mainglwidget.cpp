@@ -12,6 +12,7 @@
 #include "mainwindow.h"
 #include "math_helper.h"
 #include "objects/part/clickdetector.h"
+#include "objects/service/cameracontroller.h"
 #include "objects/service/selection.h"
 #include "partassembly.h"
 #include "rendering/assets.h"
@@ -79,7 +80,8 @@ QPoint mouseLockedPos;
 void MainGLWidget::handleCameraRotate(QMouseEvent* evt) {
     if (!isMouseRightDragging) return;
 
-    camera.processRotation(evt->pos().x() - mouseLockedPos.x(), evt->pos().y() - mouseLockedPos.y());
+    // camera.processRotation(evt->pos().x() - mouseLockedPos.x(), evt->pos().y() - mouseLockedPos.y());
+    gDataModel->GetService<CameraController>()->InputRotation(evt->pos().x() - mouseLockedPos.x(), evt->pos().y() - mouseLockedPos.y());
 }
 
 

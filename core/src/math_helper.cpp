@@ -2,6 +2,23 @@
 
 #define CMP_EPSILON 0.00001
 
+constexpr float PI = 3.14159265359;
+
+float deg2rad(float deg) {
+	return deg * PI/180;
+}
+
+float rad2deg(float rad) {
+	return rad * 180/PI;
+}
+
+glm::vec3 normalizeAngles(glm::vec3 eulerAngles) {
+	return glm::vec3(
+		eulerAngles.x < 0 ? eulerAngles.x + 360 : eulerAngles.x,
+		eulerAngles.y < 0 ? eulerAngles.y + 360 : eulerAngles.y,
+		eulerAngles.z < 0 ? eulerAngles.z + 360 : eulerAngles.z
+	);
+}
 
 void expandAABB(glm::vec3& min, glm::vec3& max, glm::vec3 point) {
 	min = glm::vec3(glm::min(min.x, point.x), glm::min(min.y, point.y), glm::min(min.z, point.z));

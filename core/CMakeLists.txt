@@ -39,6 +39,7 @@ set(SOURCES
     src/objects/service/script/scriptcontext.cpp
     src/objects/service/workspace.cpp
     src/objects/service/selection.cpp
+    src/objects/service/cameracontroller.cpp
     src/objects/datamodel.cpp
     src/objects/joint/weld.cpp
     src/objects/joint/jointinstance.cpp

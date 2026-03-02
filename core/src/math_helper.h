@@ -1,6 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
 
+float deg2rad(float deg);
+float rad2deg(float rad);
+glm::vec3 normalizeAngles(glm::vec3 eulerAngles);
+
 void expandAABB(glm::vec3& min, glm::vec3& max, glm::vec3 point);
 void computeAABBFromPoints(glm::vec3& min, glm::vec3& max, glm::vec3* points, int count);
 void getAABBCoords(glm::vec3& pos, glm::vec3& size, glm::vec3 min, glm::vec3 max);
