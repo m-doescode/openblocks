@@ -1,3 +1,4 @@
+
 #include "cameracontroller.h"
 #include "datatypes/vector.h"
 #include "math_helper.h"
@@ -51,6 +52,16 @@ void CameraController::InputMovement(Direction direction, float deltaTime) {
     camera->cframe = camera->cframe.Rotation() + targetPos;
 }
 
+static CFrame fromFirstPersonAngles(Vector3 pos, float pitch, float yaw) {
+    glm::vec3 direction, cameraFront;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
+
+    return CFrame(pos, pos + cameraFront, glm::vec3(0, 1, 0));
+}
+
 void CameraController::InputRotation(float deltaX, float deltaY) {
     auto workspace = dataModel()->GetService<Workspace>();
     auto camera = workspace->GetCamera();
@@ -58,11 +69,15 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
     deltaX *= this->mouseSensitivity;
     deltaY *= this->mouseSensitivity;
 
-    Vector3 eulerAngles = camera->cframe.ToEulerAnglesXYZ();
-    float pitch = rad2deg(eulerAngles.X()), yaw = rad2deg(eulerAngles.Y());
+    if (lastCFrame != camera->cframe) {
+        lastCFrame = camera->cframe;
+        Vector3 eulerAngles = camera->cframe.ToEulerAnglesXYZ();
+        pitch = rad2deg(eulerAngles.X());
+        yaw = rad2deg(eulerAngles.Y());
+    }
 
     yaw += deltaX;
-    pitch += deltaY;
+    pitch += -deltaY;
 
     // Prevent world flipping if pitch exceeds 90deg
     if(pitch > 89.0f)
@@ -70,6 +85,6 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
     if(pitch < -89.0f)
         pitch = -89.0f;
 
-    eulerAngles = Vector3(deg2rad(pitch), deg2rad(yaw), eulerAngles.Z());
-    camera->cframe = CFrame::FromEulerAnglesXYZ(eulerAngles) + camera->cframe.Position();
+    camera->cframe = fromFirstPersonAngles(camera->cframe.Position(), pitch, yaw);
+    lastCFrame = camera->cframe;
 }

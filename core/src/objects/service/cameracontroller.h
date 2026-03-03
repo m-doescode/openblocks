@@ -5,6 +5,9 @@
 
 class CameraController : public Service {
     INSTANCE_HEADER
+
+    float pitch = 0, yaw = 0;
+    CFrame lastCFrame;
 public:
     enum class Direction {
         FORWARD,
@@ -19,7 +22,7 @@ protected:
     bool initialized = false;
 public:
     static inline std::shared_ptr<Instance> Create() { return new_instance<CameraController>(); };
-
+    
     float movementSpeed = 10.0f;
     float mouseSensitivity = 0.2f;
 
