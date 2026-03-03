@@ -366,8 +366,9 @@ end:
 
 static float targetZoom = 10.0f;
 void MainGLWidget::wheelEvent(QWheelEvent* evt) {
+    auto cameraController = gDataModel->GetService<CameraController>();
     if (camera.mode == CameraMode::FIRSTPERSON) {
-        camera.processMovement(evt->angleDelta().y() < 0 ? DIRECTION_BACKWARDS : DIRECTION_FORWARD, 0.25f);
+        cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::BACKWARDS : CameraController::Direction::FORWARD, 0.25f);
     } else {
         targetZoom += -evt->angleDelta().y() / 20.0f;
         targetZoom = std::max(targetZoom, 1.0f);
@@ -631,13 +632,14 @@ static std::chrono::time_point lastTime = std::chrono::steady_clock::now();
 void MainGLWidget::updateCycle() {
     float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - lastTime).count();
     lastTime = std::chrono::steady_clock::now();
+    auto cameraController = gDataModel->GetService<CameraController>();
 
     if (moveZ)
-        camera.processMovement(moveZ == 1 ? DIRECTION_FORWARD : DIRECTION_BACKWARDS, deltaTime);
+        cameraController->InputMovement(moveZ == 1 ? CameraController::Direction::FORWARD : CameraController::Direction::BACKWARDS, deltaTime);
     if (moveX)
-        camera.processMovement(moveX == 1 ? DIRECTION_LEFT : DIRECTION_RIGHT, deltaTime);
+        cameraController->InputMovement(moveX == 1 ? CameraController::Direction::LEFT : CameraController::Direction::RIGHT, deltaTime);
     if (moveYw)
-        camera.processMovement(moveYw == 1 ? DIRECTION_UP : DIRECTION_DOWN, deltaTime);
+        cameraController->InputMovement(moveYw == 1 ? CameraController::Direction::UP : CameraController::Direction::DOWN, deltaTime);
 
     camera.zoom = std::lerp(camera.zoom, targetZoom, 0.5f);
 }
