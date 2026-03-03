@@ -80,8 +80,21 @@ Vector3 CFrame::ToEulerAnglesXYZ() {
     return Vector3(x, y, z);
 }
 
+Vector3 CFrame::ToEulerAnglesZXY() {
+    float x;
+    float y;
+    float z;
+    glm::extractEulerAngleZXY(glm::mat4(this->rotation), z, x, y);
+    return Vector3(x, y, z);
+}
+
 CFrame CFrame::FromEulerAnglesXYZ(Vector3 vector) {
     glm::mat3 mat = glm::eulerAngleXYZ(vector.X(), vector.Y(), vector.Z());
+    return CFrame((glm::vec3)Vector3::ZERO, mat);
+}
+
+CFrame CFrame::FromEulerAnglesZXY(Vector3 vector) {
+    glm::mat3 mat = glm::eulerAngleZXY(vector.Z(), vector.X(), vector.Y());
     return CFrame((glm::vec3)Vector3::ZERO, mat);
 }
 

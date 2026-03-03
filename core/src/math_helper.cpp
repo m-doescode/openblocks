@@ -10,14 +10,6 @@ float rad2deg(float rad) {
 	return rad * 180/PI;
 }
 
-glm::vec3 normalizeAngles(glm::vec3 eulerAngles) {
-	return glm::vec3(
-		eulerAngles.x < 0 ? eulerAngles.x + 360 : eulerAngles.x,
-		eulerAngles.y < 0 ? eulerAngles.y + 360 : eulerAngles.y,
-		eulerAngles.z < 0 ? eulerAngles.z + 360 : eulerAngles.z
-	);
-}
-
 void expandAABB(glm::vec3& min, glm::vec3& max, glm::vec3 point) {
 	min = glm::vec3(glm::min(min.x, point.x), glm::min(min.y, point.y), glm::min(min.z, point.z));
 	max = glm::vec3(glm::max(max.x, point.x), glm::max(max.y, point.y), glm::max(max.z, point.z));

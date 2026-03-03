@@ -60,7 +60,9 @@ public:
     DEF_DATA_PROP inline Vector3 LookVector() { return -glm::column(rotation, 2); }
 
     DEF_DATA_METHOD Vector3 ToEulerAnglesXYZ();
+    DEF_DATA_METHOD Vector3 ToEulerAnglesZXY();
     DEF_DATA_METHOD static CFrame FromEulerAnglesXYZ(Vector3);
+    DEF_DATA_METHOD static CFrame FromEulerAnglesZXY(Vector3);
 
     // Operators
     DEF_DATA_OP CFrame operator *(CFrame) const;

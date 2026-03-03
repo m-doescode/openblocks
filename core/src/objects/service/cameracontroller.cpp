@@ -69,15 +69,11 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
     deltaX *= this->mouseSensitivity;
     deltaY *= this->mouseSensitivity;
 
-    if (lastCFrame != camera->cframe) {
-        lastCFrame = camera->cframe;
-        Vector3 eulerAngles = camera->cframe.ToEulerAnglesXYZ();
-        pitch = rad2deg(eulerAngles.X());
-        yaw = rad2deg(eulerAngles.Y());
-    }
+    Vector3 eulerAngles = camera->cframe.ToEulerAnglesZXY();
+    float yaw = rad2deg(eulerAngles.Y()), pitch = rad2deg(eulerAngles.X());
 
     yaw += deltaX;
-    pitch += -deltaY;
+    pitch += deltaY;
 
     // Prevent world flipping if pitch exceeds 90deg
     if(pitch > 89.0f)
@@ -85,6 +81,7 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
     if(pitch < -89.0f)
         pitch = -89.0f;
 
-    camera->cframe = fromFirstPersonAngles(camera->cframe.Position(), pitch, yaw);
+    eulerAngles = Vector3(deg2rad(pitch), deg2rad(yaw), 0);
+    camera->cframe = CFrame::FromEulerAnglesZXY(eulerAngles) + camera->cframe.Position();
     lastCFrame = camera->cframe;
 }

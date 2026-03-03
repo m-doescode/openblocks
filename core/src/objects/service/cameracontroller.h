@@ -5,9 +5,6 @@
 
 class CameraController : public Service {
     INSTANCE_HEADER
-
-    float pitch = 0, yaw = 0;
-    CFrame lastCFrame;
 public:
     enum class Direction {
         FORWARD,
