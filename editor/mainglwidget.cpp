@@ -143,8 +143,9 @@ void MainGLWidget::handleObjectDrag(QMouseEvent* evt) {
     QPoint position = evt->pos();
 
     initialAssembly.SetCollisionsEnabled(false);
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(gWorkspace()->GetCamera()->cframe.Position(), pointDir, 50000);
     initialAssembly.SetCollisionsEnabled(true);
     
     if (!rayHit) return;
@@ -194,7 +195,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
 
     // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
 
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
     // We use lastDragStartPos instead to consider the mouse's actual position, rather than the center
@@ -209,8 +211,8 @@ void MainGLWidget::handleLinearTransform(QMouseEvent* evt) {
     glm::vec3 axisSegment1 = handleCFrame.Position() + (-handleCFrame.LookVector() * -4096.0f);
 
     // Segment from camera stretching 4096 forward
-    glm::vec3 mouseSegment0 = camera.cameraPos;
-    glm::vec3 mouseSegment1 = camera.cameraPos + pointDir * 4096.0f;
+    glm::vec3 mouseSegment0 = camera->cframe.Position();
+    glm::vec3 mouseSegment1 = camera->cframe.Position() + pointDir * 4096.0f;
 
     // Closest point on the axis segment between the two segments
     glm::vec3 handlePoint, rb;
@@ -261,7 +263,8 @@ void MainGLWidget::startLinearTransform(QMouseEvent* evt) {
 
     // This was actually quite a difficult problem to solve, managing to get the handle to go underneath the cursor
 
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
     pointDir = glm::normalize(pointDir);
 
     CFrame handleCFrame = getHandleCFrame(draggingHandle.value());
@@ -271,8 +274,8 @@ void MainGLWidget::startLinearTransform(QMouseEvent* evt) {
     glm::vec3 axisSegment1 = handleCFrame.Position() + (-handleCFrame.LookVector() * -4096.0f);
 
     // Segment from camera stretching 4096 forward
-    glm::vec3 mouseSegment0 = camera.cameraPos;
-    glm::vec3 mouseSegment1 = camera.cameraPos + pointDir * 4096.0f;
+    glm::vec3 mouseSegment0 = camera->cframe.Position();
+    glm::vec3 mouseSegment1 = camera->cframe.Position() + pointDir * 4096.0f;
 
     // Closest point on the axis segment between the two segments
     glm::vec3 handlePoint, rb;
@@ -289,8 +292,10 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     glm::vec2 destPoint = glm::vec2(evt->pos().x(), evt->pos().y());
 
     // Calculate part pos as screen point
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)width() / (float)height(), 0.1f, 1000.0f);
-    glm::mat4 view = camera.getLookAt();
+    auto camera = gWorkspace()->GetCamera();
+    // TODO: Make this a function of Camera
+    glm::mat4 projection = glm::perspective(glm::radians(camera->fieldOfView), (float)width() / (float)height(), 0.1f, 1000.0f);
+    glm::mat4 view = camera->cframe;
 
     // The rotated part's origin projected onto the screen
     glm::vec4 partCenterRaw = projection * view * glm::vec4((glm::vec3)initialFrame.Position(), 1.f);
@@ -324,21 +329,22 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
 
 std::optional<HandleFace> MainGLWidget::raycastHandle(glm::vec3 pointDir) {
     if (!editorToolHandles.active) return std::nullopt;
-    return ::raycastHandle(camera.cameraPos, glm::normalize(pointDir) * 50000.f);
+    return ::raycastHandle(gWorkspace()->GetCamera()->cframe.Position(), glm::normalize(pointDir) * 50000.f);
 }
 
 void MainGLWidget::handleCursorChange(QMouseEvent* evt) {
     if (isMouseRightDragging || selectionLasso != QRect{0,0,0,0}) return; // Don't change the cursor while it is intentionally blank
     QPoint position = evt->pos();
 
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
 
     if (raycastHandle(pointDir)) {
         setCursor(Qt::OpenHandCursor);
         return;
     };
 
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera->cframe.Position(), pointDir, 50000);
 
     // Interact mode
     if (mainWindow()->selectedTool == TOOL_INTERACT) {
@@ -401,7 +407,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
         float top = std::min(selectionLasso.top(), selectionLasso.bottom());
         float bottom = std::max(selectionLasso.top(), selectionLasso.bottom());
 
-        Frustum selectionFrustum = Frustum::createSliced(camera, width(), height(), left, right, top, bottom, glm::radians(45.f), 0.1f, 1000.0f);
+        Frustum selectionFrustum = Frustum::createSliced(gWorkspace()->GetCamera()->cframe, width(), height(), left, right, top, bottom, glm::radians(45.f), 0.1f, 1000.0f);
 
         std::vector<std::shared_ptr<Instance>> castedParts = gWorkspace()->CastFrustum(selectionFrustum);
         gDataModel->GetService<Selection>()->Set(castedParts);
@@ -410,10 +416,11 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
 
 bool MainGLWidget::handleInteractClick(QMouseEvent* evt) {
     QPoint position = evt->pos();
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
 
     // raycast part
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera->cframe.Position(), pointDir, 50000);
     if (!rayHit || !rayHit->hitPart) return true;
     std::shared_ptr<BasePart> part = rayHit->hitPart;
 
@@ -431,10 +438,11 @@ bool MainGLWidget::handleInteractClick(QMouseEvent* evt) {
 std::weak_ptr<BasePart> lastHoverTarget;
 bool MainGLWidget::handleInteractHover(QMouseEvent* evt) {
     QPoint position = evt->pos();
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
 
     // raycast part
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera->cframe.Position(), pointDir, 50000);
     if (!rayHit || !rayHit->hitPart) return true;
     std::shared_ptr<BasePart> part = rayHit->hitPart;
 
@@ -458,11 +466,12 @@ bool MainGLWidget::handleInteractHover(QMouseEvent* evt) {
 
 bool MainGLWidget::handlePartClick(QMouseEvent* evt) {
     QPoint position = evt->pos();
-    glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+    auto camera = gWorkspace()->GetCamera();
+    glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
 
     // raycast part
     std::shared_ptr<Selection> selection = gDataModel->GetService<Selection>();
-    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera.cameraPos, pointDir, 50000);
+    std::optional<const RaycastResult> rayHit = gWorkspace()->CastRayNearest(camera->cframe.Position(), pointDir, 50000);
     if (!rayHit || !rayHit->hitPart) { selection->Set({}); return false; }
     std::shared_ptr<BasePart> part = rayHit->hitPart;
     if (part->locked) { selection->Set({}); return false; }
@@ -530,6 +539,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     initialTransforms = {};
     tryMouseContextMenu = evt->button() == Qt::RightButton;
 
+    auto camera = gWorkspace()->GetCamera();
+
     if (mainWindow()->selectedTool == TOOL_INTERACT) {
         handleInteractClick(evt);
     }
@@ -546,7 +557,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent* evt) {
     } case Qt::LeftButton: {
         QPoint position = evt->pos();
 
-        glm::vec3 pointDir = camera.getScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
+        glm::vec3 pointDir = camera->GetScreenDirection(glm::vec2(position.x(), position.y()), glm::vec2(width(), height()));
         // raycast handles
         auto handle = raycastHandle(pointDir);
         if (handle.has_value()) {
@@ -648,8 +659,9 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     }
 
     if (evt->key() == Qt::Key_F) {
+        auto camera = gWorkspace()->GetCamera();
         gWorkspace()->AddChild(lastPart = Part::New({
-            .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
+            .position = camera->cframe.Position() + gWorkspace()->GetCamera()->cframe.LookVector() * glm::vec3(3),
             .rotation = glm::vec3(0),
             .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),

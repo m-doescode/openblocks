@@ -52,16 +52,6 @@ void CameraController::InputMovement(Direction direction, float deltaTime) {
     camera->cframe = camera->cframe.Rotation() + targetPos;
 }
 
-static CFrame fromFirstPersonAngles(Vector3 pos, float pitch, float yaw) {
-    glm::vec3 direction, cameraFront;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
-
-    return CFrame(pos, pos + cameraFront, glm::vec3(0, 1, 0));
-}
-
 void CameraController::InputRotation(float deltaX, float deltaY) {
     auto workspace = dataModel()->GetService<Workspace>();
     auto camera = workspace->GetCamera();
@@ -83,5 +73,4 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
 
     eulerAngles = Vector3(deg2rad(pitch), deg2rad(yaw), 0);
     camera->cframe = CFrame::FromEulerAnglesZXY(eulerAngles) + camera->cframe.Position();
-    lastCFrame = camera->cframe;
 }
