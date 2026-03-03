@@ -43,7 +43,7 @@ namespace Logger {
     template <typename ...Args>
     void scriptLogf(std::string format, LogLevel logLevel, ScriptSource source, Args&&... args) {
         char message[200];
-        sprintf(message, format.c_str(), args...);
+        snprintf(message, sizeof(message)-1, format.c_str(), args...);
         log(message, logLevel, source);
     }
 
