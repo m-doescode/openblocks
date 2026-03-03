@@ -48,19 +48,9 @@ CFrame::CFrame(Vector3 position, glm::quat quat)
     , rotation(quat) {
 }
 
-glm::mat3 lookAt(Vector3 position, Vector3 lookAt, Vector3 up) {
-    // https://github.com/sgorsten/linalg/issues/29#issuecomment-743989030
-	Vector3 f = (lookAt - position).Unit(); // Forward/Look
-	Vector3 u = up.Unit(); // Up
-	Vector3 s = f.Cross(u).Unit(); // Right
-	u = s.Cross(f).Unit();
-
-	return { s, u, -f };
-}
-
 CFrame::CFrame(Vector3 position, Vector3 lookAt, Vector3 up)
     : translation(position)
-    , rotation(::lookAt(position, lookAt, up)) {
+    , rotation(glm::lookAt((glm::vec3)position, (glm::vec3)lookAt, (glm::vec3)up)) {
 }
 
 CFrame::~CFrame() = default;
