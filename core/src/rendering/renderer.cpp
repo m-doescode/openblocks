@@ -121,7 +121,9 @@ void renderInit(int width, int height) {
 }
 
 inline glm::mat4 getCameraLookAt() {
-    return gWorkspace()->GetCamera()->cframe;
+    // TODO: CFrame math is *completely* broken, this is just a workaround
+    CFrame cframe = gWorkspace()->GetCamera()->cframe;
+    return glm::lookAt((glm::vec3)cframe.Position(), (glm::vec3)(cframe.Position() + cframe.LookVector()), (glm::vec3)cframe.UpVector());
 }
 
 inline glm::vec3 getCameraPos() {

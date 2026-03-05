@@ -55,14 +55,14 @@ public:
     DEF_DATA_PROP inline float Y() const { return translation.y; }
     DEF_DATA_PROP inline float Z() const { return translation.z; }
 
-    DEF_DATA_PROP inline Vector3 RightVector() { return glm::column(rotation, 0); }
-    DEF_DATA_PROP inline Vector3 UpVector() { return glm::column(rotation, 1); }
-    DEF_DATA_PROP inline Vector3 LookVector() { return -glm::column(rotation, 2); }
+    DEF_DATA_PROP inline Vector3 RightVector() const { return glm::column(rotation, 0); }
+    DEF_DATA_PROP inline Vector3 UpVector() const { return glm::column(rotation, 1); }
+    DEF_DATA_PROP inline Vector3 LookVector() const{ return -glm::column(rotation, 2); }
 
     DEF_DATA_METHOD Vector3 ToEulerAnglesXYZ();
-    DEF_DATA_METHOD Vector3 ToEulerAnglesZXY();
+    DEF_DATA_METHOD Vector3 ToEulerAnglesYXZ();
     DEF_DATA_METHOD static CFrame FromEulerAnglesXYZ(Vector3);
-    DEF_DATA_METHOD static CFrame FromEulerAnglesZXY(Vector3);
+    DEF_DATA_METHOD static CFrame FromEulerAnglesYXZ(Vector3);
 
     // Operators
     DEF_DATA_OP CFrame operator *(CFrame) const;
