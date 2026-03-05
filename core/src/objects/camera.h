@@ -23,4 +23,7 @@ public:
 
     /** Converts a set of screen coords to a direction from the camera's pos */
     Vector3 GetScreenDirection(glm::vec2 screenPos, glm::vec2 screenSize);
+
+    // Temporary function to help with errors caused by my own lack of math understanding
+    glm::mat4 getCameraLookAt();
 };

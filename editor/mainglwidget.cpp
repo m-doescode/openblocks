@@ -7,7 +7,6 @@
 #include <qnamespace.h>
 
 #include "./ui_mainwindow.h"
-#include "camera.old.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "math_helper.h"
@@ -295,7 +294,7 @@ void MainGLWidget::handleRotationalTransform(QMouseEvent* evt) {
     auto camera = gWorkspace()->GetCamera();
     // TODO: Make this a function of Camera
     glm::mat4 projection = glm::perspective(glm::radians(camera->fieldOfView), (float)width() / (float)height(), 0.1f, 1000.0f);
-    glm::mat4 view = camera->cframe;
+    glm::mat4 view = camera->getCameraLookAt();
 
     // The rotated part's origin projected onto the screen
     glm::vec4 partCenterRaw = projection * view * glm::vec4((glm::vec3)initialFrame.Position(), 1.f);
