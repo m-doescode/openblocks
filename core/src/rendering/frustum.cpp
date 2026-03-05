@@ -29,13 +29,17 @@ Frustum::Frustum(const Camera_Old cam, float aspect, float fovY, float zNear, fl
                             glm::cross(frontMultFar + trueCamUp * halfVSide, camRight) };
 }
 
-Frustum Frustum::createSliced(const Camera_Old cam, float width, float height, float left, float right, float top, float bottom, float fovY, float zNear, float zFar) {
+Frustum Frustum::createSliced(CFrame frame, float width, float height, float left, float right, float top, float bottom, float fovY, float zNear, float zFar) {
     Frustum frustum;
+
+    glm::vec3 cameraFront = frame.LookVector();
+    glm::vec3 cameraPos = frame.Position();
+    glm::vec3 cameraUp = glm::vec3(0, 1, 0);
 
     float aspect = width / height;
     float halfVSide = zFar * tanf(fovY * 0.5f);
     float halfHSide = halfVSide * aspect;
-    const glm::vec3 frontMultFar = zFar * -cam.cameraFront;
+    const glm::vec3 frontMultFar = zFar * -cameraFront;
 
     float leftSide = -halfHSide * (left / width * 2 - 1);
     float rightSide = halfHSide * (right / width * 2 - 1);
@@ -43,19 +47,23 @@ Frustum Frustum::createSliced(const Camera_Old cam, float width, float height, f
     float bottomSide = halfVSide * (bottom / height * 2 - 1);
 
     // Don't forget to normalize!!!
-    glm::vec3 camRight = glm::normalize(glm::cross(cam.cameraFront, cam.cameraUp)); // Technically this is left, but whatever
-    glm::vec3 trueCamUp = glm::cross(-cam.cameraFront, camRight);
-    frustum.near = { cam.cameraPos + zNear * -cam.cameraFront, -cam.cameraFront };
-    frustum.far = { cam.cameraPos + frontMultFar, cam.cameraFront };
-    frustum.right = { cam.cameraPos,
+    glm::vec3 camRight = glm::normalize(glm::cross(cameraFront, cameraUp)); // Technically this is left, but whatever
+    glm::vec3 trueCamUp = glm::cross(-cameraFront, camRight);
+    frustum.near = { cameraPos + zNear * -cameraFront, -cameraFront };
+    frustum.far = { cameraPos + frontMultFar, cameraFront };
+    frustum.right = { cameraPos,
                             glm::cross(frontMultFar - camRight * rightSide, trueCamUp) };
-    frustum.left = { cam.cameraPos,
+    frustum.left = { cameraPos,
                             glm::cross(trueCamUp,frontMultFar + camRight * leftSide) };
-    frustum.top = { cam.cameraPos,
+    frustum.top = { cameraPos,
                             glm::cross(camRight, frontMultFar - trueCamUp * topSide) };
-    frustum.bottom = { cam.cameraPos,
+    frustum.bottom = { cameraPos,
                             glm::cross(frontMultFar + trueCamUp * bottomSide, camRight) };
     return frustum;
+}
+
+Frustum Frustum::createSliced(const Camera_Old cam, float width, float height, float left, float right, float top, float bottom, float fovY, float zNear, float zFar) {
+    return createSliced(CFrame(cam.cameraPos, cam.cameraPos + cam.cameraFront, cam.cameraUp), width, height, left, right, top, bottom, fovY, zNear, zFar);
 }
 
 bool FrustumPlane::checkPointForward(Vector3 point) {
