@@ -22,10 +22,12 @@ void CameraController::InputMovement(Direction direction, float deltaTime) {
     auto camera = workspace->GetCamera();
 
     float speed = this->movementSpeed * deltaTime;
+    float zoomSpeed = this->zoomSpeed * deltaTime;
 
-    glm::vec3 targetPos = camera->cframe.Position();
+    glm::vec3 targetPos = camera->focus.Position();
     glm::vec3 cameraFront = camera->cframe.LookVector();
     glm::vec3 cameraUp(0, 1, 0);
+    Vector3 destPos;
 
     switch (direction) {
         case Direction::FORWARD:
@@ -46,10 +48,25 @@ void CameraController::InputMovement(Direction direction, float deltaTime) {
         case Direction::DOWN:
             targetPos -= cameraUp * speed;
             break;
+        
+        case Direction::IN:
+        
+            // Handle case of user zooming all the way in
+            if ((camera->cframe.Position() + camera->cframe.LookVector() - camera->focus.Position()).Dot(camera->cframe.LookVector()) > 0) {
+                break;
+            }
+            
+            camera->cframe = camera->cframe.Position() + camera->cframe.LookVector() * zoomSpeed;
+            break;
+        case Direction::OUT:
+            camera->cframe = camera->cframe.Position() - camera->cframe.LookVector() * zoomSpeed;
+            break;
     }
 
     // TODO: Add third person orbiting as well
-    camera->cframe = camera->cframe.Rotation() + targetPos;
+    camera->cframe = camera->cframe.Rotation() + (camera->cframe.Position() - camera->focus.Position()) + targetPos;
+    camera->focus = camera->focus.Rotation() + targetPos;
+    camera->UpdateView();
 }
 
 void CameraController::InputRotation(float deltaX, float deltaY) {
@@ -59,8 +76,9 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
     deltaX *= this->mouseSensitivity;
     deltaY *= this->mouseSensitivity;
 
-    Vector3 eulerAngles = camera->cframe.ToEulerAnglesYXZ();
-    float yaw = rad2deg(eulerAngles.Y()), pitch = rad2deg(eulerAngles.X());
+    camera->UpdateView();
+    float dist = (camera->cframe.Position() - camera->focus.Position()).Magnitude();
+    float pitch = camera->pitch, yaw = camera->yaw;
 
     yaw += -deltaX;
     pitch += -deltaY;
@@ -71,6 +89,12 @@ void CameraController::InputRotation(float deltaX, float deltaY) {
     if(pitch < -89.0f)
         pitch = -89.0f;
 
-    eulerAngles = Vector3(deg2rad(pitch), deg2rad(yaw), 0);
-    camera->cframe = CFrame::FromEulerAnglesYXZ(eulerAngles) + camera->cframe.Position();
+    camera->pitch = pitch, camera->yaw = yaw;
+    Vector3 eulerAngles = Vector3(deg2rad(pitch), deg2rad(yaw), 0);
+    CFrame angledFrame = CFrame::FromEulerAnglesYXZ(eulerAngles);
+
+    Vector3 pos = camera->focus.Position() - angledFrame.LookVector() * dist;
+
+    camera->cframe = CFrame(pos, camera->focus.Position(), Vector3(0, 1, 0));
+    camera->UpdateView();
 }

@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "math_helper.h"
 #include "objectmodel/property.h"
 #include "objectmodel/type.h"
 
@@ -8,10 +9,25 @@ InstanceType Camera::__buildType() {
     return make_instance_type<Camera>("Camera",
         set_explorer_icon("camera"),
 
-        def_property("CFrame", &Camera::cframe),
+        def_property("Focus", &Camera::focus, 0, &Camera::onChanged),
+        def_property("CFrame", &Camera::cframe, 0, &Camera::onChanged),
         def_property("CameraSubject", &Camera::cameraSubject),
         def_property("FieldOfView", &Camera::fieldOfView)
     );
+}
+
+void Camera::onChanged(std::string name, Variant oldValue, Variant newValue) {
+    UpdateView();
+}
+
+void Camera::UpdateView() {
+    // Reset zoom
+    if ((cframe.Position() - focus.Position()).Magnitude() < 0.0001)
+        cframe = CFrame(focus.Position() - Vector3(0, 0, 0.0002), focus.Position());
+
+    cframe = CFrame(cframe.Position(), focus.Position());
+    Vector3 angles = cframe.ToEulerAnglesYXZ();
+    yaw = rad2deg(angles.Y()), pitch = rad2deg(angles.X());
 }
 
 // See also in renderer.cpp

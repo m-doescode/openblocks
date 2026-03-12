@@ -13,6 +13,8 @@ public:
         LEFT,
         UP,
         DOWN,
+        IN,
+        OUT
     };
 protected:
     void InitService() override;
@@ -20,7 +22,8 @@ protected:
 public:
     static inline std::shared_ptr<Instance> Create() { return new_instance<CameraController>(); };
     
-    float movementSpeed = 10.0f;
+    float movementSpeed = 20.0f;
+    float zoomSpeed = 10.0f;
     float mouseSensitivity = 0.2f;
 
     void InputRotation(float deltaX, float deltaY);

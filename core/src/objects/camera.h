@@ -11,8 +11,8 @@ class Camera : public Instance {
 
     friend CameraController;
 
-    void onChanged();
-    // float roll, pitch, yaw;
+    void onChanged(std::string name, Variant oldValue, Variant newValue);
+    float pitch = 0, yaw = 0;
 public:
     enum class Mode {
         FirstPerson,
@@ -22,7 +22,10 @@ public:
     static inline std::shared_ptr<Camera> New() { return new_instance<Camera>(); };
     static inline std::shared_ptr<Instance> Create() { return new_instance<Camera>(); };
 
-    CFrame cframe;
+    void UpdateView();
+
+    CFrame focus = CFrame(Vector3(0, 0, 0));
+    CFrame cframe = CFrame(Vector3(0, 0, 0.5));
     std::weak_ptr<Instance> cameraSubject;
     float fieldOfView = 45.f; // vertical degrees
     Mode mode = Mode::FirstPerson;
