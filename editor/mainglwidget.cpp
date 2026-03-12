@@ -363,11 +363,14 @@ end:
     setCursor(Qt::ArrowCursor);
 }
 
-static float targetZoom = 10.0f;
+static bool adjustFov = false;
 void MainGLWidget::wheelEvent(QWheelEvent* evt) {
     auto camera = gWorkspace()->GetCamera();
     auto cameraController = gDataModel->GetService<CameraController>();
-    if (camera->mode == Camera::Mode::FirstPerson) {
+
+    if (adjustFov) {
+        camera->fieldOfView += evt->angleDelta().y() < 0 ? 1.f : -1.f;
+    } else if (camera->mode == Camera::Mode::FirstPerson) {
         cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::BACKWARDS : CameraController::Direction::FORWARD, 0.25f);
     } else {
         cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::OUT : CameraController::Direction::IN, 0.25f);
@@ -383,6 +386,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
     handleObjectDrag(evt);
     handleCursorChange(evt);
     handleInteractHover(evt);
+    auto camera = gWorkspace()->GetCamera();
 
     switch (mainWindow()->selectedTool) {
     case TOOL_MOVE:
@@ -407,7 +411,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* evt) {
         float top = std::min(selectionLasso.top(), selectionLasso.bottom());
         float bottom = std::max(selectionLasso.top(), selectionLasso.bottom());
 
-        Frustum selectionFrustum = Frustum::createSliced(gWorkspace()->GetCamera()->cframe, width(), height(), left, right, top, bottom, glm::radians(45.f), 0.1f, 1000.0f);
+        Frustum selectionFrustum = Frustum::createSliced(gWorkspace()->GetCamera()->cframe, width(), height(), left, right, top, bottom, glm::radians(camera->fieldOfView), 0.1f, 1000.0f);
 
         std::vector<std::shared_ptr<Instance>> castedParts = gWorkspace()->CastFrustum(selectionFrustum);
         gDataModel->GetService<Selection>()->Set(castedParts);
@@ -639,13 +643,11 @@ void MainGLWidget::updateCycle() {
         cameraController->InputMovement(moveX == 1 ? CameraController::Direction::LEFT : CameraController::Direction::RIGHT, deltaTime);
     if (moveYw)
         cameraController->InputMovement(moveYw == 1 ? CameraController::Direction::UP : CameraController::Direction::DOWN, deltaTime);
-
-    camera.zoom = std::lerp(camera.zoom, targetZoom, 0.5f);
 }
 
 int partId = 1;
 void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
-        auto camera = gWorkspace()->GetCamera();
+    auto camera = gWorkspace()->GetCamera();
     if (evt->key() == Qt::Key_Semicolon)
         camera->mode = camera->mode == Camera::Mode::FirstPerson ? Camera::Mode::Orbit : Camera::Mode::FirstPerson;
 
@@ -677,12 +679,16 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
         debugRenderEnabled = !debugRenderEnabled;
         setDebugRendererEnabled(debugRenderEnabled);
     }
+
+    if (evt->key() == Qt::Key_N) adjustFov = true;
 }
 
 void MainGLWidget::keyReleaseEvent(QKeyEvent* evt) {
     if (evt->key() == Qt::Key_W || evt->key() == Qt::Key_S) moveZ = 0;
     else if (evt->key() == Qt::Key_A || evt->key() == Qt::Key_D) moveX = 0;
     else if (evt->key() == Qt::Key_E || evt->key() == Qt::Key_Q) moveYw = 0;
+
+    if (evt->key() == Qt::Key_N) adjustFov = false;
 }
 
 MainWindow* MainGLWidget::mainWindow() {

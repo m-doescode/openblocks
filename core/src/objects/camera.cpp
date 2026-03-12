@@ -30,6 +30,11 @@ void Camera::UpdateView() {
     yaw = rad2deg(angles.Y()), pitch = rad2deg(angles.X());
 }
 
+glm::mat4 Camera::GetCameraPerspective(float screenWidth, float screenHeight) {
+    glm::mat4 projection = glm::perspective(glm::radians(fieldOfView), (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+    return projection;
+}
+
 // See also in renderer.cpp
 glm::mat4 Camera::getCameraLookAt() {
     // TODO: CFrame math is *completely* broken, this is just a workaround
@@ -41,7 +46,7 @@ Vector3 Camera::GetScreenDirection(glm::vec2 screenPos, glm::vec2 screenSize) {
     // https://stackoverflow.com/a/30005258/16255372
 
     // glm::vec3 worldPos = camera.cameraPos + glm::vec3(glm::vec4(float(position.x()) / width() - 0.5f, float(position.y()) / height() - 0.5f, 0, 0) * camera.getLookAt());
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenSize.x / (float)screenSize.y, 0.1f, 100.0f);
+    glm::mat4 projection = GetCameraPerspective(screenSize.x, screenSize.y);
     glm::mat4 view = getCameraLookAt();
     glm::mat4 inverseViewport = glm::inverse(projection * view);
 

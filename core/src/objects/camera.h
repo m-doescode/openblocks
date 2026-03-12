@@ -30,6 +30,8 @@ public:
     float fieldOfView = 45.f; // vertical degrees
     Mode mode = Mode::FirstPerson;
 
+    glm::mat4 GetCameraPerspective(float screenWidth, float screenHeight);
+
     /** Converts a set of screen coords to a direction from the camera's pos */
     Vector3 GetScreenDirection(glm::vec2 screenPos, glm::vec2 screenSize);
 

@@ -128,6 +128,10 @@ inline glm::vec3 getCameraPos() {
     return gWorkspace()->GetCamera()->cframe.Position();
 }
 
+inline glm::mat4 getCameraPerspective() {
+    return gWorkspace()->GetCamera()->GetCameraPerspective(viewportWidth, viewportHeight);
+}
+
 static void renderPart(std::shared_ptr<BasePart> part) {
     glm::mat4 model = part->cframe;
     Vector3 size = part->GetEffectiveSize();
@@ -180,7 +184,7 @@ void renderParts() {
     shader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     shader->set("projection", projection);
     shader->set("view", view);
@@ -244,7 +248,7 @@ void renderSurfaceExtras() {
     ghostShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     ghostShader->set("projection", projection);
     ghostShader->set("view", view);
@@ -279,7 +283,7 @@ void renderSkyBox() {
 
     skyboxShader->use();
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     // Remove translation component of view, making us always at (0, 0, 0)
     glm::mat4 view = glm::mat4(glm::mat3(getCameraLookAt()));
 
@@ -307,7 +311,7 @@ void renderHandles() {
     handleShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
@@ -367,7 +371,7 @@ void renderAABB() {
     ghostShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     ghostShader->set("projection", projection);
     ghostShader->set("view", view);
@@ -446,7 +450,7 @@ void renderOutlines() {
     outlineShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     outlineShader->set("projection", projection);
     outlineShader->set("view", view);
@@ -511,7 +515,7 @@ void renderSelectionAssembly() {
     outlineShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     outlineShader->set("projection", projection);
     outlineShader->set("view", view);
@@ -554,7 +558,7 @@ void renderRotationArcs() {
     });
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
@@ -594,7 +598,7 @@ void renderDebugCFrames() {
     handleShader->use();
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)viewportWidth / (float)viewportHeight, 0.1f, 1000.0f);
+    glm::mat4 projection = getCameraPerspective();
     glm::mat4 view = getCameraLookAt();
     handleShader->set("projection", projection);
     handleShader->set("view", view);
