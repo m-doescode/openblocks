@@ -365,8 +365,9 @@ end:
 
 static float targetZoom = 10.0f;
 void MainGLWidget::wheelEvent(QWheelEvent* evt) {
+    auto camera = gWorkspace()->GetCamera();
     auto cameraController = gDataModel->GetService<CameraController>();
-    if (camera.mode == CameraMode::FIRSTPERSON) {
+    if (camera->mode == Camera::Mode::FirstPerson) {
         cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::BACKWARDS : CameraController::Direction::FORWARD, 0.25f);
     } else {
         targetZoom += -evt->angleDelta().y() / 20.0f;
@@ -645,10 +646,11 @@ void MainGLWidget::updateCycle() {
 
 int partId = 1;
 void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
+        auto camera = gWorkspace()->GetCamera();
     if (evt->key() == Qt::Key_Semicolon)
-        camera.mode = camera.mode == CameraMode::FIRSTPERSON ? CameraMode::ORBIT : CameraMode::FIRSTPERSON;
+        camera->mode = camera->mode == Camera::Mode::FirstPerson ? Camera::Mode::Orbit : Camera::Mode::FirstPerson;
 
-    if (camera.mode == CameraMode::FIRSTPERSON) {
+    if (camera->mode == Camera::Mode::FirstPerson) {
         if (evt->key() == Qt::Key_W) moveZ = 1;
         else if (evt->key() == Qt::Key_S) moveZ = -1;
         
@@ -660,7 +662,6 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     }
 
     if (evt->key() == Qt::Key_F) {
-        auto camera = gWorkspace()->GetCamera();
         gWorkspace()->AddChild(lastPart = Part::New({
             .position = camera->cframe.Position() + gWorkspace()->GetCamera()->cframe.LookVector() * glm::vec3(3),
             .rotation = glm::vec3(0),
