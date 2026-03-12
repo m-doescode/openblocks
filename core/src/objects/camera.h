@@ -25,7 +25,7 @@ public:
     void UpdateView();
 
     CFrame focus = CFrame(Vector3(0, 0, 0));
-    CFrame cframe = CFrame(Vector3(0, 0, 0.5));
+    CFrame cframe = CFrame(Vector3(0, 0, 0.0002));
     std::weak_ptr<Instance> cameraSubject;
     float fieldOfView = 45.f; // vertical degrees
     Mode mode = Mode::FirstPerson;

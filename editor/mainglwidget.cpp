@@ -368,10 +368,9 @@ void MainGLWidget::wheelEvent(QWheelEvent* evt) {
     auto camera = gWorkspace()->GetCamera();
     auto cameraController = gDataModel->GetService<CameraController>();
     if (camera->mode == Camera::Mode::FirstPerson) {
-        cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::OUT : CameraController::Direction::IN, 0.25f);
+        cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::BACKWARDS : CameraController::Direction::FORWARD, 0.25f);
     } else {
-        targetZoom += -evt->angleDelta().y() / 20.0f;
-        targetZoom = std::max(targetZoom, 1.0f);
+        cameraController->InputMovement(evt->angleDelta().y() < 0 ? CameraController::Direction::OUT : CameraController::Direction::IN, 0.25f);
     }
 
     if (mainWindow()->editSoundEffects && resolveAssetPath("assets/excluded/SWITCH3.wav") != "")
