@@ -50,16 +50,23 @@ void CameraController::InputMovement(Direction direction, float deltaTime) {
             break;
         
         case Direction::IN:
-        
-            // Handle case of user zooming all the way in
-            if ((camera->cframe.Position() + camera->cframe.LookVector() - camera->focus.Position()).Dot(camera->cframe.LookVector()) > 0) {
-                break;
+            if (camera->mode == Camera::Mode::Orbit) {
+                // Handle case of user zooming all the way in
+                if ((camera->cframe.Position() + camera->cframe.LookVector() - camera->focus.Position()).Dot(camera->cframe.LookVector()) > 0) {
+                    break;
+                }
+                
+                camera->cframe = camera->cframe.Position() + camera->cframe.LookVector() * zoomSpeed;
+            } else if (camera->mode == Camera::Mode::FirstPerson) {
+                targetPos += speed * cameraFront;
             }
-            
-            camera->cframe = camera->cframe.Position() + camera->cframe.LookVector() * zoomSpeed;
             break;
         case Direction::OUT:
-            camera->cframe = camera->cframe.Position() - camera->cframe.LookVector() * zoomSpeed;
+            if (camera->mode == Camera::Mode::Orbit) {
+                camera->cframe = camera->cframe.Position() - camera->cframe.LookVector() * zoomSpeed;
+            } else if (camera->mode == Camera::Mode::FirstPerson) {
+                targetPos -= speed * cameraFront;
+            }
             break;
     }
 
