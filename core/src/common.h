@@ -3,7 +3,6 @@
 #include "handles.h"
 #include "objects/service/workspace.h"
 #include "objects/datamodel.h"
-#include "camera.old.h"
 #include <functional>
 #include <memory>
 
@@ -14,7 +13,6 @@ typedef std::function<void(std::shared_ptr<Instance> instance, std::string prope
 
 // TEMPORARY COMMON DATA FOR VARIOUS INTERNAL COMPONENTS
 
-extern Camera_Old camera;
 extern std::shared_ptr<DataModel> gDataModel;
 extern std::shared_ptr<DataModel> editModeDataModel;
 inline std::shared_ptr<Workspace> gWorkspace() { return std::dynamic_pointer_cast<Workspace>(gDataModel->services["Workspace"]); }

@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include "logger.h"
 #include "objects/part/part.h"
+#include "objects/service/cameracontroller.h"
 #include "panic.h"
 #include "physics/world.h"
 #include "rendering/renderer.h"
@@ -101,23 +102,24 @@ float lastTime;
 void processInput(GLFWwindow* window) {
     float deltaTime = glfwGetTime() - lastTime;
     lastTime = glfwGetTime();
+    auto cameraController = gDataModel->GetService<CameraController>();
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_FORWARD, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_BACKWARDS, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::BACKWARDS, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_LEFT, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_RIGHT, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_UP, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::UP, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_DOWN, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::DOWN, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_UP, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::UP, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.processMovement(DIRECTION_DOWN, deltaTime);
+        cameraController->InputMovement(CameraController::Direction::DOWN, deltaTime);
 
     if (mode == 2) {
         float shiftFactor = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? -0.5 : 0.5;
@@ -142,6 +144,7 @@ float lastX = 0, lastY = 0;
 bool mouseFirst = true;
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     if (!mouseCapturing) return;
+    auto cameraController = gDataModel->GetService<CameraController>();
 
     if (mouseFirst) {
         lastX = xpos, lastY = ypos;
@@ -151,7 +154,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     float deltaX = xpos - lastX, deltaY =  ypos - lastY;
     lastX = xpos, lastY = ypos;
 
-    camera.processRotation(deltaX, deltaY);
+    cameraController->InputRotation(deltaX, deltaY);
 }
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
@@ -167,9 +170,10 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 bool doDebugRender = false;
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    auto camera = gWorkspace()->GetCamera();
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         gWorkspace()->AddChild(lastPart = Part::New({
-            .position = camera.cameraPos + camera.cameraFront * glm::vec3(3),
+            .position = camera->cframe.Position() + gWorkspace()->GetCamera()->cframe.LookVector() * glm::vec3(3),
             .rotation = glm::vec3(0),
             .size = glm::vec3(1, 1, 1),
             .color = glm::vec3(1.0f, 0.5f, 0.31f),

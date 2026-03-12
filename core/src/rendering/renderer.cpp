@@ -31,7 +31,6 @@
 #include "shader.h"
 #include "mesh.h"
 #include "defaultmeshes.h"
-#include "camera.old.h"
 #include "common.h"
 #include "objects/part/part.h"
 #include "skybox.h"
@@ -50,7 +49,6 @@ Shader* wireframeShader = NULL;
 Shader* outlineShader = NULL;
 Shader* debugFontShader = NULL;
 Shader* generic2dShader = NULL;
-extern Camera_Old camera;
 Skybox* skyboxTexture = NULL;
 Texture3D* studsTexture = NULL;
 Texture* debugFontTexture = NULL;

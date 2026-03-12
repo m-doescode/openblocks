@@ -5,7 +5,6 @@
 #include "common.h"
 #include <memory>
 
-Camera_Old camera(glm::vec3(0.0, 0.0, 3.0));
 //std::vector<Part> parts;
 std::shared_ptr<DataModel> gDataModel = DataModel::New();
 std::shared_ptr<DataModel> editModeDataModel = gDataModel;

@@ -651,16 +651,14 @@ void MainGLWidget::keyPressEvent(QKeyEvent* evt) {
     if (evt->key() == Qt::Key_Semicolon)
         camera->mode = camera->mode == Camera::Mode::FirstPerson ? Camera::Mode::Orbit : Camera::Mode::FirstPerson;
 
-    if (camera->mode == Camera::Mode::FirstPerson) {
-        if (evt->key() == Qt::Key_W) moveZ = 1;
-        else if (evt->key() == Qt::Key_S) moveZ = -1;
-        
-        if (evt->key() == Qt::Key_A) moveX = 1;
-        else if (evt->key() == Qt::Key_D) moveX = -1;
+    if (evt->key() == Qt::Key_W) moveZ = 1;
+    else if (evt->key() == Qt::Key_S) moveZ = -1;
+    
+    if (evt->key() == Qt::Key_A) moveX = 1;
+    else if (evt->key() == Qt::Key_D) moveX = -1;
 
-        if (evt->key() == Qt::Key_E) moveYw = 1;
-        else if (evt->key() == Qt::Key_Q) moveYw = -1;
-    }
+    if (evt->key() == Qt::Key_E) moveYw = 1;
+    else if (evt->key() == Qt::Key_Q) moveYw = -1;
 
     if (evt->key() == Qt::Key_F) {
         gWorkspace()->AddChild(lastPart = Part::New({
