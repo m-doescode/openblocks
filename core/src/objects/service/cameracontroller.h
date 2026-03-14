@@ -19,6 +19,8 @@ public:
 protected:
     void InitService() override;
     bool initialized = false;
+
+    void RenderTick() override;
 public:
     static inline std::shared_ptr<Instance> Create() { return new_instance<CameraController>(); };
     

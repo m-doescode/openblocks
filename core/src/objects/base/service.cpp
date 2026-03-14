@@ -20,3 +20,9 @@ void Service::InitService() {
 
 void Service::OnRun() {
 }
+
+void Service::GameTick() {
+}
+
+void Service::RenderTick() {
+}

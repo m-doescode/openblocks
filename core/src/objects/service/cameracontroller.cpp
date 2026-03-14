@@ -5,6 +5,7 @@
 #include "objectmodel/type.h"
 #include "objects/datamodel.h"
 #include "objects/service/workspace.h"
+#include "objects/part/basepart.h"
 
 INSTANCE_IMPL(CameraController)
 
@@ -15,6 +16,23 @@ InstanceType CameraController::__buildType() {
 void CameraController::InitService() {
     if (initialized) return;
     initialized = true;
+}
+
+// This probably should be handled by Camera itself using a signal listener
+// Or should it? I don't know
+void CameraController::RenderTick() {
+    auto cameraw = dataModel()->GetService<Workspace>()->currentCamera;
+    if (cameraw.expired()) return;
+    auto camera = cameraw.lock();
+
+    if (!camera->cameraSubject.expired()) {
+        auto subject = camera->cameraSubject.lock();
+        if (subject->IsA<BasePart>()) {
+            camera->focus = std::dynamic_pointer_cast<BasePart>(subject)->cframe;
+        }
+    }
+
+    camera->UpdateView();
 }
 
 void CameraController::InputMovement(Direction direction, float deltaTime) {

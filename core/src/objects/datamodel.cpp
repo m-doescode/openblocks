@@ -53,6 +53,14 @@ void DataModel::Init(bool runMode) {
     if (auto service = FindService<ServerScriptService>()) service->OnRun();
 }
 
+void DataModel::TickServices(bool running) {
+    for (auto&& [_, service] : this->services) {
+        service->RenderTick();
+        if (running)
+            service->GameTick();
+    }
+}
+
 void DataModel::SaveToFile(std::optional<std::string> path) {
     if (!path.has_value() && !this->currentFile.has_value()) {
         Logger::fatalError("Cannot save DataModel because no path was provided.");

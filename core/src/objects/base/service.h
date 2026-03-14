@@ -14,5 +14,10 @@ protected:
 
     void OnParentUpdated(nullable std::shared_ptr<Instance> oldParent, nullable std::shared_ptr<Instance> newParent) override;
 
+    // Called while the game is running
+    virtual void GameTick();
+    // Called every tick always
+    virtual void RenderTick();
+
     friend class DataModel;
 };

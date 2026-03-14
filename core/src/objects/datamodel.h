@@ -27,6 +27,8 @@ public:
     ~DataModel();
     void Init(bool runMode = false);
 
+    void TickServices(bool running);
+
     static inline std::shared_ptr<DataModel> New() { return new_instance<DataModel>(); };
 
     result<std::shared_ptr<Service>, NoSuchService> GetService(std::string className);
